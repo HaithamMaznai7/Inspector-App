@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # fahis_inspector
 
 A new Flutter project.
@@ -14,3 +15,7 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# Fahis-Mobile-App-for-inspectors.
+This Source code for Fahis mobile app that target inspector and inspection centers users for inspect orders.
+>>>>>>> 2fe9ddc0089d424d7ccd5857bba06df3ddabbb78
