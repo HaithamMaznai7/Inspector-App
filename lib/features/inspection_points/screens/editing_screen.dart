@@ -1,0 +1,148 @@
+import 'package:fahis_inspector/features/inspection_points/controllers/controller.dart';
+import 'package:fahis_inspector/features/inspection_points/models/point.dart';
+import 'package:fahis_inspector/features/inspection_points/screens/widgets/card.dart';
+import 'package:fahis_inspector/util/constants/sizes.dart';
+import 'package:fahis_inspector/util/localization/localization.dart';
+import 'package:flutter/material.dart';
+import 'package:fahis_inspector/util/constants/colors.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
+
+class InspectionPointsScreen extends StatelessWidget {
+  const InspectionPointsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Obx(() {
+          final category = InspectionPointsController.instance.category.value;
+          return Text(
+            category?.category.title ?? 'تفاصيل الفحص',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium!.copyWith(color: FColors.white),
+          );
+        }),
+        centerTitle: true,
+        backgroundColor: FColors.primaryColor,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          onPressed: () => Get.back(),
+          icon: Icon(
+            FLocalization.isArabic
+                ? Iconsax.arrow_right_3
+                : Iconsax.arrow_left_2,
+            color: FColors.white,
+          ),
+        ),
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: FSizes.sm),
+          // Horizontal Scrolling Choice Chips
+          Obx((){
+              final category =
+                  InspectionPointsController.instance.category.value;
+              final data =
+                  InspectionPointsController.instance.review.value ??
+                  ReviewPoint.set([]);
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    ...data.cats.map((cat) {
+                      final isSelected =
+                          category?.category.id ==
+                          cat.category.id;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: FSizes.sm * .5,
+                        ),
+                        child: ChoiceChip(
+                          avatar: CircleAvatar(
+                            backgroundColor: isSelected
+                                ? FColors.primaryColor
+                                : FColors.white,
+                            child: SvgPicture.network(
+                              cat.category.icon,
+                              width: 30,
+                              height: 30,
+                              alignment: Alignment.center,
+                              fit: BoxFit.cover,
+                              colorFilter: ColorFilter.mode(
+                                isSelected
+                                    ? FColors.white
+                                    : FColors.primaryColor,
+                                BlendMode.srcIn,
+                              ),
+                              placeholderBuilder: (context) =>
+                                  const CircularProgressIndicator(),
+                            ),
+                          ),
+                          label: Text(
+                            cat.category.title,
+                            style: Theme.of(context).textTheme.titleMedium!
+                                .copyWith(
+                                  color: isSelected
+                                      ? FColors.white
+                                      : FColors.primaryColor,
+                                ),
+                          ),
+                          selected: isSelected,
+                          showCheckmark: false,
+                          selectedColor: FColors.primaryColor,
+                          onSelected: (_) {
+                            InspectionPointsController.instance.onChangeCategory(cat: cat);
+                          },
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: FSizes.sm),
+
+          // Vertical Scrolling Point Cards for Selected Category
+          Flexible(
+            child: Obx((){
+                final category = InspectionPointsController.instance.category.value;
+                
+                if (category != null) {
+                  return ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
+                    padding: EdgeInsets.all(FSizes.md),
+                    itemCount: category.points.length,
+                    itemBuilder: (context, index) {
+                      final point = category.points[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: PointCard(
+                          key: ValueKey(point.id),
+                          point: point,
+                          onChange: (point) => 
+                            (InspectionPointsController.instance.inspection?.stage.canEditPoint ?? false) 
+                            ? InspectionPointsController.instance
+                              .onChangeStatus(point) 
+                            : null,
+                        ),
+                      );
+                    },
+                  );
+                }
+
+                return Center(
+                  child: CircularProgressIndicator(color: FColors.primaryColor),
+                );
+              },
+            )
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -1,0 +1,13 @@
+rootProject.name = 'paint_gauge'
+
+//include ':vendor_sdk'
+//project(':vendor_sdk').projectDir = new File(rootDir, 'vendor_sdk')
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}

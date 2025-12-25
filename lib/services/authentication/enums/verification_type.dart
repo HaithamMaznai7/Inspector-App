@@ -1,0 +1,3 @@
+enum UserVerifiationType {
+  email, mobile
+}

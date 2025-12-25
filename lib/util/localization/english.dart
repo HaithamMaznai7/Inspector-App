@@ -1,0 +1,212 @@
+import 'package:fahis_inspector/util/constants/text_strings.dart';
+
+class English {
+
+  English._();
+
+  static Map<String,String> en = {
+    /// Global Texts
+    FTexts.appName: 'Fahis',
+    FTexts.cancelBtn: 'Cancel',
+    FTexts.skip: 'skip',
+    FTexts.refresh: 'Refresh',
+    FTexts.submitBtn: 'Submit',
+    FTexts.nextBtn: 'Next',
+    FTexts.backBtn: 'Back',
+    FTexts.requestId: 'Request ID',
+    FTexts.deleteBtn: 'Delete',
+    FTexts.signOut: 'Sign Out',
+    FTexts.updateAssets: 'Assets Upgrade' ,
+    FTexts.offlineMode: 'Offline Mode',
+    'All': 'All',
+    'Pending': 'Pending',
+    'Accepted': 'Accepted',
+    'In Progress': 'In Progress',
+    'Finished': 'Finished',
+    'Rejected': 'Rejected',
+    'Reviewed': 'Reviewed',
+    'Settings & Support': 'Settings & Support',
+    'Help & Support': 'Help & Support',
+    FTexts.unSelected: 'Not Selected',
+    ForgetPage.forgetSubTitle: 'Enter your mobile number and we will send you a verification code',
+    FTexts.more: 'More',
+
+    /// End Global Texts
+    ///
+    /// Enums Texts
+    FTexts.automatic: 'Automatic',
+    FTexts.manual: 'Manual',
+    FTexts.fabric: 'Fabric',
+    FTexts.leather: 'Leather',
+    FTexts.inProgress: 'In Progress',
+    FTexts.pended: 'Pending',
+    FTexts.approved: 'Approved',
+    FTexts.finished: 'Finished',
+    FTexts.good: 'Good',
+    FTexts.notes: 'Note',
+    FTexts.na: 'N/A',
+    /// End Enums Texts
+    ///
+    /// Login Page
+    LoginPage.loginTitle: 'Inspection Center App',
+    LoginPage.loginSubTitle: 'Welcome Back,..',
+    LoginPage.phoneNumber: 'Phone Number' ,
+    LoginPage.phoneNumberValidation: 'Phone Number must be a correct' ,
+    LoginPage.username: 'Email or mobile',
+    LoginPage.emailValidation: 'Password must be bigger than 8 characters',
+    LoginPage.password: 'Password',
+    LoginPage.passwordValidation: 'Password Validation',
+    LoginPage.rememberMe: 'Remember me',
+    LoginPage.signIn: 'Login',
+    LoginPage.resetPassword: 'Reset Password',
+    LoginPage.forgetBTN: 'Forget my password',
+    LoginPage.loginWithEmail: 'Login using email address',
+    LoginPage.otpTitle: 'Enter verification code',
+    LoginPage.resendBtnWithTime: 'Resend (after @s \'s)',
+    LoginPage.resendBtn: 'Resend',
+    LoginPage.editPhoneNumber: 'Edit phone number',
+    LoginPage.processingTitle: 'Logging in and processing data ...',
+    /// End Login Page
+    ///
+    /// Home Page
+    HomePage.searchHint: 'Search for a plate number....',
+    HomePage.request: 'Requests',
+    HomePage.history: 'History',
+    HomePage.onEmpty: 'There is no request yet',
+    HomePage.onError: 'There is an error occurred',
+    HomePage.noMore: 'There is no request yet',
+    /// End Home Page
+    ///
+    /// Details Page
+    DetailsPage.pageTitle: 'Inspection No.@inspection',
+    DetailsPage.reviewNoteTitle: 'Review Notes :',
+    DetailsPage.vehicleInfoTile: 'Vehicle Information',
+    DetailsPage.requestInfoTitle: 'Request Information',
+    DetailsPage.inspectionPointResults: 'Inspection Point Results',
+    DetailsPage.defaultValidationIfNull: 'The value must be entered',
+    DetailsPage.defaultValidation: 'The value must be of 3 characters or more',
+
+    DetailsPage.vin: 'VIN',
+    DetailsPage.vinHint: 'Enter VIN',
+    DetailsPage.vinValidationIfNull: 'The VIN must be entered',
+    DetailsPage.vinValidation : 'The VIN length must be 17',
+
+    DetailsPage.plateNumber: 'Plate Number',
+    DetailsPage.plateNumberHint: 'Enter Plate Number',
+    DetailsPage.plateNumberValidationIfNull: 'The Car Plate must be entered',
+    DetailsPage.plateNumberValidation:'The Car Plate length must be less than 9',
+
+    DetailsPage.bodyType: 'Body Type',
+    DetailsPage.bodyTypeValidation: 'Automatic',
+
+    DetailsPage.drivetrain: 'Vehicle Drivetrain',
+    DetailsPage.drivetrainValidation: 'Automatic',
+
+    DetailsPage.fuelType: 'Fuel Type',
+    DetailsPage.fuelTypeValidation: 'Automatic',
+
+    DetailsPage.gasolineType: 'Gasoline Type',
+    DetailsPage.gasolineTypeValidation: 'Automatic',
+
+    DetailsPage.milage: 'Milage',
+    DetailsPage.milageHint: 'Enter Milage',
+    DetailsPage.milageValidationIfNull : 'The Milage must be entered',
+    DetailsPage.milageValidation: 'The Milage must be numbers',
+
+    DetailsPage.yearModel: 'Year Model',
+    DetailsPage.yearModelValidation: 'Automatic',
+
+    DetailsPage.exteriorColor: 'Exterior Color',
+    DetailsPage.exteriorColorHint: 'Enter Exterior Color',
+    DetailsPage.exteriorColorValidation: 'Automatic',
+
+    DetailsPage.interiorColor: 'Exterior Color',
+    DetailsPage.interiorColorHint: 'Enter Exterior Color',
+    DetailsPage.interiorColorValidation: 'Automatic',
+
+    DetailsPage.gearboxType: 'GearBox Type',
+    DetailsPage.gearboxTypeValidation: 'Automatic',
+
+    DetailsPage.cylindersNo: 'Cylinders Number',
+    DetailsPage.cylindersNoValidation: 'Automatic',
+
+    DetailsPage.engineSize: 'Engine Size CC',
+    DetailsPage.engineSizeHint: 'Enter Engine Size (CC)',
+    DetailsPage.engineSizeValidationIfNull : 'The Engine Size must be entered',
+    DetailsPage.engineSizeValidation: 'The Engine Size must be normal numbers or decimal',
+
+    DetailsPage.seatType: 'Seat Type',
+    DetailsPage.seatTypeValidation: 'Automatic',
+
+    DetailsPage.seatNo: 'Seats Number',
+    DetailsPage.seatNoValidation: 'Automatic',
+    /// End Details Page
+    FTexts.saveBtn: 'Save',
+    FTexts.editBtn: 'Edit',
+
+
+    // FTexts.inspectionType: 'Inspection Type',
+    //
+    // FTexts.inspectionPoints: 'Inspection Points',
+    // FTexts.photos: 'Photos',
+    // FTexts.vehicleBody: 'Vehicle Body',
+    // FTexts.validationTitle: 'Validation',
+    // FTexts.validationSubTitle: 'Please ensure your all entries are correct',
+    //
+    // FTexts.obd: 'OBD',
+    // FTexts.defualtSelected: 'Choose One',
+    // FTexts.addPhotoBtn: 'Add an additional photo',
+    // FTexts.interiorPhotoTitle: 'Interior Photos',
+    // FTexts.exteriorPhotoTitle: 'Exterior Photos',
+    // FTexts.interiorNotesTitle: 'Interior Notes',
+    // FTexts.exteriorNotesTitle: 'Exterior Notes',
+    // FTexts.obdCodes: 'OBD Codes',
+    // FTexts.desc: 'Description',
+    // FTexts.code: 'Code',
+    // FTexts.descHint: 'Type description here',
+    // FTexts.successfullSavedTitle: 'Successful Saved',
+    // FTexts.successfullSavedSubtitle: 'Your inspection results have saved successfully.',
+    'The last 6 charts in Car Plate must be numbers': 'The last 6 charts in Car Plate must be numbers',
+    'The First 3 charts in Car Plate must be letters': 'The First 3 charts in Car Plate must be letters',
+    'Type your note here': 'Enter your note here',
+    'Add Note': 'Enter Note',
+    'Provide valid Email': 'Provide valid Email',
+    'Not updated': 'Not updated',
+    'Saved locally': 'Saved locally',
+    'Uploading ...': 'Uploading ...',
+    'Downloading ...': 'Downloading ...',
+    'General Note': 'General Note',
+    'Enter general note ....': 'Enter general note ....',
+    'disconnected_message': '''It seems like no internet connection,
+                 Please check from your internet connection and click on reload.''',
+    'network_connection': 'Network Connection Status',
+    'Continue with offline': 'Continue with offline',
+    'Reload': 'Reload',
+    'There is no more requests': 'There is no more requests',
+    "It's seems you are logged out, Offline mode is allowed while you are logged in": "It's seems you are logged out, Offline mode is allowed while you are logged in",
+    'Update': 'Update',
+    'Skip': 'Skip',
+    'update_message': 'There is a new update Version @newVer, You @isShould update it now.',
+    'there_update': 'Good News',
+    'have_to': 'have to',
+    'can': 'can',
+    'is_not_enable_to_using_offline_mood': "It's seems you are logged out or the assets are not downloaded, Offline mode is allowed while you are logged in and assets are downloaded",
+    'App Settings': 'App Settings',
+    'General Settings': 'General Settings',
+    'Offline Mode Settings': 'Offline Mode Settings',
+    'Permission Required': 'Permission Required',
+    'You must to give a permission to can use camera or select image from gallery': 'You must to give a permission to can use camera or select image from gallery',
+    'Go to settings': 'Go to settings',
+    'Welcome back': 'Welcome back',
+    'Remember Me': 'Remember me',
+    'Add OBD code': 'Add OBD code',
+    'Type OBD code here': 'Type OBD code here',
+    'Searching Code Description...': 'Searching Code Description...',
+    'Type Code Description': 'Type Code Description',
+    'Add': 'Add',
+    'Inspection Point Results': 'Inspection Point Results',
+    'Point Categories': 'Point Categories',
+    'The file is not PDF, You should to upload PDF file.': 'The file is not PDF, You should to upload PDF file.',
+    'EditNumber': 'Edit phone number'
+  };
+}
