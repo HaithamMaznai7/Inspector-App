@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Paint Gauge Demo',
+      title: 'Paint Gauge Demo ',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
@@ -146,7 +146,7 @@ class _DeviceScanPageState extends State<DeviceScanPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DeviceDetailPage(deviceId:device.mac),
+              builder: (context) => DeviceDetailPage(deviceId: device.mac),
             ),
           );
         }
@@ -207,69 +207,70 @@ class _DeviceScanPageState extends State<DeviceScanPage> {
           Expanded(
             child: _devices.isEmpty && !_isScanning
                 ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.bluetooth_searching,
-                      size: 64,
-                      color: Colors.grey.shade400
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No devices found',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade600,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.bluetooth_searching,
+                          size: 64,
+                          color: Colors.grey.shade400,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No devices found',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Tap the scan button to start',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Tap the scan button to start',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                ],
-              ),
-            )
-                : ListView.builder(
-              itemCount: _devices.length,
-              itemBuilder: (context, index) {
-                final device = _devices[index];
-                final isConnected = device.mac == _connectedMac;
-
-                return ListTile(
-                  leading: Icon(
-                    isConnected
-                        ? Icons.bluetooth_connected
-                        : Icons.bluetooth,
-                    color: isConnected ? Colors.green : Colors.blue,
-                  ),
-                  title: Text(
-                    device.name.isEmpty ? 'Unknown Device' : device.name,
-                    style: TextStyle(
-                      fontWeight: isConnected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                    ),
-                  ),
-                  subtitle: Text(
-                    '${device.mac}\nRSSI: ${device.rssi} dBm',
-                  ),
-                  trailing: isConnected
-                      ? const Chip(
-                    label: Text('Connected'),
-                    backgroundColor: Colors.green,
-                    labelStyle: TextStyle(color: Colors.white),
                   )
-                      : null,
-                  onTap: isConnected
-                      ? null
-                      : () => _connectToDevice(device),
-                );
-              },
-            ),
+                : ListView.builder(
+                    itemCount: _devices.length,
+                    itemBuilder: (context, index) {
+                      final device = _devices[index];
+                      final isConnected = device.mac == _connectedMac;
+
+                      return ListTile(
+                        leading: Icon(
+                          isConnected
+                              ? Icons.bluetooth_connected
+                              : Icons.bluetooth,
+                          color: isConnected ? Colors.green : Colors.blue,
+                        ),
+                        title: Text(
+                          device.name.isEmpty ? 'Unknown Device' : device.name,
+                          style: TextStyle(
+                            fontWeight: isConnected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                        subtitle: Text(
+                          '${device.mac}\nRSSI: ${device.rssi} dBm',
+                        ),
+                        trailing: isConnected
+                            ? const Chip(
+                                label: Text('Connected'),
+                                backgroundColor: Colors.green,
+                                labelStyle: TextStyle(color: Colors.white),
+                              )
+                            : null,
+                        onTap: isConnected
+                            ? null
+                            : () => _connectToDevice(device),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
