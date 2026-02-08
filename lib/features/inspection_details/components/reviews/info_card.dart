@@ -35,7 +35,7 @@ class InfoCard extends StatelessWidget {
       initiallyExpanded: initiallyExpanded,
       trailing: trailing,
       childrenPadding: EdgeInsets.symmetric(
-        horizontal: FSizes.xl,
+        horizontal: FSizes.md,
         vertical: FSizes.md,
       ),
       leading: icon != null ? Icon(icon) : leading,
@@ -83,40 +83,34 @@ class InfoCard extends StatelessWidget {
 
   static List<Widget> initializeInfo(Map<String, dynamic> data) {
     final List<Widget> rows = [];
-    List<Widget> rowChildren = [];
-
-    int index = 0;
 
     data.forEach((key, value) {
-      rowChildren.add(
-        Expanded(
-          child: RichText(
-            overflow: TextOverflow.ellipsis,
-            text: TextSpan(
-              style: Theme.of(Get.context!).textTheme.bodyLarge,
-              children: [
-                TextSpan(text: '$key: '),
-                TextSpan(
-                  text: value?.toString() ?? '-',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: FSizes.sm),
+          child: Row(
+            children: [
+              Expanded(
+                child: RichText(
+                  textAlign: TextAlign.start,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                  text: TextSpan(
+                    style: Theme.of(Get.context!).textTheme.bodyLarge,
+                    children: [
+                      TextSpan(text: '$key: '),
+                      TextSpan(
+                        text: value?.toString() ?? '-',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       );
-
-      index++;
-
-      if (rowChildren.length == 3 || index == data.length) {
-        rows.add(
-          Padding(
-            padding: const EdgeInsets.only(bottom: FSizes.sm),
-            child: Row(children: rowChildren),
-          ),
-        );
-        rowChildren = [];
-      }
     });
 
     return rows;

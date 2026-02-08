@@ -109,6 +109,10 @@ class Arabic {
     InspectionPage.vehicleShape: 'شكل صهريج',
     InspectionPage.yearModel: 'سنة الموديل',
     InspectionPage.plate: 'رقم اللوحة',
+    InspectionPage.contactName: 'الاسم',
+    InspectionPage.contactEmail: 'البريد الإلكتروني',
+    InspectionPage.contactPhone: 'الجوال',
+    InspectionPage.contactCity: 'المدينة',
 
     /// End Inspection Details Page
     ///

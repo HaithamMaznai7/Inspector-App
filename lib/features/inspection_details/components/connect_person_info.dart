@@ -48,16 +48,10 @@ class ConnectPersonInfo extends StatelessWidget {
           )
           : Icon(Iconsax.call, color: FColors.grey),
           items: {
-            InspectionPage.inspectionType.tr: "${inspection.inspectionType?.title} (${inspection.inspectionType?.description})",
-            InspectionPage.center.tr: inspection.center?.center.label ?? 'No Booking',
-            InspectionPage.centerBranch.tr: inspection.center?.branch?.label ?? 'No Branch',
-            InspectionPage.city.tr: inspection.center?.city?.label ?? 'No City',
-            InspectionPage.bookingDate.tr: inspection.center?.datetime.toString() ?? 'Not Yet',
-            InspectionPage.assignedTo.tr: inspection.assignedTo?.label ?? 'Any',
-            InspectionPage.inspector.tr: inspection.inspector?.label ?? 'No Inspector Yet',
-            InspectionPage.inspectedAt.tr: inspection.inspectedAt?.toString() ?? 'Not Yet',
-            InspectionPage.reviewedAt.tr: inspection.reviewedAt?.toString() ?? 'Not Yet',
-            InspectionPage.createdAt.tr: inspection.createdDate.toString(),
+            InspectionPage.contactName.tr: inspection.customer?.name ?? InspectionPage.notYet.tr,
+            InspectionPage.contactEmail.tr: inspection.customer?.email ?? InspectionPage.notYet.tr,
+            InspectionPage.contactPhone.tr: inspection.customer?.phone ?? InspectionPage.notYet.tr,
+            InspectionPage.contactCity.tr: inspection.customer?.city?.label ?? InspectionPage.notYet.tr,
           },
         );
       },

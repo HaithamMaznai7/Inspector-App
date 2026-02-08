@@ -106,6 +106,10 @@ class English {
     InspectionPage.vehicleShape: 'vehicle Shape',
     InspectionPage.yearModel: 'Year Model',
     InspectionPage.plate: 'Plate',
+    InspectionPage.contactName: 'Name',
+    InspectionPage.contactEmail: 'Email',
+    InspectionPage.contactPhone: 'Phone',
+    InspectionPage.contactCity: 'City',
     /// End Home Page
     ///
     /// Details Page

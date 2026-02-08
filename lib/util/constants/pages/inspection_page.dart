@@ -34,5 +34,11 @@ class InspectionPage {
   static const String vehicleShape = 'vehicleShape';
   static const String yearModel = 'yearModel';
   static const String plate = 'plate';
+
+  /// Connect person / customer
+  static const String contactName = 'contactName';
+  static const String contactEmail = 'contactEmail';
+  static const String contactPhone = 'contactPhone';
+  static const String contactCity = 'contactCity';
 }
 
