@@ -28,7 +28,7 @@ class ReviewerNoteSection extends StatelessWidget {
               horizontal: FSizes.lg,
             ),
             margin: EdgeInsets.symmetric(
-              horizontal: FSizes.sm,
+              horizontal: FSizes.md,
               vertical: FSizes.sm,
             ),
             child: Column(
@@ -42,7 +42,7 @@ class ReviewerNoteSection extends StatelessWidget {
                 ),
                 const SizedBox(height: FSizes.spaceBtwItems),
                 Text(
-                  note!,
+                  note,
                   style: Theme.of(
                     context,
                   ).textTheme.bodyLarge!.copyWith(color: FColors.white),

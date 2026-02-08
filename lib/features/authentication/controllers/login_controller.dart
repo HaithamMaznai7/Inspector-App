@@ -1,3 +1,4 @@
+// ignore: unused_import
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/routes.dart';
@@ -32,11 +33,6 @@ class LoginController extends GetxController {
 
   void forgetPassword() => Get.offAllNamed(RoutingUrl.forgetPassword);
 
-  @override
-  void onInit() {
-    super.onInit();
-  }
-
   Future<void> checkLogin() async {
     credential = credentialController.text.trim();
 
@@ -70,11 +66,13 @@ class LoginController extends GetxController {
           isExists.value = true;
           isvalidatePassword.value = false;
           return;
-        } else{
+        } else {
           isvalidatePassword.value = true;
         }
 
-        if (passwordError.value == null && isvalidatePassword.value && e.errors!.containsKey('password')) {
+        if (passwordError.value == null &&
+            isvalidatePassword.value &&
+            e.errors!.containsKey('password')) {
           passwordError.value = e.errors!['password'][0];
           return;
         } else {
@@ -85,7 +83,7 @@ class LoginController extends GetxController {
     } on FirebaseAuthException catch (e) {
       dd(e);
     } catch (e) {
-      throw e;
+      rethrow;
       // dd(e.toString());
       // FLoader.errorSnackBar(
       //   title: 'Unexpected error'.tr,

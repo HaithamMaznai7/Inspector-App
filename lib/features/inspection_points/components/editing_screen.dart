@@ -4,12 +4,10 @@ import 'package:fahis_inspector/features/inspection_points/controller.dart';
 import 'package:fahis_inspector/models/review_point.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
-import 'package:fahis_inspector/util/localization/localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:iconsax/iconsax.dart';
 
 class InspectionPointsScreen extends StatelessWidget {
   const InspectionPointsScreen({super.key});
@@ -33,7 +31,7 @@ class InspectionPointsScreen extends StatelessWidget {
         centerTitle: true,
         backgroundColor: FColors.primaryColor,
         automaticallyImplyLeading: false,
-        leading: BackPageButton( color: FColors.warning,),
+        leading: BackPageButton(color: FColors.warning),
       ),
       body: Column(
         children: [
@@ -108,8 +106,6 @@ class InspectionPointsScreen extends StatelessWidget {
               init: InspectionPointsBinding().instance,
               builder: (controller) {
                 final category = controller.category.value;
-                final canEditPoint =
-                    controller.inspection?.stage.canEditPoint ?? false;
 
                 if (category != null) {
                   return ListView.builder(

@@ -13,6 +13,8 @@ class InfoCard extends StatelessWidget {
     this.leading,
     this.trailing,
     this.children = const [],
+    this.initiallyExpanded = true,
+    this.showCard = true,
   });
 
   final IconData? icon;
@@ -22,13 +24,15 @@ class InfoCard extends StatelessWidget {
   final Widget? subtitle;
   final Widget? trailing;
   final List<Widget> children;
+  final bool initiallyExpanded;
+  final bool showCard;
 
   @override
   Widget build(BuildContext context) {
-    return ExpansionTile(
+    final expansionTile = ExpansionTile(
       title: title,
       subtitle: subtitle,
-      initiallyExpanded: true,
+      initiallyExpanded: initiallyExpanded,
       trailing: trailing,
       childrenPadding: EdgeInsets.symmetric(
         horizontal: FSizes.xl,
@@ -38,28 +42,42 @@ class InfoCard extends StatelessWidget {
       dense: true,
       iconColor: FColors.primaryColor,
       clipBehavior: Clip.antiAlias,
-      splashColor: FColors.grey,
+      splashColor: FColors.grey.withOpacity(0.3),
       enabled: true,
       shape: Border(
         bottom: BorderSide.none,
         top: BorderSide.none,
         left: BorderSide.none,
         right: BorderSide.none
-      ), 
-      // leading: TextButton(
-      //   onPressed: () {},
-      //   child: Text(
-      //     'Edit',
-      //     style: Theme.of(
-      //       context,
-      //     ).textTheme.labelLarge!.copyWith(color: FColors.warning),
-      //   ),
-      // ),
+      ),
+      collapsedShape: Border(
+        bottom: BorderSide.none,
+        top: BorderSide.none,
+        left: BorderSide.none,
+        right: BorderSide.none
+      ),
       tilePadding: EdgeInsets.symmetric(
         horizontal: FSizes.md,
         vertical: FSizes.sm
       ),
       children: children,
+    );
+
+    if (!showCard) {
+      return expansionTile;
+    }
+
+    return Card(
+      margin: EdgeInsets.symmetric(
+        horizontal: FSizes.md,
+        vertical: FSizes.sm,
+      ),
+      elevation: 2,
+      shadowColor: FColors.grey.withOpacity(0.5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+      ),
+      child: expansionTile,
     );
   }
 

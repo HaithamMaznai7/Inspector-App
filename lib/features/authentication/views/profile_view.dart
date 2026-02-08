@@ -12,13 +12,10 @@ import 'package:fahis_inspector/resources/profile_repository.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
-import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:fahis_inspector/util/popups/full_screen_loader.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:fahis_inspector/common/widgets/camera/camera.dart';
 import 'package:file_picker/file_picker.dart';
 
 class ProfileView extends StatefulWidget {
@@ -90,15 +87,16 @@ class _ProfileViewState extends State<ProfileView> {
                                                 ? EasyImageView(
                                                     imageProvider: NetworkImage(
                                                       user!.avatar!.startsWith(
-                                                            EndPoints.websiteUrl,
+                                                            EndPoints
+                                                                .websiteUrl,
                                                           )
                                                           ? user.avatar!.replaceAll(
                                                               EndPoints
                                                                   .websiteUrl,
                                                               '${EndPoints.schema}://${EndPoints.domain}',
                                                             )
-                                                          : user.avatar!
-                                                    )
+                                                          : user.avatar!,
+                                                    ),
                                                   )
                                                 : Icon(
                                                     Icons.person,
@@ -223,7 +221,7 @@ class _ProfileViewState extends State<ProfileView> {
                                               context,
                                             ).elevatedButtonTheme.style,
                                             onPressed: () => user != null
-                                                ? _updateProfile(user!)
+                                                ? _updateProfile(user)
                                                 : dd('No User'),
                                             child: Text('Update'),
                                           ),
@@ -279,19 +277,15 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Future<void> _pickProfile() async {
-    var file;
     if (Platform.isAndroid || Platform.isIOS) {
-      final cameras = await availableCameras();
-      file = await Get.dialog<File>(Camera(cameras: cameras));
+      await availableCameras();
     } else {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.any, // or use FileType.image, FileType.custom, etc.
       );
 
       if (result != null && result.files.single.path != null) {
-        setState(() {
-          file = File(result.files.single.path!);
-        });
+        setState(() {});
       }
     }
 

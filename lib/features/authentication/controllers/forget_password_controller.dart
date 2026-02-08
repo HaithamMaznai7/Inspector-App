@@ -1,11 +1,7 @@
 import 'package:fahis_inspector/common/widgets/auth/otp_dialog.dart';
-import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
-import 'package:fahis_inspector/features/authentication/views/reset_password_view.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/routes.dart';
-import 'package:fahis_inspector/util/formatters/formatter.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
-import 'package:fahis_inspector/util/popups/full_screen_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

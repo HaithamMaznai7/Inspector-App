@@ -1,6 +1,4 @@
-import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
-import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
@@ -52,11 +50,12 @@ class StageSelector extends StatelessWidget {
                       ),
                     ),
                   )        
-                : Expanded(
+                : SizedBox(
+                    width: double.infinity,
                     child: ElevatedButton(
                       onPressed: controller.openEditing,
                       child: Padding(
-                        padding: EdgeInsetsGeometry.symmetric(
+                        padding: EdgeInsets.symmetric(
                           horizontal: FSizes.md,
                         ),
                         child: Text('Inspect'),

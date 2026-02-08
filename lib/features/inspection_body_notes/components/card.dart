@@ -4,7 +4,6 @@ import 'package:fahis_inspector/common/widgets/camera/camera.dart';
 import 'package:fahis_inspector/common/widgets/components/custom_selector.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/marker.dart';
-import 'package:fahis_inspector/models/menu_item.dart';
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/models/selection.dart';
 import 'package:fahis_inspector/routes.dart';
@@ -26,7 +25,7 @@ class InspectionBodyNotesDialog extends StatefulWidget {
 }
 
 class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
-  TextEditingController _textEditingController = TextEditingController();
+  final TextEditingController _textEditingController = TextEditingController();
 
   late Marker _marker;
   bool upload = false;
@@ -168,7 +167,8 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
             ),
             const SizedBox(height: FSizes.spaceBtwItems),
             StreamBuilder<List<Selection>>(
-              stream: InspectionBodyBinding().instance.assetsRepository.bodyNoteTypes(),
+              stream: InspectionBodyBinding().instance.assetsRepository
+                  .bodyNoteTypes(),
               builder: (context, snapshot) {
                 return CustomSelector(
                   enable: true,
@@ -224,9 +224,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
   Future<void> _pickImage() async {
     if (Platform.isAndroid || Platform.isIOS) {
       final cameras = await availableCameras();
-      _marker.file = await Get.dialog<File>(
-        Camera(cameras: cameras),
-      );
+      _marker.file = await Get.dialog<File>(Camera(cameras: cameras));
     } else {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.any, // or use FileType.image, FileType.custom, etc.

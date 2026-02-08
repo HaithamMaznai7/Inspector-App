@@ -2,11 +2,8 @@ import 'package:fahis_inspector/common/widgets/components/back_page_button.dart'
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
-import 'package:fahis_inspector/util/device/device_utility.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:iconsax/iconsax.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class NotificationScreen extends StatelessWidget {
   const NotificationScreen({super.key});

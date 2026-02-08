@@ -32,45 +32,61 @@ class InspectionPointsReview extends StatelessWidget {
           tilePadding: FSizes.md,
           children: [
             ...points.cats.map((cat) {
-              return InfoCard(
-                title: Text(cat.category.title),
-                subtitle: Text('Note: ${cat.note}, N/A: ${cat.none}'),
-                leading: Container(
-                  padding: EdgeInsets.symmetric(horizontal: FSizes.sm),
+              return Padding(
+                padding: EdgeInsets.only(bottom: FSizes.xs),
+                child: Container(
                   decoration: BoxDecoration(
-                    color: FColors.success.withOpacity(.1),
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: Text(
-                    "${cat.good}/${cat.points.length}",
-                    style: Theme.of(context).textTheme.bodyLarge?.apply(
-                      color: FColors.success,
+                    border: Border.all(
+                      color: FColors.grey.withOpacity(0.3),
+                      width: 1,
                     ),
+                    borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                  ),
+                  child: InfoCard(
+                    title: Text(cat.category.title),
+                    subtitle: Text('Note: ${cat.note}, N/A: ${cat.none}'),
+                    initiallyExpanded: false,
+                    showCard: false,
+                    leading: Container(
+                      padding: EdgeInsets.symmetric(horizontal: FSizes.sm),
+                      decoration: BoxDecoration(
+                        color: FColors.success.withOpacity(.1),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      child: Text(
+                        "${cat.good}/${cat.points.length}",
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyLarge?.apply(color: FColors.success),
+                      ),
+                    ),
+                    children: [
+                      ...cat.points.map((point) {
+                        return ListTile(
+                          title: Text(point.title),
+                          subtitle: Text(point.description),
+                          trailing: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: FSizes.sm,
+                            ),
+                            decoration: BoxDecoration(
+                              color: c.inspection.value?.stage.color
+                                  .withOpacity(.1),
+                              borderRadius: BorderRadius.circular(FSizes.sm),
+                            ),
+                            child: Text(
+                              point.status.name,
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.apply(color: point.status.color()),
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
                   ),
                 ),
-                children: [
-                  ...cat.points.map((point) {
-                    return ListTile(
-                      title: Text(point.title),
-                      subtitle: Text(point.description),
-                      trailing: Container(
-                        padding: EdgeInsets.symmetric(horizontal: FSizes.sm),
-                        decoration: BoxDecoration(
-                          color: c.inspection.value?.stage.color.withOpacity(.1),
-                          borderRadius: BorderRadius.circular(FSizes.sm),
-                        ),
-                        child: Text(
-                          point.status.name,
-                          style: Theme.of(context).textTheme.bodyLarge?.apply(
-                            color: point.status.color(),
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ],
               );
-            }).toList(),
+            }),
           ],
         );
       },

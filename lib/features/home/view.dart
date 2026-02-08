@@ -3,7 +3,6 @@ import 'package:fahis_inspector/features/home/components/appbar_search.dart';
 import 'package:fahis_inspector/features/home/components/menu_side.dart';
 import 'package:fahis_inspector/features/inspections/view.dart';
 import 'package:fahis_inspector/services/notifications/components/notification_icon.dart';
-import 'package:fahis_inspector/services/notifications/notifications_service.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -21,22 +20,19 @@ class HomeScreen extends StatelessWidget {
 
     final isPhone = screenWidth < tabletBreakpoint;
 
-    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+    final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
     // Use Drawer for phones
     return Scaffold(
-      key: _scaffoldKey,
+      key: scaffoldKey,
       appBar: AppBar(
         title: Logo(height: 30),
         centerTitle: true,
-        actions: [
-          NotificationIcon(),
-          const AppBarSearch(),
-        ],
+        actions: [NotificationIcon(), const AppBarSearch()],
         leading: IconButton(
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+          onPressed: () => scaffoldKey.currentState?.openDrawer(),
           icon: Icon(
-            (_scaffoldKey.currentState?.isDrawerOpen ?? false)
+            (scaffoldKey.currentState?.isDrawerOpen ?? false)
                 ? Icons.menu_open
                 : Iconsax.menu_1,
             color: FColors.primaryColor,

@@ -6,9 +6,6 @@ import 'package:fahis_inspector/services/app/support/bindings_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 class AppServiceProvider extends AppService {
   @override
@@ -33,10 +30,6 @@ class AppServiceProvider extends AppService {
 
   @override
   List<BindingsService> register() {
-    return [
-      StorageBinding(),
-      AuthBinding(),
-      NotificationsBinding(),
-    ];
+    return [StorageBinding(), AuthBinding(), NotificationsBinding()];
   }
 }

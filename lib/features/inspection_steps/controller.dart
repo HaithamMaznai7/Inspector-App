@@ -1,9 +1,5 @@
 import 'dart:async';
 import 'package:fahis_inspector/enums/point_status.dart';
-import 'package:fahis_inspector/features/inspection_body_notes/view.dart';
-import 'package:fahis_inspector/features/inspection_obd/view.dart';
-import 'package:fahis_inspector/features/inspection_photos/view_section.dart';
-import 'package:fahis_inspector/features/inspection_points/view.dart';
 import 'package:fahis_inspector/features/vehicle_details/view.dart';
 import 'package:fahis_inspector/features/inspection_details/components/note_dialog.dart';
 import 'package:fahis_inspector/main.dart';
