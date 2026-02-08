@@ -1,4 +1,6 @@
-import 'package:fahis_inspector/util/constants/text_strings.dart';
+import 'package:fahis_inspector/enums/point_status.dart';
+
+import 'text_strings.dart';
 import 'package:get/get.dart';
 import 'enums.dart';
 

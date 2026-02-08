@@ -1,36 +1,17 @@
-import 'package:fahis_inspector/app/app.dart';
-import 'package:fahis_inspector/app/services/app_service.dart';
-import 'package:fahis_inspector/notifications.dart';
+import 'package:fahis_inspector/boot/app_service_provider.dart';
+import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/services/auth/auth_service.dart';
+import 'package:fahis_inspector/services/notifications/notifications_service.dart';
+import 'package:fahis_inspector/services/storage/storage_service.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'boot.dart';
 
-final NotificationService notificationService = NotificationService();
+part 'helpers.dart';
+part 'notifications.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  dd('Initializing Hive...');
-  await Hive.initFlutter();
-  dd('Initialized Hive...');
-  
-  await notificationService.initializeServices();
-
-  dd('App Service Initializing...');
-  await Get.putAsync<AppService>(
-      () async => await AppService().init(),
-      permanent: true,
-      tag: 'AppService',
-  );
-  dd('App Service Initializing...');
-
-  runApp(App());
-}
-
-void dd($string) {
-  if (kDebugMode) {
-    print($string);
-  }
+void main() {
+  runApp(const Boot());
 }

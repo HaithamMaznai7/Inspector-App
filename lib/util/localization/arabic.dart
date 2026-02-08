@@ -1,10 +1,9 @@
-import 'package:fahis_inspector/util/constants/text_strings.dart';
+import '../constants/text_strings.dart';
 
 class Arabic {
-
   Arabic._();
 
-  static Map<String,String> ar = {
+  static Map<String, String> ar = {
     /// Global Texts
     FTexts.appName: 'فاحص',
     FTexts.cancelBtn: 'إلغاء',
@@ -45,37 +44,73 @@ class Arabic {
     FTexts.unSelected: 'غير محدد',
     ForgetPage.forgetSubTitle: 'ادخل رقم جوالك و راح نرسل لك رمز التحقق',
     FTexts.more: 'المزيد',
+
     /// End Enums Texts
     ///
     /// Login Page
     LoginPage.loginTitle: 'تطبيق مراكز الفحص',
     LoginPage.loginSubTitle: 'مرحباً بعودتك ,..',
-    LoginPage.phoneNumber: 'رقم الجوال' ,
-    LoginPage.phoneNumberValidation: 'يجب ان يكون رقم جوال صحيح' ,
+    LoginPage.phoneNumber: 'رقم الجوال',
+    LoginPage.phoneNumberValidation: 'يجب ان يكون رقم جوال صحيح',
     LoginPage.username: 'البريد الإلكتروني او الجوال',
     LoginPage.emailValidation: 'يجب ان تكون كلمة المرور اكبر من 8 رموز',
     LoginPage.password: 'كلمة المرور',
     LoginPage.passwordValidation: 'لازم تدخل الباسورد عشان السريه و كذا',
     LoginPage.rememberMe: 'تذكرني',
     LoginPage.signIn: 'تسجيل الدخول',
+    LoginPage.verifyOTP: 'تحقق',
     LoginPage.resetPassword: 'إعادة تعيين كلمة المرور',
-    LoginPage.forgetBTN: 'نسيت كلمة المرور',
+    LoginPage.forgetBTN: 'نسيت كلمة المرور؟',
     LoginPage.loginWithEmail: 'الدخول بأستخدام البريد الإلكتروني',
     LoginPage.otpTitle: 'أدخل رقم التحقق',
     LoginPage.resendBtnWithTime: 'إعادة الإرسال (بعد @s ث)',
     LoginPage.resendBtn: 'إعادة الإرسال',
     LoginPage.editPhoneNumber: 'تعدبل رقم الهاتف',
-    LoginPage.processingTitle: '...يتم تسجيل الدخول و تجهيز البيانات (لن يستغرق سوا ثواني)',
+    LoginPage.processingTitle:
+        '...يتم تسجيل الدخول و تجهيز البيانات (لن يستغرق سوا ثواني)',
+
     /// End Login Page
     ///
     /// Home Page
     HomePage.searchHint: 'البحث باستخدام رقم اللوحة....',
     HomePage.request: 'الطلبات',
+    HomePage.searchPlaceholder: 'أبحث...',
     HomePage.history: 'سجل الطلبات',
     HomePage.onEmpty: 'onEmpty',
     HomePage.onError: 'There is an error occurred',
     HomePage.noMore: 'لا يوجد لديك طلبات حالياً',
+
     /// End Home Page
+    ///
+    /// Inspection Details Page
+    InspectionPage.generalInfo: 'المعلومات العامة',
+    InspectionPage.vehicleInfo: 'معلومات المركبة',
+    InspectionPage.connectPersonInfo: 'معلومات التواصل',
+    InspectionPage.inspectionPointReview: 'ملخص نقاط الفحص',
+    InspectionPage.inspectionType: 'نوع الفحص',
+    InspectionPage.center: 'مركز الفحص',
+    InspectionPage.centerBranch: 'فرع مركز الفحص',
+    InspectionPage.city: 'مدينة المركز',
+    InspectionPage.bookingDate: 'تاريخ الحجز',
+    InspectionPage.assignedTo: 'إسناد الفحص لـ',
+    InspectionPage.inspector: 'أسم الفاحص',
+    InspectionPage.inspectedAt: 'تاريخ الفحص',
+    InspectionPage.reviewedAt: 'تاريخ المراجعة',
+    InspectionPage.createdAt: 'تاريخ الإنشاء',
+    InspectionPage.inspectorNote: 'ملاحظة الفاحص',
+    InspectionPage.reviewerNote: 'ملاحظة المراجع',
+    InspectionPage.notYet: 'لم يحدد بعد',
+    InspectionPage.anyInspector: 'كل الفاحصين',
+    InspectionPage.vin: 'رقم الهيكل',
+    InspectionPage.serialNo: 'رقم بيانات المركبة',
+    InspectionPage.make: 'الشركة المصنعة',
+    InspectionPage.model: 'الموديل',
+    InspectionPage.storageSize: 'حجم الصهريج',
+    InspectionPage.vehicleShape: 'شكل صهريج',
+    InspectionPage.yearModel: 'سنة الموديل',
+    InspectionPage.plate: 'رقم اللوحة',
+
+    /// End Inspection Details Page
     ///
     /// Details Page
     DetailsPage.pageTitle: 'فحص رقم. @inspection',
@@ -88,13 +123,14 @@ class Arabic {
 
     DetailsPage.vin: 'الرقم التسلسلي للمركبة',
     DetailsPage.vinHint: 'أدخل رقم التسلسلي للمركبة',
-    DetailsPage.vinValidationIfNull: 'مافي انسان بدون اثبات و أكيد مافي موتر بدون اثباته (;',
-    DetailsPage.vinValidation : '17 حرف و رقم يا ليت تكتبهم بالكامل',
+    DetailsPage.vinValidationIfNull:
+        'مافي انسان بدون اثبات و أكيد مافي موتر بدون اثباته (;',
+    DetailsPage.vinValidation: '17 حرف و رقم يا ليت تكتبهم بالكامل',
 
     DetailsPage.plateNumber: 'رقم اللوحة',
     DetailsPage.plateNumberHint: 'أدخل رقم اللوحة',
     DetailsPage.plateNumberValidationIfNull: 'مطلوب ...',
-    DetailsPage.plateNumberValidation:'اللوحة تحتوي على حروف و ارقام',
+    DetailsPage.plateNumberValidation: 'اللوحة تحتوي على حروف و ارقام',
 
     DetailsPage.bodyType: 'هيكل المركبة',
     DetailsPage.bodyTypeValidation: 'حدد هيكل المركبة ما راح نطقها عين',
@@ -110,7 +146,8 @@ class Arabic {
 
     DetailsPage.milage: 'قراءة العداد',
     DetailsPage.milageHint: 'كم ممشاها ؟!',
-    DetailsPage.milageValidationIfNull : 'أجل ليه تفحصها و عادها خرجت من الوكالة',
+    DetailsPage.milageValidationIfNull:
+        'أجل ليه تفحصها و عادها خرجت من الوكالة',
     DetailsPage.milageValidation: 'يجب ان تكون بالارقام و بقياس ال كم',
 
     DetailsPage.yearModel: 'سنة الصنع',
@@ -132,7 +169,7 @@ class Arabic {
 
     DetailsPage.engineSize: 'مقاس المحرك CC',
     DetailsPage.engineSizeHint: 'أدخل مقاس المحرك (CC) مثل: 2.4, 2400',
-    DetailsPage.engineSizeValidationIfNull : 'هل هناك مركبه لا تمتلك محرك ؟!',
+    DetailsPage.engineSizeValidationIfNull: 'هل هناك مركبه لا تمتلك محرك ؟!',
     DetailsPage.engineSizeValidation: 'مسموح بالارقام الصحيحه و العشريه فقط.',
 
     DetailsPage.seatType: 'نوع المقاعد',
@@ -140,7 +177,17 @@ class Arabic {
 
     DetailsPage.seatNo: 'عدد المقاعد',
     DetailsPage.seatNoValidation: 'عدد المقاعد مطلوب',
+
     /// End Details Page
+    ///
+    /// Inspection Point Page
+    InspectionPage.generatDialogTitle: 'تحذير !',
+    InspectionPage.generatDialogContent:
+        'هل أنت متاكد؟ هذا الإجراء سيحذف كل النقاط و يعيد بناءها من جديد, كل المعلومات المحفوظة سيتم حذفها.',
+    InspectionPage.generatDialogConfirmBtn: 'إعادة تعيين',
+    InspectionPage.generatDialogCancel: 'إلغاء',
+
+    /// End Inspection Point Page
     FTexts.saveBtn: 'حفظ',
     FTexts.editBtn: 'تعديل',
 
@@ -149,7 +196,8 @@ class Arabic {
     'Enter OTP': 'ادخل رمز التحقق',
     'OTP': 'رمز التحقق',
     'Validation': 'التحقق',
-    'Please ensure your all entries are correct': 'الرجاء التأكد من جميع المدخلات "جميعها مطلوبه',
+    'Please ensure your all entries are correct':
+        'الرجاء التأكد من جميع المدخلات "جميعها مطلوبه',
     'Enter VIN': 'ادخل الرقم التسلسلي للمركبة',
     'Enter Plate Number': 'ادخل رقم اللوحة',
     'Request ID': 'رقم الطلب',
@@ -187,19 +235,26 @@ class Arabic {
     'Code': 'الرمز',
     'Type description here': 'أكتب وصف الرمز هنا',
     'Successful Saved': 'تم الحفظ بنجاح',
-    'Your inspection results have saved successfully.': 'جميع نتائج الفحص الخاصة بك تم حفظها بنجاح.',
+    'Your inspection results have saved successfully.':
+        'جميع نتائج الفحص الخاصة بك تم حفظها بنجاح.',
     'The Car Plate must be entered': 'يجب ادخال رقم لوحة السيارة',
-    'The Car Plate length must be less than 9': 'رقم لوحة السيارة يجب أن يكون أقل من 9 حروف و أرقام',
-    'The last 6 charts in Car Plate must be numbers': 'أخر 6 رموز من لوحة السيارة يجب أن يكون ارقام',
-    'The First 3 charts in Car Plate must be letters': 'أول 3 رموز من لوحة السيارة يجب أن يكون حروف',
+    'The Car Plate length must be less than 9':
+        'رقم لوحة السيارة يجب أن يكون أقل من 9 حروف و أرقام',
+    'The last 6 charts in Car Plate must be numbers':
+        'أخر 6 رموز من لوحة السيارة يجب أن يكون ارقام',
+    'The First 3 charts in Car Plate must be letters':
+        'أول 3 رموز من لوحة السيارة يجب أن يكون حروف',
     'The Milage must be entered': 'رقم ميل يجب أن يتم إدخاله',
     'The Milage must be numbers': 'قيمة الميل يجب أن تكون أرقام',
     'The Engine Size must be entered': 'مقاس المحرك CC يجب أن يتم إدخاله',
-    'The Engine Size must be normal numbers or decimal': 'مقاس المحرك CC يجب ان يكون أرقام طبيعية او عشرية',
+    'The Engine Size must be normal numbers or decimal':
+        'مقاس المحرك CC يجب ان يكون أرقام طبيعية او عشرية',
     'The VIN must be entered': 'الرقم التسلسلي للمركبة يجب أن يتم إدخاله',
-    'The VIN length must be 17': 'طول الرقم التسلسلي للمركبة يجب أن يكون 17 رمز',
+    'The VIN length must be 17':
+        'طول الرقم التسلسلي للمركبة يجب أن يكون 17 رمز',
     'The value must be entered': 'الحقل مطلوب',
-    'The value must be of 3 characters or more': 'الحقل يجب أن يكون 3 احرف او أكثر',
+    'The value must be of 3 characters or more':
+        'الحقل يجب أن يكون 3 احرف او أكثر',
     'Delete': 'حذف',
     'Type your note here': 'أكتب ملاحظتك هنا',
     'Add Note': 'إضافة ملاحظة',
@@ -211,24 +266,29 @@ class Arabic {
     'General Note': 'ملاحظات عامة',
     'Enter general note ....': 'ادخل ملاحظة عامة',
     'Cancel': 'إلغاء',
-    'disconnected_message': '''لست متصل بالإنتارنت كما هو ظاهر ,رجاء‘ تحقق من اتصالك ثم اعد المحاوله.''',
+    'disconnected_message':
+        '''لست متصل بالإنتارنت كما هو ظاهر ,رجاء‘ تحقق من اتصالك ثم اعد المحاوله.''',
     'network_connection': 'حالة الاتصال بالشبكة',
     'Reload': 'إعادة المحاوله',
     'Continue with offline': 'المتابع بدون اتصال',
     'There is no more requests': 'لم يعد هناك المزيد من الطلبات',
-    "It's seems you are logged out, Offline mode is allowed while you are logged in": "أنت لست مسجل دخول, وضع عدم الأتصال يحتاج الى تسجبل دخولك",
+    "It's seems you are logged out, Offline mode is allowed while you are logged in":
+        "أنت لست مسجل دخول, وضع عدم الأتصال يحتاج الى تسجبل دخولك",
     'Update': 'تحديث',
     'Skip': 'تخطي',
-    'update_message': 'لقد توفر تحديث جديد للتطبيق إصدار : @newVer ,@isShould تحديثه الأن.',
+    'update_message':
+        'لقد توفر تحديث جديد للتطبيق إصدار : @newVer ,@isShould تحديثه الأن.',
     'there_update': 'يوجد خبر سعيد',
     'have_to': 'ينبغي',
     'can': 'تستطيع',
-    'is_not_enable_to_using_offline_mood': "ربما لم تسجل دخولك او أنك لم تحمل البيانات الاساسية لإستخدام وضع عدم الإتصال, رجاء‘ تأكد من إعدادات التطبيق",
+    'is_not_enable_to_using_offline_mood':
+        "ربما لم تسجل دخولك او أنك لم تحمل البيانات الاساسية لإستخدام وضع عدم الإتصال, رجاء‘ تأكد من إعدادات التطبيق",
     'App Settings': 'إعدادات التطبق',
     'General Settings': 'إعدادات عامة',
     'Offline Mode Settings': 'إعدادات وضع عدم الإتصال',
     'Permission Required': 'صلاحية الوصول مطلوبة',
-    'You must to give a permission to can use camera or select image from gallery': 'ساعدنا للحصول على تصريحك للوصول للكاميرا او البوم الصور الخاص بك من الإعدادات',
+    'You must to give a permission to can use camera or select image from gallery':
+        'ساعدنا للحصول على تصريحك للوصول للكاميرا او البوم الصور الخاص بك من الإعدادات',
     'Go to settings': 'الذهاب للإعدادات',
     'Welcome back': 'لقد كنا بإنتظارك',
     'Remember Me': 'تذكرني',
@@ -241,11 +301,14 @@ class Arabic {
     'Inspection Point Results': 'نتائج نقاط الفحص',
     'Point Categories': 'تصنيف النقاط',
 
-    'The file is not PDF, You should to upload PDF file.': 'الملف الذي حددته ليس من نوع PDF, فضلاً اختار ملف PDF',
+    'The file is not PDF, You should to upload PDF file.':
+        'الملف الذي حددته ليس من نوع PDF, فضلاً اختار ملف PDF',
     'Edit General Note': 'تحرير ملاحظات عامة',
-    'Type General Note for the inspection': 'أدخل ملاحظاتك العامه على طلب الفحص',
+    'Type General Note for the inspection':
+        'أدخل ملاحظاتك العامه على طلب الفحص',
     'Are You Sure?': 'هل تريد الحفظ',
-    'Do you want to save all modified values ? Or want to get back without saving any values ?': 'يوجد معلومات تم التعديل عليها, هل تريد حفظها ؟ يمكنك الخروج دون حفظ المعلومات او الإلغاء.',
+    'Do you want to save all modified values ? Or want to get back without saving any values ?':
+        'يوجد معلومات تم التعديل عليها, هل تريد حفظها ؟ يمكنك الخروج دون حفظ المعلومات او الإلغاء.',
     'Save': 'حفظ',
     'Exit': 'لا تحفظ',
     'There is no OBD Code': 'لا يوجد رموز OBD مسجله بعد',

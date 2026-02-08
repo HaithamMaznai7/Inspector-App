@@ -1,12 +1,10 @@
-import 'package:fahis_inspector/services/authentication/auth.dart';
+import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/util/formatters/formatter.dart';
-import 'package:fahis_inspector/util/http/http_client.dart';
+import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ResetPasswordController extends GetxController {
-  static ResetPasswordController get instance => Get.find();
-
   /// Global Keys
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
@@ -35,15 +33,17 @@ class ResetPasswordController extends GetxController {
 
     formKey.currentState!.save();
 
-    mobile = EFormatter.internationalFormatPhoneNumber(Auth.user!.mobile);
+    mobile = EFormatter.internationalFormatPhoneNumber(
+      auth().user!.phoneNumber!,
+    );
 
     toggleResetPassword();
     try {
-      await Auth.loginByMobile(mobile);
+      await auth().forgetPassword(mobile);
     } on FNetworkException catch (e) {
       e.notify();
     } catch (e) {
-      print(e.toString());
+      dd(e.toString());
     } finally {
       toggleResetPassword();
     }

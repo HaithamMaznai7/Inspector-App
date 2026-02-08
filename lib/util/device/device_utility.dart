@@ -1,5 +1,7 @@
 import 'dart:io';
-import 'package:fahis_inspector/util/constants/api_endpoints.dart';
+import 'package:url_launcher/url_launcher_string.dart';
+
+import '../constants/api_endpoints.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -128,18 +130,18 @@ class FDeviceUtils {
     // } catch (e) {
     //   // Handle the exception if the string cannot be parsed as a float
     //   if (kDebugMode) {
-    //     print('An Error happened in convert app version to double or in set sharePref');
-    //     print('Error: $e');
+    //     dd('An Error happened in convert app version to double or in set sharePref');
+    //     dd('Error: $e');
     //   }
     // }
     return 1.0;
   }
 
-  // static void launchUrl(String url) async {
-  //   if(await canLaunchUrlString(url)){
-  //     await launchUrlString(url);
-  //   }else{
-  //     throw 'Could not launch $url';
-  //   }
-  // }
+  static void launchUrl(String url) async {
+    if (await canLaunchUrlString(url)) {
+      await launchUrlString(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
 }

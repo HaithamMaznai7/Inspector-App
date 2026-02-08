@@ -1,13 +1,15 @@
-import 'package:fahis_inspector/features/authentication/screens/reset_password.dart';
-import 'package:fahis_inspector/services/authentication/auth.dart';
+import 'package:fahis_inspector/common/widgets/auth/otp_dialog.dart';
+import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
+import 'package:fahis_inspector/features/authentication/views/reset_password_view.dart';
+import 'package:fahis_inspector/main.dart';
+import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/formatters/formatter.dart';
-import 'package:fahis_inspector/util/http/http_client.dart';
+import 'package:fahis_inspector/util/http/network_exception.dart';
+import 'package:fahis_inspector/util/popups/full_screen_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ForgetPasswordController extends GetxController {
-  static ForgetPasswordController get instance => Get.find();
-
   /// Global Keys
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
@@ -22,7 +24,7 @@ class ForgetPasswordController extends GetxController {
   /// Flags
   RxBool isSignIn = false.obs;
 
-  toggleSignIn() => isSignIn.toggle();
+  void toggleSignIn() => isSignIn.toggle();
 
   void checkLogin() async {
     final isValid = formKey.currentState!.validate();
@@ -33,18 +35,40 @@ class ForgetPasswordController extends GetxController {
 
     formKey.currentState!.save();
 
-    mobile = EFormatter.internationalFormatPhoneNumber(mobileController.text);
+    mobile = mobileController.text.trim();
+    late String verifyToken;
 
     toggleSignIn();
     try {
-      await Auth.loginByMobile(mobile);
+      verifyToken = await auth().forgetPassword(mobile);
     } on FNetworkException catch (e) {
       e.notify();
     } catch (e) {
-      print(e.toString());
+      dd(e.toString());
     } finally {
       toggleSignIn();
     }
+
+    String? token;
+    do {
+      final result = await Get.dialog(OTPDialog());
+
+      toggleSignIn();
+
+      final code = result['code'];
+
+      try {
+        token = await auth().verifyOTP(verifyToken, code);
+      } on FNetworkException catch (e) {
+        e.notify();
+      } catch (e) {
+        dd(e.toString());
+      } finally {
+        toggleSignIn();
+      }
+    } while (token == null);
+
+    Get.toNamed(RoutingUrl.resetPassword, parameters: {'token': token});
   }
 
   @override

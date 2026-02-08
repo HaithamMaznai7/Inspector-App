@@ -4,7 +4,6 @@
 // import 'package:get/get.dart';
 // import 'package:simple_flutter_reverb/simple_flutter_reverb.dart';
 
-
 // class PrivateChannel implements ChannelInterface {
 //   @override
 //   final String channelName;
@@ -17,7 +16,7 @@
 //   Stream<Map?> stream() {
 //     _controller = StreamController<Map?>.broadcast();
 //     final broadcast = Get.find<BroadcastService>();
-//     print(channelName);
+//     dd(channelName);
 //     if (broadcast.isWeb) {
 //       // Web → Reverb
 //       broadcast.reverb!.listen((val) {

@@ -1,4 +1,4 @@
-import 'package:fahis_inspector/services/broadcast/auth_repository.dart';
+import 'package:fahis_inspector/services/broadcast/broadcast_auth.dart';
 
 class WebSocketOptions {
   final String key;

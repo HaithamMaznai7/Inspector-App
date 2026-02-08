@@ -1,4 +1,4 @@
-import 'package:fahis_inspector/util/constants/text_strings.dart';
+import '../constants/text_strings.dart';
 
 class English {
 
@@ -58,8 +58,9 @@ class English {
     LoginPage.passwordValidation: 'Password Validation',
     LoginPage.rememberMe: 'Remember me',
     LoginPage.signIn: 'Login',
+    LoginPage.verifyOTP: 'Verify',
     LoginPage.resetPassword: 'Reset Password',
-    LoginPage.forgetBTN: 'Forget my password',
+    LoginPage.forgetBTN: 'Forget password?',
     LoginPage.loginWithEmail: 'Login using email address',
     LoginPage.otpTitle: 'Enter verification code',
     LoginPage.resendBtnWithTime: 'Resend (after @s \'s)',
@@ -71,10 +72,40 @@ class English {
     /// Home Page
     HomePage.searchHint: 'Search for a plate number....',
     HomePage.request: 'Requests',
+    HomePage.searchPlaceholder: 'Search...',
     HomePage.history: 'History',
     HomePage.onEmpty: 'There is no request yet',
     HomePage.onError: 'There is an error occurred',
     HomePage.noMore: 'There is no request yet',
+    /// End Home Page
+    /// 
+    /// Home Page
+    InspectionPage.generalInfo: 'General Information',
+    InspectionPage.vehicleInfo: 'Vehicle Information',
+    InspectionPage.connectPersonInfo: 'Connect Person Information',
+    InspectionPage.inspectionPointReview: 'Inspection Point Review',
+    InspectionPage.inspectionType: 'Inspection Type',
+    InspectionPage.center: 'Inspection Center',
+    InspectionPage.centerBranch: 'Center Branch',
+    InspectionPage.city: 'City',
+    InspectionPage.bookingDate: 'Booking Date',
+    InspectionPage.assignedTo: 'Assigned To',
+    InspectionPage.inspector: 'Inspector',
+    InspectionPage.inspectedAt: 'Inspected At',
+    InspectionPage.reviewedAt: 'Reviewed At',
+    InspectionPage.createdAt: 'Created At',
+    InspectionPage.inspectorNote: 'Inspector Note',
+    InspectionPage.reviewerNote: 'Reviewer Note',
+    InspectionPage.notYet: 'Not Set Yet',
+    InspectionPage.anyInspector: 'All Inspectors', 
+    InspectionPage.vin: 'VIN',
+    InspectionPage.serialNo: 'Serial No',
+    InspectionPage.make: 'Make',
+    InspectionPage.model: 'Model',
+    InspectionPage.storageSize: 'Storage Size',
+    InspectionPage.vehicleShape: 'vehicle Shape',
+    InspectionPage.yearModel: 'Year Model',
+    InspectionPage.plate: 'Plate',
     /// End Home Page
     ///
     /// Details Page

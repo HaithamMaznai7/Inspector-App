@@ -5,7 +5,8 @@ import 'package:fahis_inspector/util/popups/full_screen_loader.dart';
 import 'package:get/get.dart';
 
 class ConnectionService extends GetxController {
-  static ConnectionService get instance => Get.find<ConnectionService>(tag: 'ConnectionService');
+  static ConnectionService get instance =>
+      Get.find<ConnectionService>(tag: 'ConnectionService');
 
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
@@ -26,9 +27,7 @@ class ConnectionService extends GetxController {
   Future<void> _updateConnectionStatus(List<ConnectivityResult> result) async {
     _connectivityStatus.value = result;
     if (_connectivityStatus.value.first == ConnectivityResult.none) {
-      FFullScreenLoader.openLoadingDialog(
-        page: OfflineScreen(),
-      );
+      FFullScreenLoader.openPage(page: OfflineScreen());
       isConnectionGood.value = false;
     } else if (_connectivityStatus.value.first == ConnectivityResult.wifi ||
         _connectivityStatus.value.first == ConnectivityResult.mobile ||

@@ -1,78 +1,133 @@
-import 'package:fahis_inspector/features/authentication/screens/onboarding/onboarding.dart';
-import 'package:fahis_inspector/features/inspection/screens/inspection_screen.dart';
-import 'package:fahis_inspector/features/inspections/screens/search_page.dart';
-import 'package:fahis_inspector/features/notifications/screen.dart';
-import 'package:fahis_inspector/services/app_binding.dart';
-import 'package:fahis_inspector/features/authentication/screens/forget_password.dart';
-import 'package:fahis_inspector/features/inspections/models/inspection.dart';
-import 'package:fahis_inspector/services/authentication/middleware/auth.dart';
-import 'package:fahis_inspector/services/authentication/middleware/boarder.dart';
-import 'package:fahis_inspector/services/authentication/middleware/unauth.dart';
-import 'package:fahis_inspector/util/constants/text_strings.dart';
-import 'package:fahis_inspector/util/localization/localization.dart';
+import 'package:fahis_inspector/boot/app_service_provider.dart';
+import 'package:fahis_inspector/features/authentication/controllers/forget_password_controller.dart';
+import 'package:fahis_inspector/features/authentication/controllers/reset_password_controller.dart';
+import 'package:fahis_inspector/features/authentication/views/forget_password_view.dart';
+import 'package:fahis_inspector/features/authentication/views/login_view.dart';
+import 'package:fahis_inspector/features/authentication/views/reset_password_view.dart';
+import 'package:fahis_inspector/features/configuration/view.dart';
+import 'package:fahis_inspector/features/home/view.dart';
+import 'package:fahis_inspector/features/inspection_details/view.dart';
+import 'package:fahis_inspector/features/inspection_steps/view.dart';
+import 'package:fahis_inspector/models/inspection.dart';
+import 'package:fahis_inspector/services/app/support/bindings_service.dart';
+import 'package:fahis_inspector/services/auth/midlwares/auth_midlware.dart';
+import 'package:fahis_inspector/services/auth/midlwares/guest_midlware.dart';
+import 'common/widgets/app/app.dart';
 import 'package:get/get.dart';
-import 'features/authentication/screens/login.dart';
-import 'features/inspections/screens/home_screen.dart';
+
+//features
+import 'features/authentication/controllers/login_controller.dart';
+import 'features/home/controller.dart';
+import 'features/inspections/controller.dart';
+import 'features/inspection_steps/controller.dart';
+import 'features/inspection_details/controller.dart';
+import 'features/vehicle_details/controller.dart';
+import 'features/inspection_points/controller.dart';
+import 'features/inspection_photos/controller.dart';
+import 'features/inspection_body_notes/controller.dart';
+import 'features/inspection_obd/controller.dart';
+import 'features/configuration/controller.dart';
+
+//services
+import 'services/storage/storage_service.dart';
+import 'services/auth/auth_service.dart';
+import 'services/notifications/notifications_service.dart';
+
+// services bindings
+part 'util/constants/routes.dart';
+part 'services/storage/binding.dart';
+part 'services/app/binding.dart';
+part 'services/auth/binding.dart';
+part 'services/notifications/binding.dart';
+
+// features bindings
+part 'features/configuration/binding.dart';
+part 'features/authentication/binding.dart';
+part 'features/home/binding.dart';
+part 'features/inspections/binding.dart';
+part 'features/inspection_details/binding.dart';
+part 'features/inspection_steps/binding.dart';
+part 'features/vehicle_details/binding.dart';
+part 'features/inspection_points/binding.dart';
+part 'features/inspection_photos/binding.dart';
+part 'features/inspection_body_notes/binding.dart';
+part 'features/inspection_obd/binding.dart';
 
 class AppRoute {
-
   AppRoute._();
 
   static final _routes = [
+    GetPage(
+      name: RoutingUrl.init,
+      binding: AppBinding(),
+      page: () => const App(),
+    ),
 
     GetPage(
       name: RoutingUrl.onBoarding,
+      binding: OnBoardingBinding(),
       page: () => const OnBoardingScreen(),
-      middlewares: [BoarderMiddleware()],
+      // middlewares: [BoarderMiddleware()],
     ),
 
     GetPage(
       name: RoutingUrl.login,
       binding: LoginBinding(),
       page: () => const Login(),
-      middlewares: [BoarderMiddleware(), UnauthMiddleware()],
+      middlewares: [GuestMiddleware()],
     ),
 
     GetPage(
       name: RoutingUrl.forgetPassword,
-      binding: RestorePasswordBinding(),
-      page: () => const RestorePassword(),
-      middlewares: [BoarderMiddleware(), UnauthMiddleware()],
+      binding: ForgetBinding(),
+      page: () => const ForgetPassword(),
+      middlewares: [GuestMiddleware()],
+    ),
+
+    GetPage(
+      name: RoutingUrl.resetPassword,
+      binding: ResetPasswordBinding(),
+      page: () => const ResetPasswordView(),
+      middlewares: [GuestMiddleware()],
     ),
 
     GetPage(
       name: RoutingUrl.home,
       page: () => const HomeScreen(),
-      middlewares: [BoarderMiddleware(), AuthMiddleware()],
+      middlewares: [AuthMiddleware()],
       binding: HomeBinding(),
     ),
 
-    GetPage(
-      name: RoutingUrl.notifications,
-      page: () => const NotificationScreen(),
-      middlewares: [BoarderMiddleware(), AuthMiddleware()],
-      transition: FLocalization.isArabic ? Transition.leftToRightWithFade : Transition.rightToLeftWithFade,
-      transitionDuration: Duration(milliseconds: 400), // optional
-    ),
+    // GetPage(
+    //   name: RoutingUrl.notifications,
+    //   page: () => const NotificationScreen(),
+    //   middlewares: [BoarderMiddleware(), AuthMiddleware()],
+    //   transition: FLocalization.isArabic ? Transition.leftToRightWithFade : Transition.rightToLeftWithFade,
+    //   transitionDuration: Duration(milliseconds: 400), // optional
+    // ),
 
+    // GetPage(
+    //   name: RoutingUrl.search,
+    //   page: () => const SearchPage(),
+    //   transition: FLocalization.isArabic ? Transition.leftToRightWithFade : Transition.rightToLeftWithFade,
+    //   transitionDuration: Duration(milliseconds: 400), // optional
+    // ),
     GetPage(
-      name: RoutingUrl.search,
-      page: () => const SearchPage(),
-      transition: FLocalization.isArabic ? Transition.leftToRightWithFade : Transition.rightToLeftWithFade,
-      transitionDuration: Duration(milliseconds: 400), // optional
-    ),
-
-    GetPage(
-      name: '${RoutingUrl.inspection}/:slug',
-      arguments: Inspection,
-      binding: InspectionBinding(),
+      name: '${RoutingUrl.inspections}/:slug',
+      binding: InspectionDetailsBinding(),
       middlewares: [AuthMiddleware()],
-      page: () => InspectionScreen(),
+      page: () => InspectionDetailsScreen(),
     ),
 
+    GetPage(
+      name: RoutingUrl.inspectionSteps,
+      binding: InspectionStepsBinding(),
+      middlewares: [AuthMiddleware()],
+      page: () => InspectionStepsScreen(),
+    ),
   ];
 
-  static const INITIAL = RoutingUrl.home;
+  static const INITIAL = RoutingUrl.init;
 
   static get route => _routes;
 }

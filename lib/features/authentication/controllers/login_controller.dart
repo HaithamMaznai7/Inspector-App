@@ -1,8 +1,8 @@
-import 'package:fahis_inspector/app/services/app_service.dart';
-import 'package:fahis_inspector/common/widget/loaders/loaders.dart';
-import 'package:fahis_inspector/services/authentication/auth.dart';
-import 'package:fahis_inspector/util/constants/text_strings.dart';
-import 'package:fahis_inspector/util/http/http_client.dart';
+import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
+import 'package:fahis_inspector/main.dart';
+import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/util/http/network_exception.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -10,28 +10,36 @@ class LoginController extends GetxController {
   final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
 
   /// Controllers
-  TextEditingController emailController = TextEditingController();
+  TextEditingController credentialController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  final emailError = RxnString();
+  final credentialError = RxnString();
   final passwordError = RxnString();
 
   /// Variables
-  var email = '';
+  var credential = '';
   var password = '';
   String phoneNO = '';
 
   /// Flags
   RxBool isLoading = false.obs;
-  RxBool rememberMe = true.obs;
+  RxBool isExists = false.obs;
+  RxBool isvalidatePassword = false.obs;
   RxBool isPasswordHidden = true.obs;
 
   void toggleLoading() => isLoading.toggle();
-  void toggleRememberMe() => rememberMe.toggle();
+  void toggleIsExists() => isExists.toggle();
   void passwordVisibleChange() => isPasswordHidden.toggle();
 
   void forgetPassword() => Get.offAllNamed(RoutingUrl.forgetPassword);
 
+  @override
+  void onInit() {
+    super.onInit();
+  }
+
   Future<void> checkLogin() async {
+    credential = credentialController.text.trim();
+
     final isValid = loginFormKey.currentState!.validate();
 
     if (!isValid) {
@@ -45,36 +53,40 @@ class LoginController extends GetxController {
 
   Future<void> login() async {
     toggleLoading();
-    email = emailController.text.trim();
     password = passwordController.text;
-    emailError.value = null;
+    credentialError.value = null;
     passwordError.value = null;
 
     try {
-      if(Auth.auth == null){
-        await Get.putAsync<AppService>(
-          () async => await AppService().init(),
-          permanent: true,
-          tag: 'AppService',
-        );
-      }
-      await Auth.login(email, password);
+      await auth().login(credential, password);
     } on FNetworkException catch (e) {
       if (e.statusCode == 422 && e.errors != null) {
-        final errors = e.errors!;
-        if (errors['credential'] != null &&
-            errors['credential'].runtimeType == List) {
-          emailError.value = errors['credential'].first;
+        isExists.value =
+            !e.errors!.containsKey('email') && !e.errors!.containsKey('mobile');
+        if (!isExists.value) {
+          // check if user exists
+          credentialError.value =
+              e.errors!['email'][0] ?? e.errors!['mobile'][0];
+          isExists.value = true;
+          isvalidatePassword.value = false;
+          return;
+        } else{
+          isvalidatePassword.value = true;
         }
-        if (errors['password'] != null &&
-            errors['password'].runtimeType == List) {
-          passwordError.value = errors['password'].first;
+
+        if (passwordError.value == null && isvalidatePassword.value && e.errors!.containsKey('password')) {
+          passwordError.value = e.errors!['password'][0];
+          return;
+        } else {
+          password = '';
+          passwordController.text = '';
         }
-      } else {
-        e.notify();
       }
-      // } catch (e) {
-      // print(e);
+    } on FirebaseAuthException catch (e) {
+      dd(e);
+    } catch (e) {
+      throw e;
+      // dd(e.toString());
       // FLoader.errorSnackBar(
       //   title: 'Unexpected error'.tr,
       //   message:
@@ -88,7 +100,7 @@ class LoginController extends GetxController {
 
   @override
   void onClose() {
-    emailController.dispose();
+    credentialController.dispose();
 
     passwordController.dispose();
 

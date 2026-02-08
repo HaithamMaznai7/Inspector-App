@@ -1,7 +1,9 @@
-import 'package:fahis_inspector/services/authentication/auth.dart';
-import 'package:fahis_inspector/util/constants/colors.dart';
-import 'package:fahis_inspector/util/localization/arabic.dart';
-import 'package:fahis_inspector/util/localization/english.dart';
+// import 'package:fahis_inspector/services/authentication/auth.dart';
+import 'package:fahis_inspector/main.dart';
+
+import '../constants/colors.dart';
+import '../localization/arabic.dart';
+import '../localization/english.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -41,11 +43,13 @@ class FLocalization extends Translations {
     );
   }
 
-  static changeLocale() {
-    Auth.local = isArabic ? 'en' : 'ar';
+  static Future<void> changeLocale() async {
+    final value = isArabic ? const Locale('en') : const Locale('ar');
+    auth().firebase.setLanguageCode(value.languageCode);
+    await Get.updateLocale(value);
   }
 
-  static changeTheme() {
+  static void changeTheme() {
     if (isLight) {
       Get.changeThemeMode(ThemeMode.dark);
     } else {
@@ -53,7 +57,10 @@ class FLocalization extends Translations {
     }
   }
 
-  static bool get isArabic => Auth.local == 'ar';
+  static bool get isArabic =>
+      (Get.locale ?? Locale(auth().firebase.languageCode ?? 'ar'))
+          .languageCode ==
+      'ar';
   static bool get isLight => !Get.isDarkMode;
 }
 

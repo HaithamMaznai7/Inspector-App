@@ -1,13 +1,32 @@
 {
   "project_info": {
-    "project_number": "11004766009",
-    "project_id": "fahis-inspector-v1",
-    "storage_bucket": "fahis-inspector-v1.firebasestorage.app"
+    "project_number": "447449059567",
+    "project_id": "fahis-inspector",
+    "storage_bucket": "fahis-inspector.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:11004766009:android:6c4fc28069cf9540356ae8",
+        "mobilesdk_app_id": "1:447449059567:android:de85da9927cb4db8f74b1a",
+        "android_client_info": {
+          "package_name": "com.example.restaurant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfYkWyS2RGwaET-RklJofZnH0YRN5TVj0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:447449059567:android:572961a74f312a22f74b1a",
         "android_client_info": {
           "package_name": "sa.fahis.fahis_inspector"
         }
@@ -15,7 +34,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyARzD4u5sH_Krr99muCIuIDfTkFdYw-hMc"
+          "current_key": "AIzaSyBfYkWyS2RGwaET-RklJofZnH0YRN5TVj0"
         }
       ],
       "services": {

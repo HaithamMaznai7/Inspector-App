@@ -25,7 +25,10 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
         return windows;
       case TargetPlatform.linux:
@@ -41,49 +44,39 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAeOwl-Srk6IRJYyDtGRTu0R1NL8F-rGow',
-    appId: '1:11004766009:web:14d35adcd365a8e1356ae8',
-    messagingSenderId: '11004766009',
-    projectId: 'fahis-inspector-v1',
-    authDomain: 'fahis-inspector-v1.firebaseapp.com',
-    storageBucket: 'fahis-inspector-v1.firebasestorage.app',
-    measurementId: 'G-2GGPNY66J3',
+    apiKey: 'AIzaSyCojhi4w6PPlMOM5rRReMe1sFzQ5Uf1R_E',
+    appId: '1:447449059567:web:04a8a581628bb66ff74b1a',
+    messagingSenderId: '447449059567',
+    projectId: 'fahis-inspector',
+    authDomain: 'fahis-inspector.firebaseapp.com',
+    storageBucket: 'fahis-inspector.firebasestorage.app',
+    measurementId: 'G-M5C414KYW7',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyARzD4u5sH_Krr99muCIuIDfTkFdYw-hMc',
-    appId: '1:11004766009:android:6c4fc28069cf9540356ae8',
-    messagingSenderId: '11004766009',
-    projectId: 'fahis-inspector-v1',
-    storageBucket: 'fahis-inspector-v1.firebasestorage.app',
+    apiKey: 'AIzaSyBfYkWyS2RGwaET-RklJofZnH0YRN5TVj0',
+    appId: '1:447449059567:android:de85da9927cb4db8f74b1a',
+    messagingSenderId: '447449059567',
+    projectId: 'fahis-inspector',
+    storageBucket: 'fahis-inspector.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyASh9Hbh9yo8JznDFXf0Rt0HtaE_JlhH_0',
-    appId: '1:11004766009:ios:b54cc51e192a646c356ae8',
-    messagingSenderId: '11004766009',
-    projectId: 'fahis-inspector-v1',
-    storageBucket: 'fahis-inspector-v1.firebasestorage.app',
-    iosBundleId: 'com.example.fahisInspector',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyASh9Hbh9yo8JznDFXf0Rt0HtaE_JlhH_0',
-    appId: '1:11004766009:ios:b54cc51e192a646c356ae8',
-    messagingSenderId: '11004766009',
-    projectId: 'fahis-inspector-v1',
-    storageBucket: 'fahis-inspector-v1.firebasestorage.app',
-    iosBundleId: 'com.example.fahisInspector',
+    apiKey: 'AIzaSyBT5GixaPntD10KD4wXPs-lJT8GLlI7zIY',
+    appId: '1:447449059567:ios:6d3a58f86646e856f74b1a',
+    messagingSenderId: '447449059567',
+    projectId: 'fahis-inspector',
+    storageBucket: 'fahis-inspector.firebasestorage.app',
+    iosBundleId: 'com.example.restaurant',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAeOwl-Srk6IRJYyDtGRTu0R1NL8F-rGow',
-    appId: '1:11004766009:web:9f40cde9037ac3d7356ae8',
-    messagingSenderId: '11004766009',
-    projectId: 'fahis-inspector-v1',
-    authDomain: 'fahis-inspector-v1.firebaseapp.com',
-    storageBucket: 'fahis-inspector-v1.firebasestorage.app',
-    measurementId: 'G-BY45295G1W',
+    apiKey: 'AIzaSyCojhi4w6PPlMOM5rRReMe1sFzQ5Uf1R_E',
+    appId: '1:447449059567:web:21e633b7072fd9f7f74b1a',
+    messagingSenderId: '447449059567',
+    projectId: 'fahis-inspector',
+    authDomain: 'fahis-inspector.firebaseapp.com',
+    storageBucket: 'fahis-inspector.firebasestorage.app',
+    measurementId: 'G-K1YNZ9GWGP',
   );
-
 }

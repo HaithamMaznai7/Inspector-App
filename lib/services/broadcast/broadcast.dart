@@ -1,12 +1,12 @@
 import 'dart:convert';
-
-import 'package:fahis_inspector/common/widget/loaders/loaders.dart';
-import 'package:fahis_inspector/services/authentication/auth.dart';
-import 'package:fahis_inspector/services/broadcast/auth_repository.dart';
+import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
+import 'package:fahis_inspector/main.dart';
+import 'package:fahis_inspector/services/broadcast/broadcast_auth.dart';
 import 'package:fahis_inspector/services/broadcast/configs.dart';
 import 'package:fahis_inspector/services/broadcast/event.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
-import 'package:fahis_inspector/util/http/http_client.dart';
+// import 'package:fahis_inspector/util/http/http_client.dart';
+import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -25,19 +25,30 @@ class BroadcastService extends GetxService {
   BroadcastService(this.options, this.broadcast);
 
   factory BroadcastService.init() {
-    final options = WebSocketOptions(
+    var options = WebSocketOptions(
       key: EndPoints.reverbApp,
       host: EndPoints.domain,
       forceTLS: EndPoints.schema == 'https',
       wsPort: EndPoints.wsPort,
       wssPort: EndPoints.wssPort,
-      authentication: Auth.check
-          ? WebsocketAuth(
-              authEndpoint: 'broadcasting/auth',
-              token: Auth.getToken,
-            )
-          : null,
+      authentication: null,
     );
+
+    if (auth().isAuth) {
+      auth().user?.getIdToken().then((token) {
+        options = WebSocketOptions(
+          key: EndPoints.reverbApp,
+          host: EndPoints.domain,
+          forceTLS: EndPoints.schema == 'https',
+          wsPort: EndPoints.wsPort,
+          wssPort: EndPoints.wssPort,
+          authentication: WebsocketAuth(
+            authEndpoint: 'broadcasting/auth',
+            token: token,
+          ),
+        );
+      });
+    }
 
     final broadcast = WebSocketChannel.connect(options.url);
 
@@ -54,21 +65,21 @@ class BroadcastService extends GetxService {
 
   void onDone() {
     if (kDebugMode) {
-      print('===> broadcasting Done <onDone()>');
+      dd('===> broadcasting Done <onDone()>');
     }
   }
 
   void onData(data) {
     if (kDebugMode) {
-      print('===> broadcasting ... ');
-      print(data);
+      dd('===> broadcasting ... ');
+      dd(data);
     }
 
     final event = BroadcastEvent.get(data);
 
     if (event.event == 'pusher:connection_established') {
       if (kDebugMode) {
-        print('===> Websocet: Connected :)');
+        dd('===> Websocet: Connected :)');
       }
 
       socketId.value = event.data['socket_id'];
@@ -76,7 +87,7 @@ class BroadcastService extends GetxService {
 
     if (event.event == 'pusher_internal:subscription_succeeded') {
       if (kDebugMode) {
-        print(
+        dd(
           '===> Subscribed to ${event.channel} ${(event.channel?.startsWith(options.getPrefix) ?? false) ? '<private>' : '<public>'} Successfully',
         );
       }
@@ -87,21 +98,18 @@ class BroadcastService extends GetxService {
 
   onError(Object object, StackTrace trace) {
     if (kDebugMode) {
-      print('===> we have an error on broadcasting <onError()>');
+      dd('===> we have an error on broadcasting <onError()>');
     }
   }
 
-  subscribe(
-    String channel, {
-    bool isPrivate = false,
-  }) async {
+  subscribe(String channel, {bool isPrivate = false}) async {
     // Wait until socketId is available
     while (socketId.value == null) {
       await Future.delayed(Duration(seconds: 3));
     }
 
     if (kDebugMode) {
-      print(
+      dd(
         '===> Subscribing to $channel ${isPrivate ? '<private>' : '<public>'}',
       );
     }
@@ -117,7 +125,7 @@ class BroadcastService extends GetxService {
           : null;
 
       if (kDebugMode) {
-        print('===> Broadcast Authentication JWT: $jwt');
+        dd('===> Broadcast Authentication JWT: $jwt');
       }
 
       // إرسال حدث الاشتراك
@@ -137,6 +145,5 @@ class BroadcastService extends GetxService {
         message: 'on authentication and subscribtion',
       );
     }
-
   }
 }

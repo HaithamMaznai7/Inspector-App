@@ -1,6 +1,5 @@
 import 'dart:convert';
-import 'dart:developer';
-import 'package:fahis_inspector/util/http/http_client.dart';
+import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:get/get.dart';
 
 class CustomResponse {
@@ -18,37 +17,30 @@ class CustomResponse {
     this.validationErrors,
     this.hasError = false,
     this.unauthorized = false,
-    this.statusCode = 200,
+    this.statusCode = 0,
     this.message = 'Error',
-    // this.method = RequestMethod.get,
     this.exception,
   });
 
-  factory CustomResponse.set(Response? response) {
+  factory CustomResponse.set(Response response) {
     try {
-      final res = CustomResponse(
-        data: response?.body?['data'] ?? {},
-        validationErrors: response?.body?['errors'] ?? {},
-        hasError: !(response?.isOk ?? true),
-        unauthorized: response?.unauthorized ?? true,
-        statusCode: response?.statusCode ?? 0,
-        message: response?.body?['message'] ?? 'No Message',
-        exception: response?.body?['message'] ?? 'No Exception',
-      );
-
-      if (res.hasError) {
-        throw FNetworkException.set(res);
+      final hasError =
+          response.statusCode == null ||
+          response.statusCode! > 299 ||
+          response.statusCode! < 200;
+      
+      if(hasError){
+        throw FNetworkException.set(response);
       }
 
-      return res;
-    } catch (e) {
-      log(
-        'Error: from CustomerResponse:set:46 line',
-        error: e,
-        level: 2,
-        name: 'Covert Response Based Server',
+      return CustomResponse(
+        data: response.body?['data'] ?? {},
+        hasError: false,
+        unauthorized: false,
+        statusCode: response.statusCode!,
+        message: response.body?['message'] ?? '',
       );
-
+    } catch (e) {
       rethrow;
     }
   }
