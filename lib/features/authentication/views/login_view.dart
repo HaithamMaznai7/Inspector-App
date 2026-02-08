@@ -10,6 +10,7 @@ import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:fahis_inspector/util/localization/localization.dart';
 import 'package:fahis_inspector/util/validators/validation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -66,6 +67,10 @@ class Login extends StatelessWidget {
                               Obx(
                                 () => TextFormField(
                                   controller: controller.credentialController,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.deny(
+                                        RegExp(r'\s')),
+                                  ],
                                   decoration: InputDecoration(
                                     prefixIcon: const Icon(Iconsax.user),
                                     labelText: LoginPage.username.tr,
