@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:fahis_inspector/enums/point_status.dart';
+import 'package:fahis_inspector/features/inspection_photos/view_section.dart';
+import 'package:fahis_inspector/features/inspection_points/view.dart';
 import 'package:fahis_inspector/features/vehicle_details/view.dart';
 import 'package:fahis_inspector/features/inspection_details/components/note_dialog.dart';
 import 'package:fahis_inspector/main.dart';
@@ -38,9 +40,13 @@ class InspectionStepsController extends GetxController
   ) => {'id': id, 'icon': icon, 'stage': stage, 'screen': screen};
 
   void onInspectionChanged(Inspection? data) {
+    isLoading.value = true;
+    update();
     if (data == null) return;
 
     _buildTabsFromInspection(data);
+    isLoading.value = false;
+    update();
   }
 
   void _recreateTabController() {
@@ -95,8 +101,8 @@ class InspectionStepsController extends GetxController
       box: box!,
     );
 
-    isLoading.value = false;
-    update();
+    // isLoading.value = false;
+    // update();
   }
 
   void goToTab(int index) {
@@ -116,22 +122,22 @@ class InspectionStepsController extends GetxController
       );
     }
 
-    // if (inspection.hasPoints) {
-    //   tabs.add(
-    //     _tab(
-    //       1,
-    //       Iconsax.check,
-    //       InspectionStage.points,
-    //       const InspectionPointResults(),
-    //     ),
-    //   );
-    // }
+    if (inspection.hasPoints) {
+      tabs.add(
+        _tab(
+          1,
+          Iconsax.check,
+          InspectionStage.points,
+          const InspectionPointResults(),
+        ),
+      );
+    }
 
-    // if (inspection.hasPhotos) {
-    //   tabs.add(
-    //     _tab(2, Iconsax.image4, InspectionStage.photos, const AlbumPhotos()),
-    //   );
-    // }
+    if (inspection.hasPhotos) {
+      tabs.add(
+        _tab(2, Iconsax.image4, InspectionStage.photos, const AlbumPhotos()),
+      );
+    }
 
     // if (inspection.hasBody) {
     //   tabs.add(
