@@ -1,4 +1,3 @@
-import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/book.dart';
 import 'package:fahis_inspector/resources/repository.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
@@ -19,7 +18,7 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
 
   String get channel => "App.Models.Inspection.$slug";
 
-  Rxn<Inspection> _data = Rxn<Inspection>(null);
+  final Rxn<Inspection> _data = Rxn<Inspection>(null);
 
   Stream<Inspection?> get stream => _data.stream;
 
@@ -246,7 +245,7 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
 
     try {
       CustomResponse r = await n.response(RoutingUrl.inspections);
-      
+
       if (r.data.isNotEmpty) {
         inspection = Inspection.fromJson(r.data);
         _data.value = inspection; // تحديث الحالة

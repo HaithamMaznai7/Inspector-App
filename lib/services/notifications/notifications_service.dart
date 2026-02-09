@@ -3,7 +3,6 @@ import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/models/notification.dart';
 import 'package:fahis_inspector/resources/notification_repository.dart';
 import 'package:fahis_inspector/routes.dart';
-import 'package:fahis_inspector/services/auth/auth_service.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
@@ -190,9 +189,9 @@ class NotificationsService extends GetxController {
   void onOpen(String id) {
     read(id);
     notifications.value
-      .where((notification) => notification.id == id)
-      .first
-      .onOpen();
+        .where((notification) => notification.id == id)
+        .first
+        .onOpen();
   }
 
   void read(String id) async {

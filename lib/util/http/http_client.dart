@@ -1,7 +1,5 @@
 import 'dart:developer';
-import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/routes.dart';
-import 'package:rename/custom_exceptions.dart';
 import '../constants/api_endpoints.dart';
 import '../http/custom_response.dart';
 import 'package:get/get.dart';
@@ -122,7 +120,7 @@ class Network extends GetConnect {
         name: 'Connection Error',
       );
     }
-    
+
     return CustomResponse.set(response);
   }
 }

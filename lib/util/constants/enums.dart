@@ -1,27 +1,30 @@
-import 'colors.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:iconsax/iconsax.dart';
 
-enum RequestStatus{ inProgress,pending,approved,finished }
+enum RequestStatus { inProgress, pending, approved, finished }
 
-enum GearboxType{ automatic,manual,none }
+enum GearboxType { automatic, manual, none }
 
-enum SeatType{ leather , fabric , none }
+enum SeatType { leather, fabric, none }
 
-enum UserType{ 
-  inspector, center , customer , administrator , company , support, system;
+enum UserType {
+  inspector,
+  center,
+  customer,
+  administrator,
+  company,
+  support,
+  system;
 
-  static List<UserType> setList(List value){
+  static List<UserType> setList(List value) {
     List<UserType> roles = [];
-    for(String role in value){
+    for (String role in value) {
       roles.add(UserType.set(role));
     }
     return roles;
   }
 
-  static UserType set(String? value){
-    switch(value){
+  static UserType set(String? value) {
+    switch (value) {
       case 'administrator':
         return UserType.administrator;
       case 'support':
@@ -34,13 +37,13 @@ enum UserType{
         return UserType.inspector;
       case 'system':
         return UserType.system;
-      default :
+      default:
         return UserType.customer;
     }
   }
 
-  String label (){
-    switch(this){
+  String label() {
+    switch (this) {
       case UserType.system:
         return 'System'.tr;
       case UserType.administrator:
@@ -56,9 +59,24 @@ enum UserType{
       default:
         return 'Customer'.tr;
     }
-  } 
+  }
 }
 
-enum UploadStatus{ uploading, notUploaded, notDownloaded, downloading, live, saved }
+enum UploadStatus {
+  uploading,
+  notUploaded,
+  notDownloaded,
+  downloading,
+  live,
+  saved,
+}
 
-enum ObjType { requests , requestDetails , inspectionPoints , inspectionPhotos , inspectionBodies , inspectionBodyNotes , inspectionObds}
+enum ObjType {
+  requests,
+  requestDetails,
+  inspectionPoints,
+  inspectionPhotos,
+  inspectionBodies,
+  inspectionBodyNotes,
+  inspectionObds,
+}

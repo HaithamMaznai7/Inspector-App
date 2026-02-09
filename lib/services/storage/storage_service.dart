@@ -6,19 +6,19 @@ import 'package:hive_flutter/hive_flutter.dart';
 // import 'package:path/path.dart';
 
 class StorageService extends GetxController {
-  
   late Box auth;
   late Box<List> assets;
   late Box<List> inspections;
 
   @override
   void onInit() async {
+    super.onInit();
     await Hive.initFlutter();
 
     auth = await Hive.openBox<List>('Auth');
     assets = await Hive.openBox<List>('Assets');
     inspections = await Hive.openBox<List>('Inspections');
-  
+
     // await Hive.initFlutter();
 
     // auth = await Hive.openBox('User');
@@ -66,11 +66,11 @@ class StorageService extends GetxController {
   //   );
   // }
 
-  void put(Box box, String key, String value){
+  void put(Box box, String key, String value) {
     box.put(key, value);
   }
 
-  String get(Box box, String key, {dynamic  defaultValue}){
+  String get(Box box, String key, {dynamic defaultValue}) {
     return box.get(key, defaultValue: defaultValue);
   }
 }

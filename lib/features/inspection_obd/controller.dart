@@ -7,7 +7,6 @@ import 'package:fahis_inspector/resources/inspection_obd_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -77,7 +76,7 @@ class InspectionObdController extends GetxController {
 
   Future<void> fetchCodes() async {
     try {
-    // 1. Show cached first
+      // 1. Show cached first
       codes.assignAll(repository.fetchFromCache());
       update();
 
@@ -89,7 +88,6 @@ class InspectionObdController extends GetxController {
     } on FNetworkException catch (_) {
       // e.notify();
     } catch (_) {
-
     } finally {
       isLoading.value = false;
       update();
@@ -128,7 +126,9 @@ class InspectionObdController extends GetxController {
       if (file != null) {
         isUpload.value = true;
         update();
-        report.value = await Future.microtask(() => repository.uploadReport(file));
+        report.value = await Future.microtask(
+          () => repository.uploadReport(file),
+        );
       }
     } catch (e) {
       dd('error on upload ${e.toString()}');

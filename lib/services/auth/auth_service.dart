@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:fahis_inspector/models/profile.dart';
 import 'package:fahis_inspector/resources/auth_repository.dart';
-import 'package:fahis_inspector/services/auth/midlwares/guest_midlware.dart';
 import 'package:fahis_inspector/services/auth/secure_token_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fahis_inspector/routes.dart';
@@ -13,9 +12,9 @@ class AuthService extends GetxController {
   FirebaseAuth get firebase => FirebaseAuth.instance;
 
   RxBool isLoggingIn = false.obs;
-  RxnString _token = RxnString(null);
-  RxnString _idToken = RxnString(null);
-  Rxn<Profile> _profile = Rxn<Profile>(null);
+  final RxnString _token = RxnString(null);
+  final RxnString _idToken = RxnString(null);
+  final Rxn<Profile> _profile = Rxn<Profile>(null);
 
   User? get user => firebase.currentUser;
   String? get token => _token.value;

@@ -1,4 +1,3 @@
-import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/profile.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
@@ -15,7 +14,7 @@ class AuthRepository {
         endpoint: EndPoints.reauthentication,
         requestMethod: RequestMethod.post,
       );
-            
+
       net.setHeaders = {
         'Content-Type': 'application/vnd.api+json',
         'Accept': 'application/vnd.api+json',
@@ -174,6 +173,4 @@ class AuthRepository {
       rethrow;
     }
   }
-
-
 }

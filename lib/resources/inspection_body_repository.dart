@@ -12,7 +12,6 @@ import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class InspectionBodyRepository extends ListRepository<CarBody> {
-
   final Box<List> box;
   final String slug;
 
@@ -20,7 +19,7 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
 
   String get channel => "App.Models.Inspection.$slug";
 
-  RxList<CarBody> _data = RxList<CarBody>([]);
+  final RxList<CarBody> _data = RxList<CarBody>([]);
 
   Stream<List<CarBody>> get stream => _data.stream;
 
@@ -41,11 +40,9 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
 
   @override
   List<CarBody> fetchFromCache() {
-    final data = (box.get('BodyNotes') as List?) ?? [];
+    final data = box.get('BodyNotes') ?? [];
 
-    return data
-        .map((item) => CarBody.fromJson(item))
-        .toList();
+    return data.map((item) => CarBody.fromJson(item)).toList();
   }
 
   @override
@@ -54,6 +51,7 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
     await box.put('BodyNotes', bodySides);
   }
 
+  @override
   Stream<List<CarBody>> listenToBroadcast() async* {
     yield _data;
     final broadcast = BroadcastService.instance;

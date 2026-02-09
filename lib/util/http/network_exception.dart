@@ -1,12 +1,10 @@
 import 'dart:io';
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
-import 'package:fahis_inspector/main.dart';
-import 'package:fahis_inspector/routes.dart';
-import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:get/get.dart';
 
 class FNetworkException extends HttpException {
   final String? title;
+  @override
   final String message;
   final int statusCode;
   final Map<String, dynamic>? errors;
@@ -96,11 +94,11 @@ class FNetworkException extends HttpException {
   }
 
   factory FNetworkException.set(Response? response) {
-    if(response == null || response.statusCode == null){
+    if (response == null || response.statusCode == null) {
       return FNetworkException(
         'No Internet Connection',
         statusCode: 0,
-        title: 'No Connection'
+        title: 'No Connection',
       );
     }
 
@@ -108,7 +106,7 @@ class FNetworkException extends HttpException {
       response.body['error'] ?? '',
       statusCode: response.statusCode!,
       title: response.body['status'] ?? 'Error',
-      errors: response.body['errors']
+      errors: response.body['errors'],
     );
   }
 }
