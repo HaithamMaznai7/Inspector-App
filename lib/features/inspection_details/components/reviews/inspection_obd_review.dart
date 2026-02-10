@@ -24,8 +24,8 @@ class InspectionOBDReview extends StatelessWidget {
           return SizedBox();
         }
 
-        // Get OBD codes from controller's box
-        final obdData = c.box?.get('Inspection_Obd');
+        // Get OBD codes from controller's box using slug as key
+        final obdData = c.box?.get(c.slug);
         final obdCodes = obdData != null
             ? (obdData as List)
                   .map(
