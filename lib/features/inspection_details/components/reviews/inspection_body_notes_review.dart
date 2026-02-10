@@ -99,39 +99,6 @@ class InspectionBodyNotesReview extends StatelessWidget {
                         subtitle: Text('${body.notes.length} notes'),
                       ),
 
-                      // Body Part Image
-                      if (body.image.isNotEmpty)
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: FSizes.md),
-                          child: GestureDetector(
-                            onTap: () => _showFullImage(context, body.image),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                FSizes.borderRadiusMd,
-                              ),
-                              child: Image.network(
-                                body.image,
-                                width: double.infinity,
-                                height: 200,
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    height: 200,
-                                    color: FColors.grey.withOpacity(0.1),
-                                    child: Center(
-                                      child: Icon(
-                                        Iconsax.car,
-                                        color: FColors.grey,
-                                        size: 50,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-
                       // Markers/Notes List
                       if (body.notes.isNotEmpty)
                         ...body.notes.asMap().entries.map((entry) {
