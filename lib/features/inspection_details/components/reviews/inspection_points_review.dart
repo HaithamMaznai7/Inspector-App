@@ -62,24 +62,61 @@ class InspectionPointsReview extends StatelessWidget {
                     ),
                     children: [
                       ...cat.points.map((point) {
-                        return ListTile(
-                          title: Text(point.title),
-                          subtitle: Text(point.description),
-                          trailing: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: FSizes.sm,
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ListTile(
+                              title: Text(point.title),
+                              subtitle: Text(point.description),
+                              trailing: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: FSizes.sm,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: c.inspection.value?.stage.color
+                                      .withOpacity(.1),
+                                  borderRadius: BorderRadius.circular(FSizes.sm),
+                                ),
+                                child: Text(
+                                  point.status.name,
+                                  style: Theme.of(context).textTheme.bodyLarge
+                                      ?.apply(color: point.status.color()),
+                                ),
+                              ),
                             ),
-                            decoration: BoxDecoration(
-                              color: c.inspection.value?.stage.color
-                                  .withOpacity(.1),
-                              borderRadius: BorderRadius.circular(FSizes.sm),
-                            ),
-                            child: Text(
-                              point.status.name,
-                              style: Theme.of(context).textTheme.bodyLarge
-                                  ?.apply(color: point.status.color()),
-                            ),
-                          ),
+                            if (point.image != null)
+                              Container(
+                                height: 120,
+                                margin: EdgeInsets.only(
+                                  left: FSizes.md,
+                                  right: FSizes.md,
+                                  bottom: FSizes.sm,
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => Dialog(
+                                          child: InteractiveViewer(
+                                            child: Image.network(
+                                              point.image!,
+                                              fit: BoxFit.contain,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Image.network(
+                                      point.image!,
+                                      height: 120,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         );
                       }),
                     ],

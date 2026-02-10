@@ -1,10 +1,11 @@
+import 'package:fahis_inspector/features/inspection_details/components/reviews/info_card.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/routes.dart';
-import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
 
 class InspectorNoteSection extends StatelessWidget {
   const InspectorNoteSection({super.key});
@@ -16,39 +17,22 @@ class InspectorNoteSection extends StatelessWidget {
       builder: (c) {
         final note = c.inspection.value?.rejectedNote;
         if (note != null && note.isNotEmpty && note != '') {
-          return Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: FColors.error.withOpacity(.7),
-              borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-              border: Border.all(width: 2, color: FColors.error),
-            ),
-            padding: EdgeInsets.symmetric(
-              vertical: FSizes.md,
-              horizontal: FSizes.lg,
-            ),
-            margin: EdgeInsets.symmetric(
-              horizontal: FSizes.md,
-              vertical: FSizes.sm,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  DetailsPage.reviewNoteTitle.tr,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge!.copyWith(color: FColors.white),
+          return InfoCard(
+            title: Text(DetailsPage.reviewNoteTitle.tr),
+            tilePadding: FSizes.md,
+            icon: Iconsax.note_2,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: FSizes.md,
+                  vertical: FSizes.sm,
                 ),
-                const SizedBox(height: FSizes.spaceBtwItems),
-                Text(
+                child: Text(
                   note,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyLarge!.copyWith(color: FColors.white),
+                  style: Theme.of(context).textTheme.bodyLarge,
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         } else {
           return SizedBox();

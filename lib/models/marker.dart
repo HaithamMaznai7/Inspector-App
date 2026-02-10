@@ -1,4 +1,3 @@
-
 import 'dart:io';
 import 'package:fahis_inspector/models/menu_item.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -20,7 +19,7 @@ class Marker {
   set file(File? value) {
     _file = value;
   }
-  
+
   Marker({
     required this.id,
     this.note,
@@ -30,7 +29,7 @@ class Marker {
     this.image,
   });
 
-  Map<String,dynamic> toJson() => _$MarkerToJson(this);
+  Map<String, dynamic> toJson() => _$MarkerToJson(this);
 
   factory Marker.fromJson(Map<String, dynamic> json) => _$MarkerFromJson(json);
 }

@@ -10,6 +10,9 @@ import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/resources/inspection_details_repository.dart';
 import 'package:fahis_inspector/resources/inspection_points_repository.dart';
 import 'package:fahis_inspector/resources/vehicle_details_repository.dart';
+import 'package:fahis_inspector/resources/inspection_photos_repository.dart';
+import 'package:fahis_inspector/resources/inspection_body_repository.dart';
+import 'package:fahis_inspector/resources/inspection_obd_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
@@ -157,11 +160,38 @@ class InspectionDetailsController extends GetxController
     update();
   }
 
-  Future<void> loadInspectionPhotos() async {}
+  Future<void> loadInspectionPhotos() async {
+    if (assetsBox == null || slug == null) return;
+    try {
+      final photosRepo = InspectionPhotosRepository(box: assetsBox!, slug: slug!);
+      await photosRepo.fetchFromApi();
+      update();
+    } catch (e) {
+      dd('Error loading photos: $e');
+    }
+  }
 
-  Future<void> loadInspectionBodyNotes() async {}
+  Future<void> loadInspectionBodyNotes() async {
+    if (assetsBox == null || slug == null) return;
+    try {
+      final bodyRepo = InspectionBodyRepository(box: assetsBox!, slug: slug!);
+      await bodyRepo.fetchFromApi();
+      update();
+    } catch (e) {
+      dd('Error loading body notes: $e');
+    }
+  }
 
-  Future<void> loadInspectionOBD() async {}
+  Future<void> loadInspectionOBD() async {
+    if (box == null || slug == null) return;
+    try {
+      final obdRepo = InspectionObdRepository(box: box!, slug: slug!);
+      await obdRepo.fetchFromApi();
+      update();
+    } catch (e) {
+      dd('Error loading OBD: $e');
+    }
+  }
 
   void openEditing() {
     if ([

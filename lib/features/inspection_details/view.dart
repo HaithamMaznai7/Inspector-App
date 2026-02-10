@@ -53,11 +53,11 @@ class InspectionDetailsScreen extends StatelessWidget {
             children: [
               InspectorNoteSection(),
               ReviewerNoteSection(),
-              const InspectionPhotosReview(),
               const InspectionInfoReview(),
               const VehicleInfoReview(),
               const ConnectPersonInfo(),
               const InspectionPointsReview(),
+              const InspectionPhotosReview(),
               const InspectionBodyNotesReview(),
               const InspectionOBDReview(),
               SizedBox(height: FSizes.md),
