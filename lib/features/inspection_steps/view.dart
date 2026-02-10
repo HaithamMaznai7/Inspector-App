@@ -34,6 +34,7 @@ class InspectionStepsScreen extends StatelessWidget {
                   context,
                 ).textTheme.headlineSmall?.apply(color: FColors.white),
               ),
+
               // centerTitle: true,
               // actions: [
               //   IconButton(
@@ -52,6 +53,7 @@ class InspectionStepsScreen extends StatelessWidget {
                     }
 
                     return TabBar(
+                      controller: controller.tabController,
                       tabs: controller.tabs
                           .map(
                             (tab) => Tab(

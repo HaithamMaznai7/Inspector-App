@@ -14,10 +14,7 @@ import 'package:iconsax/iconsax.dart';
 class InspectionBodyTypeScreen extends StatelessWidget {
   final CarBody bodySide;
 
-  const InspectionBodyTypeScreen({
-    super.key,
-    required this.bodySide,
-  });
+  const InspectionBodyTypeScreen({super.key, required this.bodySide});
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +29,9 @@ class InspectionBodyTypeScreen extends StatelessWidget {
           init: InspectionBodyBinding().instance,
           autoRemove: false,
           builder: (controller) {
-            final bodies = controller.bodySides.value;
+            final bodies = controller.bodySides;
             final body = bodies.where((b) => b.id == bodySide.id).first;
-            
+
             double imageWidth =
                 body.part == BodyPart.right || body.part == BodyPart.left
                 ? 600
@@ -52,7 +49,14 @@ class InspectionBodyTypeScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
-                    onTapDown: (TapDownDetails v) => controller.onCreateEdit(body, Marker(id: 0, dx: v.localPosition.dx / imageWidth * 100, dy: v.localPosition.dy / imageHeight * 100)),
+                    onTapDown: (TapDownDetails v) => controller.onCreateEdit(
+                      body,
+                      Marker(
+                        id: 0,
+                        dx: v.localPosition.dx / imageWidth * 100,
+                        dy: v.localPosition.dy / imageHeight * 100,
+                      ),
+                    ),
                     child: SizedBox(
                       height: imageHeight,
                       width: imageWidth,
@@ -65,11 +69,10 @@ class InspectionBodyTypeScreen extends StatelessWidget {
                               return ClipRRect(
                                 borderRadius: BorderRadius.circular(FSizes.sm),
                                 child: EasyImageView(
-                                  imageProvider:
-                                    Image.network(
-                                      body.image,
-                                      fit: BoxFit.cover,
-                                    ).image,
+                                  imageProvider: Image.network(
+                                    body.image,
+                                    fit: BoxFit.cover,
+                                  ).image,
                                 ),
                               );
                             },
@@ -90,7 +93,9 @@ class InspectionBodyTypeScreen extends StatelessWidget {
                                   color: FColors.primaryColor,
                                   size: 35,
                                 ),
-                                onPressed: () => InspectionBodyBinding().instance.onCreateEdit(body, note),
+                                onPressed: () => InspectionBodyBinding()
+                                    .instance
+                                    .onCreateEdit(body, note),
                               ),
                             ),
                           ),
@@ -102,7 +107,6 @@ class InspectionBodyTypeScreen extends StatelessWidget {
                 ],
               ),
             );
-
           },
         ),
       ),

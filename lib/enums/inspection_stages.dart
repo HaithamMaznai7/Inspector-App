@@ -75,6 +75,23 @@ enum InspectionStage {
   static InspectionStage fromJson(String? json) =>
       values.where((item) => item.value == json).first;
 
+  static InspectionStage? fromIndex(int index) {
+    switch (index) {
+      case 0:
+        return InspectionStage.info;
+      case 1:
+        return InspectionStage.points;
+      case 2:
+        return InspectionStage.photos;
+      case 3:
+        return InspectionStage.body;
+      case 4:
+        return InspectionStage.obd;
+      default:
+        return null;
+    }
+  }
+
   /// Grouping helper: is this an in-progress stage?
   static const map = {
     InspectionStage.all: null,
@@ -198,14 +215,31 @@ enum InspectionStage {
 
   InspectionStage? get next {
     switch (this) {
-      case InspectionStage.pending:
-        return InspectionStage.info;
-      case InspectionStage.rejected:
+      case InspectionStage.info:
+        return InspectionStage.points;
+      case InspectionStage.points:
+        return InspectionStage.photos;
+      case InspectionStage.photos:
+        return InspectionStage.body;
+      case InspectionStage.body:
         return InspectionStage.obd;
       case InspectionStage.obd:
         return InspectionStage.finished;
-      case InspectionStage.finished:
-        return InspectionStage.reviewed;
+      default:
+        return null;
+    }
+  }
+
+  InspectionStage? get back {
+    switch (this) {
+      case InspectionStage.points:
+        return InspectionStage.info;
+      case InspectionStage.photos:
+        return InspectionStage.points;
+      case InspectionStage.body:
+        return InspectionStage.photos;
+      case InspectionStage.obd:
+        return InspectionStage.body;
       default:
         return null;
     }

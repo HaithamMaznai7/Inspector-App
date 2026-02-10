@@ -1,7 +1,10 @@
 import 'package:fahis_inspector/common/widgets/components/back_page_button.dart';
 import 'package:fahis_inspector/features/inspection_details/components/inspector_note_section.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviewer_note_section.dart';
+import 'package:fahis_inspector/features/inspection_details/components/reviews/inspection_body_notes_review.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/inspection_info_review.dart';
+import 'package:fahis_inspector/features/inspection_details/components/reviews/inspection_obd_review.dart';
+import 'package:fahis_inspector/features/inspection_details/components/reviews/inspection_photos_review.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/inspection_points_review.dart';
 import 'package:fahis_inspector/features/inspection_details/components/stage_selector.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/vehicle_info_review.dart';
@@ -46,20 +49,17 @@ class InspectionDetailsScreen extends StatelessWidget {
           color: FColors.grey.withOpacity(0.05),
           child: ListView(
             scrollDirection: Axis.vertical,
-            padding: EdgeInsets.only(
-              top: FSizes.sm,
-              bottom: FSizes.xl,
-            ),
+            padding: EdgeInsets.only(top: FSizes.sm, bottom: FSizes.xl),
             children: [
               InspectorNoteSection(),
               ReviewerNoteSection(),
+              const InspectionPhotosReview(),
               const InspectionInfoReview(),
               const VehicleInfoReview(),
               const ConnectPersonInfo(),
               const InspectionPointsReview(),
-              // const InspectionPhotosReview(),
-              // const InspectionBodyNotesReview(),
-              // const InspectionOBDReview(),
+              const InspectionBodyNotesReview(),
+              const InspectionOBDReview(),
               SizedBox(height: FSizes.md),
             ],
           ),

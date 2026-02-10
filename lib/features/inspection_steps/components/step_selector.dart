@@ -3,6 +3,7 @@ import 'package:fahis_inspector/features/inspection_steps/controller.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/device/device_utility.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -26,39 +27,38 @@ class StepSelector extends StatelessWidget {
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      style: Theme.of(context)
-                          .elevatedButtonTheme
-                          .style!
+                      style: Theme.of(context).elevatedButtonTheme.style!
                           .copyWith(
-                            backgroundColor:
-                                MaterialStateProperty.all(FColors.darkGrey),
+                            backgroundColor: WidgetStateProperty.all(
+                              FColors.darkGrey,
+                            ),
                           ),
-                      onPressed: () => controller.toPervious,
+                      onPressed: controller.toPervious,
                       child: Padding(
                         padding: EdgeInsetsGeometry.symmetric(
                           horizontal: FSizes.md,
                         ),
-                        child: Text(controller.pervious.getLabel)
+                        child: Text(FTexts.backBtn.tr),
                       ),
-                    )
+                    ),
                   ),
 
                   SizedBox(width: FSizes.spaceBtwItems),
-                  
+
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () => controller.toNext,
+                      onPressed: controller.toNext,
                       child: Padding(
                         padding: EdgeInsetsGeometry.symmetric(
                           horizontal: FSizes.md,
                         ),
-                        child: Text(controller.next.getLabel)
+                        child: Text(FTexts.nextBtn.tr),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
-            )
+            ),
           ),
         );
       },

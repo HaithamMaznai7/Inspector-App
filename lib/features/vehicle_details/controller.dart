@@ -1,5 +1,6 @@
 import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
+import 'package:fahis_inspector/features/inspection_steps/controller.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/vehicle_details.dart';
 import 'package:fahis_inspector/resources/assets_repository.dart';
@@ -18,8 +19,8 @@ class VehicleDetailsController extends GetxController {
   late Box<List> assets;
   late AssetsRepository assetsRepository;
 
-  InspectionDetailsController get mainController =>
-      InspectionDetailsBinding().instance;
+  InspectionStepsController get mainController =>
+      InspectionStepsBinding().instance;
 
   final Rxn<VehicleDetails> inspectionDetails = Rxn<VehicleDetails>();
 
@@ -160,7 +161,7 @@ class VehicleDetailsController extends GetxController {
       if (validateForm()) {
         await repository!.update(slug!, inspectionDetails.value!);
 
-        mainController.load(slug!);
+        mainController.load(refresh: true);
       }
     } on FNetworkException catch (e) {
       if (e.statusCode == 422 && e.errors != null) {
@@ -177,7 +178,7 @@ class VehicleDetailsController extends GetxController {
     } finally {
       isSubmitting.toggle();
       update();
-      mainController.inspection.value!.stage = InspectionStage.points;
+      mainController.inspection.value.stage = InspectionStage.points;
       mainController.update();
       // mainController.goToTab(2);
     }

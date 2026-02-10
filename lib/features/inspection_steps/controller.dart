@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/enums/point_status.dart';
+import 'package:fahis_inspector/features/inspection_body_notes/view.dart';
+import 'package:fahis_inspector/features/inspection_obd/view.dart';
 import 'package:fahis_inspector/features/inspection_photos/view_section.dart';
 import 'package:fahis_inspector/features/inspection_points/view.dart';
 import 'package:fahis_inspector/features/vehicle_details/view.dart';
@@ -106,8 +109,10 @@ class InspectionStepsController extends GetxController
   }
 
   void goToTab(int index) {
+    dd('back');
     if (index < tabs.length) {
       tabController?.animateTo(index);
+      this.index = tabController?.index ?? 0;
     }
 
     update();
@@ -139,22 +144,22 @@ class InspectionStepsController extends GetxController
       );
     }
 
-    // if (inspection.hasBody) {
-    //   tabs.add(
-    //     _tab(
-    //       3,
-    //       Iconsax.note,
-    //       InspectionStage.body,
-    //       const InspectionBodyTypeResults(),
-    //     ),
-    //   );
-    // }
+    if (inspection.hasBody) {
+      tabs.add(
+        _tab(
+          3,
+          Iconsax.note,
+          InspectionStage.body,
+          const InspectionBodyTypeResults(),
+        ),
+      );
+    }
 
-    // if (inspection.hasObd) {
-    //   tabs.add(
-    //     _tab(4, Iconsax.code, InspectionStage.obd, const OBDCodesView()),
-    //   );
-    // }
+    if (inspection.hasObd) {
+      tabs.add(
+        _tab(4, Iconsax.code, InspectionStage.obd, const OBDCodesView()),
+      );
+    }
 
     _recreateTabController();
   }
@@ -202,22 +207,16 @@ class InspectionStepsController extends GetxController
     final oldValue = inspection.value.stage;
 
     switch (stage) {
-      case InspectionStage.pending:
-        inspection.value.stage = stage;
-        goToTab(0);
-        break;
-      case InspectionStage.accepted:
-        inspection.value.stage = stage;
-        goToTab(0);
-        break;
       case InspectionStage.info:
         inspection.value.stage = stage;
-        goToTab(1);
-        break;
-      case InspectionStage.points:
         if (VehicleDetailsBinding().isRegistered) {
           await VehicleDetailsBinding().instance.onSave();
         }
+        goToTab(0);
+        break;
+      case InspectionStage.points:
+        goToTab(1);
+        inspection.value.stage = stage;
         break;
       case InspectionStage.photos:
         if (InspectionPointsBinding().isRegistered &&
@@ -226,12 +225,17 @@ class InspectionStepsController extends GetxController
                 .toList()
                 .isNotEmpty) {
           inspection.value.stage = stage;
-          goToTab(3);
+          goToTab(2);
+        } else {
+          FLoader.warningSnackBar(
+            title: 'Validtion Failed',
+            message: 'One Or More Points Required',
+          );
         }
         break;
       case InspectionStage.body:
         inspection.value.stage = stage;
-        goToTab(4);
+        goToTab(3);
         break;
       case InspectionStage.obd:
         inspection.value.stage = stage;
@@ -249,28 +253,10 @@ class InspectionStepsController extends GetxController
         } else {
           inspection.value.note = note;
           inspection.value.stage = stage;
-          goToTab(0);
-        }
-        break;
-      case InspectionStage.reviewed:
-        inspection.value.stage = stage;
-        goToTab(0);
-        break;
-      case InspectionStage.rejected:
-        final note = await Get.dialog(
-          NoteInputDialog(status: stage.toString()),
-        );
-        if (note == null) {
-          return;
-        } else {
-          inspection.value.rejectedNote = note;
-          inspection.value.stage = stage;
-          goToTab(0);
+          Get.back();
         }
         break;
       default:
-        inspection.value.stage = oldValue;
-        goToTab(0);
         break;
     }
 
@@ -280,7 +266,7 @@ class InspectionStepsController extends GetxController
       e.notify();
     } catch (_) {
       inspection.value.stage = oldValue;
-      load();
+      // load();
     } finally {
       isSubmitting.toggle();
       update();
@@ -299,20 +285,19 @@ class InspectionStepsController extends GetxController
       InspectionStage.accepted;
 
   void toNext() {
-    dd((tabs.value[index]['stage'] as InspectionStage).getLabel);
-    if (next == InspectionStage.finished) {
-      Get.back();
+    InspectionStage? nextStage = InspectionStage.fromIndex(index)?.next;
+    if (nextStage != null) {
+      setSatge(nextStage);
     } else {
-      goToTab(index + 1);
+      Get.back();
     }
   }
 
   void toPervious() {
-    if (pervious == InspectionStage.pending ||
-        pervious == InspectionStage.accepted) {
-      Get.back();
-    } else {
+    if (index != 0) {
       goToTab(index - 1);
+    } else {
+      Get.back();
     }
   }
 }

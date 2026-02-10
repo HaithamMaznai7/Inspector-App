@@ -23,7 +23,7 @@ class ConnectPersonInfo extends StatelessWidget {
         if (inspection == null || isLoading) {
           return SizedBox();
         }
-      
+
         return InfoCard.fromMap(
           title: Text(InspectionPage.connectPersonInfo.tr),
           tilePadding: FSizes.md,
@@ -40,18 +40,23 @@ class ConnectPersonInfo extends StatelessWidget {
               ),
             ),
           ),
-          trailing: inspection.customer?.phone != null 
-          ? IconButton(
-            color: FColors.success,
-            icon: Icon(Iconsax.call),
-            onPressed: () async => await Helpers.callTo(mobile: inspection.customer!.phone!),
-          )
-          : Icon(Iconsax.call, color: FColors.grey),
+          trailing: inspection.customer?.phone != null
+              ? IconButton(
+                  color: FColors.success,
+                  icon: Icon(Iconsax.call),
+                  onPressed: () async =>
+                      await Helpers.callTo(mobile: inspection.customer!.phone!),
+                )
+              : Icon(Iconsax.call, color: FColors.grey),
           items: {
-            InspectionPage.contactName.tr: inspection.customer?.name ?? InspectionPage.notYet.tr,
-            InspectionPage.contactEmail.tr: inspection.customer?.email ?? InspectionPage.notYet.tr,
-            InspectionPage.contactPhone.tr: inspection.customer?.phone ?? InspectionPage.notYet.tr,
-            InspectionPage.contactCity.tr: inspection.customer?.city?.label ?? InspectionPage.notYet.tr,
+            InspectionPage.contactName.tr:
+                inspection.customer?.name ?? InspectionPage.notYet.tr,
+            InspectionPage.contactEmail.tr:
+                inspection.customer?.email ?? InspectionPage.notYet.tr,
+            InspectionPage.contactPhone.tr:
+                inspection.customer?.phone ?? InspectionPage.notYet.tr,
+            InspectionPage.contactCity.tr:
+                inspection.customer?.city?.label ?? InspectionPage.notYet.tr,
           },
         );
       },

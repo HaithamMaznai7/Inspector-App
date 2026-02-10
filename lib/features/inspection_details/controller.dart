@@ -33,14 +33,9 @@ class InspectionDetailsController extends GetxController
   final isSubmitting = false.obs;
 
   @override
-  void onInit() {
-    super.onInit();
-  }
-
-  @override
   void onReady() {
     super.onReady();
-    var newSlug;
+    String? newSlug;
     var newInspection = Get.arguments as Inspection?;
 
     if (newInspection != null) {
@@ -145,7 +140,10 @@ class InspectionDetailsController extends GetxController
   var inspectionPointsLoading = true.obs;
 
   Future<void> loadInspectionPoints() async {
-    inspectionPointsRepository = InspectionPointsRepository(slug: slug!, box: assetsBox!);
+    inspectionPointsRepository = InspectionPointsRepository(
+      slug: slug!,
+      box: assetsBox!,
+    );
     if (inspectionPointsRepository == null) {
       return;
     }
@@ -174,35 +172,6 @@ class InspectionDetailsController extends GetxController
     }
     Get.toNamed(RoutingUrl.inspectionSteps, arguments: inspection.value!);
   }
-
-  // Future<void> getBook() async {
-  //   inspectionBook.value = await repository!.getBook();
-  // }
-
-  // Future<void> updateSelectedCenter(Book book) async {
-  //   final updatedBook = await repository!.setBook(book: book);
-
-  //   // refresh full booking info (which includes updated inspectors)
-  //   inspectionBook.value = updatedBook;
-  //   inspectionBook.refresh();
-
-  //   dd(updatedBook?.branch);
-
-  //   // update local inspection data
-  //   inspection.value!.center = updatedBook?.branch != null
-  //       ? CenterBranch(
-  //           center: updatedBook!.branch!,
-  //           branch: updatedBook.branch,
-  //           city: inspection.value!.customer?.city,
-  //         )
-  //       : null; // make sure this matches model
-  //   inspection.refresh();
-  // }
-
-  // @override
-  // void onClose() {
-  //   super.onClose();
-  // }
 
   Future<void> setSatge(InspectionStage stage) async {
     if (inspection.value == null) {
@@ -335,5 +304,4 @@ class InspectionDetailsController extends GetxController
       // dd(e.toString());
     }
   }
-
 }

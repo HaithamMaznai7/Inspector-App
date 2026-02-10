@@ -14,19 +14,23 @@ class BackPageButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: () {
-        if(route != null){
+        if (route != null) {
           Get.offAllNamed(route!);
-        }else{
-          try{
-            Get.back();
-          } catch (_){
-            Get.offAllNamed(
-              RoutingUrl.home,
-            ); // or your app's default page
-          }
+        } else {
+          // try{
+          Get.back();
+          // } catch (_){
+          //   Get.offAllNamed(
+          //     RoutingUrl.home,
+          //   ); // or your app's default page
+          // }
         }
       },
-      icon: Icon(FLocalization.isArabic ? Iconsax.arrow_right_3 : Iconsax.arrow_left_2, color: color ?? FColors.primaryColor, size: 20)
+      icon: Icon(
+        FLocalization.isArabic ? Iconsax.arrow_right_3 : Iconsax.arrow_left_2,
+        color: color ?? FColors.primaryColor,
+        size: 20,
+      ),
     );
   }
 }

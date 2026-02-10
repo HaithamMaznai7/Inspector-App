@@ -1,4 +1,5 @@
 import 'package:fahis_inspector/common/widgets/loaders/snackbar_queue.dart';
+import 'package:fahis_inspector/main.dart';
 
 import '../../../util/constants/colors.dart';
 import '../../../util/constants/sizes.dart';
@@ -20,15 +21,15 @@ class FLoader {
   }
 
   static warningSnackBar({String? title, String? message, duration = 3}) {
-    SnackbarQueue.show(() {
-      _snackBar(
-        title: title,
-        message: message,
-        duration: duration,
-        color: FColors.warning,
-        icon: const Icon(Iconsax.warning_2, color: FColors.white),
-      );
-    }, duration: 1);
+    // SnackbarQueue.show(() {
+    _snackBar(
+      title: title,
+      message: message,
+      duration: duration,
+      color: FColors.warning,
+      icon: const Icon(Iconsax.warning_2, color: FColors.white),
+    );
+    // }, duration: 1);
   }
 
   static errorSnackBar({String? title, String? message, duration = 3}) {
@@ -55,7 +56,12 @@ class FLoader {
     }, duration: 1);
   }
 
-  static notification({String? title, String? message, duration = 3, String? image}) {
+  static notification({
+    String? title,
+    String? message,
+    duration = 3,
+    String? image,
+  }) {
     SnackbarQueue.show(() {
       _snackBar(
         title: title,
@@ -92,12 +98,11 @@ class FLoader {
         backgroundColor: color,
         snackPosition: SnackPosition.TOP,
         duration: Duration(seconds: duration),
-        icon: image != null 
-        ? Image.network(image)
-        : icon,
+        icon: image != null ? Image.network(image) : icon,
         snackStyle: SnackStyle.FLOATING,
       );
-    
-    } catch (_) {}
+    } catch (e) {
+      dd(e.toString());
+    }
   }
 }
