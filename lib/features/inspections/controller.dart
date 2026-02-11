@@ -120,7 +120,7 @@ class InspectionsController extends GetxController
         arguments: inspection,
       );
       // Refresh list when returning from details so stage labels are up to date
-      await load(reset: true, cache: false);
+      load(reset: true);
     } on FNetworkException catch (e) {
       e.notify();
     } catch (e) {

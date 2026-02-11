@@ -17,8 +17,7 @@ import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:iconsax/iconsax.dart';
 
-class InspectionStepsController extends GetxController
-    with GetTickerProviderStateMixin {
+class InspectionStepsController extends GetxController {
   InspectionDetailsRepository? repository;
   Box? box;
   Box<List>? assetsBox;
@@ -26,8 +25,6 @@ class InspectionStepsController extends GetxController
   late Rx<Inspection> inspection;
   final isLoading = true.obs;
   final isSubmitting = false.obs;
-
-  TabController? tabController;
 
   RxList<Map<String, dynamic>> tabs = RxList<Map<String, dynamic>>([]);
 
@@ -52,7 +49,7 @@ class InspectionStepsController extends GetxController
     update();
   }
 
-  void _recreateTabController() {
+  void _initializeIndex() {
     tabs.sort((a, b) => a['id'].compareTo(b['id']));
 
     currentIndex =
@@ -63,20 +60,6 @@ class InspectionStepsController extends GetxController
         0;
     index = currentIndex;
     highestReachedIndex = currentIndex;
-
-    try {
-      tabController?.dispose();
-    } catch (_) {}
-
-    tabController = TabController(
-      length: tabs.length,
-      vsync: this,
-      initialIndex: index,
-    );
-
-    tabController?.addListener(() {
-      currentIndex = tabController!.index;
-    });
   }
 
   @override
@@ -110,14 +93,13 @@ class InspectionStepsController extends GetxController
   }
 
   void goToTab(int index) {
-    if (index < tabs.length) {
-      tabController?.animateTo(index);
-      this.index = tabController?.index ?? 0;
-      if (this.index > highestReachedIndex) {
-        highestReachedIndex = this.index;
+    if (index >= 0 && index < tabs.length) {
+      this.index = index;
+      currentIndex = index;
+      if (index > highestReachedIndex) {
+        highestReachedIndex = index;
       }
     }
-
     update();
   }
 
@@ -164,7 +146,7 @@ class InspectionStepsController extends GetxController
       );
     }
 
-    _recreateTabController();
+    _initializeIndex();
   }
 
   void initializeTabs() {
@@ -200,7 +182,6 @@ class InspectionStepsController extends GetxController
   @override
   void onClose() {
     super.onClose();
-    tabController?.dispose();
   }
 
   Future<void> setSatge(InspectionStage stage) async {
@@ -291,6 +272,10 @@ class InspectionStepsController extends GetxController
       }
     }
   }
+
+  bool get isOnFirstTab => index == 0;
+  bool get isOnLastTab => index == tabs.length - 1;
+  bool get allTabsReached => highestReachedIndex >= tabs.length - 1;
 
   InspectionStage get next =>
       (tabs.value[index]['stage'] as InspectionStage).next ??

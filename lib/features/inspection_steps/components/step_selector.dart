@@ -17,37 +17,17 @@ class StepSelector extends StatelessWidget {
       init: InspectionStepsBinding().instance,
       builder: (controller) {
         final submitting = controller.isSubmitting.value;
+        final showBack = !controller.isOnFirstTab;
+        final showSubmit = controller.allTabsReached && controller.isOnLastTab;
+
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(FSizes.md),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: FDeviceUtils.getScreenWidth() * .9,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      style: Theme.of(context).elevatedButtonTheme.style!
-                          .copyWith(
-                            backgroundColor: WidgetStateProperty.all(
-                              FColors.darkGrey,
-                            ),
-                          ),
-                      onPressed: submitting ? null : controller.toPervious,
-                      child: Padding(
-                        padding: EdgeInsetsGeometry.symmetric(
-                          horizontal: FSizes.md,
-                        ),
-                        child: Text(FTexts.backBtn.tr),
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(width: FSizes.spaceBtwItems),
-
-                  Expanded(
-                    child: ElevatedButton(
+              child: showSubmit
+                  ? ElevatedButton(
                       onPressed: submitting ? null : controller.toNext,
                       child: Padding(
                         padding: EdgeInsetsGeometry.symmetric(
@@ -62,12 +42,57 @@ class StepSelector extends StatelessWidget {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : Text(FTexts.nextBtn.tr),
+                            : Text(FTexts.submitBtn.tr),
                       ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (showBack) ...[
+                          Expanded(
+                            child: ElevatedButton(
+                              style: Theme.of(context)
+                                  .elevatedButtonTheme
+                                  .style!
+                                  .copyWith(
+                                    backgroundColor: WidgetStateProperty.all(
+                                      FColors.darkGrey,
+                                    ),
+                                  ),
+                              onPressed:
+                                  submitting ? null : controller.toPervious,
+                              child: Padding(
+                                padding: EdgeInsetsGeometry.symmetric(
+                                  horizontal: FSizes.md,
+                                ),
+                                child: Text(FTexts.backBtn.tr),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: FSizes.spaceBtwItems),
+                        ],
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: submitting ? null : controller.toNext,
+                            child: Padding(
+                              padding: EdgeInsetsGeometry.symmetric(
+                                horizontal: FSizes.md,
+                              ),
+                              child: submitting
+                                  ? SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        color: FColors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(FTexts.nextBtn.tr),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
             ),
           ),
         );

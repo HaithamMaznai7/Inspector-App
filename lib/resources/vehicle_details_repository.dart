@@ -45,9 +45,9 @@ class VehicleDetailsRepository extends BaseRepository<VehicleDetails> {
 
   @override
   VehicleDetails? fetchFromCache() {
-    final data = box.get(slug) ?? null;
+    final data = box.get(slug);
 
-    if (data != null) {
+    if (data != null && data is Map) {
       return VehicleDetails.fromJson(data);
     }
 

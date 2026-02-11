@@ -17,115 +17,138 @@ class InspectionStepsScreen extends StatelessWidget {
       init: InspectionStepsBinding().instance,
       autoRemove: true,
       builder: (controller) {
-        return DefaultTabController(
-          length: controller.isLoading.value ? 1 : controller.tabs.length,
-          child: Scaffold(
-            appBar: AppBar(
-              flexibleSpace: Container(
-                decoration: const BoxDecoration(
-                  gradient: FColors.primaryGradient,
-                ),
-              ),
-              title: Text(
-                DetailsPage.pageTitle.trParams({
-                  'inspection': controller.inspection.value.slug,
-                }),
-                style: Theme.of(
-                  context,
-                ).textTheme.headlineSmall?.apply(color: FColors.white),
-              ),
-
-              // centerTitle: true,
-              // actions: [
-              //   IconButton(
-              //     onPressed: () => controller.share(),
-              //     icon: Icon(Icons.share, color: FColors.white),
-              //   ),
-              // ],
-              leading: BackPageButton(color: FColors.white),
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(FSizes.lg * 4),
-                child: GetBuilder<InspectionStepsController>(
-                  init: InspectionStepsBinding().instance,
-                  builder: (controller) {
-                    if (controller.isLoading.value) {
-                      return SizedBox();
-                    }
-
-                    return TabBar(
-                      controller: controller.tabController,
-                      tabs: controller.tabs.asMap().entries
-                          .map(
-                            (entry) {
-                              final tabIndex = entry.key;
-                              final tab = entry.value;
-                              final isUnlocked = tabIndex <= controller.highestReachedIndex;
-                              return Tab(
-                                icon: Icon(
-                                  tab['icon'] as IconData,
-                                  color: isUnlocked
-                                      ? FColors.white
-                                      : FColors.white.withValues(alpha: 0.3),
-                                  size: FSizes.iconLg,
-                                ),
-                                iconMargin: EdgeInsets.all(FSizes.sm),
-                                child: Text(
-                                  tab['id'] == 0
-                                      ? 'Inspection Info'
-                                      : 'Step ${(tab['id'])}',
-                                  style: Theme.of(context).textTheme.bodyLarge!
-                                      .copyWith(
-                                        color: isUnlocked
-                                            ? FColors.white
-                                            : FColors.white.withValues(alpha: 0.3),
-                                      ),
-                                ),
-                              );
-                            },
-                          )
-                          .toList(),
-                      onTap: (value) {
-                        if (value <= controller.highestReachedIndex) {
-                          controller.tabController?.animateTo(value);
-                        } else {
-                          controller.tabController?.animateTo(controller.currentIndex);
-                        }
-                      },
-                      indicatorColor: FColors.white,
-                    );
-                  },
-                ),
+        return Scaffold(
+          appBar: AppBar(
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                gradient: FColors.primaryGradient,
               ),
             ),
-            body: GetBuilder<InspectionStepsController>(
-              init: InspectionStepsBinding().instance,
-              builder: (controller) {
-                if (controller.isLoading.value) {
-                  return TabBarView(
-                    physics: NeverScrollableScrollPhysics(),
-                    children: [
-                      Center(
-                        child: CircularProgressIndicator(
-                          color: FColors.primaryColor,
-                        ),
-                      ),
-                    ],
-                  );
-                }
-
-                return TabBarView(
-                  controller: controller.tabController,
-                  physics: const NeverScrollableScrollPhysics(),
+            title: Text(
+              DetailsPage.pageTitle.trParams({
+                'inspection': controller.inspection.value.slug,
+              }),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.apply(color: FColors.white),
+            ),
+            leading: BackPageButton(color: FColors.white),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(FSizes.lg * 3),
+              child: controller.isLoading.value
+                  ? const SizedBox()
+                  : _StepIndicatorRow(controller: controller),
+            ),
+          ),
+          body: controller.isLoading.value
+              ? Center(
+                  child: CircularProgressIndicator(
+                    color: FColors.primaryColor,
+                  ),
+                )
+              : IndexedStack(
+                  index: controller.index,
                   children: controller.tabs
                       .map((tab) => tab['screen'] as Widget)
                       .toList(),
-                );
-              },
-            ),
-            bottomNavigationBar: StepSelector(),
-          ),
+                ),
+          bottomNavigationBar: StepSelector(),
         );
       },
+    );
+  }
+}
+
+class _StepIndicatorRow extends StatelessWidget {
+  final InspectionStepsController controller;
+
+  const _StepIndicatorRow({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final tabs = controller.tabs;
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: FSizes.md,
+        vertical: FSizes.sm,
+      ),
+      child: Row(
+        children: List.generate(tabs.length * 2 - 1, (i) {
+          if (i.isOdd) {
+            final prevIndex = i ~/ 2;
+            final isCompleted = prevIndex < controller.highestReachedIndex;
+            return Expanded(
+              child: Container(
+                height: 2,
+                color: isCompleted
+                    ? FColors.white
+                    : FColors.white.withValues(alpha: 0.3),
+              ),
+            );
+          }
+
+          final tabIndex = i ~/ 2;
+          final tab = tabs[tabIndex];
+          final isActive = tabIndex == controller.index;
+          final isCompleted =
+              tabIndex < controller.index &&
+              tabIndex <= controller.highestReachedIndex;
+          final isReachable = tabIndex <= controller.highestReachedIndex;
+
+          return GestureDetector(
+            onTap: isReachable ? () => controller.goToTab(tabIndex) : null,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isActive
+                        ? FColors.white
+                        : isCompleted
+                            ? FColors.white.withValues(alpha: 0.85)
+                            : Colors.transparent,
+                    border: Border.all(
+                      color: isReachable
+                          ? FColors.white
+                          : FColors.white.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: Center(
+                    child: isCompleted && !isActive
+                        ? Icon(Icons.check, size: 18, color: FColors.primaryColor)
+                        : Icon(
+                            tab['icon'] as IconData,
+                            size: 18,
+                            color: isActive
+                                ? FColors.primaryColor
+                                : isReachable
+                                    ? FColors.white
+                                    : FColors.white.withValues(alpha: 0.3),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  tab['id'] == 0
+                      ? 'Info'
+                      : 'Step ${tab['id']}',
+                  style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                        color: isReachable
+                            ? FColors.white
+                            : FColors.white.withValues(alpha: 0.3),
+                        fontWeight:
+                            isActive ? FontWeight.bold : FontWeight.normal,
+                      ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ),
     );
   }
 }
