@@ -1,4 +1,3 @@
-import 'package:fahis_inspector/features/inspections/controller.dart';
 import 'package:fahis_inspector/models/inspection.dart';
 import 'package:fahis_inspector/models/vehicle.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -112,7 +111,7 @@ class InspectionCard extends StatelessWidget {
           ),
         ),
       ),
-      onTap: () => InspectionsController.openInspection(inspection),
+      onTap: () => InspectionsBinding().instance.openInspection(inspection),
     );
   }
 }

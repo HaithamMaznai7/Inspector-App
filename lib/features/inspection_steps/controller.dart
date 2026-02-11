@@ -7,7 +7,6 @@ import 'package:fahis_inspector/features/inspection_photos/view_section.dart';
 import 'package:fahis_inspector/features/inspection_points/view.dart';
 import 'package:fahis_inspector/features/vehicle_details/view.dart';
 import 'package:fahis_inspector/features/inspection_details/components/note_dialog.dart';
-import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/inspection.dart';
 import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/resources/inspection_details_repository.dart';
@@ -34,6 +33,7 @@ class InspectionStepsController extends GetxController
 
   int currentIndex = 0;
   int index = 0;
+  int highestReachedIndex = 0;
 
   Map<String, dynamic> _tab(
     int id,
@@ -62,6 +62,7 @@ class InspectionStepsController extends GetxController
             as int? ??
         0;
     index = currentIndex;
+    highestReachedIndex = currentIndex;
 
     try {
       tabController?.dispose();
@@ -109,10 +110,12 @@ class InspectionStepsController extends GetxController
   }
 
   void goToTab(int index) {
-    dd('back');
     if (index < tabs.length) {
       tabController?.animateTo(index);
       this.index = tabController?.index ?? 0;
+      if (this.index > highestReachedIndex) {
+        highestReachedIndex = this.index;
+      }
     }
 
     update();
@@ -209,14 +212,20 @@ class InspectionStepsController extends GetxController
     switch (stage) {
       case InspectionStage.info:
         inspection.value.stage = stage;
-        if (VehicleDetailsBinding().isRegistered) {
-          await VehicleDetailsBinding().instance.onSave();
-        }
         goToTab(0);
         break;
       case InspectionStage.points:
-        goToTab(1);
+        // Save vehicle details before advancing from Info to Points
+        if (VehicleDetailsBinding().isRegistered) {
+          final saved = await VehicleDetailsBinding().instance.onSave();
+          if (!saved) {
+            isSubmitting.toggle();
+            update();
+            return;
+          }
+        }
         inspection.value.stage = stage;
+        goToTab(1);
         break;
       case InspectionStage.photos:
         if (InspectionPointsBinding().isRegistered &&
@@ -239,7 +248,7 @@ class InspectionStepsController extends GetxController
         break;
       case InspectionStage.obd:
         inspection.value.stage = stage;
-        goToTab(5);
+        goToTab(4);
         break;
       case InspectionStage.finished:
         final note = await Get.dialog(
@@ -258,6 +267,13 @@ class InspectionStepsController extends GetxController
         break;
       default:
         break;
+    }
+
+    // Skip API call if stage didn't actually change
+    if (inspection.value.stage == oldValue) {
+      isSubmitting.toggle();
+      update();
+      return;
     }
 
     try {

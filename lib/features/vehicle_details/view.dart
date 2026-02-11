@@ -141,7 +141,7 @@ class VehicleDetailsView extends StatelessWidget {
                         init: VehicleDetailsBinding().instance,
                         builder: (controller) {
                           return StreamBuilder<List<Selection>>(
-                            stream: controller.assetsRepository.bodyTypes(),
+                            stream: controller.assetsRepository?.bodyTypes(),
                             builder: (context, snapshot) {
                               return CustomSelector(
                                 title: DetailsPage.bodyType.tr,
@@ -168,7 +168,7 @@ class VehicleDetailsView extends StatelessWidget {
                         builder: (controller) {
                           return StreamBuilder<List<Selection>>(
                             stream: controller.assetsRepository
-                                .drivetrainTypes(),
+                                ?.drivetrainTypes(),
                             builder: (context, snapshot) {
                               return CustomSelector(
                                 title: DetailsPage.drivetrain.tr,
@@ -197,7 +197,7 @@ class VehicleDetailsView extends StatelessWidget {
                         init: VehicleDetailsBinding().instance,
                         builder: (controller) {
                           return StreamBuilder<List<Selection>>(
-                            stream: controller.assetsRepository.fuelTypes(),
+                            stream: controller.assetsRepository?.fuelTypes(),
                             builder: (context, snapshot) {
                               return CustomSelector(
                                 title: DetailsPage.fuelType.tr,
@@ -229,7 +229,7 @@ class VehicleDetailsView extends StatelessWidget {
                           }
 
                           return StreamBuilder<List<Selection>>(
-                            stream: controller.assetsRepository.gasolineTypes(),
+                            stream: controller.assetsRepository?.gasolineTypes(),
                             builder: (context, snapshot) {
                               return CustomSelector(
                                 title: DetailsPage.gasolineType.tr,
@@ -266,7 +266,7 @@ class VehicleDetailsView extends StatelessWidget {
                         builder: (controller) {
                           return StreamBuilder<List<Selection>>(
                             stream: controller.assetsRepository
-                                .cylinderNumbers(),
+                                ?.cylinderNumbers(),
                             builder: (context, snapshot) {
                               return CustomSelector(
                                 title: DetailsPage.cylindersNo.tr,
@@ -302,7 +302,7 @@ class VehicleDetailsView extends StatelessWidget {
                         init: VehicleDetailsBinding().instance,
                         builder: (controller) {
                           return StreamBuilder<List<Selection>>(
-                            stream: controller.assetsRepository.gearboxTypes(),
+                            stream: controller.assetsRepository?.gearboxTypes(),
                             builder: (context, snapshot) {
                               return CustomSelector(
                                 title: DetailsPage.gearboxType.tr,
@@ -340,7 +340,7 @@ class VehicleDetailsView extends StatelessWidget {
                         init: VehicleDetailsBinding().instance,
                         builder: (controller) {
                           return StreamBuilder<List<Selection>>(
-                            stream: controller.assetsRepository.seatNumbers(),
+                            stream: controller.assetsRepository?.seatNumbers(),
                             builder: (context, snapshot) {
                               return CustomSelector(
                                 title: DetailsPage.seatNo.tr,
@@ -364,7 +364,7 @@ class VehicleDetailsView extends StatelessWidget {
                         init: VehicleDetailsBinding().instance,
                         builder: (controller) {
                           return StreamBuilder<List<Selection>>(
-                            stream: controller.assetsRepository.seatTypes(),
+                            stream: controller.assetsRepository?.seatTypes(),
                             builder: (context, snapshot) {
                               return CustomSelector(
                                 title: DetailsPage.seatType.tr,

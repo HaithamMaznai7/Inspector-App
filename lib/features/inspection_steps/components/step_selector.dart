@@ -16,6 +16,7 @@ class StepSelector extends StatelessWidget {
     return GetBuilder<InspectionStepsController>(
       init: InspectionStepsBinding().instance,
       builder: (controller) {
+        final submitting = controller.isSubmitting.value;
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(FSizes.md),
@@ -33,7 +34,7 @@ class StepSelector extends StatelessWidget {
                               FColors.darkGrey,
                             ),
                           ),
-                      onPressed: controller.toPervious,
+                      onPressed: submitting ? null : controller.toPervious,
                       child: Padding(
                         padding: EdgeInsetsGeometry.symmetric(
                           horizontal: FSizes.md,
@@ -47,12 +48,21 @@ class StepSelector extends StatelessWidget {
 
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: controller.toNext,
+                      onPressed: submitting ? null : controller.toNext,
                       child: Padding(
                         padding: EdgeInsetsGeometry.symmetric(
                           horizontal: FSizes.md,
                         ),
-                        child: Text(FTexts.nextBtn.tr),
+                        child: submitting
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: FColors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(FTexts.nextBtn.tr),
                       ),
                     ),
                   ),

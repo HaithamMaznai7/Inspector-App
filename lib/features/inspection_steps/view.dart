@@ -54,28 +54,41 @@ class InspectionStepsScreen extends StatelessWidget {
 
                     return TabBar(
                       controller: controller.tabController,
-                      tabs: controller.tabs
+                      tabs: controller.tabs.asMap().entries
                           .map(
-                            (tab) => Tab(
-                              icon: Icon(
-                                tab['icon'] as IconData,
-                                color: FColors.white,
-                                size: FSizes.iconLg,
-                              ),
-                              iconMargin: EdgeInsets.all(FSizes.sm),
-                              child: Text(
-                                tab['id'] == 0
-                                    ? 'Inspection Info'
-                                    : 'Step ${(tab['id'])}',
-                                style: Theme.of(context).textTheme.bodyLarge!
-                                    .copyWith(color: FColors.white),
-                              ),
-                            ),
+                            (entry) {
+                              final tabIndex = entry.key;
+                              final tab = entry.value;
+                              final isUnlocked = tabIndex <= controller.highestReachedIndex;
+                              return Tab(
+                                icon: Icon(
+                                  tab['icon'] as IconData,
+                                  color: isUnlocked
+                                      ? FColors.white
+                                      : FColors.white.withValues(alpha: 0.3),
+                                  size: FSizes.iconLg,
+                                ),
+                                iconMargin: EdgeInsets.all(FSizes.sm),
+                                child: Text(
+                                  tab['id'] == 0
+                                      ? 'Inspection Info'
+                                      : 'Step ${(tab['id'])}',
+                                  style: Theme.of(context).textTheme.bodyLarge!
+                                      .copyWith(
+                                        color: isUnlocked
+                                            ? FColors.white
+                                            : FColors.white.withValues(alpha: 0.3),
+                                      ),
+                                ),
+                              );
+                            },
                           )
                           .toList(),
                       onTap: (value) {
-                        if (value <= controller.index) {
+                        if (value <= controller.highestReachedIndex) {
                           controller.tabController?.animateTo(value);
+                        } else {
+                          controller.tabController?.animateTo(controller.currentIndex);
                         }
                       },
                       indicatorColor: FColors.white,

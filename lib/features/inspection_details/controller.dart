@@ -256,14 +256,18 @@ class InspectionDetailsController extends GetxController
     }
   }
 
-  void openEditing() {
+  Future<void> openEditing() async {
     if ([
       InspectionStage.finished,
       InspectionStage.reviewed,
     ].contains(inspection.value!.stage)) {
       return;
     }
-    Get.toNamed(RoutingUrl.inspectionSteps, arguments: inspection.value!);
+    await Get.toNamed(RoutingUrl.inspectionSteps, arguments: inspection.value!);
+    // Refresh after returning from steps screen so stage label is up to date
+    if (slug != null) {
+      load(slug!, refresh: true);
+    }
   }
 
   Future<void> setSatge(InspectionStage stage) async {

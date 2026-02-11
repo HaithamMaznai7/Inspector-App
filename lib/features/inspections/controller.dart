@@ -113,12 +113,14 @@ class InspectionsController extends GetxController
     }
   }
 
-  static void openInspection(Inspection inspection) {
+  Future<void> openInspection(Inspection inspection) async {
     try {
-      final result = Get.toNamed(
+      await Get.toNamed(
         '${RoutingUrl.inspections}/${inspection.slug}',
         arguments: inspection,
       );
+      // Refresh list when returning from details so stage labels are up to date
+      await load(reset: true, cache: false);
     } on FNetworkException catch (e) {
       e.notify();
     } catch (e) {

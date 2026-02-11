@@ -1,4 +1,3 @@
-import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/features/inspection_steps/controller.dart';
 import 'package:fahis_inspector/main.dart';
@@ -16,8 +15,8 @@ class VehicleDetailsController extends GetxController {
   VehicleDetailsRepository? repository;
   Box? box;
 
-  late Box<List> assets;
-  late AssetsRepository assetsRepository;
+  Box<List>? assets;
+  AssetsRepository? assetsRepository;
 
   InspectionStepsController get mainController =>
       InspectionStepsBinding().instance;
@@ -27,12 +26,12 @@ class VehicleDetailsController extends GetxController {
   final isLoading = false.obs;
   final isSubmitting = false.obs;
 
-  late TextEditingController vinController;
-  late TextEditingController plateController;
-  late TextEditingController milageController;
-  late TextEditingController enginSizeController;
-  late TextEditingController colorController;
-  late TextEditingController seatColorController;
+  final vinController = TextEditingController();
+  final plateController = TextEditingController();
+  final milageController = TextEditingController();
+  final enginSizeController = TextEditingController();
+  final colorController = TextEditingController();
+  final seatColorController = TextEditingController();
 
   final Rx<VehicleDetails> editableDetails = VehicleDetails.empty().obs;
 
@@ -45,16 +44,9 @@ class VehicleDetailsController extends GetxController {
     super.onInit();
 
     assets = await Hive.openBox('Assets');
-    assetsRepository = AssetsRepository(assets);
+    assetsRepository = AssetsRepository(assets!);
 
     update();
-
-    vinController = TextEditingController(text: '');
-    plateController = TextEditingController(text: '');
-    milageController = TextEditingController(text: '');
-    enginSizeController = TextEditingController(text: '');
-    colorController = TextEditingController(text: '');
-    seatColorController = TextEditingController(text: '');
 
     inspectionDetails.listen((data) {
       updateDetails();
@@ -153,34 +145,32 @@ class VehicleDetailsController extends GetxController {
     return true;
   }
 
-  Future<void> onSave() async {
+  Future<bool> onSave() async {
     isSubmitting.toggle();
     update();
     try {
-      // Save to server
       if (validateForm()) {
         await repository!.update(slug!, inspectionDetails.value!);
-
         mainController.load(refresh: true);
+        return true;
       }
+      return false;
     } on FNetworkException catch (e) {
       if (e.statusCode == 422 && e.errors != null) {
-        // dd(e.errors);
         final errors = e.errors!;
         errors.forEach((key, val) {
           formErrors[key] = val[0];
         });
       }
       e.notify();
+      return false;
     } catch (e) {
       final f = FNetworkException('Failed to save data', statusCode: 404);
       f.notify();
+      return false;
     } finally {
       isSubmitting.toggle();
       update();
-      mainController.inspection.value.stage = InspectionStage.points;
-      mainController.update();
-      // mainController.goToTab(2);
     }
   }
 }
