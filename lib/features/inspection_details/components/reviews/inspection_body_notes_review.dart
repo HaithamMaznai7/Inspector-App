@@ -52,8 +52,8 @@ class InspectionBodyNotesReview extends StatelessWidget {
 
         // Get body notes from controller's assetsBox
         final bodyNotesData = c.assetsBox?.get('BodyNotes');
-        final bodyNotes = bodyNotesData != null
-            ? (bodyNotesData)
+        final bodyNotes = bodyNotesData != null && bodyNotesData is List
+            ? (bodyNotesData as List)
                   .map(
                     (item) => CarBody.fromJson(
                       Map<String, dynamic>.from(item as Map),

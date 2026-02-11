@@ -58,7 +58,7 @@ class InspectionDetailsScreen extends StatelessWidget {
               const ConnectPersonInfo(),
               const InspectionPointsReview(),
               const InspectionPhotosReview(),
-              //const InspectionBodyNotesReview(),
+              const InspectionBodyNotesReview(),
               const InspectionOBDReview(),
               SizedBox(height: FSizes.md),
             ],
