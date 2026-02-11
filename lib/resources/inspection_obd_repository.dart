@@ -36,15 +36,30 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
     final r = await n.response(RoutingUrl.home);
 
+    // DEBUG: Log raw API response to trace data flow
+    debugPrint('OBD fetchFromApi [1] r.data type: ${r.data.runtimeType}');
+    debugPrint('OBD fetchFromApi [2] r.data: ${r.data}');
+    debugPrint('OBD fetchFromApi [3] r.data.isNotEmpty: ${r.data.isNotEmpty}');
+    if (r.data is Map && r.data.isNotEmpty) {
+      debugPrint('OBD fetchFromApi [4] r.data[codes] type: ${r.data['codes'].runtimeType}');
+      debugPrint('OBD fetchFromApi [5] r.data[codes]: ${r.data['codes']}');
+    }
+
     final bodySides = r.data.isNotEmpty
-        ? OBDCode.setList(r.data['codes'])
+        ? OBDCode.setList(r.data['codes'] ?? [])
         : <OBDCode>[];
 
     _report.value = r.data.isNotEmpty ? r.data['report'] : null;
 
+    debugPrint('OBD fetchFromApi [6] parsed ${bodySides.length} codes');
+
     _data.assignAll(bodySides);
 
     await saveToCache();
+
+    // DEBUG: Verify cache was written
+    final cachedVerify = box.get(slug);
+    debugPrint('OBD fetchFromApi [7] cache after save: $cachedVerify');
 
     return _data;
   }
