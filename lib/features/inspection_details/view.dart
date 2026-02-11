@@ -42,29 +42,51 @@ class InspectionDetailsScreen extends StatelessWidget {
         ],
         leading: BackPageButton(color: FColors.white),
       ),
-      body: RefreshIndicator(
-        onRefresh: () async => controller.load(controller.slug!),
-        triggerMode: RefreshIndicatorTriggerMode.onEdge,
-        child: Container(
-          color: FColors.grey.withOpacity(0.05),
-          child: ListView(
-            scrollDirection: Axis.vertical,
-            padding: EdgeInsets.only(top: FSizes.sm, bottom: FSizes.xl),
-            children: [
-              InspectorNoteSection(),
-              ReviewerNoteSection(),
-              const InspectionInfoReview(),
-              const VehicleInfoReview(),
-              const ConnectPersonInfo(),
-              const InspectionPointsReview(),
-              const InspectionPhotosReview(),
-              const InspectionBodyNotesReview(),
-              const InspectionOBDReview(),
-              SizedBox(height: FSizes.md),
-            ],
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(
+                  color: FColors.primaryColor,
+                ),
+                SizedBox(height: FSizes.md),
+                Text(
+                  'Loading inspection details...',
+                  style: Theme.of(context).textTheme.bodyMedium?.apply(
+                        color: FColors.grey,
+                      ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () async => controller.load(controller.slug!, refresh: true),
+          triggerMode: RefreshIndicatorTriggerMode.onEdge,
+          child: Container(
+            color: FColors.grey.withOpacity(0.05),
+            child: ListView(
+              scrollDirection: Axis.vertical,
+              padding: EdgeInsets.only(top: FSizes.sm, bottom: FSizes.xl),
+              children: [
+                InspectorNoteSection(),
+                ReviewerNoteSection(),
+                const InspectionInfoReview(),
+                const VehicleInfoReview(),
+                const ConnectPersonInfo(),
+                const InspectionPointsReview(),
+                const InspectionPhotosReview(),
+                const InspectionBodyNotesReview(),
+                const InspectionOBDReview(),
+                SizedBox(height: FSizes.md),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      }),
       bottomNavigationBar: StageSelector(),
     );
   }
