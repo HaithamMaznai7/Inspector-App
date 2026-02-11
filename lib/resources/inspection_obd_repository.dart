@@ -49,16 +49,31 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
     return _data;
   }
 
+  // WHAT: Read cached OBD codes from Hive and deserialize into OBDCode objects.
+  // WHY: The original implementation was commented out, returning an empty _data list.
+  //      This meant the OBD review widget always showed empty when loading from cache.
+  //      The widget reads directly from box.get(slug), but the data was never parsed.
+  // HOW: Read the raw list from Hive, cast each item from Map<dynamic, dynamic>
+  //      to Map<String, dynamic>, and parse via OBDCode.fromJson.
+  //      Per-item try/catch prevents one corrupted entry from blocking all others.
+  // EDGE CASES:
+  //   - Cache is empty or null → returns empty list
+  //   - Cache contains corrupted data → skipped, returns partial list
+  //   - Hive maps are Map<dynamic, dynamic> → safely cast via Map.from()
   @override
   List<OBDCode> fetchFromCache() {
-    // final data = (box.get(slug) as List?) ?? [];
-    // _data.assignAll(
-    //   data
-    //   .where((item) => item != null) // Filter out nulls
-    //   .map((item) => OBDCode.set(Map<String, dynamic>.from(item)))
-    //   .toList(),
-    // );
+    final data = (box.get(slug) as List?) ?? [];
 
+    final List<OBDCode> result = [];
+    for (final item in data) {
+      try {
+        result.add(OBDCode.fromJson(Map<String, dynamic>.from(item as Map)));
+      } catch (e) {
+        debugPrint('Error parsing cached OBD code: $e');
+      }
+    }
+
+    _data.assignAll(result);
     return _data;
   }
 

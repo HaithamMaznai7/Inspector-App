@@ -38,11 +38,30 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
     return _data;
   }
 
+  // WHAT: Read cached body notes from Hive and deserialize into CarBody objects.
+  // WHY: Hive stores all maps as Map<dynamic, dynamic>. Without explicit casting,
+  //      CarBody.fromJson → Marker.fromJson will crash with type casting error.
+  // HOW: Each item is cast via Map<String, dynamic>.from() before passing to
+  //      CarBody.fromJson. A try/catch per item prevents one corrupted entry
+  //      from blocking all others.
+  // EDGE CASES:
+  //   - Cache is empty → returns empty list
+  //   - Cache contains corrupted data → skipped, returns partial list
   @override
   List<CarBody> fetchFromCache() {
     final data = box.get('BodyNotes') ?? [];
 
-    return data.map((item) => CarBody.fromJson(item)).toList();
+    final List<CarBody> result = [];
+    for (final item in data) {
+      try {
+        result.add(CarBody.fromJson(Map<String, dynamic>.from(item as Map)));
+      } catch (e) {
+        // WHAT: Skip corrupted cache entries instead of crashing.
+        // WHY: One bad entry shouldn't prevent all other body notes from loading.
+        dd('Error parsing cached body note: $e');
+      }
+    }
+    return result;
   }
 
   @override

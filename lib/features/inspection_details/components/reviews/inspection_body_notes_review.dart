@@ -50,17 +50,32 @@ class InspectionBodyNotesReview extends StatelessWidget {
           return SizedBox();
         }
 
-        // Get body notes from controller's assetsBox
+        // WHAT: Read body notes from Hive cache and deserialize safely.
+        // WHY: The original code used Map<String, dynamic>.from() which only
+        //      shallow-casts the top-level map. Nested maps (markers inside
+        //      'notes') remained as Map<dynamic, dynamic>, causing the crash
+        //      when Marker.fromJson tried to access them.
+        // HOW: We now rely on CarBody.fromJson's internal deep-casting (fixed
+        //      in Phase 1) and wrap each parse in try/catch for resilience.
+        // EDGE CASES:
+        //   - bodyNotesData is null → empty list
+        //   - One corrupted entry → skipped, others still load
+        //   - Nested marker maps are Map<dynamic, dynamic> → handled by
+        //     the updated _$CarBodyFromJson which deep-casts internally
         final bodyNotesData = c.assetsBox?.get('BodyNotes');
-        final bodyNotes = bodyNotesData != null && bodyNotesData is List
-            ? (bodyNotesData as List)
-                  .map(
-                    (item) => CarBody.fromJson(
-                      Map<String, dynamic>.from(item as Map),
-                    ),
-                  )
-                  .toList()
-            : <CarBody>[];
+        final List<CarBody> bodyNotes = [];
+        if (bodyNotesData != null && bodyNotesData is List) {
+          for (final item in bodyNotesData) {
+            try {
+              bodyNotes.add(
+                CarBody.fromJson(Map<String, dynamic>.from(item as Map)),
+              );
+            } catch (e) {
+              // Skip corrupted entries silently
+              debugPrint('Error parsing body note in review: $e');
+            }
+          }
+        }
 
         return InfoCard(
           title: Text('Inspection Body Notes'),

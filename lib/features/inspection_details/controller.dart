@@ -55,6 +55,20 @@ class InspectionDetailsController extends GetxController
     }
   }
 
+  // WHAT: Load an inspection by slug, fetch from cache first, then API,
+  //       then load sub-resources (details, points, photos, body, OBD).
+  // WHY: The original code fired all sub-resource loads in the `finally` block,
+  //      meaning they ran even when the main fetch failed (e.g., no internet).
+  //      This caused 5 simultaneous error snackbars and the Overlay crash.
+  // HOW: Sub-resource loads are now in a separate method `_loadSubResources()`
+  //      called only after the main inspection is confirmed loaded.
+  //      A `apiFetchSucceeded` flag tracks whether the API was reachable.
+  // EDGE CASES:
+  //   - No internet + cached inspection: shows cached data, skips API sub-loads
+  //   - No internet + no cache: shows loading then stays on screen with cached data
+  //   - 404/401/403: navigates back immediately
+  // PERFORMANCE: Sub-resources are loaded in parallel (fire-and-forget) for speed,
+  //              but only when we know the network is available.
   Future<void> load(String newSlug, {bool refresh = false}) async {
     slug = newSlug;
 
@@ -86,35 +100,69 @@ class InspectionDetailsController extends GetxController
       update();
     }
 
+    // WHAT: Track whether the API fetch succeeded to decide if sub-resources
+    //       should also be fetched from the API.
+    // WHY: If the main fetch failed due to no internet, firing 5 more API calls
+    //      will also fail, producing 5 error snackbars and crashing the overlay.
+    bool apiFetchSucceeded = false;
+
     try {
       inspection.value = await repository!.fetchFromApi();
+      // WHAT: Mark API as reachable only if fetchFromApi didn't throw.
+      apiFetchSucceeded = true;
     } on FNetworkException catch (e) {
-      if ([404, 401, 403].contains((i) => i == e.statusCode)) {
+      // WHAT: Check for critical HTTP errors that mean we should leave this screen.
+      // WHY: 404 = inspection doesn't exist, 401/403 = no permission.
+      // FIX: The original code used .contains((i) => i == e.statusCode) which
+      //      passes a function to .contains() — always returns false because the
+      //      list contains ints, not functions. Changed to .contains(e.statusCode).
+      if ([404, 401, 403].contains(e.statusCode)) {
         Get.back();
+        return;
       }
+      // WHAT: For non-critical errors (e.g., no internet), show one snackbar.
+      // WHY: Better UX than showing 5+ identical error snackbars from sub-resources.
+      e.notify();
     } catch (e) {
       dd(e);
-      Get.back();
     } finally {
       if (isLoading.value) {
         isLoading.value = false;
       }
       update();
-      if (inspection.value?.hasDetails ?? false) {
-        loadVehicleDetails();
-      }
-      if (inspection.value?.hasPoints ?? false) {
-        loadInspectionPoints();
-      }
-      if (inspection.value?.hasPhotos ?? false) {
-        loadInspectionPhotos();
-      }
-      if (inspection.value?.hasBody ?? false) {
-        loadInspectionBodyNotes();
-      }
-      if (inspection.value?.hasObd ?? false) {
-        loadInspectionOBD();
-      }
+    }
+
+    // WHAT: Load sub-resources only if the API is reachable.
+    // WHY: If we're offline, all sub-resource API calls will also fail,
+    //      flooding the user with identical error snackbars.
+    // HOW: When offline, we still have cached inspection data (if any)
+    //      displayed to the user — sub-resources will load from cache
+    //      via their respective controllers when those screens are opened.
+    if (apiFetchSucceeded) {
+      _loadSubResources();
+    }
+  }
+
+  // WHAT: Fire all sub-resource loads in parallel.
+  // WHY: Separated from load() for clarity and to control when they execute.
+  // HOW: Each load is fire-and-forget (not awaited) for parallel execution.
+  //      Each method has its own try/catch so one failure doesn't block others.
+  // RELATED: loadVehicleDetails(), loadInspectionPoints(), etc.
+  void _loadSubResources() {
+    if (inspection.value?.hasDetails ?? false) {
+      loadVehicleDetails();
+    }
+    if (inspection.value?.hasPoints ?? false) {
+      loadInspectionPoints();
+    }
+    if (inspection.value?.hasPhotos ?? false) {
+      loadInspectionPhotos();
+    }
+    if (inspection.value?.hasBody ?? false) {
+      loadInspectionBodyNotes();
+    }
+    if (inspection.value?.hasObd ?? false) {
+      loadInspectionOBD();
     }
   }
 

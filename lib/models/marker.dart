@@ -31,5 +31,13 @@ class Marker {
 
   Map<String, dynamic> toJson() => _$MarkerToJson(this);
 
-  factory Marker.fromJson(Map<String, dynamic> json) => _$MarkerFromJson(json);
+  // WHAT: Accept any Map type (Map<dynamic, dynamic> or Map<String, dynamic>)
+  // WHY: Hive deserializes all maps as Map<dynamic, dynamic>, not Map<String, dynamic>.
+  //      When data is read from cache, the runtime type is _Map<dynamic, dynamic>,
+  //      which cannot be implicitly cast to Map<String, dynamic>.
+  // HOW: By accepting the base Map type, we avoid the type casting exception.
+  //      The .g.dart file handles safe casting of individual fields internally.
+  // EDGE CASES: Works for both fresh API responses (Map<String, dynamic>) and
+  //             Hive cache reads (Map<dynamic, dynamic>).
+  factory Marker.fromJson(Map json) => _$MarkerFromJson(json);
 }

@@ -24,17 +24,27 @@ class InspectionOBDReview extends StatelessWidget {
           return SizedBox();
         }
 
-        // Get OBD codes from controller's box using slug as key
+        // WHAT: Read OBD codes from Hive cache and deserialize safely.
+        // WHY: The OBD data is stored in `box` (Inspection_$slug box) with
+        //      key = slug. Hive stores maps as Map<dynamic, dynamic>, so
+        //      each item must be cast before parsing. Per-item try/catch
+        //      ensures one corrupted entry doesn't blank the entire card.
+        // EDGE CASES:
+        //   - obdData is null → empty list (shows "not yet" message)
+        //   - One corrupted entry → skipped, others still display
         final obdData = c.box?.get(c.slug);
-        final obdCodes = obdData != null && obdData is List
-            ? (obdData as List)
-                  .map(
-                    (item) => OBDCode.fromJson(
-                      Map<String, dynamic>.from(item as Map),
-                    ),
-                  )
-                  .toList()
-            : <OBDCode>[];
+        final List<OBDCode> obdCodes = [];
+        if (obdData != null && obdData is List) {
+          for (final item in obdData) {
+            try {
+              obdCodes.add(
+                OBDCode.fromJson(Map<String, dynamic>.from(item as Map)),
+              );
+            } catch (e) {
+              debugPrint('Error parsing OBD code in review: $e');
+            }
+          }
+        }
 
         return InfoCard(
           title: Text('Inspection OBD Codes'),
