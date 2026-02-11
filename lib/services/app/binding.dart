@@ -9,7 +9,11 @@ class AppBinding extends BindingsService<AppServiceProvider> {
   void dependencies() async {
     if (!isRegistered) {
       await Get.putAsync<AppServiceProvider>(
-        () async => AppServiceProvider()..init(),
+        () async {
+          final provider = AppServiceProvider();
+          await provider.init();
+          return provider;
+        },
         permanent: true,
         tag: tag,
       );

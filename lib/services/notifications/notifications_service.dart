@@ -142,7 +142,7 @@ class NotificationsService extends GetxController {
   Future<void> featchFCMToken() async {
     // Get device token for sending notifications
 
-    if (permission != AuthorizationStatus.authorized ||
+    if (permission != AuthorizationStatus.authorized &&
         permission != AuthorizationStatus.provisional) {
       await requestPermission();
     }

@@ -92,6 +92,8 @@ class Network extends GetConnect {
     }
     // if (Auth.check) {
     // }
+
+    httpClient.timeout = const Duration(seconds: 30);
   }
 
   Future<CustomResponse> response(String? route, {Map? parameters}) async {
@@ -119,6 +121,7 @@ class Network extends GetConnect {
         level: 1,
         name: 'Connection Error',
       );
+      rethrow;
     }
 
     return CustomResponse.set(response);

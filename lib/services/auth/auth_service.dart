@@ -71,7 +71,8 @@ class AuthService extends GetxController {
     if (user != null && _token.value == null) {
       _idToken.value = await user.getIdToken();
       try {
-        final data = await AuthRepository().reauthenticate(_idToken.value!);
+        final data = await AuthRepository().reauthenticate(_idToken.value!)
+            .timeout(const Duration(seconds: 15));
         _token.value = data['token'];
         await SecureTokenStorage().save(_token.value!);
         _profile.value = data['user'] != null

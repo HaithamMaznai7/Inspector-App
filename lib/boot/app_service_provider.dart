@@ -10,7 +10,7 @@ import 'package:flutter/foundation.dart';
 class AppServiceProvider extends AppService {
   @override
   Future<void> boot() async {
-    super.boot();
+    await super.boot();
 
     try {
       // await Hive.initFlutter();

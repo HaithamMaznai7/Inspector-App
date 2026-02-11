@@ -49,7 +49,9 @@ abstract class AppService extends GetxService with WidgetsBindingObserver {
   }
 
   Future<void> _bindingRegistered() async {
-    register().forEach(addControlle);
+    for (final provider in register()) {
+      await addControlle(provider);
+    }
   }
 
   @override
