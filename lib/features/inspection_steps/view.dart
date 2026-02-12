@@ -42,9 +42,7 @@ class InspectionStepsScreen extends StatelessWidget {
           ),
           body: controller.isLoading.value
               ? Center(
-                  child: CircularProgressIndicator(
-                    color: FColors.primaryColor,
-                  ),
+                  child: CircularProgressIndicator(color: FColors.primaryColor),
                 )
               : IndexedStack(
                   index: controller.index,
@@ -108,8 +106,8 @@ class _StepIndicatorRow extends StatelessWidget {
                     color: isActive
                         ? FColors.white
                         : isCompleted
-                            ? FColors.white.withValues(alpha: 0.85)
-                            : Colors.transparent,
+                        ? FColors.white.withValues(alpha: 0.85)
+                        : Colors.transparent,
                     border: Border.all(
                       color: isReachable
                           ? FColors.white
@@ -119,30 +117,31 @@ class _StepIndicatorRow extends StatelessWidget {
                   ),
                   child: Center(
                     child: isCompleted && !isActive
-                        ? Icon(Icons.check, size: 18, color: FColors.primaryColor)
+                        ? Icon(
+                            Icons.check,
+                            size: 18,
+                            color: FColors.primaryColor,
+                          )
                         : Icon(
                             tab['icon'] as IconData,
                             size: 18,
                             color: isActive
                                 ? FColors.primaryColor
                                 : isReachable
-                                    ? FColors.white
-                                    : FColors.white.withValues(alpha: 0.3),
+                                ? FColors.white
+                                : FColors.white.withValues(alpha: 0.3),
                           ),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  tab['id'] == 0
-                      ? 'Info'
-                      : 'Step ${tab['id']}',
+                  'Step ${tab['id'] + 1}',
                   style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                        color: isReachable
-                            ? FColors.white
-                            : FColors.white.withValues(alpha: 0.3),
-                        fontWeight:
-                            isActive ? FontWeight.bold : FontWeight.normal,
-                      ),
+                    color: isReachable
+                        ? FColors.white
+                        : FColors.white.withValues(alpha: 0.3),
+                    fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                  ),
                 ),
               ],
             ),
