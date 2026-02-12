@@ -2,11 +2,12 @@ part of '../text_strings.dart';
 
 class InspectionPage {
   // --- OnBoarding Texts
-  static const String generatDialogContent = 'Are You Sure You Want to Reset Points, That Will Delete All Changes on Current Points?';
+  static const String generatDialogContent =
+      'Are You Sure You Want to Reset Points, That Will Delete All Changes on Current Points?';
   static const String generatDialogTitle = 'Alert !';
   static const String generatDialogConfirmBtn = 'Regenerate';
   static const String generatDialogCancel = 'Cancel';
-  
+
   static const String generalInfo = 'generalInfo';
   static const String vehicleInfo = 'vehicleInfo';
   static const String connectPersonInfo = 'connectPersonInfo';
@@ -53,9 +54,9 @@ class InspectionPage {
   /// Inspection Photos
   static const String photosTitle = 'photosTitle';
   static const String uploadedPhotos = 'uploadedPhotos';
-  static const String pendingPhotos = 'pendingPhotos';
+  static const String availablePhotos = 'availablePhotos';
   static const String photoUploaded = 'photoUploaded';
-  static const String photoPending = 'photoPending';
+  static const String addPhoto = 'Add Photo';
   static const String selectPhotoTitle = 'selectPhotoTitle';
   static const String noPhotosYet = 'noPhotosYet';
   static const String photosProgress = 'photosProgress';
@@ -79,4 +80,3 @@ class InspectionPage {
   static const String noteFieldLabel = 'noteFieldLabel';
   static const String noteValidation = 'noteValidation';
 }
-

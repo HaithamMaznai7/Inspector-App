@@ -60,7 +60,7 @@ class PhotoCard extends StatelessWidget {
                         Text(
                           _hasImage
                               ? InspectionPage.photoUploaded.tr
-                              : InspectionPage.photoPending.tr,
+                              : InspectionPage.addPhoto.tr,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: _hasImage ? FColors.success : FColors.grey,
                           ),

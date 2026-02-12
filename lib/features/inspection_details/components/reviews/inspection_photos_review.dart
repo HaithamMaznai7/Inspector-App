@@ -51,9 +51,13 @@ class InspectionPhotosReview extends StatelessWidget {
         }
 
         // Get photos from controller's assetsBox
-        final photos = c.assetsBox?.get('Photos') as List?;
+        final photos = c.assetsBox?.get('Photos');
         final photosList = photos != null
-            ? photos.map((item) => Photo.fromJson(Map<String, dynamic>.from(item))).toList()
+            ? photos
+                  .map(
+                    (item) => Photo.fromJson(Map<String, dynamic>.from(item)),
+                  )
+                  .toList()
             : <Photo>[];
 
         // Sort: uploaded first, then pending
@@ -77,7 +81,9 @@ class InspectionPhotosReview extends StatelessWidget {
                     'total': totalCount.toString(),
                   }),
                   style: Theme.of(context).textTheme.bodySmall?.apply(
-                    color: uploadedCount == totalCount ? FColors.success : FColors.warning,
+                    color: uploadedCount == totalCount
+                        ? FColors.success
+                        : FColors.warning,
                   ),
                 )
               : null,
@@ -87,7 +93,9 @@ class InspectionPhotosReview extends StatelessWidget {
                 padding: const EdgeInsets.all(FSizes.md),
                 child: Text(
                   InspectionPage.noPhotosYet.tr,
-                  style: Theme.of(context).textTheme.bodyMedium?.apply(color: FColors.grey),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.apply(color: FColors.grey),
                 ),
               )
             else ...[
@@ -101,7 +109,9 @@ class InspectionPhotosReview extends StatelessWidget {
                     minHeight: 6,
                     backgroundColor: FColors.grey.withValues(alpha: 0.2),
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      uploadedCount == totalCount ? FColors.success : FColors.primaryColor,
+                      uploadedCount == totalCount
+                          ? FColors.success
+                          : FColors.warning,
                     ),
                   ),
                 ),
@@ -124,18 +134,23 @@ class InspectionPhotosReview extends StatelessWidget {
                           // Photo thumbnail or pending placeholder
                           Expanded(
                             child: GestureDetector(
-                              onTap: hasImage ? () => _showFullImage(context, photo) : null,
+                              onTap: hasImage
+                                  ? () => _showFullImage(context, photo)
+                                  : null,
                               child: Stack(
                                 fit: StackFit.expand,
                                 children: [
                                   ClipRRect(
-                                    borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                                    borderRadius: BorderRadius.circular(
+                                      FSizes.borderRadiusMd,
+                                    ),
                                     child: hasImage
                                         ? Image.network(
                                             photo.image!,
                                             fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) =>
-                                                _pendingPlaceholder(),
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    _pendingPlaceholder(),
                                           )
                                         : _pendingPlaceholder(),
                                   ),
@@ -166,18 +181,18 @@ class InspectionPhotosReview extends StatelessWidget {
                           // Photo title
                           Text(
                             photo.title,
-                            style: Theme.of(context).textTheme.bodySmall?.apply(
-                              fontWeightDelta: 2,
-                            ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.apply(fontWeightDelta: 2),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           // Photo type
                           Text(
                             photo.type,
-                            style: Theme.of(context).textTheme.bodySmall?.apply(
-                              color: FColors.grey,
-                            ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.apply(color: FColors.grey),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
