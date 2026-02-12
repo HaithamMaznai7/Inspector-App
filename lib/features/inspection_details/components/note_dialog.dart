@@ -72,7 +72,38 @@ class _NoteInputDialogState extends State<NoteInputDialog> {
                 fontWeight: FontWeight.w700,
               ),
             ),
+            const SizedBox(height: FSizes.xs),
+            Text(
+              _isFinished
+                  ? InspectionPage.submitConfirmSubtitle.tr
+                  : InspectionPage.rejectConfirmSubtitle.tr,
+              style: theme.textTheme.bodySmall?.apply(color: FColors.darkGrey),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: FSizes.lg),
+
+            // ── Label ──
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Row(
+                children: [
+                  Text(
+                    InspectionPage.addNoteLabel.tr,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: FSizes.xs),
+                  Text(
+                    '(${InspectionPage.optionalTag.tr})',
+                    style: theme.textTheme.bodySmall?.apply(
+                      color: FColors.darkGrey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: FSizes.sm),
 
             // ── Text field ──
             TextField(
@@ -81,20 +112,32 @@ class _NoteInputDialogState extends State<NoteInputDialog> {
               textInputAction: TextInputAction.newline,
               decoration: InputDecoration(
                 hintText: InspectionPage.noteOptionalHint.tr,
-                hintStyle: theme.textTheme.bodySmall?.apply(color: FColors.grey),
+                hintStyle: theme.textTheme.bodySmall?.apply(
+                  color: FColors.darkGrey,
+                ),
                 filled: true,
                 fillColor: FColors.grey.withValues(alpha: 0.06),
                 contentPadding: const EdgeInsets.all(FSizes.md),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
                   borderSide: BorderSide(
-                    color: FColors.grey.withValues(alpha: 0.2),
+                    color: const Color.fromARGB(
+                      255,
+                      120,
+                      120,
+                      120,
+                    ).withValues(alpha: 0.2),
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
                   borderSide: BorderSide(
-                    color: FColors.grey.withValues(alpha: 0.2),
+                    color: const Color.fromARGB(
+                      255,
+                      70,
+                      70,
+                      70,
+                    ).withValues(alpha: 0.2),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
@@ -112,10 +155,12 @@ class _NoteInputDialogState extends State<NoteInputDialog> {
                   child: OutlinedButton(
                     onPressed: () => Get.back(result: null),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: FColors.grey,
-                      side: BorderSide(color: FColors.grey.withValues(alpha: 0.3)),
+                      foregroundColor: const Color.fromARGB(255, 102, 101, 101),
+                      side: BorderSide(color: FColors.darkGrey),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                        borderRadius: BorderRadius.circular(
+                          FSizes.borderRadiusMd,
+                        ),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
@@ -129,7 +174,9 @@ class _NoteInputDialogState extends State<NoteInputDialog> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                        borderRadius: BorderRadius.circular(
+                          FSizes.borderRadiusMd,
+                        ),
                       ),
                     ),
                     child: Text(InspectionPage.confirmSubmit.tr),

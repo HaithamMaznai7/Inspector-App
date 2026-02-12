@@ -86,6 +86,10 @@ class InspectionPage {
   static const String noteOptionalHint = 'noteOptionalHint';
   static const String confirmSubmit = 'confirmSubmit';
   static const String cancelBtn = 'cancelBtn';
+  static const String submitConfirmSubtitle = 'submitConfirmSubtitle';
+  static const String rejectConfirmSubtitle = 'rejectConfirmSubtitle';
+  static const String addNoteLabel = 'addNoteLabel';
+  static const String optionalTag = 'optionalTag';
 
   /// Submit validation
   static const String submitValidationTitle = 'submitValidationTitle';
