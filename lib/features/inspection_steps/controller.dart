@@ -303,8 +303,8 @@ class InspectionStepsController extends GetxController {
   }
 
   /// Called when the user taps "Review" on the last step.
-  /// Saves the current stage, then navigates to the inspection details
-  /// page using offAllNamed to clear the entire navigation stack.
+  /// Saves the current stage, then pops back to inspection details.
+  /// The caller (openEditing) already refreshes data after this returns.
   Future<void> finishAndReview() async {
     isSubmitting.value = true;
     update();
@@ -317,16 +317,13 @@ class InspectionStepsController extends GetxController {
     } on FNetworkException catch (e) {
       e.notify();
     } catch (_) {
-      // Silently handle — still navigate to review
+      // Silently handle — still navigate back to review
     } finally {
       isSubmitting.value = false;
       update();
     }
 
-    // Navigate to inspection details, clearing the stack
-    Get.offAllNamed(
-      '${RoutingUrl.inspections}/${inspection.value.slug}',
-      arguments: inspection.value,
-    );
+    // Pop back to the existing inspection details screen
+    Get.back();
   }
 }

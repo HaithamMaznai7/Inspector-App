@@ -73,10 +73,8 @@ class InspectionDetailsController extends GetxController
   Future<void> load(String newSlug, {bool refresh = false}) async {
     slug = newSlug;
 
-    if (inspection.value == null) {
-      isLoading.value = true;
-      update();
-    }
+    isLoading.value = true;
+    update();
 
     // RESET state
     repository = null;
@@ -93,11 +91,6 @@ class InspectionDetailsController extends GetxController
       update();
     } else {
       inspection.value ??= repository!.fetchFromCache();
-      update();
-    }
-
-    if (inspection.value == null) {
-      isLoading.value = true;
       update();
     }
 
