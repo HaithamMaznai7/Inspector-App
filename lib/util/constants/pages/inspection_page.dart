@@ -40,5 +40,14 @@ class InspectionPage {
   static const String contactEmail = 'contactEmail';
   static const String contactPhone = 'contactPhone';
   static const String contactCity = 'contactCity';
+
+  /// Review card titles
+  static const String inspectionPhotos = 'inspectionPhotos';
+  static const String inspectionBodyNotes = 'inspectionBodyNotes';
+  static const String inspectionOBDCodes = 'inspectionOBDCodes';
+  static const String loadingInspectionDetails = 'loadingInspectionDetails';
+  static const String noteLabel = 'noteLabel';
+  static const String positionLabel = 'positionLabel';
+  static const String notesCount = 'notesCount';
 }
 

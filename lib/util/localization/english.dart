@@ -110,6 +110,13 @@ class English {
     InspectionPage.contactEmail: 'Email',
     InspectionPage.contactPhone: 'Phone',
     InspectionPage.contactCity: 'City',
+    InspectionPage.inspectionPhotos: 'Inspection Photos',
+    InspectionPage.inspectionBodyNotes: 'Inspection Body Notes',
+    InspectionPage.inspectionOBDCodes: 'Inspection OBD Codes',
+    InspectionPage.loadingInspectionDetails: 'Loading inspection details...',
+    InspectionPage.noteLabel: 'Note @index',
+    InspectionPage.positionLabel: 'Position: (@dx, @dy)',
+    InspectionPage.notesCount: '@count notes',
     /// End Home Page
     ///
     /// Details Page

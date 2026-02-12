@@ -44,7 +44,7 @@ class InspectionPointsReview extends StatelessWidget {
                   ),
                   child: InfoCard(
                     title: Text(cat.category.title),
-                    subtitle: Text('Note: ${cat.note}, N/A: ${cat.none}'),
+                    subtitle: Text('${FTexts.notes.tr}: ${cat.note}, ${FTexts.na.tr}: ${cat.none}'),
                     initiallyExpanded: false,
                     showCard: false,
                     leading: Container(

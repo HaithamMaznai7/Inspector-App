@@ -47,7 +47,7 @@ class InspectionOBDReview extends StatelessWidget {
         }
 
         return InfoCard(
-          title: Text('Inspection OBD Codes'),
+          title: Text(InspectionPage.inspectionOBDCodes.tr),
           tilePadding: FSizes.md,
           icon: Iconsax.setting_2,
           children: [

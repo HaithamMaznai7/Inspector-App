@@ -113,6 +113,13 @@ class Arabic {
     InspectionPage.contactEmail: 'البريد الإلكتروني',
     InspectionPage.contactPhone: 'الجوال',
     InspectionPage.contactCity: 'المدينة',
+    InspectionPage.inspectionPhotos: 'صور الفحص',
+    InspectionPage.inspectionBodyNotes: 'ملاحظات هيكل المركبة',
+    InspectionPage.inspectionOBDCodes: 'رموز OBD للفحص',
+    InspectionPage.loadingInspectionDetails: 'جاري تحميل تفاصيل الفحص...',
+    InspectionPage.noteLabel: 'ملاحظة @index',
+    InspectionPage.positionLabel: 'الموقع: (@dx, @dy)',
+    InspectionPage.notesCount: '@count ملاحظات',
 
     /// End Inspection Details Page
     ///

@@ -57,7 +57,7 @@ class InspectionPhotosReview extends StatelessWidget {
             : <Photo>[];
 
         return InfoCard(
-          title: Text('Inspection Photos'),
+          title: Text(InspectionPage.inspectionPhotos.tr),
           tilePadding: FSizes.md,
           icon: Iconsax.camera,
           children: [

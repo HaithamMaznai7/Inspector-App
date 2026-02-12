@@ -13,7 +13,7 @@ class InfoCard extends StatelessWidget {
     this.leading,
     this.trailing,
     this.children = const [],
-    this.initiallyExpanded = true,
+    this.initiallyExpanded = false,
     this.showCard = true,
   });
 
@@ -122,6 +122,7 @@ class InfoCard extends StatelessWidget {
     double tilePadding = 0,
     IconData? icon,
     Widget? trailing,
+    bool initiallyExpanded = false,
     Map<String, dynamic> items = const {},
   }) {
     return InfoCard(
@@ -130,6 +131,7 @@ class InfoCard extends StatelessWidget {
       tilePadding: tilePadding,
       icon: icon,
       trailing: trailing,
+      initiallyExpanded: initiallyExpanded,
       children: initializeInfo(items).toList(),
     );
   }

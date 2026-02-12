@@ -78,7 +78,7 @@ class InspectionBodyNotesReview extends StatelessWidget {
         }
 
         return InfoCard(
-          title: Text('Inspection Body Notes'),
+          title: Text(InspectionPage.inspectionBodyNotes.tr),
           tilePadding: FSizes.md,
           icon: Iconsax.note,
           children: [
@@ -111,7 +111,7 @@ class InspectionBodyNotesReview extends StatelessWidget {
                             context,
                           ).textTheme.titleMedium?.apply(fontWeightDelta: 2),
                         ),
-                        subtitle: Text('${body.notes.length} notes'),
+                        subtitle: Text(InspectionPage.notesCount.trParams({'count': '${body.notes.length}'})),
                       ),
 
                       // Markers/Notes List
@@ -154,7 +154,7 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
-                                        'Note ${index + 1}',
+                                        InspectionPage.noteLabel.trParams({'index': '${index + 1}'}),
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodySmall
@@ -180,7 +180,7 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                       ),
                                     Spacer(),
                                     Text(
-                                      'Position: (${marker.dx.toStringAsFixed(1)}, ${marker.dy.toStringAsFixed(1)})',
+                                      InspectionPage.positionLabel.trParams({'dx': marker.dx.toStringAsFixed(1), 'dy': marker.dy.toStringAsFixed(1)}),
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall

@@ -53,7 +53,7 @@ class InspectionDetailsScreen extends StatelessWidget {
                 ),
                 SizedBox(height: FSizes.md),
                 Text(
-                  'Loading inspection details...',
+                  InspectionPage.loadingInspectionDetails.tr,
                   style: Theme.of(context).textTheme.bodyMedium?.apply(
                         color: FColors.grey,
                       ),
