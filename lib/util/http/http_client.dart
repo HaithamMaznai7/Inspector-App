@@ -75,23 +75,21 @@ class Network extends GetConnect {
 
     this.url = url ?? "${EndPoints.baseUrl}$endpoint";
 
-    _header = {
-      'Content-Type': 'application/vnd.api+json',
-      'Accept': 'application/vnd.api+json',
-      'Accept-Language': Get.locale?.languageCode ?? 'ar',
-      'Authorization': 'Bearer $token',
-    };
-
+    // Resolve token: use provided token, or fall back to AuthService token
     if (token == null && AuthBinding().isRegistered) {
       final authController = AuthBinding().instance;
       token = authController.isAuth ? authController.token : null;
     }
 
+    _header = {
+      'Content-Type': 'application/vnd.api+json',
+      'Accept': 'application/vnd.api+json',
+      'Accept-Language': Get.locale?.languageCode ?? 'ar',
+    };
+
     if (token != null) {
       _header['Authorization'] = 'Bearer $token';
     }
-    // if (Auth.check) {
-    // }
   }
 
   Future<CustomResponse> response(String? route, {Map? parameters}) async {

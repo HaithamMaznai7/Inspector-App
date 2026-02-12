@@ -7,8 +7,8 @@ class StorageBinding extends BindingsService<StorageService> {
 
   @override
   void dependencies() {
-    if (!Get.isRegistered(tag: tag)) {
-      Get.lazyPut<StorageService>(() => StorageService(), tag: tag);
+    if (!Get.isRegistered<StorageService>(tag: tag)) {
+      Get.put<StorageService>(StorageService(), tag: tag, permanent: true);
     }
   }
 }

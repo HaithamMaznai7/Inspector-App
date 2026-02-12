@@ -7,8 +7,8 @@ class NotificationsBinding extends BindingsService<NotificationsService> {
 
   @override
   void dependencies() {
-    if (!Get.isRegistered(tag: tag)) {
-      Get.lazyPut<NotificationsService>(() => NotificationsService(), tag: tag);
+    if (!Get.isRegistered<NotificationsService>(tag: tag)) {
+      Get.put<NotificationsService>(NotificationsService(), tag: tag, permanent: true);
     }
   }
 }

@@ -15,7 +15,6 @@ class AuthService extends GetxController {
   final RxnString _token = RxnString(null);
   final RxnString _idToken = RxnString(null);
   final Rxn<Profile> _profile = Rxn<Profile>(null);
-
   User? get user => firebase.currentUser;
   String? get token => _token.value;
   String? get idToken => _idToken.value;
@@ -33,23 +32,26 @@ class AuthService extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _initAuthListener();
-
-    // ever(_token, _handleAuthChange);
+    _initAuth();
   }
 
-  // void _handleAuthChange(String? token) {
-  //   if (token != null &&
-  //       firebase.currentUser != null &&
-  //       RoutingUrl.guestPages.contains(Get.currentRoute)) {
-  //     // print('app is auth');
-  //     _goTo(RoutingUrl.home);
-  //   } else if (token == null &&
-  //       RoutingUrl.authPages.contains(Get.currentRoute)) {
-  //     // print('app is guest');
-  //     _goTo(RoutingUrl.login);
-  //   }
-  // }
+  Future<void> _initAuth() async {
+    // Restore the backend token from secure storage before listening to auth changes.
+    // This prevents the app from signing out a previously logged-in user.
+    await _restoreTokenFromStorage();
+    _initAuthListener();
+  }
+
+  Future<void> _restoreTokenFromStorage() async {
+    try {
+      final storedToken = await SecureTokenStorage().read();
+      if (storedToken != null) {
+        _token.value = storedToken;
+      }
+    } catch (e) {
+      _token.value = null;
+    }
+  }
 
   @override
   void onClose() {
@@ -69,26 +71,35 @@ class AuthService extends GetxController {
 
   Future<void> changeUser(User? user) async {
     if (user != null && _token.value == null) {
+      // No stored token - try to reauthenticate with Firebase ID token
       _idToken.value = await user.getIdToken();
       try {
         final data = await AuthRepository().reauthenticate(_idToken.value!);
         _token.value = data['token'];
-        await SecureTokenStorage().save(_token.value!);
+        if (_token.value != null) {
+          await SecureTokenStorage().save(_token.value!);
+        }
         _profile.value = data['user'] != null
             ? Profile.fromJson(data['user'])
             : _profile.value;
       } catch (e) {
         await firebase.signOut();
+        return;
       }
     }
 
     if (user != null && _token.value != null) {
+      // User is authenticated - navigate immediately, fetch profile in background
+      _idToken.value ??= await user.getIdToken();
+      _goTo(RoutingUrl.home);
+      // Fetch profile in the background so it doesn't block navigation
       if (_profile.value == null ||
           _profile.value!.isEmpty ||
           _profile.value!.isFromFirebase(user)) {
-        _profile.value = await AuthRepository().fetchProfile();
+        AuthRepository().fetchProfile().then((profile) {
+          _profile.value = profile;
+        }).catchError((_) {});
       }
-      _goTo(RoutingUrl.home);
     } else {
       _idToken.value = null;
       _profile.value = null;

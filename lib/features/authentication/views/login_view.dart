@@ -69,7 +69,8 @@ class Login extends StatelessWidget {
                                   controller: controller.credentialController,
                                   inputFormatters: [
                                     FilteringTextInputFormatter.deny(
-                                        RegExp(r'\s')),
+                                      RegExp(r'\s'),
+                                    ),
                                   ],
                                   decoration: InputDecoration(
                                     prefixIcon: const Icon(Iconsax.user),
