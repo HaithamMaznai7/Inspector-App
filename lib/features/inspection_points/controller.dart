@@ -90,27 +90,39 @@ class InspectionPointsController extends GetxController {
     }
   }
 
+  /// Loads points from cache first (instant UI), then fetches fresh
+  /// data from the API. We only call repo methods here — the repo
+  /// sets its internal `_data` RxList, which fires the repo stream,
+  /// which the `repositorySubscribtion` listener picks up to update
+  /// `allPoints` exactly once. We do NOT set `allPoints` directly
+  /// here to avoid a circular listener loop (Stack Overflow).
   Future<void> load({bool isRefresh = false}) async {
-    // RESET state
     if (isRefresh) {
-      allPoints.value = [];
       isLoading.value = true;
       update();
     } else {
-      allPoints.value = repository.fetchFromCache();
+      // Load from cache — triggers repo stream → allPoints listener
+      repository.fetchFromCache();
       isLoading.value = allPoints.isEmpty;
       update();
     }
 
-    allPoints.value = await repository.fetchFromApi();
+    // Fetch from API — triggers repo stream → allPoints listener
+    await repository.fetchFromApi();
 
     isLoading.value = false;
     update();
   }
 
-  void onEdit({PointCategory? cat}) {
+  /// Opens the editing screen for a specific category.
+  /// When the user presses "Done" or navigates back, we reload
+  /// points from cache (instant UI) then fetch fresh data from API
+  /// so the results page always shows up-to-date data.
+  Future<void> onEdit({PointCategory? cat}) async {
     category.value = cat ?? review.value!.cats.first;
-    Get.to(InspectionPointsScreen());
+    await Get.to(() => const InspectionPointsScreen());
+    // Reload points — repo stream → allPoints listener → review rebuilt
+    await load();
   }
 
   void generate() async {
@@ -125,11 +137,6 @@ class InspectionPointsController extends GetxController {
 
   Future<void> onRefresh() async {
     await load(isRefresh: true);
-  }
-
-  void onChangeCategory({PointCategory? cat}) {
-    category.value = cat ?? review.value!.cats.first;
-    Get.replace(InspectionPointsScreen());
   }
 
   Future<void> onChangePoint(Point point, PointStatus status) async {

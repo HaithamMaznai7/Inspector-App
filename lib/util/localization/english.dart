@@ -117,6 +117,21 @@ class English {
     InspectionPage.noteLabel: 'Note @index',
     InspectionPage.positionLabel: 'Position: (@dx, @dy)',
     InspectionPage.notesCount: '@count notes',
+    InspectionPage.pointsReview: 'Points Review',
+    InspectionPage.inspectionDetailsTitle: 'Inspection Details',
+    InspectionPage.doneBtn: 'Done',
+    InspectionPage.imageRequired: 'Image Required',
+    InspectionPage.imageRequiredMsg: 'You should document the note with an image that describes the status',
+    InspectionPage.noteRequired: 'Note Required',
+    InspectionPage.noteRequiredMsg: 'You should describe the status',
+    InspectionPage.resetPointsTitle: 'Reset Points',
+    InspectionPage.resetPointsContent: 'Are you sure you want to reset all points? This will delete all changes on the current points.',
+    InspectionPage.resetPointsConfirm: 'Reset',
+    InspectionPage.selectStatus: 'Select Status',
+    InspectionPage.addNoteTitle: 'Add Note',
+    InspectionPage.noteHint: 'Type your note here...',
+    InspectionPage.noteFieldLabel: 'Note',
+    InspectionPage.noteValidation: 'Note is required',
     /// End Home Page
     ///
     /// Details Page

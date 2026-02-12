@@ -33,7 +33,7 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
       backgroundColor: FColors.light,
       // alignment: Alignment.center,
       appBar: AppBar(
-        title: Text('Add Note'.tr),
+        title: Text(InspectionPage.addNoteTitle.tr),
         automaticallyImplyLeading: false,
         leading: BackPageButton(color: FColors.primaryColor),
       ),
@@ -92,8 +92,8 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
                     icon: const Icon(Icons.camera_alt),
                     onPressed: _pickImage,
                   ),
-                  hintText: 'hint',
-                  label: const Text('title'),
+                  hintText: InspectionPage.noteHint.tr,
+                  label: Text(InspectionPage.noteFieldLabel.tr),
                   contentPadding: const EdgeInsets.symmetric(
                     vertical: FSizes.md,
                     horizontal: FSizes.md,
@@ -101,7 +101,7 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
                 ),
                 textAlign: TextAlign.center,
                 validator: (value) =>
-                    value == null || value.isEmpty ? 'error' : null,
+                    value == null || value.isEmpty ? InspectionPage.noteValidation.tr : null,
               ),
             ),
             Row(
@@ -168,9 +168,8 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
   void _submit() {
     if (_point.image == null && _point.file == null) {
       FLoader.warningSnackBar(
-        title: "Image Required",
-        message:
-            "You Should to document the note with an image describe the status",
+        title: InspectionPage.imageRequired.tr,
+        message: InspectionPage.imageRequiredMsg.tr,
       );
       return;
     }
@@ -179,8 +178,8 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
 
     if (_point.note == null || _point.note!.isEmpty) {
       FLoader.warningSnackBar(
-        title: "Note Required",
-        message: "You Should to describe the status",
+        title: InspectionPage.noteRequired.tr,
+        message: InspectionPage.noteRequiredMsg.tr,
       );
       return;
     }

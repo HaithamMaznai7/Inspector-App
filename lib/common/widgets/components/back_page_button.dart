@@ -1,4 +1,3 @@
-import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/localization/localization.dart';
 import 'package:flutter/material.dart';

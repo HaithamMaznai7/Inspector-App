@@ -1,98 +1,112 @@
-
 import 'package:fahis_inspector/enums/point_status.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
 
 class StatusBottomSheet extends StatelessWidget {
-
   const StatusBottomSheet({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return FractionallySizedBox(
-      child: SingleChildScrollView(
-        child: GestureDetector(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: FSizes.sm),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                InkWell(
-                  onTap: () => Get.back<PointStatus>(result: PointStatus.good),
-                  child: SizedBox(
-                    height: 60,
-                    child: Card(
-                      color: FColors.success,
-                      child: Container(
-                        height: 100,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          border: Border.all(
-                            color: Colors.transparent.withOpacity(0),
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(FTexts.good.tr, style: Theme.of(context).textTheme.headlineMedium,),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: FSizes.spaceBtwItems),
-                InkWell(
-                  onTap: () => Get.back<PointStatus>(result: PointStatus.note),
-                  child: SizedBox(
-                    height: 60,
-                    child: Card(
-                      color: FColors.warning,
-                      child: Container(
-                        height: 100,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          border: Border.all(
-                            color: Colors.transparent.withOpacity(0),
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(FTexts.notes.tr, style: Theme.of(context).textTheme.headlineMedium,),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: FSizes.spaceBtwItems),
-                InkWell(
-                  onTap: () => Get.back<PointStatus>(result: PointStatus.none),
-                  child: SizedBox(
-                    height: 60,
-                    child: Card(
-                      color: FColors.darkGrey.withOpacity(.4),
-                      child: Container(
-                        height: 100,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          border: Border.all(
-                            color: Colors.transparent.withOpacity(0),
-                            width: 1.5,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(FTexts.na.tr, style: Theme.of(context).textTheme.headlineMedium,),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: FSizes.spaceBtwItems),
-
-              ],
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: FSizes.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: FSizes.sm),
+            // Drag handle
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: FColors.grey,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
+            const SizedBox(height: FSizes.md),
+            Text(
+              InspectionPage.selectStatus.tr,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: FSizes.lg),
+            // Good button
+            _StatusButton(
+              label: FTexts.good.tr,
+              icon: Iconsax.chart_success,
+              color: FColors.success,
+              onTap: () => Get.back<PointStatus>(result: PointStatus.good),
+            ),
+            const SizedBox(height: FSizes.sm),
+            // Note button
+            _StatusButton(
+              label: FTexts.notes.tr,
+              icon: Iconsax.note,
+              color: FColors.warning,
+              onTap: () => Get.back<PointStatus>(result: PointStatus.note),
+            ),
+            const SizedBox(height: FSizes.sm),
+            // N/A button
+            _StatusButton(
+              label: FTexts.na.tr,
+              icon: Iconsax.box_remove,
+              color: FColors.darkGrey,
+              onTap: () => Get.back<PointStatus>(result: PointStatus.none),
+            ),
+            const SizedBox(height: FSizes.lg),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusButton extends StatelessWidget {
+  const _StatusButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
           ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 22),
+            const SizedBox(width: FSizes.sm),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );

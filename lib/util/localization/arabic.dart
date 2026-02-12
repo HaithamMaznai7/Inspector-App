@@ -120,6 +120,21 @@ class Arabic {
     InspectionPage.noteLabel: 'ملاحظة @index',
     InspectionPage.positionLabel: 'الموقع: (@dx, @dy)',
     InspectionPage.notesCount: '@count ملاحظات',
+    InspectionPage.pointsReview: 'مراجعة النقاط',
+    InspectionPage.inspectionDetailsTitle: 'تفاصيل الفحص',
+    InspectionPage.doneBtn: 'تم',
+    InspectionPage.imageRequired: 'الصورة مطلوبة',
+    InspectionPage.imageRequiredMsg: 'يجب توثيق الملاحظة بصورة توضح الحالة',
+    InspectionPage.noteRequired: 'الملاحظة مطلوبة',
+    InspectionPage.noteRequiredMsg: 'يجب وصف الحالة',
+    InspectionPage.resetPointsTitle: 'إعادة تعيين النقاط',
+    InspectionPage.resetPointsContent: 'هل أنت متأكد من إعادة تعيين جميع النقاط؟ سيتم حذف جميع التغييرات على النقاط الحالية.',
+    InspectionPage.resetPointsConfirm: 'إعادة تعيين',
+    InspectionPage.selectStatus: 'اختر الحالة',
+    InspectionPage.addNoteTitle: 'إضافة ملاحظة',
+    InspectionPage.noteHint: 'اكتب ملاحظتك هنا...',
+    InspectionPage.noteFieldLabel: 'الملاحظة',
+    InspectionPage.noteValidation: 'الملاحظة مطلوبة',
 
     /// End Inspection Details Page
     ///

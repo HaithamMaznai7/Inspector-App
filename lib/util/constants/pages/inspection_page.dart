@@ -49,5 +49,22 @@ class InspectionPage {
   static const String noteLabel = 'noteLabel';
   static const String positionLabel = 'positionLabel';
   static const String notesCount = 'notesCount';
+
+  /// Inspection Points
+  static const String pointsReview = 'pointsReview';
+  static const String inspectionDetailsTitle = 'inspectionDetailsTitle';
+  static const String doneBtn = 'doneBtn';
+  static const String imageRequired = 'imageRequired';
+  static const String imageRequiredMsg = 'imageRequiredMsg';
+  static const String noteRequired = 'noteRequired';
+  static const String noteRequiredMsg = 'noteRequiredMsg';
+  static const String resetPointsTitle = 'resetPointsTitle';
+  static const String resetPointsContent = 'resetPointsContent';
+  static const String resetPointsConfirm = 'resetPointsConfirm';
+  static const String selectStatus = 'selectStatus';
+  static const String addNoteTitle = 'addNoteTitle';
+  static const String noteHint = 'noteHint';
+  static const String noteFieldLabel = 'noteFieldLabel';
+  static const String noteValidation = 'noteValidation';
 }
 

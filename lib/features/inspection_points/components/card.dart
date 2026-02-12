@@ -66,73 +66,85 @@ class _PointCardState extends State<PointCard> {
       ),
       child: InkWell(
         onTap: openStatusSelector,
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
         child: Card(
-          color: isDark ? FColors.grey.withOpacity(.2) : FColors.grey,
-          child: Padding(
-            padding: _point.status == PointStatus.note
-                ? const EdgeInsetsDirectional.only(top: FSizes.lg)
-                : const EdgeInsets.all(FSizes.lg),
-            child: Column(
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          elevation: 1,
+          shadowColor: FColors.grey,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: FSizes.md,
+                  vertical: FSizes.md,
+                ),
+                child: Row(
                   children: [
                     if (_point.status != PointStatus.note)
                       Text(
                         _point.status.toString(),
-                        style: Theme.of(context).textTheme.titleLarge?.apply(
+                        style: Theme.of(context).textTheme.titleMedium?.apply(
                           color: _point.status.color(),
+                          fontWeightDelta: 2,
                         ),
                       ),
-                    SizedBox(
-                      width: 200,
+                    if (_point.status != PointStatus.note)
+                      const SizedBox(width: FSizes.sm),
+                    Expanded(
                       child: Text(
                         _point.title,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleLarge,
-                        overflow: TextOverflow.visible,
+                        style: Theme.of(context).textTheme.titleMedium,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
                       ),
                     ),
-                    if (_point.status != PointStatus.note)
-                      Icon(_point.status.icon(), color: _point.status.color()),
+                    const SizedBox(width: FSizes.sm),
+                    Icon(
+                      _point.status.icon(),
+                      color: _point.status.color(),
+                      size: 22,
+                    ),
                   ],
                 ),
-                if (_point.status == PointStatus.note)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: FSizes.sm,
-                      horizontal: FSizes.lg,
+              ),
+              if (_point.status == PointStatus.note)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: FSizes.sm,
+                    horizontal: FSizes.md,
+                  ),
+                  decoration: BoxDecoration(
+                    color: FColors.warning.withValues(alpha: 0.15),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(FSizes.borderRadiusLg),
+                      bottomRight: Radius.circular(FSizes.borderRadiusLg),
                     ),
-                    decoration: BoxDecoration(
-                      color: FColors.warning.withOpacity(.4),
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(10),
-                        bottomRight: Radius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _point.status.icon(),
+                        color: _point.status.color(),
+                        size: 18,
                       ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
+                      const SizedBox(width: FSizes.sm),
+                      Expanded(
+                        child: Text(
                           _point.note ?? '',
-                          style: Theme.of(context).textTheme.titleSmall?.apply(
-                            color: isDark
-                                ? _point.status.color()
-                                : FColors.dark,
+                          style: Theme.of(context).textTheme.bodyMedium?.apply(
+                            color: FColors.darkerGrey,
                           ),
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                         ),
-                        Icon(
-                          _point.status.icon(),
-                          color: _point.status.color(),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
       ),
@@ -175,11 +187,13 @@ class _PointCardState extends State<PointCard> {
 
   void openStatusSelector() async {
     final status = await Get.bottomSheet<PointStatus>(
-      isScrollControlled: true,
       const StatusBottomSheet(),
       backgroundColor: FHelper.isDarkMode(context)
           ? FColors.dark
           : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
     );
 
     if (status != null) {

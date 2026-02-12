@@ -1,4 +1,5 @@
 import 'package:fahis_inspector/util/constants/colors.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -20,11 +21,11 @@ enum PointStatus{
   String toString(){
     switch(this){
       case PointStatus.good:
-        return 'Good'.tr;
+        return FTexts.good.tr;
       case PointStatus.note:
-        return 'Note'.tr;
+        return FTexts.notes.tr;
       default:
-        return 'N/A'.tr;
+        return FTexts.na.tr;
     }
   }
 
