@@ -5,6 +5,7 @@ import 'package:fahis_inspector/models/obd_code.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -72,7 +73,7 @@ class OBDCodesView extends StatelessWidget {
                           ),
                         SizedBox(width: FSizes.md),
                         Text(
-                          isReport ? 'File name' : 'Upload OBD Report',
+                          isReport ? InspectionPage.obdFileName.tr : InspectionPage.uploadObdReport.tr,
                           style: Theme.of(context).textTheme.titleLarge!
                               .copyWith(
                                 color: Colors.white,
@@ -132,7 +133,7 @@ class OBDCodesView extends StatelessWidget {
                             ),
                             SizedBox(width: FSizes.md),
                             Text(
-                              'OBD Codes',
+                              InspectionPage.obdCodesTitle.tr,
                               style: Theme.of(context).textTheme.titleLarge!
                                   .copyWith(
                                     color: Colors.white,

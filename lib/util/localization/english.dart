@@ -152,6 +152,10 @@ class English {
     InspectionPage.rejectConfirmSubtitle: 'Are you sure you want to reject this inspection?',
     InspectionPage.addNoteLabel: 'Add Note',
     InspectionPage.optionalTag: 'optional',
+    InspectionPage.obdFileName: 'File name',
+    InspectionPage.uploadObdReport: 'Upload OBD Report',
+    InspectionPage.obdCodesTitle: 'OBD Codes',
+    InspectionPage.stepLabel: 'Step @step',
     InspectionPage.submitValidationTitle: 'Cannot Submit',
     InspectionPage.submitValidationMsg: 'Please complete all steps before submitting:',
     InspectionPage.submitSuccessTitle: 'Submitted',
@@ -230,7 +234,7 @@ class English {
     /// End Details Page
     FTexts.saveBtn: 'Save',
     FTexts.editBtn: 'Edit',
-    FTexts.reviewBtn: 'Review',
+    FTexts.reviewBtn: 'Review Inspection',
 
 
     // FTexts.inspectionType: 'Inspection Type',

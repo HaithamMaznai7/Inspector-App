@@ -277,7 +277,6 @@ class InspectionDetailsController extends GetxController
         final note = await Get.dialog(
           NoteInputDialog(
             status: stage.toString(),
-            note: inspection.value?.note,
           ),
         );
         if (note == null) return; // user cancelled
@@ -345,6 +344,10 @@ class InspectionDetailsController extends GetxController
       update();
       if (stage == InspectionStage.finished ||
           stage == InspectionStage.reviewed) {
+        // Clear cached note so it doesn't leak into other UI
+        inspection.value?.note = '';
+        inspection.value?.rejectedNote = null;
+        box?.delete(slug);
         FLoader.successSnackBar(
           title: InspectionPage.submitSuccessTitle.tr,
           message: InspectionPage.submitSuccessMsg.tr,

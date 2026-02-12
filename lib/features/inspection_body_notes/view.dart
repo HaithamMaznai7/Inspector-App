@@ -20,15 +20,11 @@ class InspectionBodyTypeResults extends StatelessWidget {
           children: controller.bodySides.map((body) {
             return ExpansionTile(
               leading: IconButton(
-                onPressed: () => Get.to(InspectionBodyTypeScreen(
-                  bodySide: body,
-                )),
-                icon: const Icon(Iconsax.add, color: FColors.primaryColor,),
+                onPressed: () =>
+                    Get.to(InspectionBodyTypeScreen(bodySide: body)),
+                icon: const Icon(Iconsax.add, color: FColors.primaryColor),
               ),
-              title: Text(
-                body.part.name.toUpperCase(),
-                style: const TextStyle(fontSize: 18),
-              ),
+              title: Text(body.part.name, style: const TextStyle(fontSize: 18)),
               trailing: Badge(
                 label: Text('${body.notes.length}'),
                 child: const Icon(Iconsax.note, color: FColors.warning),

@@ -91,6 +91,14 @@ class InspectionPage {
   static const String addNoteLabel = 'addNoteLabel';
   static const String optionalTag = 'optionalTag';
 
+  /// OBD
+  static const String obdFileName = 'obdFileName';
+  static const String uploadObdReport = 'uploadObdReport';
+  static const String obdCodesTitle = 'obdCodesTitle';
+
+  /// Steps
+  static const String stepLabel = 'stepLabel';
+
   /// Submit validation
   static const String submitValidationTitle = 'submitValidationTitle';
   static const String submitValidationMsg = 'submitValidationMsg';

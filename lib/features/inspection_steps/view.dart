@@ -135,7 +135,7 @@ class _StepIndicatorRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Step ${tab['id'] + 1}',
+                  InspectionPage.stepLabel.trParams({'step': '${tab['id'] + 1}'}),
                   style: Theme.of(context).textTheme.labelSmall!.copyWith(
                     color: isReachable
                         ? FColors.white

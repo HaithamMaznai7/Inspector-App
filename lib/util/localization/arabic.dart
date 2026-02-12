@@ -128,7 +128,8 @@ class Arabic {
     InspectionPage.noteRequired: 'الملاحظة مطلوبة',
     InspectionPage.noteRequiredMsg: 'يجب وصف الحالة',
     InspectionPage.resetPointsTitle: 'إعادة تعيين النقاط',
-    InspectionPage.resetPointsContent: 'هل أنت متأكد من إعادة تعيين جميع النقاط؟ سيتم حذف جميع التغييرات على النقاط الحالية.',
+    InspectionPage.resetPointsContent:
+        'هل أنت متأكد من إعادة تعيين جميع النقاط؟ سيتم حذف جميع التغييرات على النقاط الحالية.',
     InspectionPage.resetPointsConfirm: 'إعادة تعيين',
     InspectionPage.selectStatus: 'اختر الحالة',
     InspectionPage.addNoteTitle: 'إضافة ملاحظة',
@@ -155,6 +156,10 @@ class Arabic {
     InspectionPage.rejectConfirmSubtitle: 'هل أنت متأكد من رفض هذا الفحص؟',
     InspectionPage.addNoteLabel: 'إضافة ملاحظة',
     InspectionPage.optionalTag: 'اختياري',
+    InspectionPage.obdFileName: 'اسم الملف',
+    InspectionPage.uploadObdReport: 'رفع تقرير OBD',
+    InspectionPage.obdCodesTitle: 'أكواد OBD',
+    InspectionPage.stepLabel: 'الخطوة @step',
     InspectionPage.submitValidationTitle: 'لا يمكن الإرسال',
     InspectionPage.submitValidationMsg: 'يرجى إكمال جميع الخطوات قبل الإرسال:',
     InspectionPage.submitSuccessTitle: 'تم الإرسال',
@@ -246,7 +251,7 @@ class Arabic {
     /// End Inspection Point Page
     FTexts.saveBtn: 'حفظ',
     FTexts.editBtn: 'تعديل',
-    FTexts.reviewBtn: 'مراجعة',
+    FTexts.reviewBtn: 'مراجعة الفحص',
 
     'veriCode': 'أدخل رقم التحقق',
     'verify': 'التحقق',
