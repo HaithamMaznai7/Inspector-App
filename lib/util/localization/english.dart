@@ -132,6 +132,16 @@ class English {
     InspectionPage.noteHint: 'Type your note here...',
     InspectionPage.noteFieldLabel: 'Note',
     InspectionPage.noteValidation: 'Note is required',
+    InspectionPage.photosTitle: 'Photos',
+    InspectionPage.uploadedPhotos: 'Uploaded',
+    InspectionPage.pendingPhotos: 'Pending',
+    InspectionPage.photoUploaded: 'Uploaded',
+    InspectionPage.photoPending: 'Tap to capture',
+    InspectionPage.selectPhotoTitle: 'Select Photo to Capture',
+    InspectionPage.noPhotosYet: 'No photos yet',
+    InspectionPage.photosProgress: '@uploaded / @total photos',
+    InspectionPage.takePhoto: 'Take Photo',
+    InspectionPage.deletePhoto: 'Delete Photo',
     /// End Home Page
     ///
     /// Details Page

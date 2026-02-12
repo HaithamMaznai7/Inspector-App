@@ -135,6 +135,16 @@ class Arabic {
     InspectionPage.noteHint: 'اكتب ملاحظتك هنا...',
     InspectionPage.noteFieldLabel: 'الملاحظة',
     InspectionPage.noteValidation: 'الملاحظة مطلوبة',
+    InspectionPage.photosTitle: 'الصور',
+    InspectionPage.uploadedPhotos: 'تم الرفع',
+    InspectionPage.pendingPhotos: 'بانتظار الرفع',
+    InspectionPage.photoUploaded: 'تم الرفع',
+    InspectionPage.photoPending: 'اضغط لالتقاط',
+    InspectionPage.selectPhotoTitle: 'اختر الصورة لالتقاطها',
+    InspectionPage.noPhotosYet: 'لا توجد صور بعد',
+    InspectionPage.photosProgress: '@uploaded / @total صور',
+    InspectionPage.takePhoto: 'التقاط صورة',
+    InspectionPage.deletePhoto: 'حذف الصورة',
 
     /// End Inspection Details Page
     ///

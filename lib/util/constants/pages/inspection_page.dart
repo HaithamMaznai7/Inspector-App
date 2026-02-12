@@ -50,6 +50,18 @@ class InspectionPage {
   static const String positionLabel = 'positionLabel';
   static const String notesCount = 'notesCount';
 
+  /// Inspection Photos
+  static const String photosTitle = 'photosTitle';
+  static const String uploadedPhotos = 'uploadedPhotos';
+  static const String pendingPhotos = 'pendingPhotos';
+  static const String photoUploaded = 'photoUploaded';
+  static const String photoPending = 'photoPending';
+  static const String selectPhotoTitle = 'selectPhotoTitle';
+  static const String noPhotosYet = 'noPhotosYet';
+  static const String photosProgress = 'photosProgress';
+  static const String takePhoto = 'takePhoto';
+  static const String deletePhoto = 'deletePhoto';
+
   /// Inspection Points
   static const String pointsReview = 'pointsReview';
   static const String inspectionDetailsTitle = 'inspectionDetailsTitle';

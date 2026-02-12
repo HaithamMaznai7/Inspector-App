@@ -10,6 +10,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
+/// Displays inspection photos in the review page.
+/// Uploaded photos are shown first with a green check badge,
+/// followed by pending (not yet captured) photos with a grey camera icon.
+/// A progress bar shows how many photos have been uploaded out of total.
 class InspectionPhotosReview extends StatelessWidget {
   const InspectionPhotosReview({super.key});
 
@@ -17,14 +21,10 @@ class InspectionPhotosReview extends StatelessWidget {
     if (imageUrl == null) {
       return const AssetImage('assets/images/placeholder.png');
     }
-
-    if (imageUrl.startsWith('https://') || imageUrl.startsWith('http://')) {
-      return NetworkImage(imageUrl);
-    } else if (imageUrl.startsWith('//s3')) {
+    if (imageUrl.startsWith('//s3')) {
       return NetworkImage('https:$imageUrl');
-    } else {
-      return NetworkImage(imageUrl);
     }
+    return NetworkImage(imageUrl);
   }
 
   void _showFullImage(BuildContext context, Photo photo) {
@@ -47,7 +47,7 @@ class InspectionPhotosReview extends StatelessWidget {
         final inspection = c.inspection.value;
 
         if (inspection == null || isLoading) {
-          return SizedBox();
+          return const SizedBox();
         }
 
         // Get photos from controller's assetsBox
@@ -56,67 +56,114 @@ class InspectionPhotosReview extends StatelessWidget {
             ? photos.map((item) => Photo.fromJson(Map<String, dynamic>.from(item))).toList()
             : <Photo>[];
 
+        // Sort: uploaded first, then pending
+        final uploaded = photosList.where((p) => p.image != null).toList();
+        final pending = photosList.where((p) => p.image == null).toList();
+        final sorted = [...uploaded, ...pending];
+
+        final uploadedCount = uploaded.length;
+        final totalCount = photosList.length;
+        final progress = totalCount > 0 ? uploadedCount / totalCount : 0.0;
+
         return InfoCard(
           title: Text(InspectionPage.inspectionPhotos.tr),
           tilePadding: FSizes.md,
           icon: Iconsax.camera,
+          // Show progress badge in the subtitle
+          subtitle: totalCount > 0
+              ? Text(
+                  InspectionPage.photosProgress.trParams({
+                    'uploaded': uploadedCount.toString(),
+                    'total': totalCount.toString(),
+                  }),
+                  style: Theme.of(context).textTheme.bodySmall?.apply(
+                    color: uploadedCount == totalCount ? FColors.success : FColors.warning,
+                  ),
+                )
+              : null,
           children: [
             if (photosList.isEmpty)
               Padding(
-                padding: EdgeInsets.all(FSizes.md),
+                padding: const EdgeInsets.all(FSizes.md),
                 child: Text(
-                  InspectionPage.notYet.tr,
+                  InspectionPage.noPhotosYet.tr,
                   style: Theme.of(context).textTheme.bodyMedium?.apply(color: FColors.grey),
                 ),
               )
-            else
-              Container(
+            else ...[
+              // Progress bar
+              Padding(
+                padding: const EdgeInsets.only(bottom: FSizes.sm),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 6,
+                    backgroundColor: FColors.grey.withValues(alpha: 0.2),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      uploadedCount == totalCount ? FColors.success : FColors.primaryColor,
+                    ),
+                  ),
+                ),
+              ),
+              // Photo grid — uploaded first, then pending
+              SizedBox(
                 height: 200,
-                padding: EdgeInsets.symmetric(horizontal: FSizes.sm, vertical: FSizes.sm),
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: photosList.length,
+                  itemCount: sorted.length,
                   itemBuilder: (context, index) {
-                    final photo = photosList[index];
+                    final photo = sorted[index];
+                    final hasImage = photo.image != null;
                     return Container(
-                      width: 160,
-                      margin: EdgeInsets.only(right: FSizes.sm),
+                      width: 140,
+                      margin: const EdgeInsets.only(right: FSizes.sm),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Photo thumbnail or pending placeholder
                           Expanded(
                             child: GestureDetector(
-                              onTap: () => _showFullImage(context, photo),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-                                child: photo.image != null
-                                    ? Image.network(
-                                        photo.image!,
-                                        width: double.infinity,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return Container(
-                                            color: FColors.grey.withOpacity(0.2),
-                                            child: Icon(
-                                              Iconsax.image,
-                                              color: FColors.grey,
-                                              size: 40,
-                                            ),
-                                          );
-                                        },
-                                      )
-                                    : Container(
-                                        color: FColors.grey.withOpacity(0.2),
-                                        child: Icon(
-                                          Iconsax.image,
-                                          color: FColors.grey,
-                                          size: 40,
-                                        ),
+                              onTap: hasImage ? () => _showFullImage(context, photo) : null,
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                                    child: hasImage
+                                        ? Image.network(
+                                            photo.image!,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) =>
+                                                _pendingPlaceholder(),
+                                          )
+                                        : _pendingPlaceholder(),
+                                  ),
+                                  // Status badge — top-right corner
+                                  Positioned(
+                                    top: 6,
+                                    right: 6,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: hasImage
+                                            ? FColors.success
+                                            : FColors.grey,
+                                        shape: BoxShape.circle,
                                       ),
+                                      child: Icon(
+                                        hasImage ? Icons.check : Iconsax.camera,
+                                        color: Colors.white,
+                                        size: 14,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                          SizedBox(height: FSizes.xs),
+                          const SizedBox(height: FSizes.xs),
+                          // Photo title
                           Text(
                             photo.title,
                             style: Theme.of(context).textTheme.bodySmall?.apply(
@@ -125,6 +172,7 @@ class InspectionPhotosReview extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
+                          // Photo type
                           Text(
                             photo.type,
                             style: Theme.of(context).textTheme.bodySmall?.apply(
@@ -139,9 +187,23 @@ class InspectionPhotosReview extends StatelessWidget {
                   },
                 ),
               ),
+            ],
           ],
         );
       },
+    );
+  }
+
+  /// Grey placeholder shown for photos that haven't been captured yet
+  Widget _pendingPlaceholder() {
+    return Container(
+      decoration: BoxDecoration(
+        color: FColors.grey.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+      ),
+      child: const Center(
+        child: Icon(Iconsax.camera, color: FColors.grey, size: 36),
+      ),
     );
   }
 }
