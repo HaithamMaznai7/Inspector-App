@@ -79,4 +79,23 @@ class InspectionPage {
   static const String noteHint = 'noteHint';
   static const String noteFieldLabel = 'noteFieldLabel';
   static const String noteValidation = 'noteValidation';
+
+  static const String startInspection = 'startInspection';
+  static const String generalNoteTitle = 'generalNoteTitle';
+  static const String rejectionNoteTitle = 'rejectionNoteTitle';
+  static const String noteOptionalHint = 'noteOptionalHint';
+  static const String confirmSubmit = 'confirmSubmit';
+  static const String cancelBtn = 'cancelBtn';
+
+  /// Submit validation
+  static const String submitValidationTitle = 'submitValidationTitle';
+  static const String submitValidationMsg = 'submitValidationMsg';
+  static const String submitSuccessTitle = 'submitSuccessTitle';
+  static const String submitSuccessMsg = 'submitSuccessMsg';
+  static const String stepIncomplete = 'stepIncomplete';
+  static const String stepVehicleInfo = 'stepVehicleInfo';
+  static const String stepPoints = 'stepPoints';
+  static const String stepPhotos = 'stepPhotos';
+  static const String stepBody = 'stepBody';
+  static const String stepObd = 'stepObd';
 }

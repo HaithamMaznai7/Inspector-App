@@ -142,6 +142,22 @@ class English {
     InspectionPage.photosProgress: '@uploaded / @total photos',
     InspectionPage.takePhoto: 'Take Photo',
     InspectionPage.deletePhoto: 'Delete Photo',
+    InspectionPage.startInspection: 'Start Inspection',
+    InspectionPage.generalNoteTitle: 'Submit Inspection',
+    InspectionPage.rejectionNoteTitle: 'Reject Inspection',
+    InspectionPage.noteOptionalHint: 'Add a note (optional)...',
+    InspectionPage.confirmSubmit: 'Confirm',
+    InspectionPage.cancelBtn: 'Cancel',
+    InspectionPage.submitValidationTitle: 'Cannot Submit',
+    InspectionPage.submitValidationMsg: 'Please complete all steps before submitting:',
+    InspectionPage.submitSuccessTitle: 'Submitted',
+    InspectionPage.submitSuccessMsg: 'Inspection submitted successfully',
+    InspectionPage.stepIncomplete: '@step is incomplete',
+    InspectionPage.stepVehicleInfo: 'Vehicle Info',
+    InspectionPage.stepPoints: 'Inspection Points',
+    InspectionPage.stepPhotos: 'Photos',
+    InspectionPage.stepBody: 'Body Notes',
+    InspectionPage.stepObd: 'OBD',
     /// End Home Page
     ///
     /// Details Page
@@ -210,6 +226,7 @@ class English {
     /// End Details Page
     FTexts.saveBtn: 'Save',
     FTexts.editBtn: 'Edit',
+    FTexts.reviewBtn: 'Review',
 
 
     // FTexts.inspectionType: 'Inspection Type',

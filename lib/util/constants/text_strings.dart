@@ -31,6 +31,7 @@ class FTexts {
   /// --- ENUM VARIABLES
   static const String saveBtn = 'saveBtn';
   static const String editBtn = 'editBtn';
+  static const String reviewBtn = 'reviewBtn';
   static const String automatic = 'automatic';
   static const String unSelected = 'Nothing';
   static const String more = 'more';

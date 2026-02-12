@@ -14,6 +14,7 @@ import 'package:fahis_inspector/resources/inspection_photos_repository.dart';
 import 'package:fahis_inspector/resources/inspection_body_repository.dart';
 import 'package:fahis_inspector/resources/inspection_obd_repository.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:flutter/services.dart';
@@ -274,12 +275,30 @@ class InspectionDetailsController extends GetxController
     if (inspection.value == null) {
       return;
     }
-    isSubmitting.toggle();
-    update();
 
     final oldValue = inspection.value!.stage;
 
+    // For stages that show a dialog, collect input BEFORE showing loading
     switch (stage) {
+      case InspectionStage.finished:
+        final note = await Get.dialog(
+          NoteInputDialog(
+            status: stage.toString(),
+            note: inspection.value?.note,
+          ),
+        );
+        if (note == null) return; // user cancelled
+        inspection.value!.note = note;
+        inspection.value!.stage = stage;
+        break;
+      case InspectionStage.rejected:
+        final note = await Get.dialog(
+          NoteInputDialog(status: stage.toString()),
+        );
+        if (note == null) return; // user cancelled
+        inspection.value!.rejectedNote = note;
+        inspection.value!.stage = stage;
+        break;
       case InspectionStage.pending:
         inspection.value!.stage = stage;
         break;
@@ -309,38 +328,17 @@ class InspectionDetailsController extends GetxController
       case InspectionStage.obd:
         inspection.value!.stage = stage;
         break;
-      case InspectionStage.finished:
-        final note = await Get.dialog(
-          NoteInputDialog(
-            status: stage.toString(),
-            note: inspection.value?.note,
-          ),
-        );
-        if (note == null) {
-          return;
-        } else {
-          inspection.value!.note = note;
-          inspection.value!.stage = stage;
-        }
-        break;
       case InspectionStage.reviewed:
         inspection.value!.stage = stage;
-        break;
-      case InspectionStage.rejected:
-        final note = await Get.dialog(
-          NoteInputDialog(status: stage.toString()),
-        );
-        if (note == null) {
-          return;
-        } else {
-          inspection.value!.rejectedNote = note;
-          inspection.value!.stage = stage;
-        }
         break;
       default:
         inspection.value!.stage = oldValue;
         break;
     }
+
+    // Now show loading indicator (after dialog confirmation)
+    isSubmitting.toggle();
+    update();
 
     try {
       inspection.value = await repository!.update(inspection.value!);
@@ -354,7 +352,11 @@ class InspectionDetailsController extends GetxController
       update();
       if (stage == InspectionStage.finished ||
           stage == InspectionStage.reviewed) {
-        Get.back();
+        FLoader.successSnackBar(
+          title: InspectionPage.submitSuccessTitle.tr,
+          message: InspectionPage.submitSuccessMsg.tr,
+        );
+        Get.offAllNamed(RoutingUrl.home);
       }
     }
   }

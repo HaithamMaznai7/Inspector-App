@@ -145,6 +145,22 @@ class Arabic {
     InspectionPage.photosProgress: '@uploaded / @total صور',
     InspectionPage.takePhoto: 'التقاط صورة',
     InspectionPage.deletePhoto: 'حذف الصورة',
+    InspectionPage.startInspection: 'ابدأ الفحص',
+    InspectionPage.generalNoteTitle: 'إرسال الفحص',
+    InspectionPage.rejectionNoteTitle: 'رفض الفحص',
+    InspectionPage.noteOptionalHint: 'أضف ملاحظة (اختياري)...',
+    InspectionPage.confirmSubmit: 'تأكيد',
+    InspectionPage.cancelBtn: 'إلغاء',
+    InspectionPage.submitValidationTitle: 'لا يمكن الإرسال',
+    InspectionPage.submitValidationMsg: 'يرجى إكمال جميع الخطوات قبل الإرسال:',
+    InspectionPage.submitSuccessTitle: 'تم الإرسال',
+    InspectionPage.submitSuccessMsg: 'تم إرسال الفحص بنجاح',
+    InspectionPage.stepIncomplete: '@step غير مكتمل',
+    InspectionPage.stepVehicleInfo: 'معلومات المركبة',
+    InspectionPage.stepPoints: 'نقاط الفحص',
+    InspectionPage.stepPhotos: 'الصور',
+    InspectionPage.stepBody: 'ملاحظات الهيكل',
+    InspectionPage.stepObd: 'OBD',
 
     /// End Inspection Details Page
     ///
@@ -226,6 +242,7 @@ class Arabic {
     /// End Inspection Point Page
     FTexts.saveBtn: 'حفظ',
     FTexts.editBtn: 'تعديل',
+    FTexts.reviewBtn: 'مراجعة',
 
     'veriCode': 'أدخل رقم التحقق',
     'verify': 'التحقق',

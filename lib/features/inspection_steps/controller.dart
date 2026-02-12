@@ -301,4 +301,32 @@ class InspectionStepsController extends GetxController {
       Get.back();
     }
   }
+
+  /// Called when the user taps "Review" on the last step.
+  /// Saves the current stage, then navigates to the inspection details
+  /// page using offAllNamed to clear the entire navigation stack.
+  Future<void> finishAndReview() async {
+    isSubmitting.value = true;
+    update();
+
+    try {
+      // Save current stage to API
+      if (repository != null) {
+        inspection.value = await repository!.update(inspection.value);
+      }
+    } on FNetworkException catch (e) {
+      e.notify();
+    } catch (_) {
+      // Silently handle — still navigate to review
+    } finally {
+      isSubmitting.value = false;
+      update();
+    }
+
+    // Navigate to inspection details, clearing the stack
+    Get.offAllNamed(
+      '${RoutingUrl.inspections}/${inspection.value.slug}',
+      arguments: inspection.value,
+    );
+  }
 }

@@ -1,4 +1,3 @@
-import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/features/inspection_steps/controller.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -18,7 +17,7 @@ class StepSelector extends StatelessWidget {
       builder: (controller) {
         final submitting = controller.isSubmitting.value;
         final showBack = !controller.isOnFirstTab;
-        final showSubmit = controller.allTabsReached && controller.isOnLastTab;
+        final showReview = controller.allTabsReached && controller.isOnLastTab;
 
         return SafeArea(
           child: Padding(
@@ -26,9 +25,9 @@ class StepSelector extends StatelessWidget {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: FDeviceUtils.getScreenWidth() * .9,
-              child: showSubmit
+              child: showReview
                   ? ElevatedButton(
-                      onPressed: submitting ? null : controller.toNext,
+                      onPressed: submitting ? null : controller.finishAndReview,
                       child: Padding(
                         padding: EdgeInsetsGeometry.symmetric(
                           horizontal: FSizes.md,
@@ -42,7 +41,7 @@ class StepSelector extends StatelessWidget {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : Text(FTexts.submitBtn.tr),
+                            : Text(FTexts.reviewBtn.tr),
                       ),
                     )
                   : Row(
