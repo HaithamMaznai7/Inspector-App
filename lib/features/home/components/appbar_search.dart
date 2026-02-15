@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fahis_inspector/features/inspections/controller.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -17,20 +19,45 @@ class _AppBarSearchState extends State<AppBarSearch> {
   bool expanded = false;
   final controller = TextEditingController();
   final focusNode = FocusNode();
-  bool sheetOpened = false;
+  Timer? _debounce;
 
   late InspectionsController inspectionsController;
+
   @override
   void initState() {
     super.initState();
     inspectionsController = InspectionsBinding().instance;
-    focusNode.addListener(() {
-      if (focusNode.hasFocus && !sheetOpened) {
-        sheetOpened = true;
-      } else {
-        sheetOpened = false;
-      }
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    controller.dispose();
+    focusNode.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    _debounce?.cancel();
+    if (query.trim().isEmpty) {
+      inspectionsController.load(reset: true);
+      return;
+    }
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      inspectionsController.load(
+        query: query.trim(),
+        reset: true,
+        cache: false,
+      );
     });
+  }
+
+  void _closeSearch() {
+    _debounce?.cancel();
+    controller.clear();
+    focusNode.unfocus();
+    setState(() => expanded = false);
+    inspectionsController.load(reset: true);
   }
 
   @override
@@ -50,11 +77,6 @@ class _AppBarSearchState extends State<AppBarSearch> {
         Future.delayed(const Duration(milliseconds: 200), () {
           focusNode.requestFocus();
         });
-        // FDeviceUtils.isKeyboardVisible().then((isShow) {
-        //   if (!kIsWeb) {
-        //     View.of(Get.context!).;
-        //   }
-        // });
       },
     );
   }
@@ -69,21 +91,17 @@ class _AppBarSearchState extends State<AppBarSearch> {
           controller: controller,
           focusNode: focusNode,
           autofocus: true,
+          textInputAction: TextInputAction.search,
           decoration: InputDecoration(
-            hintText: 'Search...'.tr,
+            hintText: 'Search by slug or plate...'.tr,
             border: InputBorder.none,
             prefixIcon: Icon(Icons.search, color: FColors.primaryColor),
             suffixIcon: IconButton(
               icon: Icon(Icons.close, color: FColors.primaryColor),
-              onPressed: () async {
-                setState(() => expanded = false);
-                inspectionsController.isLoading.toggle();
-                await inspectionsController.load();
-              },
+              onPressed: _closeSearch,
             ),
           ),
-          onChanged: (value) async =>
-              await inspectionsController.load(query: value),
+          onChanged: _onSearchChanged,
         ),
       ),
     );

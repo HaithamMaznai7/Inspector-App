@@ -8,11 +8,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   static const double tabletBreakpoint = 600;
   static const double desktopBreakpoint = 1024;
+
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +27,6 @@ class HomeScreen extends StatelessWidget {
 
     final isPhone = screenWidth < tabletBreakpoint;
 
-    final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-
-    // Use Drawer for phones
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(

@@ -343,5 +343,6 @@ class English {
     FTexts.stageFinished: 'Finished',
     FTexts.stageRejected: 'Rejected',
     FTexts.stageReviewed: 'Approved',
+    'Search by slug or plate...': 'Search by slug or plate...',
   };
 }

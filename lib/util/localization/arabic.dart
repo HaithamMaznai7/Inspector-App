@@ -416,5 +416,6 @@ class Arabic {
     FTexts.stageFinished: 'منتهي',
     FTexts.stageRejected: 'مرفوض',
     FTexts.stageReviewed: 'معتمد',
+    'Search by slug or plate...': 'بحث برقم الفحص أو اللوحة...',
   };
 }
