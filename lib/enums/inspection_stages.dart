@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 
 import 'package:json_annotation/json_annotation.dart';
 
@@ -24,28 +25,30 @@ enum InspectionStage {
   final String label;
   String get getLabel {
     switch (value) {
+      case null:
+        return FTexts.stageAll.tr;
       case 'pending':
-        return 'pend inspection'.tr;
+        return FTexts.stagePending.tr;
       case 'accepted':
-        return 'accept inspection'.tr;
+        return FTexts.stageAccepted.tr;
       case 'info':
-        return 'change vehicle info'.tr;
+        return FTexts.stageInfo.tr;
       case 'points':
-        return 'inspect points'.tr;
+        return FTexts.stagePoints.tr;
       case 'photos':
-        return 'upload photos'.tr;
+        return FTexts.stagePhotos.tr;
       case 'body':
-        return 'set body notes'.tr;
+        return FTexts.stageBody.tr;
       case 'obd':
-        return 'inspect obd'.tr;
+        return FTexts.stageObd.tr;
       case 'finished':
-        return 'finish inspection'.tr;
-      case 'reviewed':
-        return 'approve inspection'.tr;
+        return FTexts.stageFinished.tr;
       case 'rejected':
-        return 'reject inspection'.tr;
+        return FTexts.stageRejected.tr;
+      case 'reviewed':
+        return FTexts.stageReviewed.tr;
       default:
-        return 'Next'.tr;
+        return FTexts.stageAll.tr;
     }
   }
 

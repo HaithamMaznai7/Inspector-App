@@ -403,5 +403,18 @@ class Arabic {
     FTexts.markerErrorTitle: 'خطأ',
     FTexts.markerErrorMsg: 'حدث خطأ، يرجى المحاولة مرة أخرى',
     FTexts.systemInspector: 'مفتش النظام',
+
+    /// Inspection Stage Labels
+    FTexts.stageAll: 'الكل',
+    FTexts.stagePending: 'قيد الانتظار',
+    FTexts.stageAccepted: 'مقبول',
+    FTexts.stageInfo: 'معلومات المركبة',
+    FTexts.stagePoints: 'نقاط الفحص',
+    FTexts.stagePhotos: 'الصور',
+    FTexts.stageBody: 'ملاحظات الهيكل',
+    FTexts.stageObd: 'OBD',
+    FTexts.stageFinished: 'منتهي',
+    FTexts.stageRejected: 'مرفوض',
+    FTexts.stageReviewed: 'معتمد',
   };
 }

@@ -91,6 +91,19 @@ class FTexts {
   static const String markerErrorTitle = 'markerErrorTitle';
   static const String markerErrorMsg = 'markerErrorMsg';
   static const String systemInspector = 'systemInspector';
+  
+  /// Inspection Stage Labels
+  static const String stageAll = 'stageAll';
+  static const String stagePending = 'stagePending';
+  static const String stageAccepted = 'stageAccepted';
+  static const String stageInfo = 'stageInfo';
+  static const String stagePoints = 'stagePoints';
+  static const String stagePhotos = 'stagePhotos';
+  static const String stageBody = 'stageBody';
+  static const String stageObd = 'stageObd';
+  static const String stageFinished = 'stageFinished';
+  static const String stageRejected = 'stageRejected';
+  static const String stageReviewed = 'stageReviewed';
 }
 
 class StorageKey {

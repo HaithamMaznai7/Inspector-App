@@ -330,5 +330,18 @@ class English {
     FTexts.markerErrorTitle: 'Error',
     FTexts.markerErrorMsg: 'Something went wrong, please try again',
     FTexts.systemInspector: 'System Inspector',
+
+    /// Inspection Stage Labels
+    FTexts.stageAll: 'All',
+    FTexts.stagePending: 'Pending',
+    FTexts.stageAccepted: 'Accepted',
+    FTexts.stageInfo: 'Vehicle Info',
+    FTexts.stagePoints: 'Inspection Points',
+    FTexts.stagePhotos: 'Photos',
+    FTexts.stageBody: 'Body Notes',
+    FTexts.stageObd: 'OBD',
+    FTexts.stageFinished: 'Finished',
+    FTexts.stageRejected: 'Rejected',
+    FTexts.stageReviewed: 'Approved',
   };
 }
