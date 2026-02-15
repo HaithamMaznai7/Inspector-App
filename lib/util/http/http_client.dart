@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:fahis_inspector/routes.dart';
+import 'package:flutter/foundation.dart';
 import '../constants/api_endpoints.dart';
 import '../http/custom_response.dart';
 import 'package:get/get.dart';
@@ -81,10 +82,14 @@ class Network extends GetConnect {
       token = authController.isAuth ? authController.token : null;
     }
 
+    // LOCALIZATION: Read the current locale at request-creation time.
+    // This ensures every API call carries the correct language preference.
+    final lang = Get.locale?.languageCode ?? 'ar';
+
     _header = {
       'Content-Type': 'application/vnd.api+json',
       'Accept': 'application/vnd.api+json',
-      'Accept-Language': Get.locale?.languageCode ?? 'ar',
+      'Accept-Language': lang,
     };
 
     if (token != null) {
@@ -94,6 +99,18 @@ class Network extends GetConnect {
 
   Future<CustomResponse> response(String? route, {Map? parameters}) async {
     late Response response;
+
+    // DEBUG: Log outgoing request details so we can verify the language
+    // header is correct and trace any backend localization issues.
+    if (kDebugMode) {
+      print('┌─── API REQUEST ───────────────────────────');
+      print('│ ${requestMethod.name.toUpperCase()} $url');
+      print('│ Accept-Language: ${_header['Accept-Language']}');
+      if (_query != null && _query!.isNotEmpty) {
+        print('│ Query: $_query');
+      }
+      print('└───────────────────────────────────────────');
+    }
 
     try {
       switch (requestMethod) {
@@ -117,6 +134,19 @@ class Network extends GetConnect {
         level: 1,
         name: 'Connection Error',
       );
+    }
+
+    // DEBUG: Log the response so we can verify the backend returned
+    // data in the expected language. Truncate body to avoid log spam.
+    if (kDebugMode) {
+      final bodyStr = response.body?.toString() ?? '';
+      final preview = bodyStr.length > 300
+          ? '${bodyStr.substring(0, 300)}…'
+          : bodyStr;
+      print('┌─── API RESPONSE ──────────────────────────');
+      print('│ Status: ${response.statusCode}');
+      print('│ Body: $preview');
+      print('└───────────────────────────────────────────');
     }
 
     return CustomResponse.set(response);

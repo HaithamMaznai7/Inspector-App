@@ -14,7 +14,7 @@ class DetailsPage {
   static const String defaultValidation = 'defaultValidation';
   static const String pointCategories = 'pointCategories';
 
-  static const String vin = 'vin';
+  static const String vin = 'detailsVin';
   static const String vinHint = 'vinHint';
   static const String vinValidation = 'vinValidation';
   static const String vinValidationIfNull = 'vinValidationIfNull';
@@ -42,7 +42,7 @@ class DetailsPage {
   static const String milageValidation = 'milageValidation';
   static const String milageValidationIfNull = 'milageValidationIfNull';
 
-  static const String yearModel = 'yearModel';
+  static const String yearModel = 'detailsYearModel';
   static const String yearModelValidation = 'yearModelValidation';
 
   static const String exteriorColor = 'exteriorColor';

@@ -34,7 +34,7 @@ class AuthRepository {
   Future<Profile> fetchProfile() async {
     Network net = Network(
       endpoint: EndPoints.profile,
-      requestMethod: RequestMethod.post,
+      requestMethod: RequestMethod.get,
     );
 
     try {

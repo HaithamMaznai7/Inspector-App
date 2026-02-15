@@ -85,7 +85,7 @@ class InspectionPage {
   static const String rejectionNoteTitle = 'rejectionNoteTitle';
   static const String noteOptionalHint = 'noteOptionalHint';
   static const String confirmSubmit = 'confirmSubmit';
-  static const String cancelBtn = 'cancelBtn';
+  static const String cancelBtn = 'inspectionCancelBtn';
   static const String submitConfirmSubtitle = 'submitConfirmSubtitle';
   static const String rejectConfirmSubtitle = 'rejectConfirmSubtitle';
   static const String addNoteLabel = 'addNoteLabel';

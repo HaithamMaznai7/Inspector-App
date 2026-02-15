@@ -1,5 +1,6 @@
-// import 'package:fahis_inspector/services/authentication/auth.dart';
 import 'package:fahis_inspector/main.dart';
+import 'package:fahis_inspector/routes.dart';
+import 'package:flutter/foundation.dart';
 
 import '../constants/colors.dart';
 import '../localization/arabic.dart';
@@ -15,6 +16,9 @@ class FLocalization extends Translations {
     'ar': _Local.ar,
   };
 
+  // ── UI Widgets ──────────────────────────────────────────────────────
+
+  /// Compact translate icon for app bars (login, reset password screens).
   static Widget localizeIcon() {
     return SizedBox(
       height: 40,
@@ -31,6 +35,7 @@ class FLocalization extends Translations {
     );
   }
 
+  /// Theme toggle icon (light ↔ dark).
   static Widget themeMode() {
     return IconButton(
       icon: Icon(
@@ -38,16 +43,44 @@ class FLocalization extends Translations {
         color: FColors.primaryColor,
         size: 20,
       ),
-      tooltip: 'change Language',
+      tooltip: 'change Theme',
       onPressed: () => changeTheme(),
     );
   }
 
+  // ── Locale Switching ────────────────────────────────────────────────
+
   static Future<void> changeLocale() async {
-    final value = isArabic ? const Locale('en') : const Locale('ar');
-    auth().firebase.setLanguageCode(value.languageCode);
-    await Get.updateLocale(value);
+    final oldLang = Get.locale?.languageCode ?? 'ar';
+    final newLocale = isArabic ? const Locale('en') : const Locale('ar');
+
+    // DEBUG: Log the language switch so we can trace issues.
+    if (kDebugMode) {
+      print('┌─── LANGUAGE SWITCH ───────────────────────');
+      print('│ From: $oldLang → To: ${newLocale.languageCode}');
+      print('│ Get.locale before: ${Get.locale}');
+      print('└───────────────────────────────────────────');
+    }
+
+    // Update Firebase Auth language (for OTP SMS language).
+    auth().firebase.setLanguageCode(newLocale.languageCode);
+
+    // Update GetX locale — this triggers `.tr` string rebuilds across
+    // the entire widget tree. All subsequent Network instances will
+    // read the new locale from Get.locale for the Accept-Language header.
+    await Get.updateLocale(newLocale);
+
+    if (kDebugMode) {
+      print('┌─── LANGUAGE SWITCH COMPLETE ──────────────');
+      print('│ Get.locale after: ${Get.locale}');
+      print(
+        '│ Next API calls will send Accept-Language: ${newLocale.languageCode}',
+      );
+      print('└───────────────────────────────────────────');
+    }
   }
+
+  // ── Theme Switching ─────────────────────────────────────────────────
 
   static void changeTheme() {
     if (isLight) {
@@ -56,6 +89,8 @@ class FLocalization extends Translations {
       Get.changeThemeMode(ThemeMode.light);
     }
   }
+
+  // ── Getters ─────────────────────────────────────────────────────────
 
   static bool get isArabic =>
       (Get.locale ?? Locale(auth().firebase.languageCode ?? 'ar'))

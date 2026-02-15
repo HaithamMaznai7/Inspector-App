@@ -35,7 +35,7 @@ class ProfileRepository {
 
       Network net = Network(
         endpoint: EndPoints.profile,
-        requestMethod: RequestMethod.post,
+        requestMethod: RequestMethod.get,
       );
       final response = await net.response(RoutingUrl.login);
 

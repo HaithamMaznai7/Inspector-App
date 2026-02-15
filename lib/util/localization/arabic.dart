@@ -263,7 +263,6 @@ class Arabic {
     'Enter VIN': 'ادخل الرقم التسلسلي للمركبة',
     'Enter Plate Number': 'ادخل رقم اللوحة',
     'Request ID': 'رقم الطلب',
-    'Inspection Type': 'نوع الفحص',
     'Body Type': 'نوع الهيكل',
     'Vehicle Drivetrain': 'نظام نقل الحركة',
     'Fuel Type': 'نوع الوقود',
@@ -327,7 +326,6 @@ class Arabic {
     'Downloading ...': 'جاري التنزيل...',
     'General Note': 'ملاحظات عامة',
     'Enter general note ....': 'ادخل ملاحظة عامة',
-    'Cancel': 'إلغاء',
     'disconnected_message':
         '''لست متصل بالإنتارنت كما هو ظاهر ,رجاء‘ تحقق من اتصالك ثم اعد المحاوله.''',
     'network_connection': 'حالة الاتصال بالشبكة',
