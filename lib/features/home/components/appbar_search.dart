@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:fahis_inspector/features/inspections/controller.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -19,8 +17,6 @@ class _AppBarSearchState extends State<AppBarSearch> {
   bool expanded = false;
   final controller = TextEditingController();
   final focusNode = FocusNode();
-  Timer? _debounce;
-
   late InspectionsController inspectionsController;
 
   @override
@@ -31,29 +27,23 @@ class _AppBarSearchState extends State<AppBarSearch> {
 
   @override
   void dispose() {
-    _debounce?.cancel();
     controller.dispose();
     focusNode.dispose();
     super.dispose();
   }
 
-  void _onSearchChanged(String query) {
-    _debounce?.cancel();
-    if (query.trim().isEmpty) {
-      inspectionsController.load(reset: true);
-      return;
-    }
-    _debounce = Timer(const Duration(milliseconds: 400), () {
-      inspectionsController.load(
-        query: query.trim(),
-        reset: true,
-        cache: false,
-      );
-    });
+  void _submitSearch(String query) {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) return;
+    focusNode.unfocus();
+    inspectionsController.load(
+      query: trimmed,
+      reset: true,
+      cache: false,
+    );
   }
 
   void _closeSearch() {
-    _debounce?.cancel();
     controller.clear();
     focusNode.unfocus();
     setState(() => expanded = false);
@@ -101,7 +91,7 @@ class _AppBarSearchState extends State<AppBarSearch> {
               onPressed: _closeSearch,
             ),
           ),
-          onChanged: _onSearchChanged,
+          onSubmitted: _submitSearch,
         ),
       ),
     );

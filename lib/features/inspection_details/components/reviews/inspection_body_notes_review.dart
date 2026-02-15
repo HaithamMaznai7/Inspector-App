@@ -65,7 +65,7 @@ class InspectionBodyNotesReview extends StatelessWidget {
         //     the updated _$CarBodyFromJson which deep-casts internally
         final bodyNotesData = c.assetsBox?.get('BodyNotes');
         final List<CarBody> bodyNotes = [];
-        if (bodyNotesData != null && bodyNotesData is List) {
+        if (bodyNotesData != null) {
           for (final item in bodyNotesData) {
             try {
               bodyNotes.add(
@@ -87,9 +87,9 @@ class InspectionBodyNotesReview extends StatelessWidget {
           icon: Iconsax.note,
           onEdit: canEdit
               ? () => c.editSection(
-                    title: InspectionPage.inspectionBodyNotes.tr,
-                    screen: const InspectionBodyTypeResults(),
-                  )
+                  title: InspectionPage.inspectionBodyNotes.tr,
+                  screen: const InspectionBodyTypeResults(),
+                )
               : null,
           children: [
             if (bodyNotes.isEmpty)
@@ -121,7 +121,11 @@ class InspectionBodyNotesReview extends StatelessWidget {
                             context,
                           ).textTheme.titleMedium?.apply(fontWeightDelta: 2),
                         ),
-                        subtitle: Text(InspectionPage.notesCount.trParams({'count': '${body.notes.length}'})),
+                        subtitle: Text(
+                          InspectionPage.notesCount.trParams({
+                            'count': '${body.notes.length}',
+                          }),
+                        ),
                       ),
 
                       // Markers/Notes List
@@ -164,7 +168,9 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
-                                        InspectionPage.noteLabel.trParams({'index': '${index + 1}'}),
+                                        InspectionPage.noteLabel.trParams({
+                                          'index': '${index + 1}',
+                                        }),
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodySmall
@@ -190,7 +196,10 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                       ),
                                     Spacer(),
                                     Text(
-                                      InspectionPage.positionLabel.trParams({'dx': marker.dx.toStringAsFixed(1), 'dy': marker.dy.toStringAsFixed(1)}),
+                                      InspectionPage.positionLabel.trParams({
+                                        'dx': marker.dx.toStringAsFixed(1),
+                                        'dy': marker.dy.toStringAsFixed(1),
+                                      }),
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
