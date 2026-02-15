@@ -12,7 +12,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 class InspectionsController extends GetxController
     with GetSingleTickerProviderStateMixin {
-  late InspectionsRepository repository;
+  InspectionsRepository? repository;
   late final Box<Map> box;
   final ScrollController scrollController = ScrollController();
   RxList<Inspection> inspections = <Inspection>[].obs;
@@ -93,7 +93,7 @@ class InspectionsController extends GetxController
     scrollController.addListener(() {
       if (scrollController.position.pixels >=
           scrollController.position.maxScrollExtent - 200) {
-        repository.fetchNextPage().then((data) {
+        repository?.fetchNextPage().then((data) {
           inspections.assignAll(data); // update UI
         });
       }
@@ -121,8 +121,11 @@ class InspectionsController extends GetxController
     // reload cached + api
     stage ??= selectedStage.value;
 
+    // Guard: repository may not be initialized yet during async onInit
+    if (repository == null) return;
+
     if (cache) {
-      inspections.assignAll(repository.fetchFromCache(stage: stage));
+      inspections.assignAll(repository!.fetchFromCache(stage: stage));
       update();
       if (load) {
         isLoading.value = inspections.isEmpty;
@@ -136,7 +139,7 @@ class InspectionsController extends GetxController
       }
 
       inspections.assignAll(
-        await repository.fetchFromApi(query: query, stage: stage, reset: reset),
+        await repository!.fetchFromApi(query: query, stage: stage, reset: reset),
       );
     } finally {
       if (load) {

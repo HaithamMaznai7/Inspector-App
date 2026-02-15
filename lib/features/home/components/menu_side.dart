@@ -44,10 +44,8 @@ class SideMenuWrapper extends StatelessWidget {
               items: [
                 ...InspectionStage.allStages.map((stage) {
                   final isSelected = selectedStage == stage;
-                  final count =
-                      controller
-                          .repository
-                          .total["${stage.value ?? 'all'}_total"] ??
+                  final count = controller.repository
+                          ?.total["${stage.value ?? 'all'}_total"] ??
                       0;
 
                   return SideMenuItemDataTile(

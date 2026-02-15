@@ -204,7 +204,7 @@ class _IndividualList extends StatelessWidget {
               ),
               // Pagination loading indicator
               Obx(() {
-                final load = controller.repository.isFetchingMore.value;
+                final load = controller.repository?.isFetchingMore.value ?? false;
                 if (load) {
                   return Padding(
                     padding: EdgeInsets.all(16),
