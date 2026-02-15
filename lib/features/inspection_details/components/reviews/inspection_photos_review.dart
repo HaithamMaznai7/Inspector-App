@@ -1,6 +1,7 @@
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/info_card.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
+import 'package:fahis_inspector/features/inspection_photos/view_section.dart';
 import 'package:fahis_inspector/models/photo.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -69,10 +70,19 @@ class InspectionPhotosReview extends StatelessWidget {
         final totalCount = photosList.length;
         final progress = totalCount > 0 ? uploadedCount / totalCount : 0.0;
 
+        // Show edit icon only if the photos step has been reached
+        final canEdit = c.canEditSection(2);
+
         return InfoCard(
           title: Text(InspectionPage.inspectionPhotos.tr),
           tilePadding: FSizes.md,
           icon: Iconsax.camera,
+          onEdit: canEdit
+              ? () => c.editSection(
+                    title: InspectionPage.inspectionPhotos.tr,
+                    screen: const AlbumPhotos(),
+                  )
+              : null,
           // Show progress badge in the subtitle
           subtitle: totalCount > 0
               ? Text(

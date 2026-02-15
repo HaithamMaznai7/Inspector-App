@@ -1,4 +1,5 @@
 import 'package:easy_image_viewer/easy_image_viewer.dart';
+import 'package:fahis_inspector/features/inspection_body_notes/view.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/info_card.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/models/inspection_body_notes.dart';
@@ -77,10 +78,19 @@ class InspectionBodyNotesReview extends StatelessWidget {
           }
         }
 
+        // Show edit icon only if the body step has been reached
+        final canEdit = c.canEditSection(3);
+
         return InfoCard(
           title: Text(InspectionPage.inspectionBodyNotes.tr),
           tilePadding: FSizes.md,
           icon: Iconsax.note,
+          onEdit: canEdit
+              ? () => c.editSection(
+                    title: InspectionPage.inspectionBodyNotes.tr,
+                    screen: const InspectionBodyTypeResults(),
+                  )
+              : null,
           children: [
             if (bodyNotes.isEmpty)
               Padding(
