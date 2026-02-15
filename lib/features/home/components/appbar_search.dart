@@ -60,7 +60,7 @@ class _AppBarSearchState extends State<AppBarSearch> {
     inspectionsController.inspections.clear();
     inspectionsController.isLoading.value = true;
     inspectionsController.update();
-    inspectionsController.load(reset: true);
+    inspectionsController.load(reset: true, cache: false);
   }
 
   @override
