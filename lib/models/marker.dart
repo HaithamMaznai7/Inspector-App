@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:fahis_inspector/models/menu_item.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'serializables/marker.g.dart';

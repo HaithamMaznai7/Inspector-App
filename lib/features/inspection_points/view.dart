@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:fahis_inspector/features/inspection_points/controller.dart';
 import 'package:fahis_inspector/models/review_point.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -33,29 +36,10 @@ class InspectionPointResults extends StatelessWidget {
   }
 
   Widget _buildCategoryIcon(String iconUrl) {
-    return SvgPicture.network(
-      iconUrl,
-      width: 24,
-      height: 24,
-      fit: BoxFit.contain,
-      colorFilter: const ColorFilter.mode(
-        FColors.primaryColor,
-        BlendMode.srcIn,
-      ),
-      placeholderBuilder: (context) => SizedBox(
-        width: 24,
-        height: 24,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: FColors.primaryColor,
-        ),
-      ),
-      errorBuilder: (context, error, stackTrace) => Icon(
-        Iconsax.category,
-        size: 24,
-        color: FColors.primaryColor,
-      ),
-    );
+    if (iconUrl.isEmpty) {
+      return Icon(Iconsax.category, size: 24, color: FColors.primaryColor);
+    }
+    return _SvgNetworkIcon(url: iconUrl);
   }
 
   @override
@@ -189,6 +173,70 @@ class InspectionPointResults extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _SvgNetworkIcon extends StatefulWidget {
+  final String url;
+  const _SvgNetworkIcon({required this.url});
+
+  @override
+  State<_SvgNetworkIcon> createState() => _SvgNetworkIconState();
+}
+
+class _SvgNetworkIconState extends State<_SvgNetworkIcon> {
+  static final Map<String, Uint8List> _cache = {};
+
+  Uint8List? _bytes;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSvg();
+  }
+
+  Future<void> _loadSvg() async {
+    if (_cache.containsKey(widget.url)) {
+      if (mounted) setState(() => _bytes = _cache[widget.url]);
+      return;
+    }
+
+    try {
+      final request = await HttpClient().getUrl(Uri.parse(widget.url));
+      final response = await request.close();
+      if (response.statusCode == 200) {
+        final bytes = await consolidateHttpClientResponseBytes(response);
+        _cache[widget.url] = bytes;
+        if (mounted) setState(() => _bytes = bytes);
+      } else {
+        if (mounted) setState(() => _hasError = true);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _hasError = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasError) {
+      return Icon(Iconsax.category, size: 24, color: FColors.primaryColor);
+    }
+
+    if (_bytes == null) {
+      return const SizedBox(width: 24, height: 24);
+    }
+
+    return SvgPicture.memory(
+      _bytes!,
+      width: 24,
+      height: 24,
+      fit: BoxFit.contain,
+      colorFilter: const ColorFilter.mode(
+        FColors.primaryColor,
+        BlendMode.srcIn,
+      ),
     );
   }
 }

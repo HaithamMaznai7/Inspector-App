@@ -1,9 +1,7 @@
 import 'package:fahis_inspector/common/widgets/components/custom_selector.dart';
 import 'package:fahis_inspector/features/vehicle_details/controller.dart';
-import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/selection.dart';
 import 'package:fahis_inspector/routes.dart';
-import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/helpers.dart';
@@ -36,7 +34,7 @@ class VehicleDetailsView extends StatelessWidget {
                                 .mainController
                                 .inspection
                                 .value
-                                ?.vehicle
+                                .vehicle
                                 ?.make
                                 ?.avatar ==
                             null
@@ -45,7 +43,7 @@ class VehicleDetailsView extends StatelessWidget {
                             controller
                                 .mainController
                                 .inspection
-                                .value!
+                                .value
                                 .vehicle!
                                 .make!
                                 .avatar!,
@@ -55,7 +53,7 @@ class VehicleDetailsView extends StatelessWidget {
                           ),
                     const SizedBox(width: FSizes.sm),
                     Text(
-                      '${controller.mainController.inspection.value?.vehicle?.make?.label}',
+                      '${controller.mainController.inspection.value.vehicle?.make?.label}',
                     ),
                   ],
                 ),
@@ -64,7 +62,7 @@ class VehicleDetailsView extends StatelessWidget {
                     Icon(Iconsax.car),
                     const SizedBox(width: FSizes.sm),
                     Text(
-                      '${controller.mainController.inspection.value?.vehicle?.model?.label}',
+                      '${controller.mainController.inspection.value.vehicle?.model?.label}',
                     ),
                   ],
                 ),
@@ -73,7 +71,7 @@ class VehicleDetailsView extends StatelessWidget {
                     Icon(Iconsax.calendar),
                     const SizedBox(width: FSizes.sm),
                     Text(
-                      '${controller.mainController.inspection.value?.vehicle?.year}',
+                      '${controller.mainController.inspection.value.vehicle?.year}',
                     ),
                   ],
                 ),
@@ -229,7 +227,8 @@ class VehicleDetailsView extends StatelessWidget {
                           }
 
                           return StreamBuilder<List<Selection>>(
-                            stream: controller.assetsRepository?.gasolineTypes(),
+                            stream: controller.assetsRepository
+                                ?.gasolineTypes(),
                             builder: (context, snapshot) {
                               return CustomSelector(
                                 title: DetailsPage.gasolineType.tr,

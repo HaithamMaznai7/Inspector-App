@@ -17,10 +17,8 @@ import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 
 class InspectionDetailsController extends GetxController
@@ -205,7 +203,10 @@ class InspectionDetailsController extends GetxController
   Future<void> loadInspectionPhotos() async {
     if (assetsBox == null || slug == null) return;
     try {
-      final photosRepo = InspectionPhotosRepository(box: assetsBox!, slug: slug!);
+      final photosRepo = InspectionPhotosRepository(
+        box: assetsBox!,
+        slug: slug!,
+      );
       await photosRepo.fetchFromApi();
       update();
     } catch (e) {
@@ -231,7 +232,9 @@ class InspectionDetailsController extends GetxController
 
       // DEBUG: Check what's in cache BEFORE API call
       final cachedBefore = box!.get(slug);
-      dd('OBD DEBUG [1] cache key="$slug", cached data BEFORE fetch: $cachedBefore');
+      dd(
+        'OBD DEBUG [1] cache key="$slug", cached data BEFORE fetch: $cachedBefore',
+      );
       dd('OBD DEBUG [1] cached type: ${cachedBefore.runtimeType}');
 
       final result = await obdRepo.fetchFromApi();
@@ -275,9 +278,7 @@ class InspectionDetailsController extends GetxController
     switch (stage) {
       case InspectionStage.finished:
         final note = await Get.dialog(
-          NoteInputDialog(
-            status: stage.toString(),
-          ),
+          NoteInputDialog(status: stage.toString()),
         );
         if (note == null) return; // user cancelled
         inspection.value!.note = note;
