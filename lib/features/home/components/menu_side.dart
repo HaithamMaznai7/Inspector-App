@@ -38,77 +38,147 @@ class SideMenuWrapper extends StatelessWidget {
           builder: (data) {
             return SideMenuData(
               defaultTileData: SideMenuItemTileDefaults(
-                hoverColor: FColors.primaryColor.withOpacity(.1),
+                hoverColor: FColors.primaryColor.withValues(alpha: 0.08),
               ),
               animItems: SideMenuItemsAnimationData(),
               items: [
                 ...InspectionStage.allStages.map((stage) {
                   final isSelected = selectedStage == stage;
-                  final count = controller.repository.total["${stage.value ?? 'all'}_total"] ?? 0;
+                  final count =
+                      controller
+                          .repository
+                          .total["${stage.value ?? 'all'}_total"] ??
+                      0;
 
                   return SideMenuItemDataTile(
                     hasSelectedLine: false,
+                    margin: const EdgeInsetsDirectional.symmetric(
+                      horizontal: FSizes.xs,
+                      vertical: 2,
+                    ),
                     decoration: isSelected
                         ? BoxDecoration(
                             gradient: FColors.primaryGradient,
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(FSizes.sm),
+                            borderRadius: BorderRadius.circular(
+                              FSizes.borderRadiusMd,
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: FColors.primaryColor.withOpacity(.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           )
-                        : null,
+                        : BoxDecoration(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(
+                              FSizes.borderRadiusMd,
+                            ),
+                          ),
                     isSelected: isSelected,
                     onTap: () => controller.changeStatus(newStage: stage),
                     title: stage.getLabel,
-                    selectedTitleStyle: Theme.of(context)
-                        .textTheme
-                        .bodyLarge!
-                        .copyWith(color: FColors.white),
-                    badgeBuilder: (widget) => Badge.count(
-                      count: count,
-                      isLabelVisible: count > 0,
-                      smallSize: FSizes.sm,
-                      largeSize: FSizes.sm,
-                      padding: EdgeInsetsGeometry.all(.5),
-                      offset: Offset(FSizes.sm, -FSizes.sm),
-                      alignment: FLocalization.isArabic
-                          ? Alignment.centerLeft
-                          : Alignment.centerRight,
-                      backgroundColor: isSelected ? FColors.white : FColors.error,
-                      child: widget,
-                    ),
-                    titleStyle: Theme.of(context)
-                        .textTheme
-                        .bodyLarge!
-                        .copyWith(color: FColors.dark),
+                    selectedTitleStyle: Theme.of(context).textTheme.bodyMedium!
+                        .copyWith(
+                          color: FColors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                    badgeBuilder: count > 0
+                        ? (widget) => Row(
+                            children: [
+                              Expanded(child: widget),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? FColors.white
+                                      : stage.color.withOpacity(.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  count.toString(),
+                                  style: Theme.of(context).textTheme.labelSmall
+                                      ?.copyWith(
+                                        color: stage.color,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 11,
+                                      ),
+                                ),
+                              ),
+                            ],
+                          )
+                        : null,
+                    titleStyle: Theme.of(context).textTheme.bodyMedium!
+                        .copyWith(
+                          color: FColors.dark,
+                          fontWeight: FontWeight.w500,
+                        ),
                     tooltip: stage.getLabel,
-                    icon: Icon(stage.icon, color: stage.color),
-                    selectedIcon: Icon(stage.icon, color: FColors.white),
+                    icon: Icon(
+                      stage.icon,
+                      color: isSelected ? FColors.white : stage.color,
+                      size: 20,
+                    ),
                   );
                 }),
 
-                SideMenuItemDataDivider(divider: Divider()),
+                SideMenuItemDataDivider(
+                  divider: Divider(
+                    color: FColors.grey.withOpacity(.2),
+                    thickness: 1,
+                    height: FSizes.md,
+                  ),
+                ),
                 SideMenuItemDataTitle(
                   title: 'Settings & Support'.tr,
                   textAlign: TextAlign.start,
-                  titleStyle: Theme.of(context)
-                      .textTheme
-                      .headlineSmall
-                      ?.apply(color: FColors.primaryColor),
+                  titleStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: FColors.darkGrey,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
                 ),
                 SideMenuItemDataTile(
                   isSelected: false,
+                  margin: const EdgeInsetsDirectional.symmetric(
+                    horizontal: FSizes.xs,
+                    vertical: 2,
+                  ),
                   onTap: () => FLocalization.changeLocale(),
                   title: FLocalization.isArabic ? 'English' : 'عربي',
-                  hoverColor: FColors.primaryColor.withOpacity(.3),
-                  titleStyle: const TextStyle(color: FColors.black),
-                  icon: Icon(Iconsax.language_circle, color: FColors.primaryColor),
+                  hoverColor: FColors.primaryColor.withOpacity(.08),
+                  titleStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: FColors.dark,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  icon: Icon(
+                    Iconsax.language_circle,
+                    color: FColors.primaryColor,
+                    size: 20,
+                  ),
                 ),
                 SideMenuItemDataTile(
                   isSelected: false,
-                  hoverColor: FColors.primaryColor.withOpacity(.3),
+                  margin: const EdgeInsetsDirectional.symmetric(
+                    horizontal: FSizes.xs,
+                    vertical: 2,
+                  ),
+                  hoverColor: FColors.primaryColor.withOpacity(.08),
                   onTap: () async => await _callSuportTeam(),
                   title: 'Help & Support'.tr,
-                  icon: Icon(Iconsax.headphone, color: FColors.primaryColor),
+                  titleStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: FColors.dark,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  icon: Icon(
+                    Iconsax.headphone,
+                    color: FColors.primaryColor,
+                    size: 20,
+                  ),
                 ),
               ],
               header: StreamBuilder<User?>(
@@ -139,14 +209,16 @@ class SideMenuWrapper extends StatelessWidget {
                                   ),
                                 ),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
                                   children: [
                                     UserWidget(),
                                     FUserAvatar(),
                                     const SizedBox(width: FSizes.sm),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             user.displayName ?? 'User Name',
@@ -161,7 +233,10 @@ class SideMenuWrapper extends StatelessWidget {
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodySmall
-                                                ?.copyWith(color: FColors.white.withOpacity(.8)),
+                                                ?.copyWith(
+                                                  color: FColors.white
+                                                      .withOpacity(.8),
+                                                ),
                                           ),
                                         ],
                                       ),
