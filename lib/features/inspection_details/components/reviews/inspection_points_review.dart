@@ -126,6 +126,26 @@ class InspectionPointsReview extends StatelessWidget {
                                   ),
                                 ),
                               ),
+                            if (point.note != null && point.note!.isNotEmpty)
+                              Container(
+                                margin: EdgeInsets.only(
+                                  left: FSizes.md,
+                                  right: FSizes.md,
+                                  bottom: FSizes.sm,
+                                ),
+                                padding: EdgeInsets.all(FSizes.sm),
+                                decoration: BoxDecoration(
+                                  color: FColors.grey.withOpacity(.1),
+                                  borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
+                                  border: Border.all(
+                                    color: FColors.grey.withOpacity(.3),
+                                  ),
+                                ),
+                                child: Text(
+                                  point.note!,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ),
                           ],
                         );
                       }),

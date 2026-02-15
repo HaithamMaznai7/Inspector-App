@@ -12,6 +12,7 @@ import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
 
 class InspectionNotesDialog extends StatefulWidget {
   const InspectionNotesDialog(this.point, {super.key});
@@ -25,130 +26,221 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
   late TextEditingController _textEditingController;
   late Point _point;
 
+  /// Whether an image is available (from network or local file)
+  bool get _hasImage =>
+      (_point.image != null && (_point.image?.isNotEmpty ?? false)) ||
+      _point.file != null;
+
+  /// Resolves the image provider from either local file or network URL
+  ImageProvider? get _imageProvider {
+    if (_point.file != null) return FileImage(_point.file!);
+    if (_point.image != null && _point.image!.isNotEmpty) {
+      return NetworkImage(_point.image!);
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = FHelper.isDarkMode(context);
+
     return Scaffold(
-      // scrollable: true ,
       backgroundColor: FColors.light,
-      // alignment: Alignment.center,
       appBar: AppBar(
         title: Text(InspectionPage.addNoteTitle.tr),
         automaticallyImplyLeading: false,
         leading: BackPageButton(color: FColors.primaryColor),
       ),
-      body: Padding(
-        padding: EdgeInsetsGeometry.symmetric(
-          horizontal: FSizes.md,
-          vertical: FSizes.xl,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            (_point.image != null && (_point.image?.isNotEmpty ?? false)) ||
-                    (_point.file != null)
-                ? Expanded(
-                    child: ClipRRect(
-                      clipBehavior: Clip.antiAlias,
-                      borderRadius: BorderRadius.circular(
-                        FSizes.borderRadiusLg,
-                      ),
-                      child: EasyImageView(
-                        doubleTapZoomable: true,
-                        imageProvider: _point.file != null
-                            ? Image.file(
-                                _point.file!,
-                                fit: BoxFit.contain,
-                              ).image
-                            : Image.network(
-                                "${_point.image}",
-                                fit: BoxFit.contain,
-                              ).image,
-                      ),
+      body: Column(
+        children: [
+          // --- Scrollable content area ---
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: FSizes.md,
+                vertical: FSizes.md,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // --- Image section ---
+                  _buildImageSection(isDark),
+                  const SizedBox(height: FSizes.spaceBtwItems),
+
+                  // --- Note text field (no camera icon inside) ---
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? FColors.darkGrey.withOpacity(.2)
+                          : FColors.grey.withOpacity(.15),
+                      borderRadius:
+                          BorderRadius.circular(FSizes.borderRadiusLg),
+                      border: Border.all(color: FColors.grey.withOpacity(.4)),
                     ),
-                  )
-                : Spacer(),
-            Container(
-              margin: EdgeInsets.symmetric(
-                vertical: FSizes.spaceBtwInputFields,
-              ),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? FColors.darkGrey.withOpacity(.2)
-                    : FColors.grey.withOpacity(.8),
-                borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-              ),
-              child: TextFormField(
-                controller: _textEditingController,
-                keyboardType: TextInputType.text,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-                  errorBorder: InputBorder.none,
-                  focusedErrorBorder: InputBorder.none,
-                  suffix: IconButton(
-                    icon: const Icon(Icons.camera_alt),
-                    onPressed: _pickImage,
+                    child: TextFormField(
+                      controller: _textEditingController,
+                      keyboardType: TextInputType.text,
+                      maxLines: 3,
+                      minLines: 1,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        focusedErrorBorder: InputBorder.none,
+                        hintText: InspectionPage.noteHint.tr,
+                        labelText: InspectionPage.noteFieldLabel.tr,
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: FSizes.md,
+                          horizontal: FSizes.md,
+                        ),
+                      ),
+                      validator: (value) => value == null || value.isEmpty
+                          ? InspectionPage.noteValidation.tr
+                          : null,
+                    ),
                   ),
-                  hintText: InspectionPage.noteHint.tr,
-                  label: Text(InspectionPage.noteFieldLabel.tr),
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: FSizes.md,
-                    horizontal: FSizes.md,
-                  ),
-                ),
-                textAlign: TextAlign.center,
-                validator: (value) =>
-                    value == null || value.isEmpty ? InspectionPage.noteValidation.tr : null,
+                ],
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Flexible(
-                  child: TextButton(
-                    onPressed: _submit,
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(
-                        FColors.primaryColor,
-                      ),
-                      side: WidgetStateProperty.all(
-                        const BorderSide(color: FColors.primaryColor),
-                      ),
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+          ),
+
+          // --- Bottom action buttons ---
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: FSizes.md,
+                vertical: FSizes.sm,
+              ),
+              child: Row(
+                children: [
+                  // Submit button
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: FColors.primaryColor,
+                        foregroundColor: FColors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(FSizes.borderRadiusLg),
                         ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: Text(FTexts.submitBtn.tr),
+                    ),
+                  ),
+                  // Delete photo button (only when a local file is set)
+                  if (_point.file != null) ...[
+                    const SizedBox(width: FSizes.sm),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _delete,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: FColors.error,
+                          side: const BorderSide(color: FColors.error),
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(FSizes.borderRadiusLg),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: Text(FTexts.deleteBtn.tr),
                       ),
                     ),
-                    child: Text(
-                      FTexts.submitBtn.tr,
-                      style: const TextStyle(color: Colors.white),
-                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Builds the image preview or a tappable camera placeholder
+  Widget _buildImageSection(bool isDark) {
+    if (_hasImage) {
+      return Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+            child: SizedBox(
+              width: double.infinity,
+              height: 280,
+              child: EasyImageView(
+                doubleTapZoomable: true,
+                imageProvider: _imageProvider!,
+              ),
+            ),
+          ),
+          // Change photo overlay button
+          Positioned(
+            bottom: FSizes.sm,
+            right: FSizes.sm,
+            child: Material(
+              color: FColors.dark.withOpacity(.6),
+              borderRadius: BorderRadius.circular(FSizes.sm),
+              child: InkWell(
+                onTap: _pickImage,
+                borderRadius: BorderRadius.circular(FSizes.sm),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: FSizes.sm,
+                    vertical: 4,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Iconsax.camera, size: 16, color: FColors.white),
+                      const SizedBox(width: 4),
+                      Text(
+                        FTexts.markerChangePhoto.tr,
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelSmall
+                            ?.apply(color: FColors.white),
+                      ),
+                    ],
                   ),
                 ),
-                if (_point.file != null)
-                  TextButton(
-                    onPressed: _delete,
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(Colors.white),
-                      side: WidgetStateProperty.all(
-                        const BorderSide(color: FColors.primaryColor),
-                      ),
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
-                    ),
-                    child: Text(
-                      FTexts.deleteBtn.tr,
-                      style: const TextStyle(color: FColors.primaryColor),
-                    ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // No image — show tappable placeholder
+    return GestureDetector(
+      onTap: _pickImage,
+      child: Container(
+        height: 160,
+        decoration: BoxDecoration(
+          color: isDark
+              ? FColors.darkGrey.withOpacity(.2)
+              : FColors.grey.withOpacity(.15),
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+          border: Border.all(
+            color: FColors.primaryColor.withOpacity(.3),
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Iconsax.camera,
+              size: 40,
+              color: FColors.primaryColor.withOpacity(.7),
+            ),
+            const SizedBox(height: FSizes.xs),
+            Text(
+              FTexts.markerAddPhoto.tr,
+              style: Theme.of(context).textTheme.bodyMedium?.apply(
+                    color: FColors.primaryColor.withOpacity(.7),
                   ),
-              ],
             ),
           ],
         ),
@@ -201,16 +293,17 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
     });
   }
 
-  void _pickImage() async {
+  Future<void> _pickImage() async {
     if (Platform.isAndroid || Platform.isIOS) {
       final cameras = await availableCameras();
-      _point.file = await Get.dialog<File>(Camera(cameras: cameras));
-      setState(() {});
+      final file = await Get.dialog<File>(Camera(cameras: cameras));
+      if (file != null) {
+        setState(() {
+          _point.file = file;
+        });
+      }
     } else {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.any, // or use FileType.image, FileType.custom, etc.
-      );
-
+      final result = await FilePicker.platform.pickFiles(type: FileType.any);
       if (result != null && result.files.single.path != null) {
         setState(() {
           _point.file = File(result.files.single.path!);
