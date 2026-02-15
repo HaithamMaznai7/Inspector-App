@@ -43,6 +43,9 @@ class _AppBarSearchState extends State<AppBarSearch> {
     final trimmed = query.trim();
     if (trimmed.isEmpty) return;
     focusNode.unfocus();
+    inspectionsController.inspections.clear();
+    inspectionsController.isLoading.value = true;
+    inspectionsController.update();
     inspectionsController.load(
       query: trimmed,
       reset: true,
@@ -54,6 +57,9 @@ class _AppBarSearchState extends State<AppBarSearch> {
     controller.clear();
     focusNode.unfocus();
     _setExpanded(false);
+    inspectionsController.inspections.clear();
+    inspectionsController.isLoading.value = true;
+    inspectionsController.update();
     inspectionsController.load(reset: true);
   }
 
