@@ -67,7 +67,10 @@ class InspectionsController extends GetxController
 
     await load(reset: true, stage: newStage);
 
-    Get.back();
+    // Close drawer only on mobile (when drawer is open)
+    if (Get.isDialogOpen == true || Get.isBottomSheetOpen == true) {
+      Get.back();
+    }
   }
 
   Future<void> load({

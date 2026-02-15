@@ -90,6 +90,7 @@ class FTexts {
   static const String markerDeletedSuccessMsg = 'markerDeletedSuccessMsg';
   static const String markerErrorTitle = 'markerErrorTitle';
   static const String markerErrorMsg = 'markerErrorMsg';
+  static const String systemInspector = 'systemInspector';
 }
 
 class StorageKey {

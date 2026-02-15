@@ -402,5 +402,6 @@ class Arabic {
     FTexts.markerDeletedSuccessMsg: 'تم حذف الملاحظة بنجاح',
     FTexts.markerErrorTitle: 'خطأ',
     FTexts.markerErrorMsg: 'حدث خطأ، يرجى المحاولة مرة أخرى',
+    FTexts.systemInspector: 'مفتش النظام',
   };
 }

@@ -329,5 +329,6 @@ class English {
     FTexts.markerDeletedSuccessMsg: 'The note has been deleted successfully',
     FTexts.markerErrorTitle: 'Error',
     FTexts.markerErrorMsg: 'Something went wrong, please try again',
+    FTexts.systemInspector: 'System Inspector',
   };
 }
