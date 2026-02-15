@@ -19,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static const double tabletBreakpoint = 600;
 
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+  bool isSearchActive = false;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +32,14 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Logo(height: 30),
         centerTitle: true,
-        actions: [NotificationIcon(), const AppBarSearch()],
+        actions: [
+          if (!isSearchActive) NotificationIcon(),
+          AppBarSearch(
+            onSearchStateChanged: (expanded) {
+              setState(() => isSearchActive = expanded);
+            },
+          ),
+        ],
         leading: IconButton(
           onPressed: () => scaffoldKey.currentState?.openDrawer(),
           icon: Icon(

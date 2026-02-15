@@ -7,7 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class AppBarSearch extends StatefulWidget {
-  const AppBarSearch({super.key});
+  final ValueChanged<bool>? onSearchStateChanged;
+  
+  const AppBarSearch({super.key, this.onSearchStateChanged});
 
   @override
   State<AppBarSearch> createState() => _AppBarSearchState();
@@ -23,6 +25,11 @@ class _AppBarSearchState extends State<AppBarSearch> {
   void initState() {
     super.initState();
     inspectionsController = InspectionsBinding().instance;
+  }
+
+  void _setExpanded(bool value) {
+    setState(() => expanded = value);
+    widget.onSearchStateChanged?.call(value);
   }
 
   @override
@@ -46,7 +53,7 @@ class _AppBarSearchState extends State<AppBarSearch> {
   void _closeSearch() {
     controller.clear();
     focusNode.unfocus();
-    setState(() => expanded = false);
+    _setExpanded(false);
     inspectionsController.load(reset: true);
   }
 
@@ -63,7 +70,7 @@ class _AppBarSearchState extends State<AppBarSearch> {
       key: const ValueKey('icon'),
       icon: Icon(Icons.search, color: FColors.primaryColor),
       onPressed: () {
-        setState(() => expanded = true);
+        _setExpanded(true);
         Future.delayed(const Duration(milliseconds: 200), () {
           focusNode.requestFocus();
         });
