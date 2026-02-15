@@ -1,3 +1,4 @@
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:get/get.dart';
 
 enum BodyPart {
@@ -44,20 +45,21 @@ enum BodyPart {
     }
   }
 
+  /// Localized display label for each body part
   String label() {
     switch (this) {
       case BodyPart.top:
-        return 'Top'.tr;
+        return FTexts.bodyPartTop.tr;
       case BodyPart.left:
-        return 'Left'.tr;
+        return FTexts.bodyPartLeft.tr;
       case BodyPart.right:
-        return 'Right'.tr;
+        return FTexts.bodyPartRight.tr;
       case BodyPart.front:
-        return 'Front'.tr;
+        return FTexts.bodyPartFront.tr;
       case BodyPart.back:
-        return 'Back'.tr;
+        return FTexts.bodyPartBack.tr;
       case BodyPart.interior:
-        return 'Interior'.tr;
+        return FTexts.bodyPartInterior.tr;
     }
   }
 }

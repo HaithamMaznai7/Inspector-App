@@ -373,5 +373,34 @@ class Arabic {
     'Exit': 'لا تحفظ',
     'There is no OBD Code': 'لا يوجد رموز OBD مسجله بعد',
     'EditNumber': 'تعديل رقم الجوال',
+
+    /// Body Notes / Marker Dialog
+    FTexts.markerTitle: 'إضافة ملاحظة',
+    FTexts.markerInputTitle: 'الملاحظة',
+    FTexts.markerInputHint: 'صف المشكلة...',
+    FTexts.markerSelectTitle: 'حدد نوع الملاحظة',
+    FTexts.markerNoteRequired: 'الملاحظة مطلوبة',
+    FTexts.markerNoteRequiredMsg: 'يجب وصف المشكلة',
+    FTexts.markerTypeRequired: 'النوع مطلوب',
+    FTexts.markerTypeRequiredMsg: 'يجب تحديد نوع الملاحظة',
+    FTexts.markerAddPhoto: 'التقاط صورة',
+    FTexts.markerChangePhoto: 'تغيير الصورة',
+    FTexts.bodyInspectionDetails: 'تفاصيل الفحص',
+
+    /// Body part labels
+    FTexts.bodyPartTop: 'أعلى',
+    FTexts.bodyPartLeft: 'يسار',
+    FTexts.bodyPartRight: 'يمين',
+    FTexts.bodyPartFront: 'أمام',
+    FTexts.bodyPartBack: 'خلف',
+    FTexts.bodyPartInterior: 'داخلي',
+
+    /// Marker success / error
+    FTexts.markerSavedSuccess: 'تم الحفظ',
+    FTexts.markerSavedSuccessMsg: 'تم حفظ الملاحظة بنجاح',
+    FTexts.markerDeletedSuccess: 'تم الحذف',
+    FTexts.markerDeletedSuccessMsg: 'تم حذف الملاحظة بنجاح',
+    FTexts.markerErrorTitle: 'خطأ',
+    FTexts.markerErrorMsg: 'حدث خطأ، يرجى المحاولة مرة أخرى',
   };
 }

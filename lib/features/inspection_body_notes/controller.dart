@@ -1,3 +1,4 @@
+import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/models/inspection_body_notes.dart';
 import 'package:fahis_inspector/features/inspection_body_notes/components/card.dart';
@@ -5,6 +6,7 @@ import 'package:fahis_inspector/models/marker.dart';
 import 'package:fahis_inspector/resources/assets_repository.dart';
 import 'package:fahis_inspector/resources/inspection_body_repository.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -92,16 +94,46 @@ class InspectionBodyController extends GetxController {
       InspectionBodyNotesDialog(note: marker),
     );
 
-    if (result != null && result.id == 0) {
-      await repository.store(body, result);
-    } else if (result != null) {
-      await repository.update(marker);
+    if (result == null) return;
+
+    // Delete signal from the dialog (id == -1)
+    if (result.id == -1 && marker.id > 0) {
+      await onRemove(marker);
+      return;
+    }
+
+    try {
+      // New marker (id == 0) → store it
+      if (result.id == 0) {
+        await repository.store(body, result);
+      } else {
+        // Existing marker → update it
+        await repository.update(marker);
+      }
+      FLoader.successSnackBar(
+        title: FTexts.markerSavedSuccess.tr,
+        message: FTexts.markerSavedSuccessMsg.tr,
+      );
+    } catch (_) {
+      FLoader.errorSnackBar(
+        title: FTexts.markerErrorTitle.tr,
+        message: FTexts.markerErrorMsg.tr,
+      );
     }
   }
 
   Future<void> onRemove(Marker note) async {
     try {
       await repository.delete(note);
+      FLoader.successSnackBar(
+        title: FTexts.markerDeletedSuccess.tr,
+        message: FTexts.markerDeletedSuccessMsg.tr,
+      );
+    } catch (_) {
+      FLoader.errorSnackBar(
+        title: FTexts.markerErrorTitle.tr,
+        message: FTexts.markerErrorMsg.tr,
+      );
     } finally {
       update();
     }

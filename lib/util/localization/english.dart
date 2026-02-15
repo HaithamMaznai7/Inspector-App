@@ -299,6 +299,35 @@ class English {
     'Inspection Point Results': 'Inspection Point Results',
     'Point Categories': 'Point Categories',
     'The file is not PDF, You should to upload PDF file.': 'The file is not PDF, You should to upload PDF file.',
-    'EditNumber': 'Edit phone number'
+    'EditNumber': 'Edit phone number',
+
+    /// Body Notes / Marker Dialog
+    FTexts.markerTitle: 'Add Note',
+    FTexts.markerInputTitle: 'Note',
+    FTexts.markerInputHint: 'Describe the issue...',
+    FTexts.markerSelectTitle: 'Select Marker Type',
+    FTexts.markerNoteRequired: 'Note Required',
+    FTexts.markerNoteRequiredMsg: 'Please describe the issue',
+    FTexts.markerTypeRequired: 'Type Required',
+    FTexts.markerTypeRequiredMsg: 'Please select a marker type',
+    FTexts.markerAddPhoto: 'Take Photo',
+    FTexts.markerChangePhoto: 'Change Photo',
+    FTexts.bodyInspectionDetails: 'Inspection Details',
+
+    /// Body part labels
+    FTexts.bodyPartTop: 'Top',
+    FTexts.bodyPartLeft: 'Left',
+    FTexts.bodyPartRight: 'Right',
+    FTexts.bodyPartFront: 'Front',
+    FTexts.bodyPartBack: 'Back',
+    FTexts.bodyPartInterior: 'Interior',
+
+    /// Marker success / error
+    FTexts.markerSavedSuccess: 'Note Saved',
+    FTexts.markerSavedSuccessMsg: 'The note has been saved successfully',
+    FTexts.markerDeletedSuccess: 'Note Deleted',
+    FTexts.markerDeletedSuccessMsg: 'The note has been deleted successfully',
+    FTexts.markerErrorTitle: 'Error',
+    FTexts.markerErrorMsg: 'Something went wrong, please try again',
   };
 }

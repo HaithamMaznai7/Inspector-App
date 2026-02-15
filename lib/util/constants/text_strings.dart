@@ -33,7 +33,7 @@ class FTexts {
   static const String editBtn = 'editBtn';
   static const String reviewBtn = 'reviewBtn';
   static const String automatic = 'automatic';
-  static const String unSelected = 'Nothing';
+  static const String unSelected = '';
   static const String more = 'more';
   static const String manual = 'manual';
   static const String fabric = 'Fabric';
@@ -71,9 +71,26 @@ class FTexts {
   static const String markerInputHint = 'markerInputHint';
   static const String markerSelectTitle = 'markerSelectTitle';
   static const String markerTitle = 'markerTitle';
+  static const String markerNoteRequired = 'markerNoteRequired';
+  static const String markerNoteRequiredMsg = 'markerNoteRequiredMsg';
+  static const String markerTypeRequired = 'markerTypeRequired';
+  static const String markerTypeRequiredMsg = 'markerTypeRequiredMsg';
+  static const String markerAddPhoto = 'markerAddPhoto';
+  static const String markerChangePhoto = 'markerChangePhoto';
+  static const String bodyInspectionDetails = 'bodyInspectionDetails';
+  static const String bodyPartTop = 'bodyPartTop';
+  static const String bodyPartLeft = 'bodyPartLeft';
+  static const String bodyPartRight = 'bodyPartRight';
+  static const String bodyPartFront = 'bodyPartFront';
+  static const String bodyPartBack = 'bodyPartBack';
+  static const String bodyPartInterior = 'bodyPartInterior';
+  static const String markerSavedSuccess = 'markerSavedSuccess';
+  static const String markerSavedSuccessMsg = 'markerSavedSuccessMsg';
+  static const String markerDeletedSuccess = 'markerDeletedSuccess';
+  static const String markerDeletedSuccessMsg = 'markerDeletedSuccessMsg';
+  static const String markerErrorTitle = 'markerErrorTitle';
+  static const String markerErrorMsg = 'markerErrorMsg';
 }
-
-
 
 class StorageKey {
   static const String appData = 'APP_DATA';

@@ -5,10 +5,10 @@ import 'package:fahis_inspector/models/inspection_body_notes.dart';
 import 'package:fahis_inspector/models/marker.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/src/simple/get_state.dart';
 import 'package:iconsax/iconsax.dart';
 
 class InspectionBodyTypeScreen extends StatelessWidget {
@@ -20,9 +20,18 @@ class InspectionBodyTypeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('تفاصيل الفحص'),
+        title: Text(
+          FTexts.bodyInspectionDetails.tr,
+          style: Theme.of(context)
+              .textTheme
+              .headlineSmall
+              ?.apply(color: FColors.white),
+        ),
         centerTitle: true,
-        backgroundColor: FColors.primaryColor,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(gradient: FColors.primaryGradient),
+        ),
+        iconTheme: const IconThemeData(color: FColors.white),
       ),
       body: SingleChildScrollView(
         child: GetBuilder<InspectionBodyController>(
@@ -30,7 +39,9 @@ class InspectionBodyTypeScreen extends StatelessWidget {
           autoRemove: false,
           builder: (controller) {
             final bodies = controller.bodySides;
-            final body = bodies.where((b) => b.id == bodySide.id).first;
+            final match = bodies.where((b) => b.id == bodySide.id);
+            if (match.isEmpty) return const SizedBox();
+            final body = match.first;
 
             double imageWidth =
                 body.part == BodyPart.right || body.part == BodyPart.left
@@ -48,6 +59,8 @@ class InspectionBodyTypeScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  const SizedBox(height: FSizes.md),
+                  // Tappable body image with positioned markers
                   GestureDetector(
                     onTapDown: (TapDownDetails v) => controller.onCreateEdit(
                       body,
@@ -77,25 +90,25 @@ class InspectionBodyTypeScreen extends StatelessWidget {
                               );
                             },
                           ),
+                          // Render each marker as a tappable icon
                           ...body.notes.map(
                             (Marker note) => Positioned(
-                              left:
-                                  imageWidth *
-                                  (note.dx - 8) /
-                                  100, // 70% of the image width
-                              top:
-                                  imageHeight *
-                                  (note.dy - 8) /
-                                  100, // 50% of the image height
-                              child: IconButton(
-                                icon: Icon(
-                                  Iconsax.close_circle,
-                                  color: FColors.primaryColor,
-                                  size: 35,
+                              left: imageWidth * (note.dx - 8) / 100,
+                              top: imageHeight * (note.dy - 8) / 100,
+                              child: GestureDetector(
+                                onTap: () => controller.onCreateEdit(body, note),
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: FColors.primaryColor.withOpacity(.15),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Iconsax.warning_2,
+                                    color: FColors.primaryColor,
+                                    size: 28,
+                                  ),
                                 ),
-                                onPressed: () => InspectionBodyBinding()
-                                    .instance
-                                    .onCreateEdit(body, note),
                               ),
                             ),
                           ),
