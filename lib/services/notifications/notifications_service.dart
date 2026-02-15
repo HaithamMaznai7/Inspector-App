@@ -58,10 +58,14 @@ class NotificationsService extends GetxController {
         });
       }
 
-      repository.stream.listen((notifications) {
-        notifications.assignAll(notifications);
+      repository.stream.listen((data) {
+        dd('[Notifications] stream event: ${data.length} items');
+        notifications.assignAll(data);
         update();
       });
+
+      // Load notifications on init
+      loadNotifications();
 
       // When the app is closed
       // FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
@@ -167,19 +171,26 @@ class NotificationsService extends GetxController {
   }
 
   void loadNotifications({bool isRefresh = false}) async {
+    dd('[Notifications] loadNotifications called (isRefresh: $isRefresh)');
     if (isRefresh) {
       notifications.value = [];
     } else {
-      notifications.assignAll(repository.fetchFromCache());
+      final cached = repository.fetchFromCache();
+      dd('[Notifications] cached count: ${cached.length}');
+      notifications.assignAll(cached);
     }
 
     isLoading.value = notifications.isEmpty;
     update();
+    dd('[Notifications] isLoading: ${isLoading.value}, count before API: ${notifications.length}');
 
-    notifications.assignAll(await repository.fetchFromApi());
+    final apiData = await repository.fetchFromApi();
+    dd('[Notifications] API returned count: ${apiData.length}');
+    notifications.assignAll(apiData);
 
     isLoading.value = false;
     update();
+    dd('[Notifications] final count: ${notifications.length}');
   }
 
   Future<void> onRefresh() async {

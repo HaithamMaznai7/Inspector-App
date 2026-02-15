@@ -344,5 +344,11 @@ class English {
     FTexts.stageRejected: 'Rejected',
     FTexts.stageReviewed: 'Approved',
     'Search by slug or plate...': 'Search by slug or plate...',
+
+    /// Notifications Screen
+    'Notifications': 'Notifications',
+    'No notifications yet': 'No notifications yet',
+    'You will see your notifications here': 'You will see your notifications here',
+    'Just now': 'Just now',
   };
 }

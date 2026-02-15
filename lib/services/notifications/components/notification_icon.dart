@@ -21,7 +21,7 @@ class NotificationIcon extends StatelessWidget {
           offset: Offset(-8, 8),
           maxCount: 99,
           child: IconButton(
-            onPressed: () => Get.to(NotificationScreen()),
+            onPressed: () => Get.to(() => const NotificationScreen()),
             icon: Icon(Iconsax.notification, color: FColors.primaryColor),
           ),
         );

@@ -417,5 +417,11 @@ class Arabic {
     FTexts.stageRejected: 'مرفوض',
     FTexts.stageReviewed: 'معتمد',
     'Search by slug or plate...': 'بحث برقم الفحص أو اللوحة...',
+
+    /// Notifications Screen
+    'Notifications': 'الإشعارات',
+    'No notifications yet': 'لا توجد إشعارات بعد',
+    'You will see your notifications here': 'ستظهر إشعاراتك هنا',
+    'Just now': 'الآن',
   };
 }
