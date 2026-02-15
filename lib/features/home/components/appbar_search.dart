@@ -96,7 +96,7 @@ class _AppBarSearchState extends State<AppBarSearch> {
           autofocus: true,
           textInputAction: TextInputAction.search,
           decoration: InputDecoration(
-            hintText: 'Search by slug or plate...'.tr,
+            hintText: 'Search...'.tr,
             border: InputBorder.none,
             prefixIcon: Icon(Icons.search, color: FColors.primaryColor),
             suffixIcon: IconButton(
