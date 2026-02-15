@@ -27,6 +27,44 @@ class InspectionsController extends GetxController
   var count = 0.obs;
   Rx<InspectionStage> selectedStage = Rx<InspectionStage>(InspectionStage.all);
 
+  // 0 = Companies (شركات), 1 = Individuals (افراد)
+  var selectedSegment = 0.obs;
+
+  /// Groups inspections by customer name, returns only customers with 2+ requests
+  Map<String, List<Inspection>> get companyGroups {
+    final Map<String, List<Inspection>> grouped = {};
+    for (final ins in inspections) {
+      final name = ins.customer?.name ?? '';
+      grouped.putIfAbsent(name, () => []).add(ins);
+    }
+    // Only keep customers with multiple inspections
+    grouped.removeWhere((_, list) => list.length < 2);
+    dd('[Segments] companyGroups: ${grouped.length} companies');
+    return grouped;
+  }
+
+  /// Returns inspections belonging to customers with only 1 request
+  List<Inspection> get individualInspections {
+    final Map<String, List<Inspection>> grouped = {};
+    for (final ins in inspections) {
+      final name = ins.customer?.name ?? '';
+      grouped.putIfAbsent(name, () => []).add(ins);
+    }
+    // Only keep single-request customers
+    final singles = grouped.entries
+        .where((e) => e.value.length == 1)
+        .expand((e) => e.value)
+        .toList();
+    dd('[Segments] individualInspections: ${singles.length} items');
+    return singles;
+  }
+
+  /// Switch between Companies and Individuals tabs
+  void changeSegment(int index) {
+    selectedSegment.value = index;
+    update();
+  }
+
   @override
   void onInit() async {
     super.onInit();

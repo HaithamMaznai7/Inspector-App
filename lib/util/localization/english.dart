@@ -1,10 +1,9 @@
 import '../constants/text_strings.dart';
 
 class English {
-
   English._();
 
-  static Map<String,String> en = {
+  static Map<String, String> en = {
     /// Global Texts
     FTexts.appName: 'Fahis',
     FTexts.cancelBtn: 'Cancel',
@@ -16,7 +15,7 @@ class English {
     FTexts.requestId: 'Request ID',
     FTexts.deleteBtn: 'Delete',
     FTexts.signOut: 'Sign Out',
-    FTexts.updateAssets: 'Assets Upgrade' ,
+    FTexts.updateAssets: 'Assets Upgrade',
     FTexts.offlineMode: 'Offline Mode',
     'All': 'All',
     'Pending': 'Pending',
@@ -28,7 +27,8 @@ class English {
     'Settings & Support': 'Settings & Support',
     'Help & Support': 'Help & Support',
     FTexts.unSelected: 'Not Selected',
-    ForgetPage.forgetSubTitle: 'Enter your mobile number and we will send you a verification code',
+    ForgetPage.forgetSubTitle:
+        'Enter your mobile number and we will send you a verification code',
     FTexts.more: 'More',
 
     /// End Global Texts
@@ -45,13 +45,14 @@ class English {
     FTexts.good: 'Good',
     FTexts.notes: 'Note',
     FTexts.na: 'N/A',
+
     /// End Enums Texts
     ///
     /// Login Page
     LoginPage.loginTitle: 'Inspection Center App',
     LoginPage.loginSubTitle: 'Welcome Back,..',
-    LoginPage.phoneNumber: 'Phone Number' ,
-    LoginPage.phoneNumberValidation: 'Phone Number must be a correct' ,
+    LoginPage.phoneNumber: 'Phone Number',
+    LoginPage.phoneNumberValidation: 'Phone Number must be a correct',
     LoginPage.username: 'Email or mobile',
     LoginPage.emailValidation: 'Password must be bigger than 8 characters',
     LoginPage.password: 'Password',
@@ -67,6 +68,7 @@ class English {
     LoginPage.resendBtn: 'Resend',
     LoginPage.editPhoneNumber: 'Edit phone number',
     LoginPage.processingTitle: 'Logging in and processing data ...',
+
     /// End Login Page
     ///
     /// Home Page
@@ -77,8 +79,9 @@ class English {
     HomePage.onEmpty: 'There is no request yet',
     HomePage.onError: 'There is an error occurred',
     HomePage.noMore: 'There is no request yet',
+
     /// End Home Page
-    /// 
+    ///
     /// Home Page
     InspectionPage.generalInfo: 'General Information',
     InspectionPage.vehicleInfo: 'Vehicle Information',
@@ -97,7 +100,7 @@ class English {
     InspectionPage.inspectorNote: 'Inspector Note',
     InspectionPage.reviewerNote: 'Reviewer Note',
     InspectionPage.notYet: 'Not Set Yet',
-    InspectionPage.anyInspector: 'All Inspectors', 
+    InspectionPage.anyInspector: 'All Inspectors',
     InspectionPage.vin: 'VIN',
     InspectionPage.serialNo: 'Serial No',
     InspectionPage.make: 'Make',
@@ -121,11 +124,13 @@ class English {
     InspectionPage.inspectionDetailsTitle: 'Inspection Details',
     InspectionPage.doneBtn: 'Done',
     InspectionPage.imageRequired: 'Image Required',
-    InspectionPage.imageRequiredMsg: 'You should document the note with an image that describes the status',
+    InspectionPage.imageRequiredMsg:
+        'You should document the note with an image that describes the status',
     InspectionPage.noteRequired: 'Note Required',
     InspectionPage.noteRequiredMsg: 'You should describe the status',
     InspectionPage.resetPointsTitle: 'Reset Points',
-    InspectionPage.resetPointsContent: 'Are you sure you want to reset all points? This will delete all changes on the current points.',
+    InspectionPage.resetPointsContent:
+        'Are you sure you want to reset all points? This will delete all changes on the current points.',
     InspectionPage.resetPointsConfirm: 'Reset',
     InspectionPage.selectStatus: 'Select Status',
     InspectionPage.addNoteTitle: 'Add Note',
@@ -148,8 +153,10 @@ class English {
     InspectionPage.noteOptionalHint: 'Add a note (optional)...',
     InspectionPage.confirmSubmit: 'Confirm',
     InspectionPage.cancelBtn: 'Cancel',
-    InspectionPage.submitConfirmSubtitle: 'Are you sure you want to submit this inspection?',
-    InspectionPage.rejectConfirmSubtitle: 'Are you sure you want to reject this inspection?',
+    InspectionPage.submitConfirmSubtitle:
+        'Are you sure you want to submit this inspection?',
+    InspectionPage.rejectConfirmSubtitle:
+        'Are you sure you want to reject this inspection?',
     InspectionPage.addNoteLabel: 'Add Note',
     InspectionPage.optionalTag: 'optional',
     InspectionPage.obdFileName: 'File name',
@@ -157,7 +164,8 @@ class English {
     InspectionPage.obdCodesTitle: 'OBD Codes',
     InspectionPage.stepLabel: 'Step @step',
     InspectionPage.submitValidationTitle: 'Cannot Submit',
-    InspectionPage.submitValidationMsg: 'Please complete all steps before submitting:',
+    InspectionPage.submitValidationMsg:
+        'Please complete all steps before submitting:',
     InspectionPage.submitSuccessTitle: 'Submitted',
     InspectionPage.submitSuccessMsg: 'Inspection submitted successfully',
     InspectionPage.stepIncomplete: '@step is incomplete',
@@ -166,6 +174,7 @@ class English {
     InspectionPage.stepPhotos: 'Photos',
     InspectionPage.stepBody: 'Body Notes',
     InspectionPage.stepObd: 'OBD',
+
     /// End Home Page
     ///
     /// Details Page
@@ -180,12 +189,13 @@ class English {
     DetailsPage.vin: 'VIN',
     DetailsPage.vinHint: 'Enter VIN',
     DetailsPage.vinValidationIfNull: 'The VIN must be entered',
-    DetailsPage.vinValidation : 'The VIN length must be 17',
+    DetailsPage.vinValidation: 'The VIN length must be 17',
 
     DetailsPage.plateNumber: 'Plate Number',
     DetailsPage.plateNumberHint: 'Enter Plate Number',
     DetailsPage.plateNumberValidationIfNull: 'The Car Plate must be entered',
-    DetailsPage.plateNumberValidation:'The Car Plate length must be less than 9',
+    DetailsPage.plateNumberValidation:
+        'The Car Plate length must be less than 9',
 
     DetailsPage.bodyType: 'Body Type',
     DetailsPage.bodyTypeValidation: 'Automatic',
@@ -201,7 +211,7 @@ class English {
 
     DetailsPage.milage: 'Milage',
     DetailsPage.milageHint: 'Enter Milage',
-    DetailsPage.milageValidationIfNull : 'The Milage must be entered',
+    DetailsPage.milageValidationIfNull: 'The Milage must be entered',
     DetailsPage.milageValidation: 'The Milage must be numbers',
 
     DetailsPage.yearModel: 'Year Model',
@@ -223,19 +233,20 @@ class English {
 
     DetailsPage.engineSize: 'Engine Size CC',
     DetailsPage.engineSizeHint: 'Enter Engine Size (CC)',
-    DetailsPage.engineSizeValidationIfNull : 'The Engine Size must be entered',
-    DetailsPage.engineSizeValidation: 'The Engine Size must be normal numbers or decimal',
+    DetailsPage.engineSizeValidationIfNull: 'The Engine Size must be entered',
+    DetailsPage.engineSizeValidation:
+        'The Engine Size must be normal numbers or decimal',
 
     DetailsPage.seatType: 'Seat Type',
     DetailsPage.seatTypeValidation: 'Automatic',
 
     DetailsPage.seatNo: 'Seats Number',
     DetailsPage.seatNoValidation: 'Automatic',
+
     /// End Details Page
     FTexts.saveBtn: 'Save',
     FTexts.editBtn: 'Edit',
     FTexts.reviewBtn: 'Review Inspection',
-
 
     // FTexts.inspectionType: 'Inspection Type',
     //
@@ -258,8 +269,10 @@ class English {
     // FTexts.descHint: 'Type description here',
     // FTexts.successfullSavedTitle: 'Successful Saved',
     // FTexts.successfullSavedSubtitle: 'Your inspection results have saved successfully.',
-    'The last 6 charts in Car Plate must be numbers': 'The last 6 charts in Car Plate must be numbers',
-    'The First 3 charts in Car Plate must be letters': 'The First 3 charts in Car Plate must be letters',
+    'The last 6 charts in Car Plate must be numbers':
+        'The last 6 charts in Car Plate must be numbers',
+    'The First 3 charts in Car Plate must be letters':
+        'The First 3 charts in Car Plate must be letters',
     'Type your note here': 'Enter your note here',
     'Add Note': 'Enter Note',
     'Provide valid Email': 'Provide valid Email',
@@ -275,19 +288,23 @@ class English {
     'Continue with offline': 'Continue with offline',
     'Reload': 'Reload',
     'There is no more requests': 'There is no more requests',
-    "It's seems you are logged out, Offline mode is allowed while you are logged in": "It's seems you are logged out, Offline mode is allowed while you are logged in",
+    "It's seems you are logged out, Offline mode is allowed while you are logged in":
+        "It's seems you are logged out, Offline mode is allowed while you are logged in",
     'Update': 'Update',
     'Skip': 'Skip',
-    'update_message': 'There is a new update Version @newVer, You @isShould update it now.',
+    'update_message':
+        'There is a new update Version @newVer, You @isShould update it now.',
     'there_update': 'Good News',
     'have_to': 'have to',
     'can': 'can',
-    'is_not_enable_to_using_offline_mood': "It's seems you are logged out or the assets are not downloaded, Offline mode is allowed while you are logged in and assets are downloaded",
+    'is_not_enable_to_using_offline_mood':
+        "It's seems you are logged out or the assets are not downloaded, Offline mode is allowed while you are logged in and assets are downloaded",
     'App Settings': 'App Settings',
     'General Settings': 'General Settings',
     'Offline Mode Settings': 'Offline Mode Settings',
     'Permission Required': 'Permission Required',
-    'You must to give a permission to can use camera or select image from gallery': 'You must to give a permission to can use camera or select image from gallery',
+    'You must to give a permission to can use camera or select image from gallery':
+        'You must to give a permission to can use camera or select image from gallery',
     'Go to settings': 'Go to settings',
     'Welcome back': 'Welcome back',
     'Remember Me': 'Remember me',
@@ -298,7 +315,8 @@ class English {
     'Add': 'Add',
     'Inspection Point Results': 'Inspection Point Results',
     'Point Categories': 'Point Categories',
-    'The file is not PDF, You should to upload PDF file.': 'The file is not PDF, You should to upload PDF file.',
+    'The file is not PDF, You should to upload PDF file.':
+        'The file is not PDF, You should to upload PDF file.',
     'EditNumber': 'Edit phone number',
 
     /// Body Notes / Marker Dialog
@@ -345,10 +363,18 @@ class English {
     FTexts.stageReviewed: 'Approved',
     'Search...': 'Search...',
 
+    /// Home Screen Segments
+    'Companies': 'Companies',
+    'Individuals': 'Individuals',
+    'requests': 'requests',
+    'No company requests': 'No company requests',
+    'No individual requests': 'No individual requests',
+
     /// Notifications Screen
     'Notifications': 'Notifications',
     'No notifications yet': 'No notifications yet',
-    'You will see your notifications here': 'You will see your notifications here',
+    'You will see your notifications here':
+        'You will see your notifications here',
     'Just now': 'Just now',
   };
 }

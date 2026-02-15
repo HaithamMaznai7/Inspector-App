@@ -418,6 +418,13 @@ class Arabic {
     FTexts.stageReviewed: 'معتمد',
     'Search...': 'بحث...',
 
+    /// Home Screen Segments
+    'Companies': 'شركات',
+    'Individuals': 'أفراد',
+    'requests': 'طلبات',
+    'No company requests': 'لا توجد طلبات شركات',
+    'No individual requests': 'لا توجد طلبات أفراد',
+
     /// Notifications Screen
     'Notifications': 'الإشعارات',
     'No notifications yet': 'لا توجد إشعارات بعد',
