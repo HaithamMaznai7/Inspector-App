@@ -7,8 +7,8 @@ Notification _$NotificationFromJson(Map<String, dynamic> json) => Notification(
   description: json['data']['description'],
   url: json['data']['url'],
   page: json['data']['page'],
-  readAt: json['read_at'] == null ? null : DateTime.parse(json['read_at']),
-  createdAt: DateTime.parse(json['created_at']),
+  readAt: json['read_at'] == null ? null : DateTime.tryParse(json['read_at'].toString()),
+  createdAt: DateTime.tryParse(json['created_at']?.toString() ?? '') ?? DateTime.now(),
 );
 
 Map<String, dynamic> _$NotificationToJson(Notification instance) =>
