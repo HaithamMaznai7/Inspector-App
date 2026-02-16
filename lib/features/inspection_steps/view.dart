@@ -1,5 +1,6 @@
 import 'package:fahis_inspector/common/widgets/components/back_page_button.dart';
 import 'package:fahis_inspector/features/inspection_steps/components/step_selector.dart';
+import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/features/inspection_steps/controller.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -135,13 +136,16 @@ class _StepIndicatorRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  InspectionPage.stepLabel.trParams({'step': '${tab['id'] + 1}'}),
+                  // Show the stage name (e.g. "Points", "Photos")
+                  // instead of "Step N" to avoid confusion on partial orders
+                  (tab['stage'] as InspectionStage).getLabel,
                   style: Theme.of(context).textTheme.labelSmall!.copyWith(
                     color: isReachable
                         ? FColors.white
                         : FColors.white.withValues(alpha: 0.3),
                     fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

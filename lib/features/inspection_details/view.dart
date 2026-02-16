@@ -74,13 +74,20 @@ class InspectionDetailsScreen extends StatelessWidget {
               children: [
                 InspectorNoteSection(),
                 ReviewerNoteSection(),
+                // Always show general info and contact
                 const InspectionInfoReview(),
-                const VehicleInfoReview(),
+                // Only show cards for steps that exist in this order
+                if (controller.inspection.value?.hasDetails ?? false)
+                  const VehicleInfoReview(),
                 const ConnectPersonInfo(),
-                const InspectionPointsReview(),
-                const InspectionPhotosReview(),
-                const InspectionBodyNotesReview(),
-                const InspectionOBDReview(),
+                if (controller.inspection.value?.hasPoints ?? false)
+                  const InspectionPointsReview(),
+                if (controller.inspection.value?.hasPhotos ?? false)
+                  const InspectionPhotosReview(),
+                if (controller.inspection.value?.hasBody ?? false)
+                  const InspectionBodyNotesReview(),
+                if (controller.inspection.value?.hasObd ?? false)
+                  const InspectionOBDReview(),
                 SizedBox(height: FSizes.md),
               ],
             ),
