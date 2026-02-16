@@ -15,13 +15,26 @@ class InspectionPhotosScreen extends StatelessWidget {
   InspectionPhotosScreen({super.key});
   final InspectionPhotosController controller = InspectionPhotosBinding().instance;
 
+  /// Localizes photo category names from backend
+  String _localizeCategory(String? category) {
+    if (category == null) return InspectionPage.photosTitle.tr;
+    switch (category.toLowerCase()) {
+      case 'exterior':
+        return InspectionPage.photoCategoryExterior.tr;
+      case 'interior':
+        return InspectionPage.photoCategoryInterior.tr;
+      default:
+        return category; // fallback to original if unknown
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         // Show the selected category name in the AppBar
         title: Obx(() => Text(
-          controller.category.value ?? InspectionPage.photosTitle.tr,
+          _localizeCategory(controller.category.value),
           style: Theme.of(context).textTheme.titleMedium!.copyWith(
             color: FColors.white,
           ),
@@ -89,7 +102,7 @@ class InspectionPhotosScreen extends StatelessWidget {
                         label: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(cat),
+                            Text(_localizeCategory(cat)),
                             const SizedBox(width: FSizes.xs),
                             // Upload count badge
                             Container(

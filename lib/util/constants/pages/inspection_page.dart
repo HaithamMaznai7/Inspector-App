@@ -62,6 +62,8 @@ class InspectionPage {
   static const String photosProgress = 'photosProgress';
   static const String takePhoto = 'takePhoto';
   static const String deletePhoto = 'deletePhoto';
+  static const String photoCategoryExterior = 'photoCategoryExterior';
+  static const String photoCategoryInterior = 'photoCategoryInterior';
 
   /// Inspection Points
   static const String pointsReview = 'pointsReview';

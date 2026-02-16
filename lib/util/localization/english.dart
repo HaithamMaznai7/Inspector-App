@@ -147,6 +147,8 @@ class English {
     InspectionPage.photosProgress: '@uploaded / @total photos',
     InspectionPage.takePhoto: 'Take Photo',
     InspectionPage.deletePhoto: 'Delete Photo',
+    InspectionPage.photoCategoryExterior: 'Exterior',
+    InspectionPage.photoCategoryInterior: 'Interior',
     InspectionPage.startInspection: 'Start Inspection',
     InspectionPage.generalNoteTitle: 'Submit Inspection',
     InspectionPage.rejectionNoteTitle: 'Reject Inspection',

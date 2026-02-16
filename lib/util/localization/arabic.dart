@@ -146,6 +146,8 @@ class Arabic {
     InspectionPage.photosProgress: '@uploaded / @total صور',
     InspectionPage.takePhoto: 'التقاط صورة',
     InspectionPage.deletePhoto: 'حذف الصورة',
+    InspectionPage.photoCategoryExterior: 'خارجية',
+    InspectionPage.photoCategoryInterior: 'داخلية',
     InspectionPage.startInspection: 'ابدأ الفحص',
     InspectionPage.generalNoteTitle: 'إرسال الفحص',
     InspectionPage.rejectionNoteTitle: 'رفض الفحص',
