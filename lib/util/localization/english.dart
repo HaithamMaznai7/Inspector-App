@@ -369,6 +369,7 @@ class English {
     'requests': 'requests',
     'No company requests': 'No company requests',
     'No individual requests': 'No individual requests',
+    'No results found': 'No results found',
 
     /// Notifications Screen
     'Notifications': 'Notifications',

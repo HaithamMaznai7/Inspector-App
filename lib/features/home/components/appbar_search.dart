@@ -43,6 +43,8 @@ class _AppBarSearchState extends State<AppBarSearch> {
     final trimmed = query.trim();
     if (trimmed.isEmpty) return;
     focusNode.unfocus();
+    // Activate search mode — UI will show flat results, no segments
+    inspectionsController.isSearchActive.value = true;
     inspectionsController.inspections.clear();
     inspectionsController.isLoading.value = true;
     inspectionsController.update();
@@ -57,6 +59,8 @@ class _AppBarSearchState extends State<AppBarSearch> {
     controller.clear();
     focusNode.unfocus();
     _setExpanded(false);
+    // Deactivate search mode — segment filters resume
+    inspectionsController.isSearchActive.value = false;
     inspectionsController.inspections.clear();
     inspectionsController.isLoading.value = true;
     inspectionsController.update();

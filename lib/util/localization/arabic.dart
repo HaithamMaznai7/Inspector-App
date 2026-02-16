@@ -424,6 +424,7 @@ class Arabic {
     'requests': 'طلبات',
     'No company requests': 'لا توجد طلبات شركات',
     'No individual requests': 'لا توجد طلبات أفراد',
+    'No results found': 'لا توجد نتائج',
 
     /// Notifications Screen
     'Notifications': 'الإشعارات',

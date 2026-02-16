@@ -3,6 +3,7 @@ import 'package:fahis_inspector/features/inspections/components/company_inspecti
 import 'package:fahis_inspector/features/inspections/components/inspection_card.dart';
 import 'package:fahis_inspector/features/inspections/components/no_more_inspections.dart';
 import 'package:fahis_inspector/features/inspections/components/on_loading_inspections.dart';
+import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/features/inspections/controller.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -28,22 +29,33 @@ class InspectionList extends StatelessWidget {
           // Show empty state if no data at all
           if (controller.inspections.isEmpty) return NotMoreInspections();
 
-          return Column(
-            children: [
-              const SizedBox(height: FSizes.sm),
-              // Segmented toggle: Companies / Individuals
-              _SegmentToggle(controller: controller),
-              const SizedBox(height: FSizes.sm),
-              // Show content based on selected segment
-              Expanded(
-                child: Obx(
-                  () => controller.selectedSegment.value == 0
-                      ? _CompanyList(controller: controller)
-                      : _IndividualList(controller: controller),
+          // Show segments only when stage=All and no search active
+          // Otherwise show flat list (search results or stage-filtered)
+          return Obx(() {
+            final isDefault = controller.selectedStage.value == InspectionStage.all
+                && !controller.isSearchActive.value;
+
+            if (!isDefault) {
+              return _SearchResultsList(controller: controller);
+            }
+
+            return Column(
+              children: [
+                const SizedBox(height: FSizes.sm),
+                // Segmented toggle: Companies / Individuals
+                _SegmentToggle(controller: controller),
+                const SizedBox(height: FSizes.sm),
+                // Show content based on selected segment
+                Expanded(
+                  child: Obx(
+                    () => controller.selectedSegment.value == 0
+                        ? _CompanyList(controller: controller)
+                        : _IndividualList(controller: controller),
+                  ),
                 ),
-              ),
-            ],
-          );
+              ],
+            );
+          });
         },
       ),
     );
@@ -158,6 +170,42 @@ class _CompanyList extends StatelessWidget {
               ),
             ),
           );
+        },
+      ),
+    );
+  }
+}
+
+/// Flat list of ALL search results — bypasses company/individual segmentation.
+/// Best practice: search should show every match, ignoring active filters.
+class _SearchResultsList extends StatelessWidget {
+  final InspectionsController controller;
+  const _SearchResultsList({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final list = controller.inspections;
+
+    if (list.isEmpty) {
+      return Center(
+        child: Text(
+          'No results found'.tr,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: FColors.darkGrey),
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: controller.refreshPage,
+      color: FColors.primaryColor,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: list.length,
+        itemBuilder: (context, index) {
+          return InspectionCard(inspection: list[index]);
         },
       ),
     );

@@ -18,6 +18,9 @@ class InspectionsController extends GetxController
   RxList<Inspection> inspections = <Inspection>[].obs;
   var isLoading = true.obs;
 
+  // True when user has submitted a search query — bypasses segment/stage filters
+  var isSearchActive = false.obs;
+
   Stream<List<Inspection>> get stream => inspections.stream;
 
   RxList<InspectionStage> stages = RxList<InspectionStage>(
