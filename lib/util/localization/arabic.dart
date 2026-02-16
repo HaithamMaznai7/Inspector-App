@@ -405,6 +405,16 @@ class Arabic {
     FTexts.markerErrorTitle: 'خطأ',
     FTexts.markerErrorMsg: 'حدث خطأ، يرجى المحاولة مرة أخرى',
     FTexts.systemInspector: 'مفتش النظام',
+    FTexts.profileTitle: 'الملف الشخصي',
+    FTexts.logoutBtn: 'تسجيل الخروج',
+    FTexts.profileName: 'الاسم',
+    FTexts.profileEmail: 'البريد الإلكتروني',
+    FTexts.profilePhone: 'رقم الجوال',
+    FTexts.profileCity: 'اختر المدينة',
+    FTexts.profileUpdate: 'تحديث',
+    FTexts.profileNameHint: 'أدخل الاسم',
+    FTexts.profileEmailHint: 'أدخل البريد الإلكتروني',
+    FTexts.profilePhoneHint: 'أدخل رقم الجوال',
 
     /// Inspection Stage Labels
     FTexts.stageAll: 'الكل',

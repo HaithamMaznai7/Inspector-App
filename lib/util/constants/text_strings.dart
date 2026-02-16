@@ -91,6 +91,16 @@ class FTexts {
   static const String markerErrorTitle = 'markerErrorTitle';
   static const String markerErrorMsg = 'markerErrorMsg';
   static const String systemInspector = 'systemInspector';
+  static const String profileTitle = 'profileTitle';
+  static const String logoutBtn = 'logoutBtn';
+  static const String profileName = 'profileName';
+  static const String profileEmail = 'profileEmail';
+  static const String profilePhone = 'profilePhone';
+  static const String profileCity = 'profileCity';
+  static const String profileUpdate = 'profileUpdate';
+  static const String profileNameHint = 'profileNameHint';
+  static const String profileEmailHint = 'profileEmailHint';
+  static const String profilePhoneHint = 'profilePhoneHint';
   
   /// Inspection Stage Labels
   static const String stageAll = 'stageAll';

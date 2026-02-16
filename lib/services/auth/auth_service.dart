@@ -110,11 +110,23 @@ class AuthService extends GetxController {
   }
 
   Future<void> logOut() async {
-    await AuthRepository().logOut(token);
+    // Call backend logout while we still have a valid token
+    try {
+      await AuthRepository().logOut(token);
+    } catch (_) {
+      // Continue logout even if API call fails
+    }
+
+    // Clear local auth state BEFORE firebase sign-out so that
+    // any listeners (e.g. NotificationsService) that react to
+    // token changes won't fire API calls with an invalid token.
     await SecureTokenStorage().clear();
     _token.value = null;
     _profile.value = Profile.empty();
     _idToken.value = null;
+
+    // Firebase sign-out triggers changeUser(null) → navigates to login
+    await firebase.signOut();
   }
 
   Future<String> forgetPassword(String mobile) =>

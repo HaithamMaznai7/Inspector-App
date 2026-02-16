@@ -12,6 +12,7 @@ import 'package:fahis_inspector/resources/profile_repository.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/popups/full_screen_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -48,7 +49,7 @@ class _ProfileViewState extends State<ProfileView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Profile')),
+      appBar: AppBar(title: Text(FTexts.profileTitle.tr)),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -120,9 +121,9 @@ class _ProfileViewState extends State<ProfileView> {
                                   ),
                                   SizedBox(height: 16.0),
                                   buildEditableField(
-                                    label: 'Name',
-                                    value: user?.name ?? '',
+                                    label: FTexts.profileName.tr,
                                     controller: nameController,
+                                    hint: FTexts.profileNameHint.tr,
                                     prefixIcon: Icon(
                                       Iconsax.user,
                                       color: FColors.primaryColor,
@@ -130,9 +131,9 @@ class _ProfileViewState extends State<ProfileView> {
                                   ),
                                   SizedBox(height: 16.0),
                                   buildEditableField(
-                                    label: 'Email',
-                                    value: user?.email ?? '',
+                                    label: FTexts.profileEmail.tr,
                                     controller: emailController,
+                                    hint: FTexts.profileEmailHint.tr,
                                     prefixIcon: Icon(
                                       Icons.email,
                                       color: FColors.primaryColor,
@@ -150,9 +151,9 @@ class _ProfileViewState extends State<ProfileView> {
                                   ),
                                   SizedBox(height: 16.0),
                                   buildEditableField(
-                                    label: 'Phone Number',
-                                    value: user?.mobile ?? '',
+                                    label: FTexts.profilePhone.tr,
                                     controller: phoneController,
+                                    hint: FTexts.profilePhoneHint.tr,
                                     prefixIcon: Icon(
                                       Iconsax.mobile,
                                       color: FColors.primaryColor,
@@ -176,7 +177,7 @@ class _ProfileViewState extends State<ProfileView> {
                                           snapshot.data != null &&
                                           snapshot.data!.isNotEmpty) {
                                         return FDropdownField<City>(
-                                          label: 'Select City',
+                                          label: FTexts.profileCity.tr,
                                           items: snapshot.data!,
                                           onChanged: (value) => setState(() {
                                             profile!.city = value;
@@ -186,7 +187,7 @@ class _ProfileViewState extends State<ProfileView> {
                                       }
 
                                       return FDropdownField<City>(
-                                        label: 'Select City',
+                                        label: FTexts.profileCity.tr,
                                         items: cities,
                                         onChanged: (value) => setState(() {
                                           user?.city = value;
@@ -223,7 +224,7 @@ class _ProfileViewState extends State<ProfileView> {
                                             onPressed: () => user != null
                                                 ? _updateProfile(user)
                                                 : dd('No User'),
-                                            child: Text('Update'),
+                                            child: Text(FTexts.profileUpdate.tr),
                                           ),
                                         ),
                                 ],
@@ -245,13 +246,11 @@ class _ProfileViewState extends State<ProfileView> {
 
   Widget buildEditableField({
     required String label,
-    required String value,
     required TextEditingController controller,
+    String? hint,
     Widget? prefixIcon,
     Widget? suffixIcon,
   }) {
-    controller.text = value;
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Column(
@@ -268,7 +267,7 @@ class _ProfileViewState extends State<ProfileView> {
               prefixIcon: prefixIcon,
               suffixIcon: suffixIcon,
               border: const OutlineInputBorder(),
-              hintText: "Enter $label",
+              hintText: hint ?? label,
             ),
           ),
         ],
@@ -295,16 +294,10 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Future<void> _updateProfile(Profile profile) async {
-    setState(() {
-      isUpdate = true;
-    });
-
     final isValid = formKey.currentState!.validate();
+    if (!isValid) return;
 
-    if (!isValid) {
-      return;
-    }
-
+    setState(() => isUpdate = true);
     formKey.currentState!.save();
 
     try {
@@ -312,7 +305,7 @@ class _ProfileViewState extends State<ProfileView> {
     } catch (e) {
       rethrow;
     } finally {
-      // isUpdate = !isUpdate;
+      if (mounted) setState(() => isUpdate = false);
       FFullScreenLoader.stopLoading();
     }
   }

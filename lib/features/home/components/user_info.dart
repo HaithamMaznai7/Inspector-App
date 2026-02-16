@@ -1,8 +1,7 @@
 import 'package:fahis_inspector/features/authentication/views/profile_view.dart';
-import 'package:fahis_inspector/features/home/controller.dart';
 import 'package:fahis_inspector/main.dart';
-import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -11,8 +10,6 @@ class UserWidget extends StatelessWidget {
   UserWidget({super.key});
 
   final GlobalKey _iconKey = GlobalKey();
-
-  HomeController get controller => HomeBinding().instance;
 
   @override
   Widget build(BuildContext context) {
@@ -33,39 +30,32 @@ class UserWidget extends StatelessWidget {
           context: context,
           position: RelativeRect.fromLTRB(
             position.dx,
-            position.dy + button.size.height, // ⬇️ below button
+            position.dy + button.size.height,
             0,
             0,
           ),
           items: [
             PopupMenuItem(
-              child: Text('Profile'),
-              onTap: () => Get.to(ProfileView()),
+              child: Row(
+                children: [
+                  Icon(Iconsax.user, size: 18, color: FColors.primaryColor),
+                  const SizedBox(width: 8),
+                  Text(FTexts.profileTitle.tr),
+                ],
+              ),
+              onTap: () => Get.to(() => const ProfileView()),
             ),
-            if (auth().profile != null)
-            ...auth().profile!.teams.where((team) => team.isJoined).toList().map((
-              team,
-            ) {
-              return PopupMenuItem(
-                enabled: auth().profile!.currentTeam?.id != team.id,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      team.name ?? 'Team',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    Text(
-                      team.role ?? 'User',
-                      style: Theme.of(context).textTheme.labelSmall,
-                    ),
-                  ],
-                ),
-                onTap: () => controller.changeTeam(team),
-              );
-            }),
             PopupMenuItem(
-              child: Text('Logout'),
+              child: Row(
+                children: [
+                  Icon(Iconsax.logout, size: 18, color: Colors.red),
+                  const SizedBox(width: 8),
+                  Text(
+                    FTexts.logoutBtn.tr,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ],
+              ),
               onTap: () async => await auth().logOut(),
             ),
           ],

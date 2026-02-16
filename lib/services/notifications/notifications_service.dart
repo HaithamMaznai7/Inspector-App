@@ -52,8 +52,9 @@ class NotificationsService extends GetxController {
 
       if (AuthBinding().isRegistered) {
         AuthBinding().instance.tokenChange.listen((token) async {
+          // Only fetch when we have a valid token (skip on logout)
+          if (token == null) return;
           await featchFCMToken();
-
           loadNotifications();
         });
       }
@@ -171,6 +172,11 @@ class NotificationsService extends GetxController {
   }
 
   void loadNotifications({bool isRefresh = false}) async {
+    // Guard: skip API call if not authenticated (e.g. during logout)
+    if (!AuthBinding().isRegistered || !AuthBinding().instance.isAuth) {
+      return;
+    }
+
     dd('[Notifications] loadNotifications called (isRefresh: $isRefresh)');
     if (isRefresh) {
       notifications.value = [];
@@ -182,7 +188,6 @@ class NotificationsService extends GetxController {
 
     isLoading.value = notifications.isEmpty;
     update();
-    dd('[Notifications] isLoading: ${isLoading.value}, count before API: ${notifications.length}');
 
     final apiData = await repository.fetchFromApi();
     dd('[Notifications] API returned count: ${apiData.length}');
@@ -190,7 +195,6 @@ class NotificationsService extends GetxController {
 
     isLoading.value = false;
     update();
-    dd('[Notifications] final count: ${notifications.length}');
   }
 
   Future<void> onRefresh() async {

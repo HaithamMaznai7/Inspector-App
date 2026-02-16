@@ -350,6 +350,16 @@ class English {
     FTexts.markerErrorTitle: 'Error',
     FTexts.markerErrorMsg: 'Something went wrong, please try again',
     FTexts.systemInspector: 'System Inspector',
+    FTexts.profileTitle: 'Profile',
+    FTexts.logoutBtn: 'Logout',
+    FTexts.profileName: 'Name',
+    FTexts.profileEmail: 'Email',
+    FTexts.profilePhone: 'Phone Number',
+    FTexts.profileCity: 'Select City',
+    FTexts.profileUpdate: 'Update',
+    FTexts.profileNameHint: 'Enter Name',
+    FTexts.profileEmailHint: 'Enter Email',
+    FTexts.profilePhoneHint: 'Enter Phone Number',
 
     /// Inspection Stage Labels
     FTexts.stageAll: 'All',

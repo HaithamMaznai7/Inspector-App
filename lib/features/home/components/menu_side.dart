@@ -3,6 +3,7 @@ import 'package:fahis_inspector/features/authentication/views/profile_view.dart'
 import 'package:fahis_inspector/features/authentication/components/user_avater.dart';
 import 'package:fahis_inspector/features/home/components/user_info.dart';
 import 'package:fahis_inspector/features/inspections/controller.dart';
+import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
@@ -240,8 +241,7 @@ class SideMenuWrapper extends StatelessWidget {
                                       ),
                                     ),
                                     IconButton(
-                                      onPressed: () async =>
-                                          await FirebaseAuth.instance.signOut(),
+                                      onPressed: () async => await auth().logOut(),
                                       icon: Icon(
                                         Iconsax.logout,
                                         size: 20,
