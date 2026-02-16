@@ -36,9 +36,11 @@ class InspectionList extends StatelessWidget {
               const SizedBox(height: FSizes.sm),
               // Show content based on selected segment
               Expanded(
-                child: Obx(() => controller.selectedSegment.value == 0
-                    ? _CompanyList(controller: controller)
-                    : _IndividualList(controller: controller)),
+                child: Obx(
+                  () => controller.selectedSegment.value == 0
+                      ? _CompanyList(controller: controller)
+                      : _IndividualList(controller: controller),
+                ),
               ),
             ],
           );
@@ -65,19 +67,19 @@ class _SegmentToggle extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Companies tab
-            _buildTab(
-              context,
-              label: 'Companies'.tr,
-              isSelected: selected == 0,
-              onTap: () => controller.changeSegment(0),
-            ),
             // Individuals tab
             _buildTab(
               context,
               label: 'Individuals'.tr,
               isSelected: selected == 1,
               onTap: () => controller.changeSegment(1),
+            ),
+            // Companies tab
+            _buildTab(
+              context,
+              label: 'Companies'.tr,
+              isSelected: selected == 0,
+              onTap: () => controller.changeSegment(0),
             ),
           ],
         ),
@@ -105,10 +107,9 @@ class _SegmentToggle extends StatelessWidget {
             child: Text(
               label,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: isSelected ? Colors.white : FColors.textSecondary,
-                    fontWeight:
-                        isSelected ? FontWeight.w700 : FontWeight.w500,
-                  ),
+                color: isSelected ? Colors.white : FColors.textSecondary,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
             ),
           ),
         ),
@@ -130,9 +131,9 @@ class _CompanyList extends StatelessWidget {
       return Center(
         child: Text(
           'No company requests'.tr,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: FColors.darkGrey,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
         ),
       );
     }
@@ -176,9 +177,9 @@ class _IndividualList extends StatelessWidget {
       return Center(
         child: Text(
           'No individual requests'.tr,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: FColors.darkGrey,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
         ),
       );
     }
@@ -193,9 +194,7 @@ class _IndividualList extends StatelessWidget {
             controller: controller.scrollController,
             children: [
               ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Column(
                   children: list
                       .map((item) => InspectionCard(inspection: item))
@@ -204,7 +203,8 @@ class _IndividualList extends StatelessWidget {
               ),
               // Pagination loading indicator
               Obx(() {
-                final load = controller.repository?.isFetchingMore.value ?? false;
+                final load =
+                    controller.repository?.isFetchingMore.value ?? false;
                 if (load) {
                   return Padding(
                     padding: EdgeInsets.all(16),

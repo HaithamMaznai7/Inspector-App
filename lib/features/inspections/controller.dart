@@ -28,7 +28,7 @@ class InspectionsController extends GetxController
   Rx<InspectionStage> selectedStage = Rx<InspectionStage>(InspectionStage.all);
 
   // 0 = Companies (شركات), 1 = Individuals (افراد)
-  var selectedSegment = 0.obs;
+  var selectedSegment = 1.obs; // Default to Individuals
 
   /// Groups inspections by customer name, returns only customers with 2+ requests
   Map<String, List<Inspection>> get companyGroups {
