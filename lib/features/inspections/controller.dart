@@ -106,7 +106,12 @@ class InspectionsController extends GetxController
   void changeStatus({InspectionStage newStage = InspectionStage.all}) async {
     selectedStage.value = newStage;
 
-    await load(reset: true, stage: newStage);
+    // Show shimmer immediately — skip cache to avoid flashing stale data
+    inspections.clear();
+    isLoading.value = true;
+    update();
+
+    await load(reset: true, stage: newStage, cache: false);
 
     // Close drawer only on mobile (when drawer is open)
     if (Get.isDialogOpen == true || Get.isBottomSheetOpen == true) {
