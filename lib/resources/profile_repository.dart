@@ -1,48 +1,43 @@
+import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/profile.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
-import 'package:fahis_inspector/util/http/network_exception.dart';
 
 class ProfileRepository {
   ProfileRepository();
 
-  Future<Profile> updateProfile(Profile profile) async {
-    Network net = Network(
+  /// Fetches the current user profile from the backend.
+  Future<Profile> fetchProfile() async {
+    final net = Network(
       endpoint: EndPoints.profile,
-      requestMethod: RequestMethod.post,
+      requestMethod: RequestMethod.get,
+    );
+    final response = await net.response(RoutingUrl.home);
+    return Profile.fromJson(response.data);
+  }
+
+  /// Updates the user profile. Only sends fields the backend needs.
+  Future<Profile> updateProfile({
+    required String name,
+    required int? cityId,
+  }) async {
+    final net = Network(
+      endpoint: EndPoints.profile,
+      requestMethod: RequestMethod.put,
     );
 
     net.setBody = {
-      'name': profile.name ?? '',
-      'email': profile.email ?? '',
-      'city': profile.city ?? '',
+      'name': name,
+      if (cityId != null) 'city_id': cityId,
     };
 
     try {
-      CustomResponse? response = await net.response(RoutingUrl.login);
+      final response = await net.response(RoutingUrl.home);
       return Profile.fromJson(response.data);
     } catch (e) {
-      rethrow;
-    }
-  }
-
-  Stream<Profile> getUser({Profile? profile}) async* {
-    try {
-      profile ??= Profile.empty();
-      yield profile;
-
-      Network net = Network(
-        endpoint: EndPoints.profile,
-        requestMethod: RequestMethod.get,
-      );
-      final response = await net.response(RoutingUrl.login);
-
-      yield Profile.fromJson(response.data);
-    } on FNetworkException {
-      rethrow;
-    } catch (e) {
+      dd('Error updating profile: $e');
       rethrow;
     }
   }

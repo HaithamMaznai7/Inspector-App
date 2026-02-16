@@ -131,7 +131,7 @@ class NotificationsService extends GetxController {
           requestMethod: RequestMethod.post,
         );
 
-        net.setBody = {'fcm': fcmToken};
+        net.setBody = {'fcm': fcmToken.value};
 
         final response = await net.response(null);
 

@@ -1,312 +1,257 @@
-import 'dart:io';
-
-import 'package:camera/camera.dart';
-import 'package:easy_image_viewer/easy_image_viewer.dart';
-import 'package:fahis_inspector/common/styles/spacing_style.dart';
-import 'package:fahis_inspector/common/widgets/materials/inputs/dropdown_field.dart';
+import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/city.dart';
 import 'package:fahis_inspector/models/profile.dart';
-import 'package:fahis_inspector/resources/assets_repository.dart';
 import 'package:fahis_inspector/resources/profile_repository.dart';
-import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
-import 'package:fahis_inspector/util/popups/full_screen_loader.dart';
+import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:file_picker/file_picker.dart';
 
 class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
 
   @override
-  _ProfileViewState createState() => _ProfileViewState();
+  State<ProfileView> createState() => _ProfileViewState();
 }
 
 class _ProfileViewState extends State<ProfileView> {
-  Profile? profile = auth().profile;
+  final _nameController = TextEditingController();
 
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  Profile? _profile;
+  List<City> _cities = [];
+  City? _selectedCity;
+  bool _isLoading = true;
+  bool _isUpdating = false;
 
-  TextEditingController nameController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController phoneController = TextEditingController();
-  List<City> cities = [];
-
-  var isUpdate = false;
   @override
   void initState() {
-    nameController.text = auth().profile?.name ?? '';
-    emailController.text = auth().profile?.email ?? '';
-    phoneController.text = auth().profile?.mobile ?? '';
-    cities = [];
     super.initState();
+    _loadData();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final profile = await ProfileRepository().fetchProfile();
+      _profile = profile;
+      _nameController.text = profile.name ?? '';
+      _selectedCity = profile.city;
+    } catch (e) {
+      // Fallback to cached auth profile
+      _profile = auth().profile;
+      _nameController.text = _profile?.name ?? '';
+      _selectedCity = _profile?.city;
+    }
+
+    // Load cities (single call, not a stream)
+    try {
+      final net = Network(endpoint: 'assets/cities');
+      final response = await net.response(null);
+      if (!response.hasError && response.data is List) {
+        _cities = (response.data as List)
+            .map((e) => City.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+    } catch (_) {}
+
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  /// Builds a safe avatar URL. The default ui-avatars.com returns SVG
+  /// which Flutter cannot decode — force PNG format.
+  String _safeAvatarUrl(String? avatarUrl, String? name) {
+    if (avatarUrl != null && !avatarUrl.contains('ui-avatars.com')) {
+      return avatarUrl;
+    }
+    final initial = (name ?? 'U').isNotEmpty ? name![0] : 'U';
+    return 'https://ui-avatars.com/api/?name=$initial&color=FF7D41&background=FFF0E8&format=png&size=128';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(FTexts.profileTitle.tr)),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Padding(
-                    padding: FSpacingStyle.paddingWithAppBarHeight,
-                    child: Form(
-                      key: formKey,
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: FSizes.lg,
-                          vertical: FSizes.md,
-                        ),
-                        child: StreamBuilder<Profile?>(
-                          stream: ProfileRepository().getUser(profile: profile),
-                          builder: (context, snapshot) {
-                            final user = snapshot.data;
-                            return Center(
-                              child: Column(
-                                children: <Widget>[
-                                  SizedBox(
-                                    height: Get.width * .3,
-                                    width: Get.width * .3,
-                                    child: Stack(
-                                      children: [
-                                        Align(
-                                          alignment: Alignment.center,
-                                          child: CircleAvatar(
-                                            radius: Get.width * .3,
-                                            backgroundColor: FColors.grey,
-                                            child: user?.avatar != null
-                                                ? EasyImageView(
-                                                    imageProvider: NetworkImage(
-                                                      user!.avatar!.startsWith(
-                                                            EndPoints
-                                                                .websiteUrl,
-                                                          )
-                                                          ? user.avatar!.replaceAll(
-                                                              EndPoints
-                                                                  .websiteUrl,
-                                                              '${EndPoints.schema}://${EndPoints.domain}',
-                                                            )
-                                                          : user.avatar!,
-                                                    ),
-                                                  )
-                                                : Icon(
-                                                    Icons.person,
-                                                    size: Get.width * .3,
-                                                    color: FColors.primaryColor,
-                                                  ),
-                                          ),
-                                        ),
-                                        Align(
-                                          alignment: Alignment.bottomLeft,
-                                          child: IconButton(
-                                            onPressed: () => _pickProfile(),
-                                            icon: Icon(
-                                              Iconsax.camera,
-                                              color: FColors.primaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(height: 16.0),
-                                  buildEditableField(
-                                    label: FTexts.profileName.tr,
-                                    controller: nameController,
-                                    hint: FTexts.profileNameHint.tr,
-                                    prefixIcon: Icon(
-                                      Iconsax.user,
-                                      color: FColors.primaryColor,
-                                    ),
-                                  ),
-                                  SizedBox(height: 16.0),
-                                  buildEditableField(
-                                    label: FTexts.profileEmail.tr,
-                                    controller: emailController,
-                                    hint: FTexts.profileEmailHint.tr,
-                                    prefixIcon: Icon(
-                                      Icons.email,
-                                      color: FColors.primaryColor,
-                                    ),
-                                    suffixIcon:
-                                        (user?.emailVerification ?? false)
-                                        ? Icon(
-                                            Iconsax.verify,
-                                            color: FColors.success,
-                                          )
-                                        : Icon(
-                                            Icons.vertical_distribute_sharp,
-                                            color: FColors.error,
-                                          ),
-                                  ),
-                                  SizedBox(height: 16.0),
-                                  buildEditableField(
-                                    label: FTexts.profilePhone.tr,
-                                    controller: phoneController,
-                                    hint: FTexts.profilePhoneHint.tr,
-                                    prefixIcon: Icon(
-                                      Iconsax.mobile,
-                                      color: FColors.primaryColor,
-                                    ),
-                                    suffixIcon:
-                                        (user?.mobileVerification ?? false)
-                                        ? Icon(
-                                            Iconsax.verify,
-                                            color: FColors.success,
-                                          )
-                                        : Icon(
-                                            Icons.vertical_distribute_sharp,
-                                            color: FColors.error,
-                                          ),
-                                  ),
-                                  SizedBox(height: 16.0),
-                                  StreamBuilder<List<City>>(
-                                    stream: AssetsRepository.getCities(),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.hasData &&
-                                          snapshot.data != null &&
-                                          snapshot.data!.isNotEmpty) {
-                                        return FDropdownField<City>(
-                                          label: FTexts.profileCity.tr,
-                                          items: snapshot.data!,
-                                          onChanged: (value) => setState(() {
-                                            profile!.city = value;
-                                          }),
-                                          value: profile?.city,
-                                        );
-                                      }
-
-                                      return FDropdownField<City>(
-                                        label: FTexts.profileCity.tr,
-                                        items: cities,
-                                        onChanged: (value) => setState(() {
-                                          user?.city = value;
-                                        }),
-                                        value: user?.city,
-                                      );
-                                    },
-                                  ),
-
-                                  isUpdate
-                                      ? Container(
-                                          decoration: BoxDecoration(
-                                            color: FColors.primaryColor,
-                                            borderRadius: BorderRadius.circular(
-                                              FSizes.borderRadiusMd,
-                                            ),
-                                          ),
-                                          padding: EdgeInsets.symmetric(
-                                            vertical: FSizes.sm,
-                                          ),
-                                          width: double.infinity,
-                                          child: Center(
-                                            child: CircularProgressIndicator(
-                                              color: FColors.white,
-                                            ),
-                                          ),
-                                        )
-                                      : SizedBox(
-                                          width: double.infinity,
-                                          child: ElevatedButton(
-                                            style: Theme.of(
-                                              context,
-                                            ).elevatedButtonTheme.style,
-                                            onPressed: () => user != null
-                                                ? _updateProfile(user)
-                                                : dd('No User'),
-                                            child: Text(FTexts.profileUpdate.tr),
-                                          ),
-                                        ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: FSizes.lg,
+                vertical: FSizes.lg,
+              ),
+              child: Column(
+                children: [
+                  // Avatar
+                  Center(
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: FColors.grey.withValues(alpha: 0.2),
+                      backgroundImage: NetworkImage(
+                        _safeAvatarUrl(_profile?.avatar, _profile?.name),
                       ),
+                      onBackgroundImageError: (_, __) {},
+                      child: _profile?.avatar == null
+                          ? Icon(
+                              Iconsax.user,
+                              size: 50,
+                              color: FColors.primaryColor,
+                            )
+                          : null,
                     ),
                   ),
-                ),
+                  const SizedBox(height: FSizes.lg),
+
+                  // Name (editable)
+                  _buildTextField(
+                    label: FTexts.profileName.tr,
+                    controller: _nameController,
+                    hint: FTexts.profileNameHint.tr,
+                    icon: Iconsax.user,
+                  ),
+                  const SizedBox(height: FSizes.md),
+
+                  // Email (read-only info)
+                  _buildInfoTile(
+                    icon: Iconsax.sms,
+                    label: FTexts.profileEmail.tr,
+                    value: _profile?.email ?? '-',
+                  ),
+                  const SizedBox(height: FSizes.sm),
+
+                  // Phone (read-only info)
+                  _buildInfoTile(
+                    icon: Iconsax.call,
+                    label: FTexts.profilePhone.tr,
+                    value: _profile?.mobile ?? '-',
+                  ),
+                  const SizedBox(height: FSizes.md),
+
+                  // City dropdown (loaded once)
+                  _buildCityDropdown(),
+                  const SizedBox(height: FSizes.lg),
+
+                  // Update button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: Theme.of(context).elevatedButtonTheme.style,
+                      onPressed: _isUpdating ? null : _updateProfile,
+                      child: _isUpdating
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: FColors.white,
+                              ),
+                            )
+                          : Text(FTexts.profileUpdate.tr),
+                    ),
+                  ),
+                ],
               ),
-            );
-          },
-        ),
-      ),
+            ),
     );
   }
 
-  Widget buildEditableField({
+  Widget _buildTextField({
     required String label,
     required TextEditingController controller,
-    String? hint,
-    Widget? prefixIcon,
-    Widget? suffixIcon,
+    required String hint,
+    required IconData icon,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              prefixIcon: prefixIcon,
-              suffixIcon: suffixIcon,
-              border: const OutlineInputBorder(),
-              hintText: hint ?? label,
-            ),
-          ),
-        ],
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: Icon(icon, color: FColors.primaryColor),
+        border: const OutlineInputBorder(),
       ),
     );
   }
 
-  Future<void> _pickProfile() async {
-    if (Platform.isAndroid || Platform.isIOS) {
-      await availableCameras();
-    } else {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.any, // or use FileType.image, FileType.custom, etc.
-      );
-
-      if (result != null && result.files.single.path != null) {
-        setState(() {});
-      }
-    }
-
-    // Prpfile
-
-    // auth().firebase.currentUser?.updatePhotoURL(photoURL)
+  Widget _buildInfoTile({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return ListTile(
+      dense: true,
+      leading: Icon(icon, color: FColors.primaryColor, size: 22),
+      title: Text(
+        label,
+        style: Theme.of(
+          context,
+        ).textTheme.labelSmall?.copyWith(color: FColors.grey),
+      ),
+      subtitle: Text(value, style: Theme.of(context).textTheme.bodyMedium),
+      contentPadding: EdgeInsets.zero,
+    );
   }
 
-  Future<void> _updateProfile(Profile profile) async {
-    final isValid = formKey.currentState!.validate();
-    if (!isValid) return;
+  Widget _buildCityDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          FTexts.profileCity.tr,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 4),
+        DropdownButtonFormField<City>(
+          initialValue: _selectedCity,
+          isExpanded: true,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          ),
+          hint: Text(FTexts.profileCity.tr),
+          items: _cities
+              .map(
+                (city) =>
+                    DropdownMenuItem<City>(value: city, child: Text(city.name)),
+              )
+              .toList(),
+          onChanged: (city) => setState(() => _selectedCity = city),
+        ),
+      ],
+    );
+  }
 
-    setState(() => isUpdate = true);
-    formKey.currentState!.save();
+  Future<void> _updateProfile() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      FLoader.warningSnackBar(
+        title: FTexts.profileName.tr,
+        message: FTexts.profileNameHint.tr,
+      );
+      return;
+    }
+
+    setState(() => _isUpdating = true);
 
     try {
-      await ProfileRepository().updateProfile(profile);
+      await ProfileRepository().updateProfile(
+        name: name,
+        cityId: _selectedCity?.id,
+      );
+      FLoader.successSnackBar(title: FTexts.profileUpdate.tr);
     } catch (e) {
-      rethrow;
+      FLoader.errorSnackBar(
+        title: FTexts.profileUpdate.tr,
+        message: e.toString(),
+      );
     } finally {
-      if (mounted) setState(() => isUpdate = false);
-      FFullScreenLoader.stopLoading();
+      if (mounted) setState(() => _isUpdating = false);
     }
   }
 }

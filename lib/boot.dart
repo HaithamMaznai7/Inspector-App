@@ -3,17 +3,39 @@ import 'util/localization/localization.dart';
 import 'util/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class Boot extends StatelessWidget {
   const Boot({super.key});
 
+  /// Reads the cached locale from Hive, defaulting to Arabic.
+  Future<Locale> _getCachedLocale() async {
+    try {
+      final box = await Hive.openBox('AppSettings');
+      final lang = box.get('locale', defaultValue: 'ar') as String;
+      return Locale(lang);
+    } catch (_) {
+      return const Locale('ar');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder<Locale>(
+      future: _getCachedLocale(),
+      builder: (context, snapshot) {
+        final locale = snapshot.data ?? const Locale('ar');
+        return _buildApp(locale);
+      },
+    );
+  }
+
+  Widget _buildApp(Locale locale) {
     return GetMaterialApp(
       title: 'Fahis for inspectors',
       translations: FLocalization(),
-      locale: Get.deviceLocale,
-      fallbackLocale: Locale('en'),
+      locale: locale,
+      fallbackLocale: const Locale('ar'),
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.system,
       theme: FAppTheme.lightTheme,

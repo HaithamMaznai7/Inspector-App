@@ -1,6 +1,6 @@
 import 'package:fahis_inspector/main.dart';
-import 'package:fahis_inspector/routes.dart';
 import 'package:flutter/foundation.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '../constants/colors.dart';
 import '../localization/arabic.dart';
@@ -69,6 +69,12 @@ class FLocalization extends Translations {
     // the entire widget tree. All subsequent Network instances will
     // read the new locale from Get.locale for the Accept-Language header.
     await Get.updateLocale(newLocale);
+
+    // Persist the user's choice so the app starts in the same language.
+    try {
+      final box = await Hive.openBox('AppSettings');
+      await box.put('locale', newLocale.languageCode);
+    } catch (_) {}
 
     if (kDebugMode) {
       print('┌─── LANGUAGE SWITCH COMPLETE ──────────────');
