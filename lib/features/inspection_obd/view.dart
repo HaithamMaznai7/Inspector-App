@@ -34,62 +34,71 @@ class OBDCodesView extends StatelessWidget {
                 builder: (controller) {
                   String? file = controller.report.value;
                   bool isUpload = controller.isUpload.value;
+                  final isBusy = isUpload || controller.isLoading.value;
 
                   final isReport = controller.report.value != null;
 
-                  return Container(
-                    padding: EdgeInsets.all(FSizes.sm),
-                    decoration: BoxDecoration(
-                      color: FColors.primaryColor.withOpacity(
-                        isReport ? 1 : .4,
-                      ),
-                      borderRadius: BorderRadius.circular(FSizes.cardRadiusMd),
-                    ),
-                    child: Row(
-                      children: [
-                        isUpload
-                            ? CircularProgressIndicator(color: FColors.white)
-                            : CircleAvatar(
+                  return AbsorbPointer(
+                    absorbing: isBusy,
+                    child: Opacity(
+                      opacity: isBusy ? 0.6 : 1.0,
+                      child: Container(
+                        padding: EdgeInsets.all(FSizes.sm),
+                        decoration: BoxDecoration(
+                          color: FColors.primaryColor.withOpacity(
+                            isReport ? 1 : .4,
+                          ),
+                          borderRadius: BorderRadius.circular(FSizes.cardRadiusMd),
+                        ),
+                        child: Row(
+                          children: [
+                            isUpload
+                                ? CircularProgressIndicator(color: FColors.white)
+                                : CircleAvatar(
+                                    backgroundColor: FColors.white,
+                                    child: IconButton(
+                                      onPressed: controller.pickReport,
+                                      icon: Icon(
+                                        Iconsax.attach_square,
+                                        color: FColors.primaryColor,
+                                      ),
+                                    ),
+                                  ),
+                            SizedBox(width: FSizes.md),
+                            if (file != null)
+                              CircleAvatar(
                                 backgroundColor: FColors.white,
                                 child: IconButton(
-                                  onPressed: controller.pickReport,
+                                  onPressed: () => controller.openReport(),
                                   icon: Icon(
-                                    Iconsax.attach_square,
+                                    Iconsax.eye,
                                     color: FColors.primaryColor,
                                   ),
                                 ),
                               ),
-                        SizedBox(width: FSizes.md),
-                        if (file != null)
-                          CircleAvatar(
-                            backgroundColor: FColors.white,
-                            child: IconButton(
-                              onPressed: () => controller.openReport(),
-                              icon: Icon(
-                                Iconsax.eye,
-                                color: FColors.primaryColor,
+                            SizedBox(width: FSizes.md),
+                            Expanded(
+                              child: Text(
+                                isReport ? InspectionPage.obdFileName.tr : InspectionPage.uploadObdReport.tr,
+                                style: Theme.of(context).textTheme.titleLarge!
+                                    .copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          ),
-                        SizedBox(width: FSizes.md),
-                        Text(
-                          isReport ? InspectionPage.obdFileName.tr : InspectionPage.uploadObdReport.tr,
-                          style: Theme.of(context).textTheme.titleLarge!
-                              .copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
+                            if (file != null)
+                              CircleAvatar(
+                                backgroundColor: FColors.white,
+                                child: IconButton(
+                                  onPressed: () => controller.deleteReport(),
+                                  icon: Icon(Iconsax.trash, color: FColors.error),
+                                ),
                               ),
+                          ],
                         ),
-                        Spacer(),
-                        if (file != null)
-                          CircleAvatar(
-                            backgroundColor: FColors.white,
-                            child: IconButton(
-                              onPressed: () => controller.deleteReport(),
-                              icon: Icon(Iconsax.trash, color: FColors.error),
-                            ),
-                          ),
-                      ],
+                      ),
                     ),
                   );
                 },

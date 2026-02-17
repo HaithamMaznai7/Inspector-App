@@ -164,6 +164,18 @@ class English {
     InspectionPage.obdFileName: 'File name',
     InspectionPage.uploadObdReport: 'Upload OBD Report',
     InspectionPage.obdCodesTitle: 'OBD Codes',
+    InspectionPage.obdCodeRequired: 'Code Required',
+    InspectionPage.obdCodeRequiredMsg: 'Please enter the OBD code',
+    InspectionPage.obdDescRequired: 'Description Required',
+    InspectionPage.obdDescRequiredMsg: 'Please enter the code description',
+    InspectionPage.obdDataRequired: 'OBD Data Required',
+    InspectionPage.obdDataRequiredMsg:
+        'Please upload a report file or add at least one OBD code before proceeding',
+    InspectionPage.obdFileTooLarge: 'File Too Large',
+    InspectionPage.obdFileTooLargeMsg: 'File must be less than 10 MB',
+    InspectionPage.obdUploadSuccess: 'Report uploaded successfully',
+    InspectionPage.obdUploadFailed: 'Failed to upload report',
+    InspectionPage.obdDeleteSuccess: 'Report deleted',
     InspectionPage.stepLabel: 'Step @step',
     InspectionPage.submitValidationTitle: 'Cannot Submit',
     InspectionPage.submitValidationMsg:

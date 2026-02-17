@@ -2,6 +2,7 @@ import 'package:fahis_inspector/common/widgets/components/back_page_button.dart'
 import 'package:fahis_inspector/models/obd_code.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -20,6 +21,8 @@ class _AddingObdCodeState extends State<AddingObdCode> {
   late TextEditingController _descController;
   bool isSearching = false;
   OBDCode? _code;
+  String? _codeError;
+  String? _descError;
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +61,7 @@ class _AddingObdCodeState extends State<AddingObdCode> {
                     decoration: InputDecoration(
                       hintText: 'Type OBD code here'.tr,
                       focusColor: FColors.primaryColor,
+                      errorText: _codeError,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
@@ -87,6 +91,7 @@ class _AddingObdCodeState extends State<AddingObdCode> {
                           ? 'Searching Code Description...'.tr
                           : 'Type Code Description'.tr,
                       focusColor: FColors.primaryColor,
+                      errorText: _descError,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
@@ -174,8 +179,26 @@ class _AddingObdCodeState extends State<AddingObdCode> {
   }
 
   _submit() async {
-    String code = _codeController.text;
-    String description = _descController.text;
+    final code = _codeController.text.trim();
+    final description = _descController.text.trim();
+
+    // Validate both fields
+    bool hasError = false;
+    setState(() {
+      _codeError = null;
+      _descError = null;
+    });
+
+    if (code.isEmpty) {
+      hasError = true;
+      setState(() => _codeError = InspectionPage.obdCodeRequiredMsg.tr);
+    }
+    if (description.isEmpty) {
+      hasError = true;
+      setState(() => _descError = InspectionPage.obdDescRequiredMsg.tr);
+    }
+    if (hasError) return;
+
     if (_code == null) {
       _code = OBDCode(
         id: 0,

@@ -11,7 +11,9 @@ import 'package:fahis_inspector/models/inspection.dart';
 import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/resources/inspection_details_repository.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -240,6 +242,13 @@ class InspectionStepsController extends GetxController {
         goToTab(_tabIndexForStage(stage));
         break;
       case InspectionStage.finished:
+        // Validate OBD data if this inspection has an OBD step
+        if (inspection.value.hasObd && !_validateObdData()) {
+          isSubmitting.toggle();
+          update();
+          return;
+        }
+
         final note = await Get.dialog(
           NoteInputDialog(
             status: stage.toString(),
@@ -317,18 +326,29 @@ class InspectionStepsController extends GetxController {
   /// Saves the current stage, then pops back to inspection details.
   /// The caller (openEditing) already refreshes data after this returns.
   Future<void> finishAndReview() async {
+    _log('finishAndReview – start');
+
+    // Validate OBD data if this inspection has an OBD step
+    if (inspection.value.hasObd && !_validateObdData()) {
+      _log('finishAndReview – OBD validation failed');
+      return;
+    }
+
     isSubmitting.value = true;
     update();
 
     try {
       // Save current stage to API
       if (repository != null) {
+        _log('finishAndReview – saving to API...');
         inspection.value = await repository!.update(inspection.value);
+        _log('finishAndReview – saved successfully');
       }
     } on FNetworkException catch (e) {
+      _log('finishAndReview – FNetworkException: ${e.statusCode}');
       e.notify();
-    } catch (_) {
-      // Silently handle — still navigate back to review
+    } catch (e) {
+      _log('finishAndReview – error: $e');
     } finally {
       isSubmitting.value = false;
       update();
@@ -336,5 +356,36 @@ class InspectionStepsController extends GetxController {
 
     // Pop back to the existing inspection details screen
     Get.back();
+  }
+
+  /// Returns true if OBD data is valid (has report OR codes).
+  /// Shows a warning snackbar and returns false if not.
+  bool _validateObdData() {
+    if (InspectionObdBinding().isRegistered) {
+      final obdCtrl = InspectionObdBinding().instance;
+      if (!obdCtrl.isDataReady) {
+        _log('_validateObdData – OBD data still loading');
+        FLoader.warningSnackBar(
+          title: InspectionPage.obdDataRequired.tr,
+          message: InspectionPage.obdDataRequiredMsg.tr,
+        );
+        return false;
+      }
+      if (!obdCtrl.hasData) {
+        _log('_validateObdData – no OBD data (no report, no codes)');
+        FLoader.warningSnackBar(
+          title: InspectionPage.obdDataRequired.tr,
+          message: InspectionPage.obdDataRequiredMsg.tr,
+        );
+        return false;
+      }
+    }
+    return true;
+  }
+
+  void _log(String message) {
+    if (kDebugMode) {
+      debugPrint('[Steps Controller] $message');
+    }
   }
 }

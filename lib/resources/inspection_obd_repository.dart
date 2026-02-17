@@ -32,18 +32,12 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
   @override
   Future<List<OBDCode>> fetchFromApi() async {
+    _log('fetchFromApi – GET ${EndPoints.inspections}/$slug/codes');
     final n = Network(endpoint: '${EndPoints.inspections}/$slug/codes');
 
     final r = await n.response(RoutingUrl.home);
 
-    // DEBUG: Log raw API response to trace data flow
-    debugPrint('OBD fetchFromApi [1] r.data type: ${r.data.runtimeType}');
-    debugPrint('OBD fetchFromApi [2] r.data: ${r.data}');
-    debugPrint('OBD fetchFromApi [3] r.data.isNotEmpty: ${r.data.isNotEmpty}');
-    if (r.data is Map && r.data.isNotEmpty) {
-      debugPrint('OBD fetchFromApi [4] r.data[codes] type: ${r.data['codes'].runtimeType}');
-      debugPrint('OBD fetchFromApi [5] r.data[codes]: ${r.data['codes']}');
-    }
+    _log('fetchFromApi – status: ${r.hasError ? "ERROR" : "OK"}, data type: ${r.data.runtimeType}');
 
     final bodySides = r.data.isNotEmpty
         ? OBDCode.setList(r.data['codes'] ?? [])
@@ -51,30 +45,17 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
     _report.value = r.data.isNotEmpty ? r.data['report'] : null;
 
-    debugPrint('OBD fetchFromApi [6] parsed ${bodySides.length} codes');
+    _log('fetchFromApi – parsed ${bodySides.length} codes, report=${_report.value != null}');
 
     _data.assignAll(bodySides);
 
     await saveToCache();
 
-    // DEBUG: Verify cache was written
-    final cachedVerify = box.get(slug);
-    debugPrint('OBD fetchFromApi [7] cache after save: $cachedVerify');
-
     return _data;
   }
 
-  // WHAT: Read cached OBD codes from Hive and deserialize into OBDCode objects.
-  // WHY: The original implementation was commented out, returning an empty _data list.
-  //      This meant the OBD review widget always showed empty when loading from cache.
-  //      The widget reads directly from box.get(slug), but the data was never parsed.
-  // HOW: Read the raw list from Hive, cast each item from Map<dynamic, dynamic>
-  //      to Map<String, dynamic>, and parse via OBDCode.fromJson.
-  //      Per-item try/catch prevents one corrupted entry from blocking all others.
-  // EDGE CASES:
-  //   - Cache is empty or null → returns empty list
-  //   - Cache contains corrupted data → skipped, returns partial list
-  //   - Hive maps are Map<dynamic, dynamic> → safely cast via Map.from()
+  // Read cached OBD codes from Hive and deserialize into OBDCode objects.
+  // Per-item try/catch prevents one corrupted entry from blocking all others.
   @override
   List<OBDCode> fetchFromCache() {
     final data = (box.get(slug) as List?) ?? [];
@@ -84,10 +65,11 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       try {
         result.add(OBDCode.fromJson(Map<String, dynamic>.from(item as Map)));
       } catch (e) {
-        debugPrint('Error parsing cached OBD code: $e');
+        _log('fetchFromCache – error parsing item: $e');
       }
     }
 
+    _log('fetchFromCache – loaded ${result.length} codes from cache');
     _data.assignAll(result);
     return _data;
   }
@@ -96,6 +78,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   Future<void> saveToCache() async {
     final codes = _data.map((i) => i.toJson()).toList();
     await box.put(slug, codes);
+    _log('saveToCache – saved ${codes.length} codes');
   }
 
   Stream<List<OBDCode>> listenToBroadcast() async* {
@@ -112,6 +95,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   }
 
   Future<List<OBDCode>> store(OBDCode code) async {
+    _log('store – POST code="${code.code}", desc="${code.description}"');
     final n = Network(
       endpoint: '${EndPoints.inspections}/$slug/codes',
       requestMethod: RequestMethod.post,
@@ -121,6 +105,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
     try {
       final r = await n.response(RoutingUrl.home);
+      _log('store – response status: ${r.hasError ? "ERROR" : "OK"}');
 
       final bodySides = r.data.isNotEmpty
           ? OBDCode.setList(r.data['codes'])
@@ -129,18 +114,21 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       _report.value = r.data.isNotEmpty ? r.data['report'] : null;
 
       _data.assignAll(bodySides);
+      _log('store – updated ${bodySides.length} codes');
 
       await saveToCache();
     } on FNetworkException catch (e) {
+      _log('store – FNetworkException: ${e.statusCode}');
       e.notify();
     } catch (e) {
-      dd('error on storing');
+      _log('store – error: $e');
     }
 
     return _data;
   }
 
   Future<List<OBDCode>> update(OBDCode code) async {
+    _log('update – POST code id=${code.id}, code="${code.code}"');
     final n = Network(
       endpoint: '${EndPoints.obdCodes}/${code.id}',
       requestMethod: RequestMethod.post,
@@ -148,6 +136,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
     try {
       final r = await n.response(RoutingUrl.home);
+      _log('update – response status: ${r.hasError ? "ERROR" : "OK"}');
 
       final bodySides = r.data.isNotEmpty
           ? OBDCode.setList(r.data['codes'])
@@ -156,16 +145,18 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       _report.value = r.data.isNotEmpty ? r.data['report'] : null;
 
       _data.assignAll(bodySides);
+      _log('update – updated ${bodySides.length} codes');
 
       await saveToCache();
-    } catch (_) {
-      dd('error on storing');
+    } catch (e) {
+      _log('update – error: $e');
     }
 
     return _data;
   }
 
   Future<List<OBDCode>> delete(OBDCode code) async {
+    _log('delete – DELETE code id=${code.id}');
     final n = Network(
       endpoint: '${EndPoints.obdCodes}/${code.id}',
       requestMethod: RequestMethod.delete,
@@ -173,6 +164,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
     try {
       final r = await n.response(RoutingUrl.home);
+      _log('delete – response status: ${r.hasError ? "ERROR" : "OK"}');
 
       final bodySides = r.data.isNotEmpty
           ? OBDCode.setList(r.data['codes'])
@@ -181,16 +173,18 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       _report.value = r.data.isNotEmpty ? r.data['report'] : null;
 
       _data.assignAll(bodySides);
+      _log('delete – now ${bodySides.length} codes remaining');
 
       await saveToCache();
-    } catch (_) {
-      dd('error on storing');
+    } catch (e) {
+      _log('delete – error: $e');
     }
 
     return _data;
   }
 
   Future<String?> uploadReport(File? file) async {
+    _log('uploadReport – POST ${EndPoints.inspections}/$slug/report, file=${file?.path}');
     try {
       final n = Network(
         endpoint: '${EndPoints.inspections}/$slug/report',
@@ -204,17 +198,21 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       });
 
       final r = await n.response(RoutingUrl.home);
+      _log('uploadReport – response status: ${r.hasError ? "ERROR" : "OK"}');
+
       if (r.data.isNotEmpty) {
-        compute(
-          (data) => _data.assignAll(OBDCode.setList(data)),
-          r.data['codes'],
-        );
+        final codes = r.data['codes'];
+        if (codes != null) {
+          _data.assignAll(OBDCode.setList(codes));
+        }
         _report.value = r.data['report'];
+        _log('uploadReport – report URL: ${_report.value}, codes: ${_data.length}');
       }
     } on FNetworkException catch (e) {
+      _log('uploadReport – FNetworkException: ${e.statusCode}');
       e.notify();
     } catch (e) {
-      dd(e.toString());
+      _log('uploadReport – error: $e');
     }
 
     await saveToCache();
@@ -223,6 +221,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   }
 
   Future<String?> removeReport() async {
+    _log('removeReport – DELETE ${EndPoints.inspections}/$slug/report');
     final n = Network(
       endpoint: '${EndPoints.inspections}/$slug/report',
       requestMethod: RequestMethod.delete,
@@ -230,17 +229,23 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
     try {
       final r = await n.response(RoutingUrl.home);
-      // final bodySides = r.data.isNotEmpty
-      //     ? OBDCode.setList(r.data['codes'])
-      //     : <OBDCode>[];
+      _log('removeReport – response status: ${r.hasError ? "ERROR" : "OK"}');
       _report.value = r.data.isNotEmpty ? r.data['report'] : null;
-
-      // _data.assignAll(bodySides);
+      _log('removeReport – report after delete: ${_report.value}');
     } on FNetworkException catch (e) {
+      _log('removeReport – FNetworkException: ${e.statusCode}');
       e.notify();
-    } catch (_) {}
+    } catch (e) {
+      _log('removeReport – error: $e');
+    }
     await saveToCache();
 
     return _report.value;
+  }
+
+  void _log(String message) {
+    if (kDebugMode) {
+      debugPrint('[OBD Repo] $message');
+    }
   }
 }

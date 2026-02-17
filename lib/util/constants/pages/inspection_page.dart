@@ -97,6 +97,17 @@ class InspectionPage {
   static const String obdFileName = 'obdFileName';
   static const String uploadObdReport = 'uploadObdReport';
   static const String obdCodesTitle = 'obdCodesTitle';
+  static const String obdCodeRequired = 'obdCodeRequired';
+  static const String obdCodeRequiredMsg = 'obdCodeRequiredMsg';
+  static const String obdDescRequired = 'obdDescRequired';
+  static const String obdDescRequiredMsg = 'obdDescRequiredMsg';
+  static const String obdDataRequired = 'obdDataRequired';
+  static const String obdDataRequiredMsg = 'obdDataRequiredMsg';
+  static const String obdFileTooLarge = 'obdFileTooLarge';
+  static const String obdFileTooLargeMsg = 'obdFileTooLargeMsg';
+  static const String obdUploadSuccess = 'obdUploadSuccess';
+  static const String obdUploadFailed = 'obdUploadFailed';
+  static const String obdDeleteSuccess = 'obdDeleteSuccess';
 
   /// Steps
   static const String stepLabel = 'stepLabel';
