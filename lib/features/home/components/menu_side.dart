@@ -45,7 +45,9 @@ class SideMenuWrapper extends StatelessWidget {
               items: [
                 ...InspectionStage.allStages.map((stage) {
                   final isSelected = selectedStage == stage;
-                  final count = controller.repository
+                  final count =
+                      controller
+                          .repository
                           ?.total["${stage.value ?? 'all'}_total"] ??
                       0;
 
@@ -241,7 +243,8 @@ class SideMenuWrapper extends StatelessWidget {
                                       ),
                                     ),
                                     IconButton(
-                                      onPressed: () async => await auth().logOut(),
+                                      onPressed: () async =>
+                                          await auth().logOut(),
                                       icon: Icon(
                                         Iconsax.logout,
                                         size: 20,
