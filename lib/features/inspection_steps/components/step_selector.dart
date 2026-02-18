@@ -17,7 +17,7 @@ class StepSelector extends StatelessWidget {
       builder: (controller) {
         final submitting = controller.isSubmitting.value;
         final showBack = !controller.isOnFirstTab;
-        final showReview = controller.allTabsReached && controller.isOnLastTab;
+        final showReview = controller.isOnLastTab;
 
         return SafeArea(
           child: Padding(

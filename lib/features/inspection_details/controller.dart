@@ -318,7 +318,7 @@ class InspectionDetailsController extends GetxController
     switch (stage) {
       case InspectionStage.finished:
         final note = await Get.dialog<String>(
-          NoteInputDialog(status: stage.toString()),
+          NoteInputDialog(status: stage.value ?? 'finished'),
         );
         if (note == null) return; // user cancelled
         // Backend requires note when stage is finished; use '-' if empty
@@ -327,7 +327,7 @@ class InspectionDetailsController extends GetxController
         break;
       case InspectionStage.rejected:
         final note = await Get.dialog<String>(
-          NoteInputDialog(status: stage.toString()),
+          NoteInputDialog(status: stage.value ?? 'rejected'),
         );
         if (note == null) return; // user cancelled
         inspection.value!.rejectedNote = note.trim().isEmpty ? '-' : note.trim();

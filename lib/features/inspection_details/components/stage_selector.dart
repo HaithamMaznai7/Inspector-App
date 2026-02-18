@@ -14,16 +14,27 @@ class StageSelector extends StatelessWidget {
 
   /// Determine which UI state to show:
   /// 1 = not started (pending/accepted) → "Start Inspection"
-  /// 2 = in progress but hasn't reached last step → Edit + disabled Submit
-  /// 3 = reached last step (obd) → Edit + active Submit
-  static int _resolveState(InspectionStage stage) {
+  /// 2 = in progress but hasn't reached last step → Edit only
+  /// 3 = reached last step → Edit + Submit
+  static int _resolveState(InspectionDetailsController controller) {
+    final stage = controller.inspection.value!.stage;
+    final inspection = controller.inspection.value!;
+
     if ([InspectionStage.pending, InspectionStage.accepted].contains(stage)) {
       return 1;
     }
-    if (stage == InspectionStage.obd) {
+
+    // Two scenarios:
+    // Regular (has OBD) → last step is obd
+    // Sahrej (no OBD)   → last step is photos
+    final lastStep = inspection.hasObd
+        ? InspectionStage.obd
+        : InspectionStage.photos;
+
+    if (stage == lastStep) {
       return 3;
     }
-    // info, points, photos, body → in progress
+
     return 2;
   }
 
@@ -45,7 +56,7 @@ class StageSelector extends StatelessWidget {
         }
 
         final isSubmitting = controller.isSubmitting.value;
-        final state = _resolveState(controller.inspection.value!.stage);
+        final state = _resolveState(controller);
 
         return SafeArea(
           child: Padding(
@@ -79,11 +90,10 @@ class StageSelector extends StatelessWidget {
                           ),
                         ),
                       )
-                    // ── State 2 & 3: Edit + Submit ──
-                    : Row(
-                        children: [
-                          // Edit button
-                          Expanded(
+                    // ── State 2: Edit only (not on last step yet) ──
+                    : state == 2
+                        ? SizedBox(
+                            width: double.infinity,
                             child: OutlinedButton.icon(
                               onPressed: controller.openEditing,
                               icon: const Icon(Iconsax.edit_2, size: 18),
@@ -97,29 +107,38 @@ class StageSelector extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: FSizes.md),
-                          // Submit button — disabled in state 2, active in state 3
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: state == 3
-                                  ? () => controller.setSatge(InspectionStage.finished)
-                                  : null,
-                              icon: Icon(
-                                Iconsax.send_1,
-                                size: 18,
-                                color: state == 3 ? null : FColors.grey,
+                          )
+                        // ── State 3: Edit + Submit ──
+                        : Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: controller.openEditing,
+                                  icon: const Icon(Iconsax.edit_2, size: 18),
+                                  label: Text(FTexts.editBtn.tr),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: FColors.primaryColor,
+                                    side: const BorderSide(color: FColors.primaryColor),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                  ),
+                                ),
                               ),
-                              label: Text(FTexts.submitBtn.tr),
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                disabledBackgroundColor: FColors.grey.withValues(alpha: 0.15),
-                                disabledForegroundColor: FColors.grey,
+                              const SizedBox(width: FSizes.md),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: () => controller.setSatge(InspectionStage.finished),
+                                  icon: const Icon(Iconsax.send_1, size: 18),
+                                  label: Text(FTexts.submitBtn.tr),
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
           ),
         );
       },
