@@ -153,7 +153,8 @@ class VehicleDetailsController extends GetxController {
     return true;
   }
 
-  Future<bool> onSave() async {
+  /// Returns: -1 = failed, 0 = saved (no reset), 1 = saved + reset ran.
+  Future<int> onSave() async {
     try {
       if (validateForm()) {
         await repository!.update(slug!, inspectionDetails.value!);
@@ -162,10 +163,11 @@ class VehicleDetailsController extends GetxController {
         // have fresh data from their onInit — no reset needed.
         if (mainController.highestReachedIndex > 0) {
           await mainController.resetAfterVehicleInfoUpdate();
+          return 1; // saved + reset
         }
-        return true;
+        return 0; // saved, no reset
       }
-      return false;
+      return -1;
     } on FNetworkException catch (e) {
       if (e.statusCode == 422 && e.errors != null) {
         final errors = e.errors!;
@@ -174,11 +176,11 @@ class VehicleDetailsController extends GetxController {
         });
       }
       e.notify();
-      return false;
+      return -1;
     } catch (e) {
       final f = FNetworkException('Failed to save data', statusCode: 404);
       f.notify();
-      return false;
+      return -1;
     } finally {
       // Only rebuild on failure so 422 field errors show in the form.
       // Do NOT call update() on success — it rebuilds GetBuilder which

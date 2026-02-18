@@ -278,10 +278,12 @@ class InspectionStepsController extends GetxController {
         break;
       case InspectionStage.points:
         // Save & validate vehicle details before advancing from Info
+        // onSave returns: -1 = failed, 0 = saved (no reset), 1 = saved + reset
+        int saveResult = 0;
         if (VehicleDetailsBinding().isRegistered) {
-          final saved = await VehicleDetailsBinding().instance.onSave();
-          if (!saved) {
-            _log('setSatge(points) – vehicle form validation failed');
+          saveResult = await VehicleDetailsBinding().instance.onSave();
+          if (saveResult < 0) {
+            _log('setSatge(points) – vehicle save/validation failed');
             isSubmitting.toggle();
             update();
             return;
@@ -289,10 +291,26 @@ class InspectionStepsController extends GetxController {
         }
         inspection.value.stage = stage;
         goToTab(_tabIndexForStage(stage));
-        // Refresh points — backend generates them based on vehicle details,
-        // so the initial load (before save) may have returned empty data.
         if (InspectionPointsBinding().isRegistered) {
-          InspectionPointsBinding().instance.load(isRefresh: true);
+          final pointsCtrl = InspectionPointsBinding().instance;
+          if (saveResult == 1) {
+            // Reset already fetched points. If backend returned empty
+            // (it clears points on vehicle info change), regenerate them.
+            // Call repository.generate() directly — controller.generate()
+            // shows a confirmation dialog which we don't want here.
+            if (pointsCtrl.allPoints.isEmpty) {
+              _log('setSatge(points) – points empty after reset, regenerating');
+              pointsCtrl.isLoading.value = true;
+              pointsCtrl.update();
+              await pointsCtrl.repository.generate();
+              pointsCtrl.isLoading.value = false;
+              pointsCtrl.update();
+            }
+          } else {
+            // First save — refresh points (initial load may have been empty
+            // because vehicle details weren't saved yet).
+            pointsCtrl.load(isRefresh: true);
+          }
         }
         break;
       case InspectionStage.photos:
