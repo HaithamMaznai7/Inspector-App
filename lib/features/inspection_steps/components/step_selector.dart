@@ -27,7 +27,9 @@ class StepSelector extends StatelessWidget {
               width: FDeviceUtils.getScreenWidth() * .9,
               child: showReview
                   ? ElevatedButton(
-                      onPressed: submitting ? null : controller.finishAndReview,
+                      onPressed: submitting
+                          ? null
+                          : controller.finishAndReview,
                       child: Padding(
                         padding: EdgeInsetsGeometry.symmetric(
                           horizontal: FSizes.md,
@@ -72,7 +74,9 @@ class StepSelector extends StatelessWidget {
                         ],
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: submitting ? null : controller.toNext,
+                            onPressed: submitting
+                                ? null
+                                : controller.toNext,
                             child: Padding(
                               padding: EdgeInsetsGeometry.symmetric(
                                 horizontal: FSizes.md,

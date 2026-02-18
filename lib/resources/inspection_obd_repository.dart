@@ -185,6 +185,13 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
   Future<String?> uploadReport(File? file) async {
     _log('uploadReport – POST ${EndPoints.inspections}/$slug/report, file=${file?.path}');
+    
+    // Don't send null to backend
+    if (file == null) {
+      _log('uploadReport – no file provided, skipping API call');
+      return null;
+    }
+    
     try {
       final n = Network(
         endpoint: '${EndPoints.inspections}/$slug/report',
@@ -192,9 +199,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       );
 
       n.setBody = FormData({
-        'report': file != null
-            ? MultipartFile(file, filename: file.path.split('/').last)
-            : null,
+        'report': MultipartFile(file, filename: file.path.split('/').last),
       });
 
       final r = await n.response(RoutingUrl.home);

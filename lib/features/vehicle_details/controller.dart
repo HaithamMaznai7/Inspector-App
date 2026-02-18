@@ -49,7 +49,11 @@ class VehicleDetailsController extends GetxController {
     update();
 
     inspectionDetails.listen((data) {
-      updateDetails();
+      // Suppress text controller updates while loading to prevent
+      // race condition: user types in empty fields → API overwrites.
+      if (!isLoading.value) {
+        updateDetails();
+      }
     });
 
     dd('inspection vehicle initialized');
@@ -77,8 +81,10 @@ class VehicleDetailsController extends GetxController {
   Future<void> loadBySlug() async {
     slug = InspectionDetailsBinding().instance.slug;
 
+    isLoading.value = true;
+    update();
+
     // RESET state
-    inspectionDetails.value = null;
     repository = null;
     box = null;
 
@@ -103,6 +109,9 @@ class VehicleDetailsController extends GetxController {
       }
     }
 
+    // Populate text controllers once with final data
+    updateDetails();
+    isLoading.value = false;
     update();
   }
 
@@ -136,22 +145,24 @@ class VehicleDetailsController extends GetxController {
     inspectionDetails.value?.color = colorController.text;
     inspectionDetails.value?.seatColor = seatColorController.text;
     formErrors.value = {};
-    // final isValid = formKey.currentState!.validate();
 
-    // if (isValid) {
+    final isValid = formKey.currentState?.validate() ?? false;
+    if (!isValid) return false;
+
     formKey.currentState!.save();
-    // }
-
     return true;
   }
 
   Future<bool> onSave() async {
-    isSubmitting.toggle();
-    update();
     try {
       if (validateForm()) {
         await repository!.update(slug!, inspectionDetails.value!);
-        mainController.load(refresh: true);
+        // Only reset if user is RE-SAVING after already progressing
+        // past the info step. On first save, child controllers already
+        // have fresh data from their onInit — no reset needed.
+        if (mainController.highestReachedIndex > 0) {
+          await mainController.resetAfterVehicleInfoUpdate();
+        }
         return true;
       }
       return false;
@@ -169,8 +180,12 @@ class VehicleDetailsController extends GetxController {
       f.notify();
       return false;
     } finally {
-      isSubmitting.toggle();
-      update();
+      // Only rebuild on failure so 422 field errors show in the form.
+      // Do NOT call update() on success — it rebuilds GetBuilder which
+      // recreates all StreamBuilder asset streams (7 redundant API calls).
+      if (formErrors.isNotEmpty) {
+        update();
+      }
     }
   }
 }

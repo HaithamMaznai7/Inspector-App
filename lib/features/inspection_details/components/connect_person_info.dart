@@ -28,18 +28,20 @@ class ConnectPersonInfo extends StatelessWidget {
           title: Text(InspectionPage.connectPersonInfo.tr),
           tilePadding: FSizes.md,
           icon: Iconsax.personalcard,
-          subtitle: Align(
-            alignment: AlignmentGeometry.centerRight,
-            child: TextButton(
-              onPressed: () => Helpers.copy('${inspection.customer?.phone}'),
-              child: Text(
-                '${inspection.customer?.phone}',
-                style: Theme.of(context).textTheme.labelMedium,
-                locale: Get.locale,
-                textAlign: TextAlign.start,
-              ),
-            ),
-          ),
+          subtitle: inspection.customer?.phone != null
+              ? Align(
+                  alignment: AlignmentGeometry.centerRight,
+                  child: TextButton(
+                    onPressed: () => Helpers.copy(inspection.customer!.phone!),
+                    child: Text(
+                      inspection.customer!.phone!,
+                      style: Theme.of(context).textTheme.labelMedium,
+                      locale: Get.locale,
+                      textAlign: TextAlign.start,
+                    ),
+                  ),
+                )
+              : null,
           trailing: inspection.customer?.phone != null
               ? IconButton(
                   color: FColors.success,

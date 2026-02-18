@@ -11,6 +11,8 @@ class InfoCard extends StatelessWidget {
     this.subtitle,
     this.tilePadding = 0,
     this.icon,
+    this.iconColor,
+    this.cardColor,
     this.leading,
     this.trailing,
     this.children = const [],
@@ -20,6 +22,8 @@ class InfoCard extends StatelessWidget {
   });
 
   final IconData? icon;
+  final Color? iconColor;
+  final Color? cardColor;
   final Widget title;
   final double tilePadding;
   final Widget? leading;
@@ -66,9 +70,9 @@ class InfoCard extends StatelessWidget {
         horizontal: FSizes.md,
         vertical: FSizes.md,
       ),
-      leading: icon != null ? Icon(icon) : leading,
+      leading: icon != null ? Icon(icon, color: iconColor) : leading,
       dense: true,
-      iconColor: FColors.primaryColor,
+      iconColor: iconColor ?? FColors.primaryColor,
       clipBehavior: Clip.antiAlias,
       splashColor: FColors.grey.withOpacity(0.3),
       enabled: true,
@@ -102,6 +106,7 @@ class InfoCard extends StatelessWidget {
       ),
       elevation: 2,
       shadowColor: FColors.grey.withOpacity(0.5),
+      color: cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
       ),

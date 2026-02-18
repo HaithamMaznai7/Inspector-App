@@ -18,6 +18,13 @@ class Arabic {
     FTexts.updateAssets: 'تحديث الموارد',
     FTexts.offlineMode: 'وضع عدم الاتصال',
     'All': 'الكل',
+    'sessionExpired': 'انتهت الجلسة',
+    'sessionExpiredMsg': 'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.',
+    'fieldRequired': 'هذا الحقل مطلوب.',
+    'vinMustBe17': 'رقم الهيكل يجب أن يكون 17 حرف .',
+    'ccNumbersOnly': 'يسمح فقط بالأرقام.',
+    'colorNoNumbers': 'اللون لا يمكن أن يحتوي على أرقام.',
+    'milageNumbersOnly': 'يجب أن يكون رقمًا.',
     'Pending': 'معلقة',
     'Accepted': 'مقبولة',
     'In Progress': 'جاري فحصها',
@@ -169,7 +176,8 @@ class Arabic {
     InspectionPage.obdDataRequiredMsg:
         'يرجى رفع ملف التقرير أو إضافة رمز OBD واحد على الأقل قبل المتابعة',
     InspectionPage.obdFileTooLarge: 'حجم الملف كبير',
-    InspectionPage.obdFileTooLargeMsg: 'يجب أن يكون حجم الملف أقل من 10 ميجابايت',
+    InspectionPage.obdFileTooLargeMsg:
+        'يجب أن يكون حجم الملف أقل من 10 ميجابايت',
     InspectionPage.obdUploadSuccess: 'تم رفع التقرير بنجاح',
     InspectionPage.obdUploadFailed: 'فشل رفع التقرير',
     InspectionPage.obdDeleteSuccess: 'تم حذف التقرير',
@@ -184,6 +192,20 @@ class Arabic {
     InspectionPage.stepPhotos: 'الصور',
     InspectionPage.stepBody: 'ملاحظات الهيكل',
     InspectionPage.stepObd: 'OBD',
+    InspectionPage.vehicleInfoRequired: 'معلومات المركبة مطلوبة',
+    InspectionPage.vehicleInfoRequiredMsg:
+        'يرجى ملء جميع حقول معلومات المركبة قبل المتابعة',
+    InspectionPage.allPointsRequired: 'جميع النقاط مطلوبة',
+    InspectionPage.allPointsRequiredMsg:
+        'يرجى ملء جميع نقاط الفحص قبل المتابعة',
+    InspectionPage.pointsRequired: 'النقاط مطلوبة',
+    InspectionPage.pointsRequiredMsg: 'يجب ملء نقطة فحص واحدة على الأقل',
+    InspectionPage.photosRequired: 'الصور مطلوبة',
+    InspectionPage.photosRequiredMsg:
+        'يجب رفع صورة واحدة على الأقل قبل المتابعة',
+    InspectionPage.allPhotosRequired: 'جميع الصور مطلوبة',
+    InspectionPage.allPhotosRequiredMsg:
+        'يرجى رفع جميع الصور المطلوبة قبل المتابعة',
 
     /// End Inspection Details Page
     ///

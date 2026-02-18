@@ -83,6 +83,12 @@ class VehicleDetailsView extends StatelessWidget {
               init: VehicleDetailsBinding().instance,
               autoRemove: false,
               builder: (controller) {
+                if (controller.isLoading.value) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: FSizes.lg),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
                 final details = controller.editableDetails.value;
 
                 return Form(
@@ -107,6 +113,15 @@ class VehicleDetailsView extends StatelessWidget {
                         'vin',
                         details.vin ?? '',
                         controller.vinController,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'fieldRequired'.tr;
+                          }
+                          if (value.trim().length != 17) {
+                            return 'vinMustBe17'.tr;
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: FSizes.spaceBtwItems),
                       buildEditableField(
@@ -114,6 +129,12 @@ class VehicleDetailsView extends StatelessWidget {
                         'plate',
                         details.plate ?? '',
                         controller.plateController,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'fieldRequired'.tr;
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: FSizes.spaceBtwItems),
                       GetBuilder<VehicleDetailsController>(
@@ -258,6 +279,15 @@ class VehicleDetailsView extends StatelessWidget {
                         'milage',
                         details.milage ?? '',
                         controller.milageController,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'fieldRequired'.tr;
+                          }
+                          if (!RegExp(r'^\d+$').hasMatch(value.trim())) {
+                            return 'milageNumbersOnly'.tr;
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: FSizes.spaceBtwItems),
                       GetBuilder<VehicleDetailsController>(
@@ -295,6 +325,15 @@ class VehicleDetailsView extends StatelessWidget {
                         'engine_size',
                         details.enginSize ?? '',
                         controller.enginSizeController,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'fieldRequired'.tr;
+                          }
+                          if (!RegExp(r'^\d+(\.\d+)?$').hasMatch(value.trim())) {
+                            return 'ccNumbersOnly'.tr;
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: FSizes.spaceBtwItems),
                       GetBuilder<VehicleDetailsController>(
@@ -326,6 +365,15 @@ class VehicleDetailsView extends StatelessWidget {
                         'color',
                         details.color ?? '',
                         controller.colorController,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'fieldRequired'.tr;
+                          }
+                          if (RegExp(r'\d').hasMatch(value.trim())) {
+                            return 'colorNoNumbers'.tr;
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: FSizes.spaceBtwItems),
                       buildEditableField(
@@ -333,6 +381,15 @@ class VehicleDetailsView extends StatelessWidget {
                         'seats_color',
                         details.seatColor ?? '',
                         controller.seatColorController,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'fieldRequired'.tr;
+                          }
+                          if (RegExp(r'\d').hasMatch(value.trim())) {
+                            return 'colorNoNumbers'.tr;
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: FSizes.spaceBtwItems),
                       GetBuilder<VehicleDetailsController>(
@@ -403,8 +460,9 @@ class VehicleDetailsView extends StatelessWidget {
     String label,
     String key,
     String value,
-    TextEditingController? textController,
-  ) {
+    TextEditingController? textController, {
+    String? Function(String?)? validator,
+  }) {
     textController ??= TextEditingController(text: value);
     final controller = VehicleDetailsBinding().instance;
     return Padding(
@@ -432,7 +490,7 @@ class VehicleDetailsView extends StatelessWidget {
                 }
               });
             },
-            validator: (value) {
+            validator: validator ?? (value) {
               return FValidation.defaultValidator(value!);
             },
           ),

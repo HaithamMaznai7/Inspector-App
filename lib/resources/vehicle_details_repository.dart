@@ -91,7 +91,16 @@ class VehicleDetailsRepository extends BaseRepository<VehicleDetails> {
       endpoint: '${EndPoints.inspections}/$slug/details',
       requestMethod: RequestMethod.post,
     );
-    n.setBody = body.toJson();
+    
+    // Defensive null-safety: strip null entries entirely.
+    // DO NOT convert nulls to '' — foreign-key fields like body_type_id,
+    // cylinders_no, seats_no cause SQL constraint violations (SQLSTATE 23000)
+    // when the backend receives an empty string instead of null/absent.
+    final jsonBody = body.toJson();
+    jsonBody.removeWhere((key, value) => value == null || value == '');
+    
+    dd('[VehicleDetails] POST body: $jsonBody');
+    n.setBody = jsonBody;
 
     try {
       CustomResponse r = await n.response(RoutingUrl.home);

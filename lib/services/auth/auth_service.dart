@@ -1,13 +1,18 @@
 import 'dart:async';
+import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/models/profile.dart';
 import 'package:fahis_inspector/resources/auth_repository.dart';
 import 'package:fahis_inspector/services/auth/secure_token_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 class AuthService extends GetxController {
   AuthService();
+
+  /// Guard flag to prevent multiple simultaneous session-expiry flows.
+  static bool _isHandlingSessionExpiry = false;
 
   FirebaseAuth get firebase => FirebaseAuth.instance;
 
@@ -39,6 +44,16 @@ class AuthService extends GetxController {
     // Restore the backend token from secure storage before listening to auth changes.
     // This prevents the app from signing out a previously logged-in user.
     await _restoreTokenFromStorage();
+
+    // No session found: clear any stale local data and let the auth
+    // listener redirect to login once it fires.
+    if (_token.value == null && firebase.currentUser == null) {
+      if (kDebugMode) {
+        debugPrint('[AuthService] No session found – clearing local storage');
+      }
+      await SecureTokenStorage().clear();
+    }
+
     _initAuthListener();
   }
 
@@ -47,8 +62,18 @@ class AuthService extends GetxController {
       final storedToken = await SecureTokenStorage().read();
       if (storedToken != null) {
         _token.value = storedToken;
+        if (kDebugMode) {
+          debugPrint('[AuthService] Token restored from secure storage');
+        }
+      } else {
+        if (kDebugMode) {
+          debugPrint('[AuthService] No stored token found');
+        }
       }
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[AuthService] Error restoring token: $e');
+      }
       _token.value = null;
     }
   }
@@ -127,6 +152,42 @@ class AuthService extends GetxController {
 
     // Firebase sign-out triggers changeUser(null) → navigates to login
     await firebase.signOut();
+  }
+
+  /// Called when the backend returns 401 or the token is invalid.
+  /// Skips the backend logout call (token is already invalid).
+  /// Uses a guard flag to prevent multiple simultaneous calls.
+  Future<void> sessionExpired() async {
+    if (_isHandlingSessionExpiry) return;
+    _isHandlingSessionExpiry = true;
+
+    if (kDebugMode) {
+      debugPrint('[AuthService] sessionExpired – clearing session');
+    }
+
+    try {
+      // Clear local auth state
+      await SecureTokenStorage().clear();
+      _token.value = null;
+      _profile.value = Profile.empty();
+      _idToken.value = null;
+
+      // Show message before sign-out (sign-out triggers navigation)
+      FLoader.warningSnackBar(
+        title: 'sessionExpired'.tr,
+        message: 'sessionExpiredMsg'.tr,
+        duration: 4,
+      );
+
+      // Firebase sign-out triggers changeUser(null) → navigates to login
+      await firebase.signOut();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[AuthService] sessionExpired – error: $e');
+      }
+    } finally {
+      _isHandlingSessionExpiry = false;
+    }
   }
 
   Future<String> forgetPassword(String mobile) =>

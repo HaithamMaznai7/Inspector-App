@@ -112,7 +112,8 @@ class InspectionPhotosRepository extends ListRepository<Photo> {
         ),
       });
     } else {
-      n.setBody = {'image': null};
+      // No file selected, skip API call
+      return;
     }
 
     try {

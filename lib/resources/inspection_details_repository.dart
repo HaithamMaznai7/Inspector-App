@@ -179,17 +179,18 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
       endpoint: 'inspector/inspections/$slug/book/update',
       requestMethod: RequestMethod.post,
     );
+    // Defensive null-safety: replace null values with empty strings
     Map body = {
       'owner': {
-        'name': _data.value?.customer?.name,
-        'mobile': _data.value?.customer?.phone,
-        'city': _data.value?.customer?.city?.id,
+        'name': _data.value?.customer?.name ?? '',
+        'mobile': _data.value?.customer?.phone ?? '',
+        'city': _data.value?.customer?.city?.id ?? '',
       },
-      'center': book?.branch?.id,
-      'inspector': book?.inspector?.id,
+      'center': book?.branch?.id ?? '',
+      'inspector': book?.inspector?.id ?? '',
       'date': book?.date != null
           ? EFormatter.formattedWithTimezone(book!.date!)
-          : null,
+          : '',
     };
     n.setBody = body;
 

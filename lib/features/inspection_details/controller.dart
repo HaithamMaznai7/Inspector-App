@@ -317,19 +317,20 @@ class InspectionDetailsController extends GetxController
     // For stages that show a dialog, collect input BEFORE showing loading
     switch (stage) {
       case InspectionStage.finished:
-        final note = await Get.dialog(
+        final note = await Get.dialog<String>(
           NoteInputDialog(status: stage.toString()),
         );
         if (note == null) return; // user cancelled
-        inspection.value!.note = note;
+        // Backend requires note when stage is finished; use '-' if empty
+        inspection.value!.note = note.trim().isEmpty ? '-' : note.trim();
         inspection.value!.stage = stage;
         break;
       case InspectionStage.rejected:
-        final note = await Get.dialog(
+        final note = await Get.dialog<String>(
           NoteInputDialog(status: stage.toString()),
         );
         if (note == null) return; // user cancelled
-        inspection.value!.rejectedNote = note;
+        inspection.value!.rejectedNote = note.trim().isEmpty ? '-' : note.trim();
         inspection.value!.stage = stage;
         break;
       case InspectionStage.pending:
@@ -373,28 +374,33 @@ class InspectionDetailsController extends GetxController
     isSubmitting.toggle();
     update();
 
+    bool success = false;
     try {
       inspection.value = await repository!.update(inspection.value!);
+      success = true;
     } on FNetworkException catch (e) {
       e.notify();
+      inspection.value?.stage = oldValue;
     } catch (_) {
       inspection.value?.stage = oldValue;
       load(slug!);
     } finally {
       isSubmitting.toggle();
       update();
-      if (stage == InspectionStage.finished ||
-          stage == InspectionStage.reviewed) {
-        // Clear cached note so it doesn't leak into other UI
-        inspection.value?.note = '';
-        inspection.value?.rejectedNote = null;
-        box?.delete(slug);
-        FLoader.successSnackBar(
-          title: InspectionPage.submitSuccessTitle.tr,
-          message: InspectionPage.submitSuccessMsg.tr,
-        );
-        Get.offAllNamed(RoutingUrl.home);
-      }
+    }
+
+    // Only show success and navigate AFTER confirming the API call succeeded
+    if (success &&
+        (stage == InspectionStage.finished ||
+            stage == InspectionStage.reviewed)) {
+      inspection.value?.note = '';
+      inspection.value?.rejectedNote = null;
+      box?.delete(slug);
+      FLoader.successSnackBar(
+        title: InspectionPage.submitSuccessTitle.tr,
+        message: InspectionPage.submitSuccessMsg.tr,
+      );
+      Get.offAllNamed(RoutingUrl.home);
     }
   }
 

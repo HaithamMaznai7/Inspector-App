@@ -16,11 +16,16 @@ class ReviewerNoteSection extends StatelessWidget {
       init: InspectionDetailsBinding().instance,
       builder: (c) {
         final note = c.inspection.value?.note;
-        if (note != null && note.isNotEmpty && note != '') {
+        if (note != null && note.isNotEmpty && note != '' && note != '-') {
           return InfoCard(
-            title: Text(DetailsPage.reviewNoteTitle.tr),
+            title: Text(
+              DetailsPage.reviewNoteTitle.tr,
+              style: TextStyle(color: Colors.blue.shade700),
+            ),
             tilePadding: FSizes.md,
             icon: Iconsax.note_2,
+            iconColor: Colors.blue.shade700,
+            cardColor: Colors.blue.shade50,
             children: [
               Padding(
                 padding: EdgeInsets.symmetric(
@@ -29,7 +34,9 @@ class ReviewerNoteSection extends StatelessWidget {
                 ),
                 child: Text(
                   note,
-                  style: Theme.of(context).textTheme.bodyLarge,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Colors.blue.shade900,
+                  ),
                 ),
               ),
             ],

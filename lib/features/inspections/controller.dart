@@ -33,10 +33,15 @@ class InspectionsController extends GetxController
   // 0 = Companies (شركات), 1 = Individuals (افراد)
   var selectedSegment = 1.obs; // Default to Individuals
 
+  /// Inspections excluding reviewed/approved ones (no longer actionable).
+  /// Used in the default All view. Explicit stage filter still shows them.
+  List<Inspection> get _activeInspections =>
+      inspections.where((i) => i.stage != InspectionStage.reviewed).toList();
+
   /// Groups inspections by customer name, returns only customers with 2+ requests
   Map<String, List<Inspection>> get companyGroups {
     final Map<String, List<Inspection>> grouped = {};
-    for (final ins in inspections) {
+    for (final ins in _activeInspections) {
       final name = ins.customer?.name ?? '';
       grouped.putIfAbsent(name, () => []).add(ins);
     }
@@ -49,7 +54,7 @@ class InspectionsController extends GetxController
   /// Returns inspections belonging to customers with only 1 request
   List<Inspection> get individualInspections {
     final Map<String, List<Inspection>> grouped = {};
-    for (final ins in inspections) {
+    for (final ins in _activeInspections) {
       final name = ins.customer?.name ?? '';
       grouped.putIfAbsent(name, () => []).add(ins);
     }

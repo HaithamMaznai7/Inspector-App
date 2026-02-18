@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:fahis_inspector/util/http/network_exception.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 class CustomResponse {
@@ -30,6 +31,12 @@ class CustomResponse {
           response.statusCode! < 200;
       
       if(hasError){
+        // Global 401 interceptor: if the user is authenticated and gets
+        // a 401, their session has expired. Trigger forced logout.
+        if (response.statusCode == 401) {
+          _handleUnauthorized();
+        }
+
         throw FNetworkException.set(response);
       }
 
@@ -42,6 +49,29 @@ class CustomResponse {
       );
     } catch (e) {
       rethrow;
+    }
+  }
+
+  /// Handles 401 responses globally by triggering session expiry
+  /// on the AuthService (if registered and currently authenticated).
+  static void _handleUnauthorized() {
+    try {
+      // Lazy import via routes to avoid circular deps — AuthBinding
+      // is available because it's a part of routes.dart which is
+      // already imported by the Network class that calls us.
+      // We use dynamic lookup to keep this file dependency-light.
+      final authTag = 'AuthService';
+      if (Get.isRegistered(tag: authTag)) {
+        final auth = Get.find(tag: authTag);
+        if (auth.isAuth == true) {
+          if (kDebugMode) {
+            debugPrint('[Session] 401 detected – triggering sessionExpired()');
+          }
+          auth.sessionExpired();
+        }
+      }
+    } catch (_) {
+      // Never let interceptor logic crash the app
     }
   }
 

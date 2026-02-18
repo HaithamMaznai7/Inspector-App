@@ -141,7 +141,10 @@ class InspectionPhotosController extends GetxController {
       }
     }
 
-    await repository.update(photo);
+    // Only upload if file exists (user didn't cancel)
+    if (photo.file != null) {
+      await repository.update(photo);
+    }
     category.value = cat;
     update();
   }

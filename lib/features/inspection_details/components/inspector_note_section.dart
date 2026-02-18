@@ -18,9 +18,14 @@ class InspectorNoteSection extends StatelessWidget {
         final note = c.inspection.value?.rejectedNote;
         if (note != null && note.isNotEmpty && note != '') {
           return InfoCard(
-            title: Text(DetailsPage.reviewNoteTitle.tr),
+            title: Text(
+              DetailsPage.reviewNoteTitle.tr,
+              style: TextStyle(color: Colors.red.shade700),
+            ),
             tilePadding: FSizes.md,
             icon: Iconsax.note_2,
+            iconColor: Colors.red.shade700,
+            cardColor: Colors.red.shade50,
             children: [
               Padding(
                 padding: EdgeInsets.symmetric(
@@ -29,7 +34,9 @@ class InspectorNoteSection extends StatelessWidget {
                 ),
                 child: Text(
                   note,
-                  style: Theme.of(context).textTheme.bodyLarge,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Colors.red.shade900,
+                  ),
                 ),
               ),
             ],

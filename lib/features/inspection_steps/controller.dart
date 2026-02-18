@@ -30,6 +30,14 @@ class InspectionStepsController extends GetxController {
 
   RxList<Map<String, dynamic>> tabs = RxList<Map<String, dynamic>>([]);
 
+  /// MODE A (Sahrej): only Points + Photos, no Details/Body/OBD.
+  bool get isSahrejMode =>
+      inspection.value.hasPoints &&
+      inspection.value.hasPhotos &&
+      !inspection.value.hasDetails &&
+      !inspection.value.hasBody &&
+      !inspection.value.hasObd;
+
   int currentIndex = 0;
   int index = 0;
   int highestReachedIndex = 0;
@@ -193,6 +201,69 @@ class InspectionStepsController extends GetxController {
     super.onClose();
   }
 
+  /// Safe reset after vehicle info is updated.
+  /// Clears all cached data, resets step progress, notes, points,
+  /// and controller state so it behaves like first-time inspection entry.
+  Future<void> resetAfterVehicleInfoUpdate() async {
+    _log('resetAfterVehicleInfoUpdate – start');
+
+    // 1. Clear Hive cache for this inspection (NOT assets – they're global)
+    if (box != null && box!.isOpen) {
+      await box!.clear();
+      _log('resetAfterVehicleInfoUpdate – inspection box cleared');
+    }
+
+    // 2. Reset step progress to first tab
+    currentIndex = 0;
+    index = 0;
+    highestReachedIndex = 0;
+
+    // 3. Reset & reload child controllers in PARALLEL to minimize wait
+    final futures = <Future>[];
+
+    if (InspectionPointsBinding().isRegistered) {
+      final pointsCtrl = InspectionPointsBinding().instance;
+      pointsCtrl.allPoints.clear();
+      pointsCtrl.category.value = null;
+      pointsCtrl.review.value = null;
+      futures.add(pointsCtrl.load().then((_) =>
+          _log('resetAfterVehicleInfoUpdate – points reloaded')));
+    }
+
+    if (InspectionPhotosBinding().isRegistered) {
+      final photosCtrl = InspectionPhotosBinding().instance;
+      photosCtrl.photos.clear();
+      photosCtrl.filtered.clear();
+      photosCtrl.categories.clear();
+      photosCtrl.category.value = null;
+      futures.add(photosCtrl.fetchPhotos().then((_) =>
+          _log('resetAfterVehicleInfoUpdate – photos reloaded')));
+    }
+
+    if (InspectionBodyBinding().isRegistered) {
+      final bodyCtrl = InspectionBodyBinding().instance;
+      bodyCtrl.bodySides.clear();
+      futures.add(bodyCtrl.fetchBodySides().then((_) =>
+          _log('resetAfterVehicleInfoUpdate – body reloaded')));
+    }
+
+    if (InspectionObdBinding().isRegistered) {
+      final obdCtrl = InspectionObdBinding().instance;
+      obdCtrl.codes.clear();
+      obdCtrl.report.value = null;
+      futures.add(obdCtrl.loadBySlug().then((_) =>
+          _log('resetAfterVehicleInfoUpdate – OBD reloaded')));
+    }
+
+    // Also reload main inspection data in parallel
+    futures.add(load(refresh: true));
+
+    await Future.wait(futures);
+
+    _log('resetAfterVehicleInfoUpdate – done');
+    update();
+  }
+
   Future<void> setSatge(InspectionStage stage) async {
     isSubmitting.toggle();
     update();
@@ -206,10 +277,11 @@ class InspectionStepsController extends GetxController {
         goToTab(_tabIndexForStage(stage));
         break;
       case InspectionStage.points:
-        // Save vehicle details before advancing from Info to Points
+        // Save & validate vehicle details before advancing from Info
         if (VehicleDetailsBinding().isRegistered) {
           final saved = await VehicleDetailsBinding().instance.onSave();
           if (!saved) {
+            _log('setSatge(points) – vehicle form validation failed');
             isSubmitting.toggle();
             update();
             return;
@@ -217,23 +289,29 @@ class InspectionStepsController extends GetxController {
         }
         inspection.value.stage = stage;
         goToTab(_tabIndexForStage(stage));
-        break;
-      case InspectionStage.photos:
-        if (InspectionPointsBinding().isRegistered &&
-            InspectionPointsBinding().instance.allPoints
-                .where((point) => point.status != PointStatus.none)
-                .toList()
-                .isNotEmpty) {
-          inspection.value.stage = stage;
-          goToTab(_tabIndexForStage(stage));
-        } else {
-          FLoader.warningSnackBar(
-            title: 'Validtion Failed',
-            message: 'One Or More Points Required',
-          );
+        // Refresh points — backend generates them based on vehicle details,
+        // so the initial load (before save) may have returned empty data.
+        if (InspectionPointsBinding().isRegistered) {
+          InspectionPointsBinding().instance.load(isRefresh: true);
         }
         break;
+      case InspectionStage.photos:
+        // Validate points before advancing to photos
+        if (!_validatePoints()) {
+          isSubmitting.toggle();
+          update();
+          return;
+        }
+        inspection.value.stage = stage;
+        goToTab(_tabIndexForStage(stage));
+        break;
       case InspectionStage.body:
+        // Validate photos before advancing to body
+        if (!_validatePhotos()) {
+          isSubmitting.toggle();
+          update();
+          return;
+        }
         inspection.value.stage = stage;
         goToTab(_tabIndexForStage(stage));
         break;
@@ -248,20 +326,28 @@ class InspectionStepsController extends GetxController {
           update();
           return;
         }
+        // Validate photos if this inspection has photos (for Sahrej finish)
+        if (inspection.value.hasPhotos && !_validatePhotos()) {
+          isSubmitting.toggle();
+          update();
+          return;
+        }
 
-        final note = await Get.dialog(
+        final note = await Get.dialog<String>(
           NoteInputDialog(
             status: stage.toString(),
             note: inspection.value.note,
           ),
         );
+        // null = dialog dismissed/cancelled
         if (note == null) {
+          isSubmitting.toggle();
+          update();
           return;
-        } else {
-          inspection.value.note = note;
-          inspection.value.stage = stage;
-          Get.back();
         }
+        // Backend requires note when stage is finished; use '-' if empty
+        inspection.value.note = note.trim().isEmpty ? '-' : note.trim();
+        inspection.value.stage = stage;
         break;
       default:
         break;
@@ -276,17 +362,19 @@ class InspectionStepsController extends GetxController {
 
     try {
       inspection.value = await repository!.update(inspection.value);
+      // Only navigate back on successful submission
+      if (stage == InspectionStage.finished) {
+        Get.back();
+      }
     } on FNetworkException catch (e) {
       e.notify();
+      inspection.value.stage = oldValue;
     } catch (_) {
       inspection.value.stage = oldValue;
       // load();
     } finally {
       isSubmitting.toggle();
       update();
-      if (stage == InspectionStage.finished) {
-        Get.back();
-      }
     }
   }
 
@@ -322,11 +410,44 @@ class InspectionStepsController extends GetxController {
     }
   }
 
+  /// Whether the current step passes validation so the Next button
+  /// can be enabled. This is called by the StepSelector widget.
+  bool get canAdvanceFromCurrentStep {
+    if (tabs.isEmpty || index >= tabs.length) return false;
+    final stage = tabs[index]['stage'] as InspectionStage;
+
+    switch (stage) {
+      case InspectionStage.info:
+        return _isVehicleInfoComplete();
+      case InspectionStage.points:
+        return _arePointsValid();
+      case InspectionStage.photos:
+        return _arePhotosValid();
+      case InspectionStage.obd:
+        return _isObdValid();
+      default:
+        return true;
+    }
+  }
+
   /// Called when the user taps "Review" on the last step.
   /// Saves the current stage, then pops back to inspection details.
   /// The caller (openEditing) already refreshes data after this returns.
   Future<void> finishAndReview() async {
     _log('finishAndReview – start');
+
+    // Prevent double submission
+    if (isSubmitting.value) {
+      _log('finishAndReview – already submitting, ignoring');
+      return;
+    }
+
+    // Validate current step before finishing
+    if (!canAdvanceFromCurrentStep) {
+      _showValidationForCurrentStep();
+      _log('finishAndReview – current step validation failed');
+      return;
+    }
 
     // Validate OBD data if this inspection has an OBD step
     if (inspection.value.hasObd && !_validateObdData()) {
@@ -337,12 +458,14 @@ class InspectionStepsController extends GetxController {
     isSubmitting.value = true;
     update();
 
+    bool success = false;
     try {
       // Save current stage to API
       if (repository != null) {
         _log('finishAndReview – saving to API...');
         inspection.value = await repository!.update(inspection.value);
         _log('finishAndReview – saved successfully');
+        success = true;
       }
     } on FNetworkException catch (e) {
       _log('finishAndReview – FNetworkException: ${e.statusCode}');
@@ -354,33 +477,152 @@ class InspectionStepsController extends GetxController {
       update();
     }
 
-    // Pop back to the existing inspection details screen
-    Get.back();
+    // Only pop back on successful submission
+    if (success) {
+      Get.back();
+    }
   }
 
-  /// Returns true if OBD data is valid (has report OR codes).
-  /// Shows a warning snackbar and returns false if not.
+  // ─── Validation helpers (return bool, no UI) ───
+
+  bool _isVehicleInfoComplete() {
+    if (!VehicleDetailsBinding().isRegistered) return true;
+    final ctrl = VehicleDetailsBinding().instance;
+    final vin = ctrl.vinController.text.trim();
+    final plate = ctrl.plateController.text.trim();
+    final milage = ctrl.milageController.text.trim();
+    final cc = ctrl.enginSizeController.text.trim();
+    final color = ctrl.colorController.text.trim();
+    final seatColor = ctrl.seatColorController.text.trim();
+    return vin.length == 17 &&
+        plate.isNotEmpty &&
+        milage.isNotEmpty &&
+        cc.isNotEmpty &&
+        RegExp(r'^\d+(\.\d+)?$').hasMatch(cc) &&
+        color.isNotEmpty &&
+        seatColor.isNotEmpty;
+  }
+
+  bool _arePointsValid() {
+    if (!InspectionPointsBinding().isRegistered) return true;
+    final points = InspectionPointsBinding().instance.allPoints;
+    if (points.isEmpty) return false;
+    if (isSahrejMode) {
+      // MODE A: ALL points must be filled
+      return points.every((p) => p.status != PointStatus.none);
+    } else {
+      // MODE B: at least one point filled
+      return points.any((p) => p.status != PointStatus.none);
+    }
+  }
+
+  bool _arePhotosValid() {
+    if (!InspectionPhotosBinding().isRegistered) return true;
+    final photos = InspectionPhotosBinding().instance.photos;
+    if (photos.isEmpty) return false;
+    if (isSahrejMode) {
+      // MODE A: ALL required photos must be uploaded
+      return photos.every((p) => p.image != null);
+    } else {
+      // MODE B: at least one photo uploaded
+      return photos.any((p) => p.image != null);
+    }
+  }
+
+  bool _isObdValid() {
+    if (!InspectionObdBinding().isRegistered) return true;
+    final obdCtrl = InspectionObdBinding().instance;
+    return obdCtrl.isDataReady && obdCtrl.hasData;
+  }
+
+  // ─── Validation with UI feedback ───
+
+  bool _validateVehicleInfo() {
+    if (!VehicleDetailsBinding().isRegistered) return true;
+    final ctrl = VehicleDetailsBinding().instance;
+    final formValid = ctrl.formKey.currentState?.validate() ?? false;
+    if (!formValid) {
+      _log('_validateVehicleInfo – form validation failed');
+      FLoader.warningSnackBar(
+        title: InspectionPage.vehicleInfoRequired.tr,
+        message: InspectionPage.vehicleInfoRequiredMsg.tr,
+      );
+      return false;
+    }
+    return true;
+  }
+
+  bool _validatePoints() {
+    if (_arePointsValid()) return true;
+    _log('_validatePoints – failed (sahrej=$isSahrejMode)');
+    if (isSahrejMode) {
+      FLoader.warningSnackBar(
+        title: InspectionPage.allPointsRequired.tr,
+        message: InspectionPage.allPointsRequiredMsg.tr,
+      );
+    } else {
+      FLoader.warningSnackBar(
+        title: InspectionPage.pointsRequired.tr,
+        message: InspectionPage.pointsRequiredMsg.tr,
+      );
+    }
+    return false;
+  }
+
+  bool _validatePhotos() {
+    if (_arePhotosValid()) return true;
+    _log('_validatePhotos – failed (sahrej=$isSahrejMode)');
+    if (isSahrejMode) {
+      FLoader.warningSnackBar(
+        title: InspectionPage.allPhotosRequired.tr,
+        message: InspectionPage.allPhotosRequiredMsg.tr,
+      );
+    } else {
+      FLoader.warningSnackBar(
+        title: InspectionPage.photosRequired.tr,
+        message: InspectionPage.photosRequiredMsg.tr,
+      );
+    }
+    return false;
+  }
+
   bool _validateObdData() {
+    if (_isObdValid()) return true;
     if (InspectionObdBinding().isRegistered) {
       final obdCtrl = InspectionObdBinding().instance;
       if (!obdCtrl.isDataReady) {
         _log('_validateObdData – OBD data still loading');
-        FLoader.warningSnackBar(
-          title: InspectionPage.obdDataRequired.tr,
-          message: InspectionPage.obdDataRequiredMsg.tr,
-        );
-        return false;
-      }
-      if (!obdCtrl.hasData) {
+      } else {
         _log('_validateObdData – no OBD data (no report, no codes)');
-        FLoader.warningSnackBar(
-          title: InspectionPage.obdDataRequired.tr,
-          message: InspectionPage.obdDataRequiredMsg.tr,
-        );
-        return false;
       }
     }
-    return true;
+    FLoader.warningSnackBar(
+      title: InspectionPage.obdDataRequired.tr,
+      message: InspectionPage.obdDataRequiredMsg.tr,
+    );
+    return false;
+  }
+
+  /// Shows a validation snackbar for the current step (used by finishAndReview).
+  void _showValidationForCurrentStep() {
+    if (tabs.isEmpty || index >= tabs.length) return;
+    final stage = tabs[index]['stage'] as InspectionStage;
+    switch (stage) {
+      case InspectionStage.info:
+        _validateVehicleInfo();
+        break;
+      case InspectionStage.points:
+        _validatePoints();
+        break;
+      case InspectionStage.photos:
+        _validatePhotos();
+        break;
+      case InspectionStage.obd:
+        _validateObdData();
+        break;
+      default:
+        break;
+    }
   }
 
   void _log(String message) {

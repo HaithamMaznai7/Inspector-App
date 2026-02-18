@@ -123,4 +123,16 @@ class InspectionPage {
   static const String stepPhotos = 'stepPhotos';
   static const String stepBody = 'stepBody';
   static const String stepObd = 'stepObd';
+
+  /// Step validation
+  static const String vehicleInfoRequired = 'vehicleInfoRequired';
+  static const String vehicleInfoRequiredMsg = 'vehicleInfoRequiredMsg';
+  static const String allPointsRequired = 'allPointsRequired';
+  static const String allPointsRequiredMsg = 'allPointsRequiredMsg';
+  static const String pointsRequired = 'pointsRequired';
+  static const String pointsRequiredMsg = 'pointsRequiredMsg';
+  static const String photosRequired = 'photosRequired';
+  static const String photosRequiredMsg = 'photosRequiredMsg';
+  static const String allPhotosRequired = 'allPhotosRequired';
+  static const String allPhotosRequiredMsg = 'allPhotosRequiredMsg';
 }

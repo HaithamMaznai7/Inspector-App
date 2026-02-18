@@ -18,6 +18,13 @@ class English {
     FTexts.updateAssets: 'Assets Upgrade',
     FTexts.offlineMode: 'Offline Mode',
     'All': 'All',
+    'sessionExpired': 'Session Expired',
+    'sessionExpiredMsg': 'Session expired. Please login again.',
+    'fieldRequired': 'This field is required.',
+    'vinMustBe17': 'Must be 17 characters.',
+    'ccNumbersOnly': 'Only digits allowed.',
+    'colorNoNumbers': 'Color cannot contain numbers.',
+    'milageNumbersOnly': 'Must be a number.',
     'Pending': 'Pending',
     'Accepted': 'Accepted',
     'In Progress': 'In Progress',
@@ -188,6 +195,21 @@ class English {
     InspectionPage.stepPhotos: 'Photos',
     InspectionPage.stepBody: 'Body Notes',
     InspectionPage.stepObd: 'OBD',
+    InspectionPage.vehicleInfoRequired: 'Vehicle Info Required',
+    InspectionPage.vehicleInfoRequiredMsg:
+        'Please fill in all vehicle information fields before proceeding',
+    InspectionPage.allPointsRequired: 'All Points Required',
+    InspectionPage.allPointsRequiredMsg:
+        'Please fill in all inspection points before proceeding',
+    InspectionPage.pointsRequired: 'Points Required',
+    InspectionPage.pointsRequiredMsg:
+        'At least one inspection point must be filled',
+    InspectionPage.photosRequired: 'Photos Required',
+    InspectionPage.photosRequiredMsg:
+        'At least one photo must be uploaded before proceeding',
+    InspectionPage.allPhotosRequired: 'All Photos Required',
+    InspectionPage.allPhotosRequiredMsg:
+        'Please upload all required photos before proceeding',
 
     /// End Home Page
     ///
