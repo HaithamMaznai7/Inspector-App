@@ -155,21 +155,21 @@ class _PointCardState extends State<PointCard> {
     Point newStatePoint = _point;
     try {
       if (status == PointStatus.note) {
-        newStatePoint =
-            await Get.dialog<Point>(
-              InspectionNotesDialog(_point),
-              barrierDismissible: false,
-            ) ??
-            _point;
+        final result = await Get.dialog<Point>(
+          InspectionNotesDialog(_point),
+          barrierDismissible: false,
+        );
+        // User cancelled the note dialog — do nothing
+        if (result == null) return;
+        newStatePoint = result;
       }
       newStatePoint.setStatus = status;
       setState(() {
         _point = newStatePoint;
       });
+      await widget.onChange(newStatePoint, status);
     } catch (e) {
       dd(e.toString());
-    } finally {
-      await widget.onChange(newStatePoint, status);
     }
   }
 
