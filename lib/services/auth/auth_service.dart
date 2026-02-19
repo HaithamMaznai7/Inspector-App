@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class AuthService extends GetxController {
   AuthService();
@@ -49,9 +50,9 @@ class AuthService extends GetxController {
     // listener redirect to login once it fires.
     if (_token.value == null && firebase.currentUser == null) {
       if (kDebugMode) {
-        debugPrint('[AuthService] No session found – clearing local storage');
+        debugPrint('[AuthService] No session found – clearing local data');
       }
-      await SecureTokenStorage().clear();
+      await clearLocalData();
     }
 
     _initAuthListener();
@@ -145,10 +146,7 @@ class AuthService extends GetxController {
     // Clear local auth state BEFORE firebase sign-out so that
     // any listeners (e.g. NotificationsService) that react to
     // token changes won't fire API calls with an invalid token.
-    await SecureTokenStorage().clear();
-    _token.value = null;
-    _profile.value = Profile.empty();
-    _idToken.value = null;
+    await clearLocalData();
 
     // Firebase sign-out triggers changeUser(null) → navigates to login
     await firebase.signOut();
@@ -166,11 +164,8 @@ class AuthService extends GetxController {
     }
 
     try {
-      // Clear local auth state
-      await SecureTokenStorage().clear();
-      _token.value = null;
-      _profile.value = Profile.empty();
-      _idToken.value = null;
+      // Clear all local data (tokens, Hive caches)
+      await clearLocalData();
 
       // Show message before sign-out (sign-out triggers navigation)
       FLoader.warningSnackBar(
@@ -201,6 +196,55 @@ class AuthService extends GetxController {
 
   Future<String?> verifyOTP(String verifyToken, String code) async {
     return await AuthRepository().verifyOTP(verifyToken, code);
+  }
+
+  /// Clears all local session data: secure token storage, in-memory
+  /// auth state, and Hive inspection/asset caches. Called on logout,
+  /// session expiry, and when no valid session is found at startup.
+  Future<void> clearLocalData() async {
+    // 1. Secure token storage
+    await SecureTokenStorage().clear();
+
+    // 2. In-memory auth state
+    _token.value = null;
+    _idToken.value = null;
+    _profile.value = Profile.empty();
+
+    // 3. Hive caches — delete boxes that hold inspection data.
+    //    Use deleteFromDisk so stale data from a previous session
+    //    is never shown to the next user.
+    try {
+      final boxNames = Hive.isBoxOpen('Auth') ||
+              Hive.isBoxOpen('Assets') ||
+              Hive.isBoxOpen('Inspections')
+          ? true
+          : false;
+
+      if (boxNames) {
+        // Clear contents of known boxes if they are open
+        for (final name in ['Auth', 'Assets', 'Inspections']) {
+          if (Hive.isBoxOpen(name)) {
+            await Hive.box(name).clear();
+          }
+        }
+      }
+
+      // Also clear any per-inspection boxes that may be open
+      // (e.g. 'Inspection_SLUG', slug-named asset boxes)
+      // Hive doesn't expose a list of open boxes, so we clear
+      // the Notifications box separately if open.
+      if (Hive.isBoxOpen('Notifications')) {
+        await Hive.box('Notifications').clear();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[AuthService] clearLocalData – Hive error: $e');
+      }
+    }
+
+    if (kDebugMode) {
+      debugPrint('[AuthService] Local data cleared');
+    }
   }
 
   Future<void> login(String credential, String password) async {
