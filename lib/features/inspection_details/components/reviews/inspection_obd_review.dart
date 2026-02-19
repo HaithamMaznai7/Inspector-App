@@ -1,6 +1,5 @@
 import 'package:fahis_inspector/features/inspection_details/components/reviews/info_card.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
-import 'package:fahis_inspector/features/inspection_obd/view.dart';
 import 'package:fahis_inspector/models/obd_code.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -47,19 +46,10 @@ class InspectionOBDReview extends StatelessWidget {
           }
         }
 
-        // Show edit icon only if the OBD step has been reached
-        final canEdit = c.canEditSection(4);
-
         return InfoCard(
           title: Text(InspectionPage.inspectionOBDCodes.tr),
           tilePadding: FSizes.md,
           icon: Iconsax.setting_2,
-          onEdit: canEdit
-              ? () => c.editSection(
-                    title: InspectionPage.inspectionOBDCodes.tr,
-                    screen: const OBDCodesView(),
-                  )
-              : null,
           children: [
             if (obdCodes.isEmpty)
               Padding(

@@ -3,8 +3,6 @@ import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/enums/point_status.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/features/inspection_details/components/note_dialog.dart';
-import 'package:fahis_inspector/features/inspection_details/components/section_edit_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:fahis_inspector/models/inspection.dart';
 import 'package:fahis_inspector/models/point.dart';
 import 'package:fahis_inspector/models/vehicle_details.dart';
@@ -252,44 +250,6 @@ class InspectionDetailsController extends GetxController
       update();
     } catch (e) {
       dd('Error loading OBD: $e');
-    }
-  }
-
-  /// Maps an InspectionStage to its step index (0-based).
-  static int? _stageToIndex(InspectionStage stage) {
-    switch (stage) {
-      case InspectionStage.info: return 0;
-      case InspectionStage.points: return 1;
-      case InspectionStage.photos: return 2;
-      case InspectionStage.body: return 3;
-      case InspectionStage.obd: return 4;
-      default: return null;
-    }
-  }
-
-  /// Whether a section at [sectionIndex] can be edited.
-  /// True when the inspector has reached or passed that step and the
-  /// inspection is still in an editable state (not finished/reviewed).
-  bool canEditSection(int sectionIndex) {
-    final stage = inspection.value?.stage;
-    if (stage == null || !stage.canEdit) return false;
-    // Rejected inspections had all sections filled before rejection
-    if (stage == InspectionStage.rejected) return true;
-    final currentIndex = _stageToIndex(stage);
-    return currentIndex != null && currentIndex >= sectionIndex;
-  }
-
-  /// Opens a standalone edit screen for a single section.
-  /// [title] is shown in the AppBar; [screen] is the step widget.
-  /// Refreshes data on return so the review cards reflect changes.
-  Future<void> editSection({
-    required String title,
-    required Widget screen,
-  }) async {
-    await Get.to(() => SectionEditScreen(title: title, child: screen));
-    // Refresh data after editing so review cards update
-    if (slug != null) {
-      load(slug!, refresh: true);
     }
   }
 

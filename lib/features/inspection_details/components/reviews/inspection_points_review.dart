@@ -1,12 +1,10 @@
 import 'package:fahis_inspector/features/inspection_details/components/reviews/info_card.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
-import 'package:fahis_inspector/features/inspection_points/view.dart';
 import 'package:fahis_inspector/models/review_point.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
-import 'package:fahis_inspector/util/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -27,19 +25,10 @@ class InspectionPointsReview extends StatelessWidget {
           return SizedBox();
         }
 
-        // Show edit icon only if the points step has been reached
-        final canEdit = c.canEditSection(1);
-
         return InfoCard(
           title: Text(InspectionPage.inspectionPointReview.tr),
           icon: Iconsax.check,
           tilePadding: FSizes.md,
-          onEdit: canEdit
-              ? () => c.editSection(
-                    title: InspectionPage.inspectionPointReview.tr,
-                    screen: const InspectionPointResults(),
-                  )
-              : null,
           children: [
             ...points.cats.map((cat) {
               return Padding(

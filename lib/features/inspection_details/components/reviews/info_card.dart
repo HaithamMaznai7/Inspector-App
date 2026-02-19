@@ -2,7 +2,6 @@ import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:iconsax/iconsax.dart';
 
 class InfoCard extends StatelessWidget {
   const InfoCard({
@@ -18,7 +17,6 @@ class InfoCard extends StatelessWidget {
     this.children = const [],
     this.initiallyExpanded = false,
     this.showCard = true,
-    this.onEdit,
   });
 
   final IconData? icon;
@@ -32,37 +30,11 @@ class InfoCard extends StatelessWidget {
   final List<Widget> children;
   final bool initiallyExpanded;
   final bool showCard;
-  /// When provided, shows a compact edit icon in the card header.
-  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
-    // Wrap title with edit icon when onEdit is provided
-    final titleWidget = onEdit != null
-        ? Row(
-            children: [
-              Expanded(child: title),
-              GestureDetector(
-                onTap: onEdit,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: FColors.primaryColor.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Icon(
-                    Iconsax.edit_2,
-                    size: 16,
-                    color: FColors.primaryColor,
-                  ),
-                ),
-              ),
-            ],
-          )
-        : title;
-
     final expansionTile = ExpansionTile(
-      title: titleWidget,
+      title: title,
       subtitle: subtitle,
       initiallyExpanded: initiallyExpanded,
       trailing: trailing,
@@ -157,7 +129,6 @@ class InfoCard extends StatelessWidget {
     Widget? trailing,
     bool initiallyExpanded = false,
     Map<String, dynamic> items = const {},
-    VoidCallback? onEdit,
   }) {
     return InfoCard(
       title: title,
@@ -166,7 +137,6 @@ class InfoCard extends StatelessWidget {
       icon: icon,
       trailing: trailing,
       initiallyExpanded: initiallyExpanded,
-      onEdit: onEdit,
       children: initializeInfo(items).toList(),
     );
   }
