@@ -1,3 +1,4 @@
+import 'package:fahis_inspector/common/widgets/app/logo.dart';
 import 'package:flutter/material.dart';
 
 class App extends StatelessWidget {
@@ -5,13 +6,6 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [Text('Fahis')],
-        ),
-      ),
-    );
+    return Scaffold(body: Center(child: const Logo(height: 80)));
   }
 }
