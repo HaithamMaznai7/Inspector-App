@@ -2,6 +2,7 @@ import 'package:fahis_inspector/common/widgets/components/custom_selector.dart';
 import 'package:fahis_inspector/features/vehicle_details/controller.dart';
 import 'package:fahis_inspector/models/selection.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/helpers.dart';
@@ -86,7 +87,11 @@ class VehicleDetailsView extends StatelessWidget {
                 if (controller.isLoading.value) {
                   return const Padding(
                     padding: EdgeInsets.symmetric(vertical: FSizes.lg),
-                    child: Center(child: CircularProgressIndicator()),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: FColors.primaryColor,
+                      ),
+                    ),
                   );
                 }
                 final details = controller.editableDetails.value;
@@ -329,7 +334,9 @@ class VehicleDetailsView extends StatelessWidget {
                           if (value == null || value.trim().isEmpty) {
                             return 'fieldRequired'.tr;
                           }
-                          if (!RegExp(r'^\d+(\.\d+)?$').hasMatch(value.trim())) {
+                          if (!RegExp(
+                            r'^\d+(\.\d+)?$',
+                          ).hasMatch(value.trim())) {
                             return 'ccNumbersOnly'.tr;
                           }
                           return null;
@@ -490,9 +497,11 @@ class VehicleDetailsView extends StatelessWidget {
                 }
               });
             },
-            validator: validator ?? (value) {
-              return FValidation.defaultValidator(value!);
-            },
+            validator:
+                validator ??
+                (value) {
+                  return FValidation.defaultValidator(value!);
+                },
           ),
         ],
       ),

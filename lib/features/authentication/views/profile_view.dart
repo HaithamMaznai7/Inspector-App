@@ -81,7 +81,9 @@ class _ProfileViewState extends State<ProfileView> {
     return Scaffold(
       appBar: AppBar(title: Text(FTexts.profileTitle.tr)),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: FColors.primaryColor),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(
                 horizontal: FSizes.lg,

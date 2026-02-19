@@ -29,7 +29,9 @@ class AlbumPhotos extends StatelessWidget {
           final isLoading = controller.isLoading.value;
 
           if (isLoading && allPhotos.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(color: FColors.primaryColor),
+            );
           }
 
           final uploaded = allPhotos.where((p) => p.image != null).toList();
@@ -45,7 +47,11 @@ class AlbumPhotos extends StatelessWidget {
                 // ── Header ──
                 Row(
                   children: [
-                    const Icon(Iconsax.camera, color: FColors.primaryColor, size: 22),
+                    const Icon(
+                      Iconsax.camera,
+                      color: FColors.primaryColor,
+                      size: 22,
+                    ),
                     const SizedBox(width: FSizes.sm),
                     Text(
                       InspectionPage.photosTitle.tr,
@@ -56,17 +62,21 @@ class AlbumPhotos extends StatelessWidget {
                     const SizedBox(width: FSizes.sm),
                     if (totalCount > 0)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: FColors.primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           '$uploadedCount / $totalCount',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: FColors.primaryColor,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: FColors.primaryColor,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ),
                     const Spacer(),
@@ -76,7 +86,9 @@ class AlbumPhotos extends StatelessWidget {
                       label: Text(InspectionPage.inspectionPhotos.tr),
                       style: TextButton.styleFrom(
                         foregroundColor: FColors.primaryColor,
-                        padding: const EdgeInsets.symmetric(horizontal: FSizes.sm),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: FSizes.sm,
+                        ),
                         textStyle: Theme.of(context).textTheme.bodySmall,
                       ),
                     ),
@@ -90,12 +102,13 @@ class AlbumPhotos extends StatelessWidget {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: uploaded.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      mainAxisSpacing: FSizes.sm,
-                      crossAxisSpacing: FSizes.sm,
-                      childAspectRatio: 0.85,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          mainAxisSpacing: FSizes.sm,
+                          crossAxisSpacing: FSizes.sm,
+                          childAspectRatio: 0.85,
+                        ),
                     itemBuilder: (context, index) {
                       final photo = uploaded[index];
                       return _UploadedPhotoTile(
@@ -114,11 +127,17 @@ class AlbumPhotos extends StatelessWidget {
                     child: Center(
                       child: Column(
                         children: [
-                          Icon(Iconsax.camera, size: 48, color: FColors.grey.withValues(alpha: 0.35)),
+                          Icon(
+                            Iconsax.camera,
+                            size: 48,
+                            color: FColors.grey.withValues(alpha: 0.35),
+                          ),
                           const SizedBox(height: FSizes.sm),
                           Text(
                             InspectionPage.noPhotosYet.tr,
-                            style: Theme.of(context).textTheme.bodyMedium?.apply(color: FColors.grey),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.apply(color: FColors.grey),
                           ),
                         ],
                       ),
@@ -130,14 +149,19 @@ class AlbumPhotos extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () => _showAvailablePhotos(context, available, controller),
+                      onPressed: () =>
+                          _showAvailablePhotos(context, available, controller),
                       icon: const Icon(Iconsax.add_circle, size: 20),
                       label: Text(InspectionPage.addPhoto.tr),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: FColors.primaryColor,
-                        side: BorderSide(color: FColors.primaryColor.withValues(alpha: 0.35)),
+                        side: BorderSide(
+                          color: FColors.primaryColor.withValues(alpha: 0.35),
+                        ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                          borderRadius: BorderRadius.circular(
+                            FSizes.borderRadiusMd,
+                          ),
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
@@ -157,7 +181,12 @@ class AlbumPhotos extends StatelessWidget {
     final imageProvider = NetworkImage(
       imageUrl.startsWith('//') ? 'https:$imageUrl' : imageUrl,
     );
-    showImageViewer(context, imageProvider, useSafeArea: true, swipeDismissible: true);
+    showImageViewer(
+      context,
+      imageProvider,
+      useSafeArea: true,
+      swipeDismissible: true,
+    );
   }
 
   /// Bottom sheet listing available photo slots the user can capture.
@@ -189,9 +218,9 @@ class AlbumPhotos extends StatelessWidget {
               padding: const EdgeInsets.all(FSizes.md),
               child: Text(
                 InspectionPage.selectPhotoTitle.tr,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
             ),
             const Divider(height: 1),
@@ -211,16 +240,31 @@ class AlbumPhotos extends StatelessWidget {
                       height: 40,
                       decoration: BoxDecoration(
                         color: FColors.primaryColor.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
+                        borderRadius: BorderRadius.circular(
+                          FSizes.borderRadiusSm,
+                        ),
                       ),
-                      child: const Icon(Iconsax.camera, color: FColors.primaryColor, size: 20),
+                      child: const Icon(
+                        Iconsax.camera,
+                        color: FColors.primaryColor,
+                        size: 20,
+                      ),
                     ),
-                    title: Text(photo.title, style: Theme.of(context).textTheme.bodyLarge),
+                    title: Text(
+                      photo.title,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
                     subtitle: Text(
                       photo.type,
-                      style: Theme.of(context).textTheme.bodySmall?.apply(color: FColors.grey),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.apply(color: FColors.grey),
                     ),
-                    trailing: const Icon(Iconsax.arrow_right_3, size: 18, color: FColors.grey),
+                    trailing: const Icon(
+                      Iconsax.arrow_right_3,
+                      size: 18,
+                      color: FColors.grey,
+                    ),
                     onTap: () {
                       Get.back();
                       controller.picking(photo);
@@ -265,9 +309,15 @@ class _UploadedPhotoTile extends StatelessWidget {
                     errorBuilder: (_, __, ___) => Container(
                       decoration: BoxDecoration(
                         color: FColors.grey.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                        borderRadius: BorderRadius.circular(
+                          FSizes.borderRadiusMd,
+                        ),
                       ),
-                      child: const Icon(Iconsax.image, color: FColors.grey, size: 28),
+                      child: const Icon(
+                        Iconsax.image,
+                        color: FColors.grey,
+                        size: 28,
+                      ),
                     ),
                   ),
                 ),
@@ -281,7 +331,11 @@ class _UploadedPhotoTile extends StatelessWidget {
                       color: FColors.success,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.check, color: Colors.white, size: 10),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 10,
+                    ),
                   ),
                 ),
               ],
@@ -290,7 +344,9 @@ class _UploadedPhotoTile extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             photo.title,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,

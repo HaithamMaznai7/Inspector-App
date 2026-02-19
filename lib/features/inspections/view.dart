@@ -33,8 +33,9 @@ class InspectionList extends StatelessWidget {
           // Show segments only when stage=All and no search active
           // Otherwise show flat list (search results or stage-filtered)
           return Obx(() {
-            final isDefault = controller.selectedStage.value == InspectionStage.all
-                && !controller.isSearchActive.value;
+            final isDefault =
+                controller.selectedStage.value == InspectionStage.all &&
+                !controller.isSearchActive.value;
 
             if (!isDefault) {
               return _SearchResultsList(controller: controller);
@@ -195,10 +196,9 @@ class _SearchResultsList extends StatelessWidget {
       return Center(
         child: Text(
           'No results found'.tr,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(color: FColors.darkGrey),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
         ),
       );
     }
@@ -261,7 +261,11 @@ class _IndividualList extends StatelessWidget {
                 if (load) {
                   return Padding(
                     padding: EdgeInsets.all(16),
-                    child: Center(child: CircularProgressIndicator()),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: FColors.primaryColor,
+                      ),
+                    ),
                   );
                 } else {
                   return SizedBox();

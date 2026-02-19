@@ -40,10 +40,7 @@ class Helpers {
   // }
 
   static Future<void> callTo({required String mobile}) async {
-    final Uri launchUri = Uri(
-      scheme: 'tel',
-      path: mobile,
-    );
+    final Uri launchUri = Uri(scheme: 'tel', path: mobile);
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri);
     } else {
@@ -59,17 +56,17 @@ class Helpers {
       duration: 3,
     );
   }
-  
+
   static List<Selection> generateYearsList() {
     int currentYear = DateTime.now().year + 1;
     List<Selection> yearsList = [];
 
-    yearsList.add(Selection(value: '', label: 'none'));
+    // yearsList.add(Selection(value: '', label: 'none'));
 
     for (int year = currentYear; year >= 1990; year--) {
       yearsList.add(Selection(value: year.toString(), label: year.toString()));
     }
-  
+
     return yearsList;
   }
 
@@ -123,7 +120,6 @@ class Helpers {
     String result = base64Encode(imageBytes);
     return result;
   }
-
 }
 
 // class NetworkImage extends StatefulWidget {
