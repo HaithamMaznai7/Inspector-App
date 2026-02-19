@@ -88,12 +88,17 @@ class FLocalization extends Translations {
 
   // ── Theme Switching ─────────────────────────────────────────────────
 
-  static void changeTheme() {
-    if (isLight) {
-      Get.changeThemeMode(ThemeMode.dark);
-    } else {
-      Get.changeThemeMode(ThemeMode.light);
-    }
+  static Future<void> changeTheme() async {
+    final newThemeMode = isLight ? ThemeMode.dark : ThemeMode.light;
+    
+    // Update GetX theme mode
+    Get.changeThemeMode(newThemeMode);
+    
+    // Persist the user's choice so the app starts in the same theme
+    try {
+      final box = await Hive.openBox('AppSettings');
+      await box.put('themeMode', newThemeMode == ThemeMode.light ? 'light' : 'dark');
+    } catch (_) {}
   }
 
   // ── Getters ─────────────────────────────────────────────────────────
