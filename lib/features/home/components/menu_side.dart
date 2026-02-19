@@ -8,6 +8,7 @@ import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
+import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:fahis_inspector/util/localization/localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -29,9 +30,11 @@ class SideMenuWrapper extends StatelessWidget {
       builder: (controller) {
         final selectedStage = controller.selectedStage.value;
 
+        final isDark = FHelper.isDarkMode(context);
+
         return SideMenu(
           controller: homeController.sideController,
-          backgroundColor: FColors.white,
+          backgroundColor: isDark ? FColors.dark : FColors.white,
           mode: SideMenuMode.open,
           hasResizerToggle: isTablet,
           hasResizer: isTablet,
@@ -115,7 +118,7 @@ class SideMenuWrapper extends StatelessWidget {
                         : null,
                     titleStyle: Theme.of(context).textTheme.bodyMedium!
                         .copyWith(
-                          color: FColors.dark,
+                          color: isDark ? FColors.light : FColors.dark,
                           fontWeight: FontWeight.w500,
                         ),
                     tooltip: stage.getLabel,
@@ -153,7 +156,7 @@ class SideMenuWrapper extends StatelessWidget {
                   title: FLocalization.isArabic ? 'English' : 'عربي',
                   hoverColor: FColors.primaryColor.withOpacity(.08),
                   titleStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: FColors.dark,
+                    color: isDark ? FColors.light : FColors.dark,
                     fontWeight: FontWeight.w500,
                   ),
                   icon: Icon(
@@ -168,11 +171,30 @@ class SideMenuWrapper extends StatelessWidget {
                     horizontal: FSizes.xs,
                     vertical: 2,
                   ),
+                  onTap: () => FLocalization.changeTheme(),
+                  title: FLocalization.isLight ? 'Dark Mode'.tr : 'Light Mode'.tr,
+                  hoverColor: FColors.primaryColor.withOpacity(.08),
+                  titleStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: isDark ? FColors.light : FColors.dark,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  icon: Icon(
+                    FLocalization.isLight ? Iconsax.moon : Iconsax.sun_1,
+                    color: FColors.primaryColor,
+                    size: 20,
+                  ),
+                ),
+                SideMenuItemDataTile(
+                  isSelected: false,
+                  margin: const EdgeInsetsDirectional.symmetric(
+                    horizontal: FSizes.xs,
+                    vertical: 2,
+                  ),
                   hoverColor: FColors.primaryColor.withOpacity(.08),
                   onTap: () async => await _callSuportTeam(),
                   title: 'Help & Support'.tr,
                   titleStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: FColors.dark,
+                    color: isDark ? FColors.light : FColors.dark,
                     fontWeight: FontWeight.w500,
                   ),
                   icon: Icon(

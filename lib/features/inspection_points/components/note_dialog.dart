@@ -45,7 +45,7 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
     final isDark = FHelper.isDarkMode(context);
 
     return Scaffold(
-      backgroundColor: FColors.light,
+      backgroundColor: isDark ? FColors.dark : FColors.light,
       appBar: AppBar(
         title: Text(InspectionPage.addNoteTitle.tr),
         automaticallyImplyLeading: false,

@@ -4,6 +4,7 @@ import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/services/notifications/notifications_service.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
+import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -13,8 +14,10 @@ class NotificationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = FHelper.isDarkMode(context);
+
     return Scaffold(
-      backgroundColor: FColors.softGrey,
+      backgroundColor: isDark ? FColors.dark : FColors.softGrey,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Text(
@@ -37,7 +40,7 @@ class NotificationScreen extends StatelessWidget {
           final notifications = c.notifications.toList();
 
           if (notifications.isEmpty) {
-            return _buildEmpty(context);
+            return _buildEmpty(context, isDark);
           }
 
           return RefreshIndicator(
@@ -73,7 +76,7 @@ class NotificationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmpty(BuildContext context) {
+  Widget _buildEmpty(BuildContext context, bool isDark) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(FSizes.xl),
@@ -83,7 +86,7 @@ class NotificationScreen extends StatelessWidget {
             Icon(
               Iconsax.notification_status,
               size: 64,
-              color: FColors.darkGrey,
+              color: isDark ? FColors.grey : FColors.darkGrey,
             ),
             const SizedBox(height: FSizes.md),
             Text(
@@ -121,12 +124,15 @@ class _NotificationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = FHelper.isDarkMode(context);
     final isUnread = notification.readAt == null;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: FSizes.sm),
       child: Material(
-        color: isUnread ? Colors.white : FColors.softGrey,
+        color: isUnread
+            ? (isDark ? FColors.darkerGrey : Colors.white)
+            : (isDark ? FColors.dark : FColors.softGrey),
         borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
         elevation: isUnread ? 1 : 0,
         shadowColor: Colors.black12,

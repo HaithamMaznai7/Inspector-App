@@ -8,6 +8,7 @@ import 'package:fahis_inspector/features/inspections/controller.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
+import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -69,12 +70,16 @@ class _SegmentToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = FHelper.isDarkMode(context);
+
     return Obx(() {
       final selected = controller.selectedSegment.value;
       return Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: FColors.grey.withValues(alpha: 0.5),
+          color: isDark
+              ? FColors.darkGrey.withValues(alpha: 0.5)
+              : FColors.grey.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
         ),
         child: Row(

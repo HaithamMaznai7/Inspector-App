@@ -53,7 +53,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
 
     return AlertDialog(
       scrollable: true,
-      backgroundColor: FColors.light,
+      backgroundColor: isDark ? FColors.dark : FColors.light,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
       ),

@@ -6,6 +6,7 @@ import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
+import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -15,6 +16,8 @@ class OBDCodesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = FHelper.isDarkMode(context);
+
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -24,7 +27,7 @@ class OBDCodesView extends StatelessWidget {
         child: Column(
           children: [
             Card(
-              color: FColors.grey,
+              color: isDark ? FColors.darkGrey : FColors.grey,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(FSizes.cardRadiusMd),
               ),
@@ -108,7 +111,7 @@ class OBDCodesView extends StatelessWidget {
             SizedBox(height: FSizes.spaceBtwItems),
 
             Card(
-              color: FColors.grey,
+              color: isDark ? FColors.darkGrey : FColors.grey,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(FSizes.cardRadiusMd),
               ),

@@ -86,7 +86,7 @@ class _CustomSelector extends State<CustomSelector> {
               decoration: BoxDecoration(
                 border: Border.all(width: 1, color: FColors.grey),
                 borderRadius: widget.borderRadius ?? BorderRadius.circular(10),
-                color: FColors.white,
+                color: isDark ? FColors.darkerGrey : FColors.white,
               ),
               child: ListTile(
                 title: Text(_value?.label ?? (widget.title ?? '')),
