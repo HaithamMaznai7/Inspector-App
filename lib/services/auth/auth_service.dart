@@ -156,7 +156,12 @@ class AuthService extends GetxController {
   /// Skips the backend logout call (token is already invalid).
   /// Uses a guard flag to prevent multiple simultaneous calls.
   Future<void> sessionExpired() async {
-    if (_isHandlingSessionExpiry) return;
+    if (_isHandlingSessionExpiry) {
+      if (kDebugMode) {
+        debugPrint('[AuthService] sessionExpired already in progress – skipping');
+      }
+      return;
+    }
     _isHandlingSessionExpiry = true;
 
     if (kDebugMode) {
@@ -210,29 +215,21 @@ class AuthService extends GetxController {
     _idToken.value = null;
     _profile.value = Profile.empty();
 
-    // 3. Hive caches — delete boxes that hold inspection data.
-    //    Use deleteFromDisk so stale data from a previous session
-    //    is never shown to the next user.
+    // 3. Hive caches — clear boxes that hold inspection data.
+    //    These boxes are typed as Box<List> in StorageService.
     try {
-      final boxNames = Hive.isBoxOpen('Auth') ||
-              Hive.isBoxOpen('Assets') ||
-              Hive.isBoxOpen('Inspections')
-          ? true
-          : false;
-
-      if (boxNames) {
-        // Clear contents of known boxes if they are open
-        for (final name in ['Auth', 'Assets', 'Inspections']) {
-          if (Hive.isBoxOpen(name)) {
-            await Hive.box(name).clear();
-          }
-        }
+      // Clear typed boxes if they are open
+      if (Hive.isBoxOpen('Auth')) {
+        await Hive.box<List>('Auth').clear();
+      }
+      if (Hive.isBoxOpen('Assets')) {
+        await Hive.box<List>('Assets').clear();
+      }
+      if (Hive.isBoxOpen('Inspections')) {
+        await Hive.box<List>('Inspections').clear();
       }
 
-      // Also clear any per-inspection boxes that may be open
-      // (e.g. 'Inspection_SLUG', slug-named asset boxes)
-      // Hive doesn't expose a list of open boxes, so we clear
-      // the Notifications box separately if open.
+      // Clear Notifications box (untyped)
       if (Hive.isBoxOpen('Notifications')) {
         await Hive.box('Notifications').clear();
       }

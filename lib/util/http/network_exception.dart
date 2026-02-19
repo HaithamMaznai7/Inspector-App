@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
+import 'package:fahis_inspector/routes.dart';
 import 'package:get/get.dart';
 
 class FNetworkException extends HttpException {
@@ -26,6 +27,12 @@ class FNetworkException extends HttpException {
     //   FLoader.errorSnackBar(title: title, message: message, duration: 4);
     //   return;
     // }
+
+    // Suppress 401/403 snackbars when user is authenticated — sessionExpired()
+    // will show its own localized message. This prevents duplicate snackbars.
+    if ((statusCode == 403) && _isAuthenticatedUser()) {
+      return;
+    }
 
     if (statusCode == 0) {
       FLoader.errorSnackBar(
@@ -90,6 +97,17 @@ class FNetworkException extends HttpException {
         duration: 4,
       );
       return;
+    }
+  }
+
+  /// Check if the user is currently authenticated (has a valid session).
+  /// Used to determine if 401/403 errors are session expiry vs. other auth issues.
+  static bool _isAuthenticatedUser() {
+    try {
+      final binding = AuthBinding();
+      return binding.isRegistered && binding.instance.isAuth;
+    } catch (_) {
+      return false;
     }
   }
 

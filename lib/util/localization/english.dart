@@ -19,7 +19,7 @@ class English {
     FTexts.offlineMode: 'Offline Mode',
     'All': 'All',
     'sessionExpired': 'Session Expired',
-    'sessionExpiredMsg': 'Session expired. Please login again.',
+    'sessionExpiredMsg': 'You signed in elsewhere. Please log in again.',
     'fieldRequired': 'This field is required.',
     'vinMustBe17': 'Must be 17 characters.',
     'ccNumbersOnly': 'Only digits allowed.',

@@ -19,7 +19,7 @@ class Arabic {
     FTexts.offlineMode: 'وضع عدم الاتصال',
     'All': 'الكل',
     'sessionExpired': 'انتهت الجلسة',
-    'sessionExpiredMsg': 'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.',
+    'sessionExpiredMsg': 'تم تسجيل الدخول من جهاز آخر. يرجى إعادة الدخول.',
     'fieldRequired': 'هذا الحقل مطلوب.',
     'vinMustBe17': 'رقم الهيكل يجب أن يكون 17 حرف .',
     'ccNumbersOnly': 'يسمح فقط بالأرقام.',
