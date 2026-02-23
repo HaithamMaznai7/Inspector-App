@@ -27,6 +27,9 @@ class InspectionsController extends GetxController
   // True when user has submitted a search query — bypasses segment/stage filters
   var isSearchActive = false.obs;
 
+  // Pagination guard to prevent duplicate fetches
+  bool _isFetchingNextPage = false;
+
   Stream<List<Inspection>> get stream => inspections.stream;
 
   RxList<InspectionStage> stages = RxList<InspectionStage>(
@@ -115,21 +118,41 @@ class InspectionsController extends GetxController
   void onReady() {
     super.onReady();
 
-    inspections.listen((inspections) {
-      update();
-    });
+    inspections.listen((_) => update());
+    orders.listen((_) => update());
 
-    // Listen to route param changes
-    // load(load: inspections.isEmpty, stage: selectedStage.value);
+    scrollController.addListener(_onScroll);
+  }
 
-    scrollController.addListener(() {
-      if (scrollController.position.pixels >=
-          scrollController.position.maxScrollExtent - 200) {
-        repository?.fetchNextPage().then((data) {
-          inspections.assignAll(data); // update UI
-        });
-      }
-    });
+  /// Handles scroll-based pagination for both orders and inspections mode.
+  void _onScroll() {
+    if (_isFetchingNextPage) return;
+    if (!scrollController.hasClients) return;
+
+    final pos = scrollController.position;
+    if (pos.pixels < pos.maxScrollExtent - 200) return;
+
+    final isOrdersMode =
+        selectedStage.value == InspectionStage.all && !isSearchActive.value;
+
+    _isFetchingNextPage = true;
+
+    if (isOrdersMode) {
+      ordersRepository?.fetchNextPage().then((data) {
+        orders.assignAll(data);
+      }).whenComplete(() => _isFetchingNextPage = false);
+    } else {
+      repository?.fetchNextPage().then((data) {
+        inspections.assignAll(data);
+      }).whenComplete(() => _isFetchingNextPage = false);
+    }
+  }
+
+  @override
+  void onClose() {
+    scrollController.removeListener(_onScroll);
+    scrollController.dispose();
+    super.onClose();
   }
 
   void changeStatus({InspectionStage newStage = InspectionStage.all}) async {
