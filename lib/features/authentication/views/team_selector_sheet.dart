@@ -29,7 +29,6 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
   bool _isSwitching = false;
 
   List<Team> get _teams => auth().profile?.teams ?? [];
-  List<Team> get _invitations => auth().profile?.invitations ?? [];
   Team? get _currentTeam => auth().profile?.currentTeam;
 
   Future<void> _switchTeam(Team team) async {
@@ -66,9 +65,7 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      constraints: BoxConstraints(
-        maxHeight: Get.height * 0.7,
-      ),
+      constraints: BoxConstraints(maxHeight: Get.height * 0.7),
       decoration: BoxDecoration(
         color: isDark ? FColors.dark : FColors.white,
         borderRadius: const BorderRadius.vertical(
@@ -98,9 +95,9 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
                 const SizedBox(width: FSizes.sm),
                 Text(
                   'Teams'.tr,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -123,17 +120,8 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
               children: [
                 // Active teams section
                 if (_teams.isNotEmpty) ...[
-                  _sectionHeader(context, 'Active Teams'.tr),
+                  _sectionHeader(context, 'Teams'.tr),
                   ..._teams.map((team) => _buildTeamTile(context, team)),
-                ],
-
-                // Invitations section
-                if (_invitations.isNotEmpty) ...[
-                  const SizedBox(height: FSizes.sm),
-                  _sectionHeader(context, 'Invitations'.tr),
-                  ..._invitations.map(
-                    (team) => _buildInvitationTile(context, team),
-                  ),
                 ],
               ],
             ),
@@ -152,9 +140,9 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
       child: Text(
         title,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: FColors.darkGrey,
-              fontWeight: FontWeight.w600,
-            ),
+          color: FColors.darkGrey,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -168,16 +156,16 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
       title: Text(
         team.owner?.label ?? team.name ?? '',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
-            ),
+          fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
+        ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
         team.role ?? '',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: FColors.darkGrey,
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: FColors.darkGrey),
       ),
       trailing: isCurrent
           ? Container(
@@ -189,41 +177,12 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
               child: Text(
                 'Current'.tr,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: FColors.primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  color: FColors.primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             )
-          : Icon(
-              Iconsax.arrow_right_3,
-              size: 18,
-              color: FColors.darkGrey,
-            ),
-    );
-  }
-
-  Widget _buildInvitationTile(BuildContext context, Team team) {
-    return ListTile(
-      leading: _teamAvatar(team),
-      title: Text(
-        team.owner?.label ?? team.name ?? '',
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-            ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Text(
-        'Pending Invitation'.tr,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.orange,
-            ),
-      ),
-      trailing: Icon(
-        Iconsax.clock,
-        size: 18,
-        color: Colors.orange,
-      ),
+          : Icon(Iconsax.arrow_right_3, size: 18, color: FColors.darkGrey),
     );
   }
 
