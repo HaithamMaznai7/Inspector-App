@@ -9,6 +9,7 @@ import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/helpers/helper_functions.dart';
+import 'package:fahis_inspector/util/helpers/stage_mapper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -28,7 +29,9 @@ class InspectionList extends StatelessWidget {
           if (isLoad) return OnLoadingInspections();
 
           // Show empty state if no data at all
-          if (controller.inspections.isEmpty) return NotMoreInspections();
+          if (controller.inspections.isEmpty && controller.orders.isEmpty) {
+            return NotMoreInspections();
+          }
 
           // Show segments only when stage=All and no search active
           // Otherwise show flat list (search results or stage-filtered)
@@ -210,7 +213,15 @@ class _SearchResultsList extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: list.length,
         itemBuilder: (context, index) {
-          return InspectionCard(inspection: list[index]);
+          final inspection = list[index];
+          return InspectionCard(
+            slug: inspection.slug,
+            customerName: inspection.customer?.name,
+            vehicle: inspection.vehicle,
+            stage: inspection.stage,
+            rejectedNote: inspection.rejectedNote,
+            onTap: () => controller.openInspection(inspection),
+          );
         },
       ),
     );
@@ -224,15 +235,83 @@ class _IndividualList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isOrdersMode = controller.selectedStage.value == InspectionStage.all && 
+                         !controller.isSearchActive.value;
+    
+    if (isOrdersMode) {
+      return _buildOrdersList(context);
+    } else {
+      return _buildInspectionsList(context);
+    }
+  }
+
+  Widget _buildOrdersList(BuildContext context) {
+    final orders = controller.orders;
+
+    if (orders.isEmpty) {
+      return Center(
+        child: Text(
+          'No individual requests'.tr,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
+        ),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return RefreshIndicator(
+          onRefresh: controller.refreshPage,
+          color: FColors.primaryColor,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            controller: controller.scrollController,
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Column(
+                  children: orders.expand((order) {
+                    return order.items.map((item) => InspectionCard(
+                      slug: item.slug,
+                      customerName: order.customer.name,
+                      vehicle: item.vehicle,
+                      stage: StageMapper.mapOrderItemStage(item.stage),
+                      rejectedNote: null,
+                      onTap: () => controller.openOrderItem(order, item),
+                    ));
+                  }).toList(),
+                ),
+              ),
+              // Pagination loading indicator
+              Obx(() {
+                final load = controller.ordersRepository?.isFetchingMore.value ?? false;
+                if (load) {
+                  return Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: FColors.primaryColor,
+                      ),
+                    ),
+                  );
+                } else {
+                  return SizedBox();
+                }
+              }),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildInspectionsList(BuildContext context) {
     final list = controller.individualInspections;
 
     if (list.isEmpty) {
       return Center(
         child: Text(
           'No individual requests'.tr,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
         ),
       );
     }
@@ -250,7 +329,14 @@ class _IndividualList extends StatelessWidget {
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Column(
                   children: list
-                      .map((item) => InspectionCard(inspection: item))
+                      .map((item) => InspectionCard(
+                            slug: item.slug,
+                            customerName: item.customer?.name,
+                            vehicle: item.vehicle,
+                            stage: item.stage,
+                            rejectedNote: item.rejectedNote,
+                            onTap: () => controller.openInspection(item),
+                          ))
                       .toList(),
                 ),
               ),

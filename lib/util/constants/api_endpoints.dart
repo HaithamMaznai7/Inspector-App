@@ -37,6 +37,9 @@ class EndPoints {
 
   // request
   static const String inspections = 'inspector/inspections';
+  static const String ordersB2c = 'inspector/orders/b2c';
+  static const String ordersB2b = 'inspector/orders/b2b';
+  static const String orderItems = 'inspector/orders/items';
   static const String points = 'inspector/points';
   static const String photos = 'inspector/photos';
   static const String notes = 'inspector/notes';

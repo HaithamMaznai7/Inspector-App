@@ -87,8 +87,21 @@ class _CompanyInspectionsScreenState extends State<CompanyInspectionsScreen> {
           ),
           itemCount: _inspections.length,
           itemBuilder: (context, index) {
-            // Reuse existing InspectionCard for each request
-            return InspectionCard(inspection: _inspections[index]);
+            final inspection = _inspections[index];
+            return InspectionCard(
+              slug: inspection.slug,
+              customerName: inspection.customer?.name,
+              vehicle: inspection.vehicle,
+              stage: inspection.stage,
+              rejectedNote: inspection.rejectedNote,
+              onTap: () async {
+                await Get.toNamed(
+                  '${RoutingUrl.inspections}/${inspection.slug}',
+                  arguments: inspection,
+                );
+                _refresh();
+              },
+            );
           },
         ),
       ),

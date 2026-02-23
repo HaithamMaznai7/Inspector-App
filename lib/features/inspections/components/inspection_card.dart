@@ -1,20 +1,30 @@
 import 'package:fahis_inspector/enums/inspection_stages.dart';
-import 'package:fahis_inspector/models/inspection.dart';
 import 'package:fahis_inspector/models/vehicle.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
-import 'package:fahis_inspector/routes.dart';
-import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
 class InspectionCard extends StatelessWidget {
-  const InspectionCard({super.key, required this.inspection});
+  const InspectionCard({
+    super.key,
+    required this.slug,
+    this.customerName,
+    this.vehicle,
+    required this.stage,
+    this.rejectedNote,
+    required this.onTap,
+  });
 
-  final Inspection inspection;
+  final String? slug;
+  final String? customerName;
+  final Vehicle? vehicle;
+  final InspectionStage stage;
+  final String? rejectedNote;
+  final VoidCallback onTap;
 
-  bool get _isRejected => inspection.stage == InspectionStage.rejected;
+  bool get _isRejected => stage == InspectionStage.rejected;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +60,7 @@ class InspectionCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Icon(inspection.stage.icon, color: inspection.stage.color),
+                        Icon(stage.icon, color: stage.color),
                         const SizedBox(width: FSizes.spaceBtwItems),
                         Flexible(
                           child: Column(
@@ -58,7 +68,7 @@ class InspectionCard extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
-                                this.inspection.customer?.name ?? '---',
+                                customerName ?? '---',
                                 style: Theme.of(context).textTheme.titleMedium?.apply(
                                   color: isDark
                                       ? FColors.white.withOpacity(.8)
@@ -69,7 +79,7 @@ class InspectionCard extends StatelessWidget {
                               const SizedBox(height: FSizes.sm),
 
                               Text(
-                                '${inspection.vehicle?.make?.label ?? ''} - ${inspection.vehicle?.model?.label ?? ''} - ${inspection.vehicle?.year ?? ''}',
+                                '${vehicle?.make?.label ?? ''} - ${vehicle?.model?.label ?? ''} - ${vehicle?.year ?? ''}',
                                 style: Theme.of(context).textTheme.bodyMedium?.apply(
                                   color: isDark
                                       ? FColors.white.withOpacity(.8)
@@ -81,9 +91,9 @@ class InspectionCard extends StatelessWidget {
 
                               Row(
                                 children: [
-                                  inspection.vehicle?.make?.avatar != null
+                                  vehicle?.make?.avatar != null
                                       ? Image.network(
-                                          inspection.vehicle!.make!.avatar!,
+                                          vehicle!.make!.avatar!,
                                           fit: BoxFit.contain,
                                           width: 30,
                                           height: 30,
@@ -91,7 +101,7 @@ class InspectionCard extends StatelessWidget {
                                       : SizedBox(),
                                   const SizedBox(width: FSizes.sm),
                                   Text(
-                                    inspection.vehicle?.plate ?? '',
+                                    vehicle?.plate ?? '',
                                     style: Theme.of(context).textTheme.bodyMedium
                                         ?.apply(color: FColors.primaryColor),
                                   ),
@@ -105,7 +115,7 @@ class InspectionCard extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Text(
-                              '#${inspection.slug}',
+                              '#${slug ?? '---'}',
                               style: Theme.of(context).textTheme.labelMedium?.apply(
                                 color: isDark ? FColors.grey : FColors.darkerGrey,
                                 fontStyle: FontStyle.italic,
@@ -115,13 +125,13 @@ class InspectionCard extends StatelessWidget {
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: FSizes.sm),
                               decoration: BoxDecoration(
-                                color: inspection.stage.color.withOpacity(.1),
+                                color: stage.color.withOpacity(.1),
                                 borderRadius: BorderRadius.circular(FSizes.sm),
                               ),
                               child: Text(
-                                inspection.stage.getLabel,
+                                stage.getLabel,
                                 style: Theme.of(context).textTheme.bodyLarge?.apply(
-                                  color: inspection.stage.color,
+                                  color: stage.color,
                                 ),
                               ),
                             ),
@@ -131,7 +141,7 @@ class InspectionCard extends StatelessWidget {
                     ),
                   ),
                   // Rejection reason banner
-                  if (_isRejected && inspection.rejectedNote != null && inspection.rejectedNote!.isNotEmpty)
+                  if (_isRejected && rejectedNote != null && rejectedNote!.isNotEmpty)
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
@@ -152,7 +162,7 @@ class InspectionCard extends StatelessWidget {
                           const SizedBox(width: FSizes.sm),
                           Expanded(
                             child: Text(
-                              inspection.rejectedNote!,
+                              rejectedNote!,
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: Colors.red.shade700,
                               ),
@@ -169,7 +179,7 @@ class InspectionCard extends StatelessWidget {
           ),
         ),
       ),
-      onTap: () => InspectionsBinding().instance.openInspection(inspection),
+      onTap: onTap,
     );
   }
 }

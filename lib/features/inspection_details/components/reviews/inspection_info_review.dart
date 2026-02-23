@@ -1,8 +1,6 @@
 import 'package:fahis_inspector/features/inspection_details/components/reviews/info_card.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
-import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/routes.dart';
-import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/helpers.dart';
@@ -24,7 +22,7 @@ class InspectionInfoReview extends StatelessWidget {
         if (inspection == null || isLoading) {
           return SizedBox();
         }
-        
+
         // if (!hasDetails) {
         //   return Card(
         //     margin: EdgeInsets.symmetric(horizontal: FSizes.md, vertical: FSizes.sm),
@@ -65,21 +63,31 @@ class InspectionInfoReview extends StatelessWidget {
             ),
             child: Text(
               inspection.stage.label,
-              style: Theme.of(context).textTheme.bodyLarge?.apply(
-                color: inspection.stage.color,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.apply(color: inspection.stage.color),
             ),
           ),
           items: {
-            InspectionPage.inspectionType.tr: "${inspection.inspectionType?.title} (${inspection.inspectionType?.description})",
-            InspectionPage.center.tr: inspection.center?.center.label ?? InspectionPage.notYet.tr,
-            InspectionPage.centerBranch.tr: inspection.center?.branch?.label ?? InspectionPage.notYet.tr,
-            InspectionPage.city.tr: inspection.center?.city?.label ?? InspectionPage.notYet.tr,
-            InspectionPage.bookingDate.tr: inspection.center?.datetime.toString() ?? InspectionPage.notYet.tr,
-            InspectionPage.assignedTo.tr: inspection.assignedTo?.label ?? InspectionPage.anyInspector.tr,
-            InspectionPage.inspector.tr: inspection.inspector?.label ?? InspectionPage.notYet.tr,
-            InspectionPage.inspectedAt.tr: inspection.inspectedAt?.toString() ?? InspectionPage.notYet.tr,
-            InspectionPage.reviewedAt.tr: inspection.reviewedAt?.toString() ?? InspectionPage.notYet.tr,
+            InspectionPage.inspectionType.tr:
+                "${inspection.inspectionType?.title} (${inspection.inspectionType?.description})",
+            InspectionPage.center.tr:
+                inspection.center?.center.label ?? InspectionPage.notYet.tr,
+            InspectionPage.centerBranch.tr:
+                inspection.center?.branch?.label ?? InspectionPage.notYet.tr,
+            InspectionPage.city.tr:
+                inspection.center?.city?.label ?? InspectionPage.notYet.tr,
+            InspectionPage.bookingDate.tr:
+                inspection.center?.datetime.toString() ??
+                InspectionPage.notYet.tr,
+            InspectionPage.assignedTo.tr:
+                inspection.assignedTo?.label ?? InspectionPage.anyInspector.tr,
+            InspectionPage.inspector.tr:
+                inspection.inspector?.label ?? InspectionPage.notYet.tr,
+            InspectionPage.inspectedAt.tr:
+                inspection.inspectedAt?.toString() ?? InspectionPage.notYet.tr,
+            InspectionPage.reviewedAt.tr:
+                inspection.reviewedAt?.toString() ?? InspectionPage.notYet.tr,
             InspectionPage.createdAt.tr: inspection.createdDate.toString(),
           },
         );
