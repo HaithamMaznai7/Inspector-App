@@ -19,7 +19,7 @@ class InspectionPointsReview extends StatelessWidget {
       builder: (c) {
         final isLoading = c.isLoading.value;
         final inspection = c.inspection.value;
-        final points = ReviewPoint.set(c.inspectionPoints.value);
+        final points = ReviewPoint.set(c.inspectionPoints);
 
         if (inspection == null || isLoading) {
           return SizedBox();
@@ -43,7 +43,9 @@ class InspectionPointsReview extends StatelessWidget {
                   ),
                   child: InfoCard(
                     title: Text(cat.category.title),
-                    subtitle: Text('${FTexts.notes.tr}: ${cat.note}, ${FTexts.na.tr}: ${cat.none}'),
+                    subtitle: Text(
+                      '${FTexts.notes.tr}: ${cat.note}, ${FTexts.na.tr}: ${cat.none}',
+                    ),
                     initiallyExpanded: false,
                     showCard: false,
                     leading: Container(
@@ -74,7 +76,9 @@ class InspectionPointsReview extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: c.inspection.value?.stage.color
                                       .withOpacity(.1),
-                                  borderRadius: BorderRadius.circular(FSizes.sm),
+                                  borderRadius: BorderRadius.circular(
+                                    FSizes.sm,
+                                  ),
                                 ),
                                 child: Text(
                                   point.status.name,
@@ -92,7 +96,9 @@ class InspectionPointsReview extends StatelessWidget {
                                   bottom: FSizes.sm,
                                 ),
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                                  borderRadius: BorderRadius.circular(
+                                    FSizes.borderRadiusMd,
+                                  ),
                                   child: GestureDetector(
                                     onTap: () {
                                       showDialog(
@@ -125,7 +131,9 @@ class InspectionPointsReview extends StatelessWidget {
                                 padding: EdgeInsets.all(FSizes.sm),
                                 decoration: BoxDecoration(
                                   color: FColors.grey.withOpacity(.1),
-                                  borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
+                                  borderRadius: BorderRadius.circular(
+                                    FSizes.borderRadiusSm,
+                                  ),
                                   border: Border.all(
                                     color: FColors.grey.withOpacity(.3),
                                   ),

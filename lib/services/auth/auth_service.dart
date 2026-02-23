@@ -31,6 +31,9 @@ class AuthService extends GetxController {
 
   Profile? get profile => _profile.value;
 
+  /// Update the cached profile (e.g. after team switch).
+  set profile(Profile? value) => _profile.value = value;
+
   bool get isAuth => firebase.currentUser != null && _token.value != null;
 
   late final StreamSubscription<User?> _authSub;

@@ -7,19 +7,23 @@ part 'serializables/team.g.dart';
 class Team {
   int? id;
   PlaceHolderModel? owner;
+  String? type;
   String? name;
   String? role;
   bool isCurrent;
   DateTime? joinedAt;
+  DateTime? invitedAt;
   List<dynamic> permissions;
 
   Team({
     this.id,
     this.owner,
+    this.type,
     this.name,
     this.role,
     this.isCurrent = false,
     this.joinedAt,
+    this.invitedAt,
     this.permissions = const [],
   });
 
@@ -29,5 +33,11 @@ class Team {
 
   bool get isJoined => joinedAt != null;
 
-  bool get isInvited => joinedAt == null;
+  bool get isInvited => joinedAt == null && invitedAt != null;
+
+  bool get isSystem => type == 'system';
+
+  bool get isCompany => type == 'company';
+
+  String? get ownerLogo => owner?.avatar;
 }

@@ -3,6 +3,7 @@ import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/city.dart';
 import 'package:fahis_inspector/models/profile.dart';
 import 'package:fahis_inspector/resources/profile_repository.dart';
+import 'package:fahis_inspector/features/authentication/views/team_selector_sheet.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
@@ -138,6 +139,25 @@ class _ProfileViewState extends State<ProfileView> {
 
                   // City dropdown (loaded once)
                   _buildCityDropdown(),
+                  const SizedBox(height: FSizes.md),
+
+                  // Current team
+                  _buildInfoTile(
+                    icon: Iconsax.people,
+                    label: 'Current Team'.tr,
+                    value: _profile?.currentTeam?.owner?.label
+                        ?? _profile?.currentTeam?.name
+                        ?? '-',
+                  ),
+                  const SizedBox(height: FSizes.sm),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => TeamSelectorSheet.show(),
+                      icon: Icon(Iconsax.repeat, size: 18),
+                      label: Text('Switch Team'.tr),
+                    ),
+                  ),
                   const SizedBox(height: FSizes.lg),
 
                   // Update button
@@ -210,7 +230,7 @@ class _ProfileViewState extends State<ProfileView> {
         ),
         const SizedBox(height: 4),
         DropdownButtonFormField<City>(
-          initialValue: _selectedCity,
+          value: _selectedCity,
           isExpanded: true,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),

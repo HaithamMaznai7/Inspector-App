@@ -22,6 +22,7 @@ class Profile {
   String? avatar;
   String role;
   List<Team> teams;
+  List<Team> invitations;
   Locale? lang;
 
   String get getAvatar =>
@@ -46,6 +47,7 @@ class Profile {
     this.avatar,
     this.role = 'User',
     this.teams = const [],
+    this.invitations = const [],
     this.lang = const Locale('ar'),
   });
 

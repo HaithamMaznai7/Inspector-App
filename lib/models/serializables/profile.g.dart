@@ -24,10 +24,15 @@ Profile _$UserFromJson(Map json)
       mobile: json['phone_number'],
       mobileVerification: json['phone_number_verified'],
       status: AccounStatus.set(json['account_status']),
-      city: City.fromJson(json['city']),
+      city: json['city'] != null ? City.fromJson(json['city']) : null,
       avatar: json['profile_photo'],
       role: json['role'],
-      teams: (json['teams']['teams'] as List).map((element) => Team.fromJson(element)).toList(),
+      teams: (json['teams']?['teams'] as List?)
+          ?.map((e) => Team.fromJson(Map<String, dynamic>.from(e)))
+          .toList() ?? [],
+      invitations: (json['teams']?['invitations'] as List?)
+          ?.map((e) => Team.fromJson(Map<String, dynamic>.from(e)))
+          .toList() ?? [],
       lang: Get.deviceLocale,
   );
 
@@ -42,7 +47,7 @@ Map<String, dynamic> _$UserToJson(Profile instance) => <String, dynamic>{
   'profile_photo': instance.avatar,
   'role': instance.role,
   'teams': {
-    'teams': instance.teams.map((element) => element.toJson()).toList(),
-    'invitations': [],
+    'teams': instance.teams.map((e) => e.toJson()).toList(),
+    'invitations': instance.invitations.map((e) => e.toJson()).toList(),
   },
 };

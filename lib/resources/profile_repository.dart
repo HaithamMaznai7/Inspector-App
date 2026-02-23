@@ -18,6 +18,24 @@ class ProfileRepository {
     return Profile.fromJson(response.data);
   }
 
+  /// Switches the current active team for the user.
+  Future<Profile> switchTeam(int teamId) async {
+    final net = Network(
+      endpoint: EndPoints.setTeam,
+      requestMethod: RequestMethod.put,
+    );
+
+    net.setBody = {'team_id': teamId};
+
+    try {
+      final response = await net.response(RoutingUrl.home);
+      return Profile.fromJson(response.data);
+    } catch (e) {
+      dd('Error switching team: $e');
+      rethrow;
+    }
+  }
+
   /// Updates the user profile. Only sends fields the backend needs.
   Future<Profile> updateProfile({
     required String name,

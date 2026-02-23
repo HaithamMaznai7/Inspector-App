@@ -1,5 +1,6 @@
 import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/features/authentication/views/profile_view.dart';
+import 'package:fahis_inspector/features/authentication/views/team_selector_sheet.dart';
 import 'package:fahis_inspector/features/authentication/components/user_avater.dart';
 import 'package:fahis_inspector/features/home/components/user_info.dart';
 import 'package:fahis_inspector/features/inspections/controller.dart';
@@ -137,6 +138,32 @@ class SideMenuWrapper extends StatelessWidget {
                     height: FSizes.md,
                   ),
                 ),
+                SideMenuItemDataTile(
+                  isSelected: false,
+                  margin: const EdgeInsetsDirectional.symmetric(
+                    horizontal: FSizes.xs,
+                    vertical: 2,
+                  ),
+                  onTap: () => TeamSelectorSheet.show(),
+                  title: 'Switch Team'.tr,
+                  hoverColor: FColors.primaryColor.withOpacity(.08),
+                  titleStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: isDark ? FColors.light : FColors.dark,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  icon: Icon(
+                    Iconsax.people,
+                    color: FColors.primaryColor,
+                    size: 20,
+                  ),
+                ),
+                SideMenuItemDataDivider(
+                  divider: Divider(
+                    color: FColors.grey.withOpacity(.2),
+                    thickness: 1,
+                    height: FSizes.md,
+                  ),
+                ),
                 SideMenuItemDataTitle(
                   title: 'Settings & Support'.tr,
                   textAlign: TextAlign.start,
@@ -252,7 +279,9 @@ class SideMenuWrapper extends StatelessWidget {
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                           Text(
-                                            FTexts.systemInspector.tr,
+                                            auth().profile?.currentTeam?.owner?.label
+                                                ?? auth().profile?.currentTeam?.name
+                                                ?? FTexts.systemInspector.tr,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodySmall
@@ -260,6 +289,7 @@ class SideMenuWrapper extends StatelessWidget {
                                                   color: FColors.white
                                                       .withOpacity(.8),
                                                 ),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ],
                                       ),
