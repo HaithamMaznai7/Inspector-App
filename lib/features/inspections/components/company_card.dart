@@ -1,4 +1,3 @@
-import 'package:fahis_inspector/models/inspection.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/helpers/helper_functions.dart';
@@ -6,17 +5,23 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
-/// Card displaying a company name, request count, and stage summary.
+/// Card displaying a company name, vehicle count, and status summary.
 /// Tapping navigates to the company's inspection list.
 class CompanyCard extends StatelessWidget {
   final String companyName;
-  final List<Inspection> inspections;
+  final int totalVehicles;
+  final int completedCount;
+  final int inProgressCount;
+  final int rejectedCount;
   final VoidCallback onTap;
 
   const CompanyCard({
     super.key,
     required this.companyName,
-    required this.inspections,
+    required this.totalVehicles,
+    required this.completedCount,
+    required this.inProgressCount,
+    required this.rejectedCount,
     required this.onTap,
   });
 
@@ -52,7 +57,7 @@ class CompanyCard extends StatelessWidget {
               ),
               const SizedBox(width: FSizes.md),
 
-              // Company name + request count
+              // Company name + vehicle count + status row
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,21 +71,18 @@ class CompanyCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: FSizes.xs),
+                    const SizedBox(height: 4),
                     Text(
-                      '${inspections.length} ${'requests'.tr}',
+                      '$totalVehicles ${'Vehicles'.tr}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: FColors.textSecondary,
                           ),
                     ),
+                    const SizedBox(height: 4),
+                    _buildStatusRow(context),
                   ],
                 ),
               ),
-
-              // Stage badges summary
-              _buildStageSummary(context),
-
-              const SizedBox(width: FSizes.sm),
 
               // Arrow icon
               Icon(
@@ -95,42 +97,45 @@ class CompanyCard extends StatelessWidget {
     );
   }
 
-  /// Shows small colored dots summarizing the stages of requests
-  Widget _buildStageSummary(BuildContext context) {
-    // Count inspections per stage
-    final Map<String, int> stageCounts = {};
-    for (final ins in inspections) {
-      final label = ins.stage.label;
-      stageCounts[label] = (stageCounts[label] ?? 0) + 1;
+  /// Colored status chips: Completed • In Progress • Rejected
+  Widget _buildStatusRow(BuildContext context) {
+    final chips = <Widget>[];
+
+    if (completedCount > 0) {
+      chips.add(_statusChip(context, '$completedCount ${'Completed'.tr}', Colors.green));
+    }
+    if (inProgressCount > 0) {
+      chips.add(_statusChip(context, '$inProgressCount ${'In Progress'.tr}', Colors.orange));
+    }
+    if (rejectedCount > 0) {
+      chips.add(_statusChip(context, '$rejectedCount ${'Rejected'.tr}', Colors.red));
+    }
+
+    if (chips.isEmpty) {
+      chips.add(_statusChip(context, 'Pending'.tr, FColors.darkGrey));
     }
 
     return Wrap(
-      spacing: 4,
+      spacing: 6,
       runSpacing: 4,
-      children: stageCounts.entries.take(3).map((entry) {
-        // Find the matching inspection to get color
-        final color = inspections
-            .firstWhere((i) => i.stage.label == entry.key)
-            .stage
-            .color;
-        return Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: FSizes.sm,
-            vertical: 2,
-          ),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
-          ),
-          child: Text(
-            '${entry.value}',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: color,
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-        );
-      }).toList(),
+      children: chips,
+    );
+  }
+
+  Widget _statusChip(BuildContext context, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+      ),
     );
   }
 }

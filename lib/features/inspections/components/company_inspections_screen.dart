@@ -1,23 +1,24 @@
 import 'package:fahis_inspector/common/widgets/components/back_page_button.dart';
 import 'package:fahis_inspector/features/inspections/components/inspection_card.dart';
 import 'package:fahis_inspector/main.dart';
-import 'package:fahis_inspector/models/inspection.dart';
+import 'package:fahis_inspector/models/order.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
+import 'package:fahis_inspector/util/helpers/stage_mapper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-/// Screen showing all inspection requests for a specific company.
+/// Screen showing all order items (vehicles) for a specific B2B order.
 /// Navigated to when user taps a CompanyCard.
 class CompanyInspectionsScreen extends StatefulWidget {
   final String companyName;
-  final List<Inspection> inspections;
+  final Order order;
 
   const CompanyInspectionsScreen({
     super.key,
     required this.companyName,
-    required this.inspections,
+    required this.order,
   });
 
   @override
@@ -26,30 +27,32 @@ class CompanyInspectionsScreen extends StatefulWidget {
 }
 
 class _CompanyInspectionsScreenState extends State<CompanyInspectionsScreen> {
-  late List<Inspection> _inspections;
+  late Order _order;
 
   @override
   void initState() {
     super.initState();
-    _inspections = List.from(widget.inspections);
+    _order = widget.order;
   }
 
-  /// Re-fetches all inspections, then filters for this company
+  /// Re-fetches B2B orders, then finds the updated version of this order
   Future<void> _refresh() async {
     dd('[CompanyInspections] Refreshing data for ${widget.companyName}');
     final controller = InspectionsBinding().instance;
-    // Re-fetch from API
-    await controller.load(reset: true, cache: false);
-    // Re-filter for this company from the updated data
-    final updated = controller.inspections
-        .where((i) => i.customer?.name == widget.companyName)
-        .toList();
-    dd('[CompanyInspections] Refreshed: ${updated.length} inspections');
-    setState(() => _inspections = updated);
+    await controller.loadOrdersB2B(reset: true, cache: false);
+    // Find the updated order by ID
+    final updated = controller.ordersB2B
+        .firstWhereOrNull((o) => o.id == widget.order.id);
+    if (updated != null) {
+      setState(() => _order = updated);
+    }
+    dd('[CompanyInspections] Refreshed: ${_order.items.length} items');
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = InspectionsBinding().instance;
+
     return Scaffold(
       backgroundColor: FColors.softGrey,
       appBar: AppBar(
@@ -65,9 +68,9 @@ class _CompanyInspectionsScreenState extends State<CompanyInspectionsScreen> {
                     fontWeight: FontWeight.w600,
                   ),
             ),
-            // Request count subtitle
+            // Vehicle count subtitle
             Text(
-              '${_inspections.length} ${'requests'.tr}',
+              '${_order.meta.total} ${'Vehicles'.tr}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: FColors.textSecondary,
                   ),
@@ -85,20 +88,17 @@ class _CompanyInspectionsScreenState extends State<CompanyInspectionsScreen> {
             horizontal: FSizes.md,
             vertical: FSizes.sm,
           ),
-          itemCount: _inspections.length,
+          itemCount: _order.items.length,
           itemBuilder: (context, index) {
-            final inspection = _inspections[index];
+            final item = _order.items[index];
             return InspectionCard(
-              slug: inspection.slug,
-              customerName: inspection.customer?.name,
-              vehicle: inspection.vehicle,
-              stage: inspection.stage,
-              rejectedNote: inspection.rejectedNote,
+              slug: item.slug,
+              customerName: _order.customer.name,
+              vehicle: item.vehicle,
+              stage: StageMapper.mapOrderItemStage(item.stage),
+              rejectedNote: null,
               onTap: () async {
-                await Get.toNamed(
-                  '${RoutingUrl.inspections}/${inspection.slug}',
-                  arguments: inspection,
-                );
+                await controller.openB2BOrderItem(_order, item);
                 _refresh();
               },
             );

@@ -139,49 +139,83 @@ class _SegmentToggle extends StatelessWidget {
   }
 }
 
-/// Displays grouped companies with request counts
+/// Displays B2B orders as company cards with vehicle counts and status summary
 class _CompanyList extends StatelessWidget {
   final InspectionsController controller;
   const _CompanyList({required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    final groups = controller.companyGroups;
+    return Obx(() {
+      if (controller.isLoadingB2B.value && controller.ordersB2B.isEmpty) {
+        return OnLoadingInspections();
+      }
 
-    if (groups.isEmpty) {
-      return Center(
-        child: Text(
-          'No company requests'.tr,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
-        ),
-      );
-    }
+      final b2bOrders = controller.b2bOrders;
 
-    final entries = groups.entries.toList();
+      if (b2bOrders.isEmpty) {
+        return Center(
+          child: Text(
+            'No company requests'.tr,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: FColors.darkGrey),
+          ),
+        );
+      }
 
-    return RefreshIndicator(
-      onRefresh: controller.refreshPage,
-      color: FColors.primaryColor,
-      child: ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: entries.length,
-        itemBuilder: (context, index) {
-          final entry = entries[index];
-          return CompanyCard(
-            companyName: entry.key,
-            inspections: entry.value,
-            onTap: () => Get.to(
-              () => CompanyInspectionsScreen(
-                companyName: entry.key,
-                inspections: entry.value,
-              ),
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          return RefreshIndicator(
+            onRefresh: controller.refreshPage,
+            color: FColors.primaryColor,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              controller: controller.scrollController,
+              children: [
+                ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Column(
+                    children: b2bOrders.map((order) {
+                      return CompanyCard(
+                        companyName: order.customer.name,
+                        totalVehicles: order.meta.total,
+                        completedCount: order.meta.finishedCount,
+                        inProgressCount: order.meta.processedCount,
+                        rejectedCount: order.meta.rejectedCount,
+                        onTap: () => Get.to(
+                          () => CompanyInspectionsScreen(
+                            companyName: order.customer.name,
+                            order: order,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                // Pagination loading indicator
+                Obx(() {
+                  final loading =
+                      controller.ordersRepositoryB2B?.isFetchingMore.value ?? false;
+                  if (loading) {
+                    return Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: FColors.primaryColor,
+                        ),
+                      ),
+                    );
+                  }
+                  return SizedBox();
+                }),
+              ],
             ),
           );
         },
-      ),
-    );
+      );
+    });
   }
 }
 

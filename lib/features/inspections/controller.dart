@@ -18,11 +18,14 @@ class InspectionsController extends GetxController
     with GetSingleTickerProviderStateMixin {
   InspectionsRepository? repository;
   OrdersRepository? ordersRepository;
+  OrdersRepository? ordersRepositoryB2B;
   late final Box<Map> box;
   final ScrollController scrollController = ScrollController();
   RxList<Inspection> inspections = <Inspection>[].obs;
   RxList<Order> orders = <Order>[].obs;
+  RxList<Order> ordersB2B = <Order>[].obs;
   var isLoading = true.obs;
+  var isLoadingB2B = false.obs;
 
   // True when user has submitted a search query — bypasses segment/stage filters
   var isSearchActive = false.obs;
@@ -47,18 +50,9 @@ class InspectionsController extends GetxController
   List<Inspection> get _activeInspections =>
       inspections.where((i) => i.stage != InspectionStage.reviewed).toList();
 
-  /// Groups inspections by customer name, returns only customers with 2+ requests
-  Map<String, List<Inspection>> get companyGroups {
-    final Map<String, List<Inspection>> grouped = {};
-    for (final ins in _activeInspections) {
-      final name = ins.customer?.name ?? '';
-      grouped.putIfAbsent(name, () => []).add(ins);
-    }
-    // Only keep customers with multiple inspections
-    grouped.removeWhere((_, list) => list.length < 2);
-    dd('[Segments] companyGroups: ${grouped.length} companies');
-    return grouped;
-  }
+  /// B2B orders filtered to exclude b2c (backend may return mixed types)
+  List<Order> get b2bOrders =>
+      ordersB2B.where((o) => o.businessType != 'b2c').toList();
 
   /// Returns inspections from b2c orders (converted from OrderItems)
   List<Inspection> get individualInspections {
@@ -99,6 +93,10 @@ class InspectionsController extends GetxController
   /// Switch between Companies and Individuals tabs
   void changeSegment(int index) {
     selectedSegment.value = index;
+    // Lazy-load b2b data on first switch to Companies tab
+    if (index == 0 && ordersB2B.isEmpty && !isLoadingB2B.value) {
+      loadOrdersB2B();
+    }
     update();
   }
 
@@ -110,6 +108,7 @@ class InspectionsController extends GetxController
 
     repository = InspectionsRepository(box: box, stage: selectedStage.value);
     ordersRepository = OrdersRepository(box: box, type: 'b2c');
+    ordersRepositoryB2B = OrdersRepository(box: box, type: 'b2b');
 
     await loadOrders();
   }
@@ -120,11 +119,12 @@ class InspectionsController extends GetxController
 
     inspections.listen((_) => update());
     orders.listen((_) => update());
+    ordersB2B.listen((_) => update());
 
     scrollController.addListener(_onScroll);
   }
 
-  /// Handles scroll-based pagination for both orders and inspections mode.
+  /// Handles scroll-based pagination for orders, b2b, and inspections mode.
   void _onScroll() {
     if (_isFetchingNextPage) return;
     if (!scrollController.hasClients) return;
@@ -132,12 +132,18 @@ class InspectionsController extends GetxController
     final pos = scrollController.position;
     if (pos.pixels < pos.maxScrollExtent - 200) return;
 
-    final isOrdersMode =
+    final isDefaultMode =
         selectedStage.value == InspectionStage.all && !isSearchActive.value;
 
     _isFetchingNextPage = true;
 
-    if (isOrdersMode) {
+    if (isDefaultMode && selectedSegment.value == 0) {
+      // Companies tab (b2b)
+      ordersRepositoryB2B?.fetchNextPage().then((data) {
+        ordersB2B.assignAll(data);
+      }).whenComplete(() => _isFetchingNextPage = false);
+    } else if (isDefaultMode) {
+      // Individuals tab (b2c)
       ordersRepository?.fetchNextPage().then((data) {
         orders.assignAll(data);
       }).whenComplete(() => _isFetchingNextPage = false);
@@ -253,8 +259,16 @@ class InspectionsController extends GetxController
 
   Future<void> refreshPage() async {
     if (await FDeviceUtils.hasInternetConnection()) {
-      if (selectedStage.value == InspectionStage.all && !isSearchActive.value) {
-        // Orders mode
+      final isDefaultMode =
+          selectedStage.value == InspectionStage.all && !isSearchActive.value;
+
+      if (isDefaultMode && selectedSegment.value == 0) {
+        // Companies tab (b2b)
+        ordersB2B.clear();
+        isLoadingB2B.value = true;
+        await loadOrdersB2B(reset: true, cache: false);
+      } else if (isDefaultMode) {
+        // Individuals tab (b2c)
         orders.clear();
         isLoading.value = true;
         await loadOrders(reset: true, cache: false);
@@ -319,6 +333,77 @@ class InspectionsController extends GetxController
       e.notify();
     } catch (e) {
       dd(e.toString());
+    }
+  }
+
+  /// Open an order item from a B2B order (Companies tab).
+  /// Same null-slug logic as b2c, but refreshes b2b data on return.
+  Future<void> openB2BOrderItem(Order order, OrderItem item) async {
+    try {
+      String? slug = item.slug;
+
+      if (slug == null) {
+        isLoadingB2B.value = true;
+        update();
+        slug = await ordersRepositoryB2B?.createOrderItem(item.id);
+        isLoadingB2B.value = false;
+        update();
+
+        if (slug == null) {
+          Get.snackbar(
+            'Error'.tr,
+            'Failed to create inspection'.tr,
+            snackPosition: SnackPosition.BOTTOM,
+          );
+          return;
+        }
+      }
+
+      await Get.toNamed(
+        '${RoutingUrl.inspections}/$slug',
+      );
+
+      // Refresh b2b orders list
+      loadOrdersB2B(reset: true);
+    } on FNetworkException catch (e) {
+      e.notify();
+    } catch (e) {
+      dd(e.toString());
+    }
+  }
+
+  /// Load B2B orders from API
+  Future<void> loadOrdersB2B({
+    String? query,
+    String? status,
+    bool reset = true,
+    bool load = true,
+    bool cache = true,
+  }) async {
+    if (ordersRepositoryB2B == null) return;
+
+    if (cache) {
+      ordersB2B.assignAll(ordersRepositoryB2B!.fetchFromCache(status: status));
+      update();
+      if (load) {
+        isLoadingB2B.value = ordersB2B.isEmpty;
+        update();
+      }
+    }
+
+    try {
+      while (auth().token == null) {
+        await Future.delayed(Duration(seconds: 3));
+      }
+
+      ordersB2B.assignAll(
+        await ordersRepositoryB2B!.fetchFromApi(query: query, status: status, reset: reset),
+      );
+    } finally {
+      if (load) {
+        isLoadingB2B.value = false;
+        update();
+      }
     }
   }
 }
