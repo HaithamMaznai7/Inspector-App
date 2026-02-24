@@ -1,3 +1,4 @@
+import 'package:fahis_inspector/common/widgets/skeletons/skeleton.dart';
 import 'package:fahis_inspector/features/inspections/components/company_card.dart';
 import 'package:fahis_inspector/features/inspections/components/company_inspections_screen.dart';
 import 'package:fahis_inspector/features/inspections/components/inspection_card.dart';
@@ -194,18 +195,13 @@ class _CompanyList extends StatelessWidget {
                     }).toList(),
                   ),
                 ),
-                // Pagination loading indicator
+                // Shimmer skeleton while fetching more
                 Obx(() {
                   final loading =
                       controller.ordersRepositoryB2B?.isFetchingMore.value ?? false;
                   if (loading) {
-                    return Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: FColors.primaryColor,
-                        ),
-                      ),
+                    return Column(
+                      children: List.generate(2, (_) => const _CompanyCardSkeleton()),
                     );
                   }
                   return SizedBox();
@@ -315,21 +311,15 @@ class _IndividualList extends StatelessWidget {
                   }).toList(),
                 ),
               ),
-              // Pagination loading indicator
+              // Shimmer skeleton while fetching more
               Obx(() {
                 final load = controller.ordersRepository?.isFetchingMore.value ?? false;
                 if (load) {
-                  return Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: FColors.primaryColor,
-                      ),
-                    ),
+                  return Column(
+                    children: List.generate(2, (_) => const PlaceHolderRequestCard()),
                   );
-                } else {
-                  return SizedBox();
                 }
+                return SizedBox();
               }),
             ],
           ),
@@ -374,27 +364,66 @@ class _IndividualList extends StatelessWidget {
                       .toList(),
                 ),
               ),
-              // Pagination loading indicator
+              // Shimmer skeleton while fetching more
               Obx(() {
                 final load =
                     controller.repository?.isFetchingMore.value ?? false;
                 if (load) {
-                  return Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: FColors.primaryColor,
-                      ),
-                    ),
+                  return Column(
+                    children: List.generate(2, (_) => const PlaceHolderRequestCard()),
                   );
-                } else {
-                  return SizedBox();
                 }
+                return SizedBox();
               }),
             ],
           ),
         );
       },
+    );
+  }
+}
+
+/// Shimmer skeleton that matches the CompanyCard shape
+class _CompanyCardSkeleton extends StatelessWidget {
+  const _CompanyCardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = FHelper.isDarkMode(context);
+
+    return Card(
+      color: isDark ? FColors.black : FColors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(FSizes.md),
+        child: Row(
+          children: [
+            // Circle avatar placeholder
+            CircleSkeleton(size: 48),
+            const SizedBox(width: FSizes.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Skeleton(width: 140, height: 14, color: FColors.grey),
+                  const SizedBox(height: 8),
+                  Skeleton(width: 90, height: 12, color: FColors.grey),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Skeleton(width: 70, height: 10, color: Colors.green.withValues(alpha: 0.3)),
+                      const SizedBox(width: 6),
+                      Skeleton(width: 80, height: 10, color: Colors.orange.withValues(alpha: 0.3)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

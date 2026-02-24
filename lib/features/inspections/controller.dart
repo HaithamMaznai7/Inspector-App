@@ -161,6 +161,48 @@ class InspectionsController extends GetxController
     super.onClose();
   }
 
+  /// After data loads, checks if the list content fills the viewport.
+  /// If not and more pages exist, auto-fetches the next page.
+  /// This handles the case where cards are too few to enable scrolling.
+  void _autoLoadMoreIfNeeded() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!scrollController.hasClients) return;
+      if (_isFetchingNextPage) return;
+
+      final pos = scrollController.position;
+      // If content doesn't overflow (can't scroll), load more
+      if (pos.maxScrollExtent <= 0) {
+        final isDefaultMode =
+            selectedStage.value == InspectionStage.all && !isSearchActive.value;
+
+        if (isDefaultMode && selectedSegment.value == 0) {
+          _fetchNextB2BPage();
+        } else if (isDefaultMode) {
+          _fetchNextB2CPage();
+        }
+      }
+    });
+  }
+
+  void _fetchNextB2BPage() {
+    if (_isFetchingNextPage) return;
+    _isFetchingNextPage = true;
+    ordersRepositoryB2B?.fetchNextPage().then((data) {
+      ordersB2B.assignAll(data);
+      // Check again after this page loads
+      _autoLoadMoreIfNeeded();
+    }).whenComplete(() => _isFetchingNextPage = false);
+  }
+
+  void _fetchNextB2CPage() {
+    if (_isFetchingNextPage) return;
+    _isFetchingNextPage = true;
+    ordersRepository?.fetchNextPage().then((data) {
+      orders.assignAll(data);
+      _autoLoadMoreIfNeeded();
+    }).whenComplete(() => _isFetchingNextPage = false);
+  }
+
   void changeStatus({InspectionStage newStage = InspectionStage.all}) async {
     selectedStage.value = newStage;
 
@@ -249,6 +291,7 @@ class InspectionsController extends GetxController
       orders.assignAll(
         await ordersRepository!.fetchFromApi(query: query, status: status, reset: reset),
       );
+      _autoLoadMoreIfNeeded();
     } finally {
       if (load) {
         isLoading.value = false;
@@ -399,6 +442,7 @@ class InspectionsController extends GetxController
       ordersB2B.assignAll(
         await ordersRepositoryB2B!.fetchFromApi(query: query, status: status, reset: reset),
       );
+      _autoLoadMoreIfNeeded();
     } finally {
       if (load) {
         isLoadingB2B.value = false;
