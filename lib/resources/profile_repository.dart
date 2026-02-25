@@ -19,17 +19,20 @@ class ProfileRepository {
   }
 
   /// Switches the current active team for the user.
+  /// POST /user/current-team with { team_id: int }
+  /// After switching, re-fetches the full profile to get updated team state.
   Future<Profile> switchTeam(int teamId) async {
     final net = Network(
       endpoint: EndPoints.setTeam,
-      requestMethod: RequestMethod.put,
+      requestMethod: RequestMethod.post,
     );
 
     net.setBody = {'team_id': teamId};
 
     try {
-      final response = await net.response(RoutingUrl.home);
-      return Profile.fromJson(response.data);
+      await net.response(RoutingUrl.home);
+      // Re-fetch full profile to get updated current team
+      return await fetchProfile();
     } catch (e) {
       dd('Error switching team: $e');
       rethrow;

@@ -44,6 +44,7 @@ class _ProfileViewState extends State<ProfileView> {
     try {
       final profile = await ProfileRepository().fetchProfile();
       _profile = profile;
+      auth().profile = profile; // Update global profile so team selector has teams
       _nameController.text = profile.name ?? '';
       _selectedCity = profile.city;
     } catch (e) {
