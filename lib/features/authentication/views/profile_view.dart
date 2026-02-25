@@ -5,6 +5,7 @@ import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/city.dart';
 import 'package:fahis_inspector/models/profile.dart';
 import 'package:fahis_inspector/resources/profile_repository.dart';
+import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
@@ -92,7 +93,8 @@ class _ProfileViewState extends State<ProfileView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40, height: 4,
+              width: 40,
+              height: 4,
               margin: const EdgeInsets.only(bottom: FSizes.md),
               decoration: BoxDecoration(
                 color: FColors.grey.withOpacity(0.4),
@@ -101,9 +103,9 @@ class _ProfileViewState extends State<ProfileView> {
             ),
             Text(
               'Change Photo'.tr,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: FSizes.lg),
             Row(
@@ -202,8 +204,12 @@ class _ProfileViewState extends State<ProfileView> {
                           backgroundImage: _pickedPhoto != null
                               ? FileImage(_pickedPhoto!)
                               : NetworkImage(
-                                  _safeAvatarUrl(_profile?.avatar, _profile?.name),
-                                ) as ImageProvider,
+                                      _safeAvatarUrl(
+                                        _profile?.avatar,
+                                        _profile?.name,
+                                      ),
+                                    )
+                                    as ImageProvider,
                           onBackgroundImageError: (_, __) {},
                         ),
                         Positioned(
@@ -217,7 +223,9 @@ class _ProfileViewState extends State<ProfileView> {
                                 color: FColors.primaryColor,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Theme.of(context).scaffoldBackgroundColor,
+                                  color: Theme.of(
+                                    context,
+                                  ).scaffoldBackgroundColor,
                                   width: 2,
                                 ),
                               ),
@@ -314,10 +322,9 @@ class _ProfileViewState extends State<ProfileView> {
       leading: Icon(icon, color: FColors.primaryColor, size: 22),
       title: Text(
         label,
-        style: Theme.of(context)
-            .textTheme
-            .labelSmall
-            ?.copyWith(color: FColors.grey),
+        style: Theme.of(
+          context,
+        ).textTheme.labelSmall?.copyWith(color: FColors.grey),
       ),
       subtitle: Text(value, style: Theme.of(context).textTheme.bodyMedium),
       contentPadding: EdgeInsets.zero,
@@ -334,7 +341,7 @@ class _ProfileViewState extends State<ProfileView> {
         ),
         const SizedBox(height: 4),
         DropdownButtonFormField<City>(
-          value: _selectedCity,
+          initialValue: _selectedCity,
           isExpanded: true,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
@@ -374,8 +381,9 @@ class _ProfileViewState extends State<ProfileView> {
       auth().profile = updatedProfile;
       _profile = updatedProfile;
       _pickedPhoto = null; // Reset after successful upload
-      if (mounted) setState(() {});
       FLoader.successSnackBar(title: FTexts.profileUpdate.tr);
+      // Navigate back to home to refresh sidebar with updated profile
+      Get.offAllNamed(RoutingUrl.home);
     } catch (e) {
       FLoader.errorSnackBar(
         title: FTexts.profileUpdate.tr,
