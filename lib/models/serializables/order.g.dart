@@ -2,16 +2,18 @@ part of '../order.dart';
 
 Order _$OrderFromJson(Map json) => Order(
   id: json['id'],
-  slug: json['slug'],
-  status: json['status'],
-  businessType: json['business_type'],
-  customer: Customer.fromJson(json['customer']),
-  items: (json['items'] as List)
-      .map((item) => OrderItem.fromJson(item))
-      .toList(),
-  meta: OrderMeta.fromJson(json['meta']),
-  updatedAt: DateTime.parse(json['updated_at']),
-  createdAt: DateTime.parse(json['created_at']),
+  slug: json['slug'] ?? '',
+  status: json['status'] ?? '',
+  businessType: json['business_type'] ?? '',
+  customer: Customer.fromJson(json['customer'] ?? {}),
+  items: json['items'] != null
+      ? (json['items'] as List)
+          .map((item) => OrderItem.fromJson(item))
+          .toList()
+      : [],
+  meta: OrderMeta.fromJson(json['meta'] ?? {}),
+  updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
+  createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
 );
 
 Map<String, dynamic> _$OrderToJson(Order instance) => <String, dynamic>{
@@ -29,12 +31,12 @@ Map<String, dynamic> _$OrderToJson(Order instance) => <String, dynamic>{
 OrderItem _$OrderItemFromJson(Map json) => OrderItem(
   id: json['id'],
   slug: json['slug'],
-  stage: json['stage'],
-  vehicle: Vehicle.fromJson(json['vehicle']),
-  enable: json['enable'],
+  stage: json['stage'] ?? 'pending',
+  vehicle: Vehicle.fromJson(json['vehicle'] ?? {}),
+  enable: json['enable'] ?? true,
   report: json['report'],
-  updatedAt: DateTime.parse(json['updated_at']),
-  createdAt: DateTime.parse(json['created_at']),
+  updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
+  createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
 );
 
 Map<String, dynamic> _$OrderItemToJson(OrderItem instance) => <String, dynamic>{
@@ -49,10 +51,10 @@ Map<String, dynamic> _$OrderItemToJson(OrderItem instance) => <String, dynamic>{
 };
 
 OrderMeta _$OrderMetaFromJson(Map json) => OrderMeta(
-  total: json['total'],
-  finishedCount: json['finished_count'],
-  processedCount: json['processed_count'],
-  rejectedCount: json['rejected_count'],
+  total: json['total'] ?? 0,
+  finishedCount: json['finished_count'] ?? 0,
+  processedCount: json['processed_count'] ?? 0,
+  rejectedCount: json['rejected_count'] ?? 0,
 );
 
 Map<String, dynamic> _$OrderMetaToJson(OrderMeta instance) => <String, dynamic>{

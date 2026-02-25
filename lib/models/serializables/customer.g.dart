@@ -1,7 +1,7 @@
 part of '../customer.dart';
 
 Customer _$CustomerFromJson(Map json) => Customer(
-  name: json['name'],
+  name: json['name'] ?? '',
   email: json['email'],
   phone: json['mobile'],
   city: json['city'] != null ? PlaceHolderModel.fromJson(json['city']) : null,
