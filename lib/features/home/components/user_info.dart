@@ -1,4 +1,5 @@
 import 'package:fahis_inspector/features/authentication/views/profile_view.dart';
+import 'package:fahis_inspector/features/authentication/views/team_selector_sheet.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
@@ -44,6 +45,16 @@ class UserWidget extends StatelessWidget {
                 ],
               ),
               onTap: () => Get.to(() => const ProfileView()),
+            ),
+            PopupMenuItem(
+              child: Row(
+                children: [
+                  Icon(Iconsax.people, size: 18, color: FColors.primaryColor),
+                  const SizedBox(width: 8),
+                  Text('Switch Team'.tr),
+                ],
+              ),
+              onTap: () => TeamSelectorSheet.show(),
             ),
             PopupMenuItem(
               child: Row(

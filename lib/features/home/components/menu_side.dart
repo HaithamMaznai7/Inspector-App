@@ -271,7 +271,7 @@ class SideMenuWrapper extends StatelessWidget {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            user.displayName ?? 'User Name',
+                                            auth().profile?.name ?? user.displayName ?? 'User Name',
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyMedium!

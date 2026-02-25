@@ -477,5 +477,25 @@ class Arabic {
     'No notifications yet': 'لا توجد إشعارات بعد',
     'You will see your notifications here': 'ستظهر إشعاراتك هنا',
     'Just now': 'الآن',
+
+    /// Team & Profile
+    'Switch Team': 'تبديل الفريق',
+    'Teams': 'الفرق',
+    'Current': 'الحالي',
+    'Team Switched': 'تم تبديل الفريق',
+    'Error': 'خطأ',
+    'Failed to switch team': 'فشل تبديل الفريق',
+    'Change Photo': 'تغيير الصورة',
+    'Camera': 'الكاميرا',
+    'Gallery': 'المعرض',
+    'Dark Mode': 'الوضع الداكن',
+    'Light Mode': 'الوضع الفاتح',
+    'No Permission': 'غير مسموح',
+    'Unauthenticated': 'غير مصرح',
+    'No Connection': 'لا يوجد اتصال',
+    'Server Error': 'خطأ في الخادم',
+    'Invalid data': 'بيانات غير صالحة',
+    'Not Found': 'غير موجود',
+    'Unknown Error': 'خطأ غير معروف',
   };
 }

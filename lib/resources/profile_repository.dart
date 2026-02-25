@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/profile.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
+import 'package:get/get.dart';
 
 class ProfileRepository {
   ProfileRepository();
@@ -39,20 +42,26 @@ class ProfileRepository {
     }
   }
 
-  /// Updates the user profile. Only sends fields the backend needs.
+  /// Updates the user profile via POST /user with form-data.
+  /// Accepts: name, city (id), profile_photo_path (File).
   Future<Profile> updateProfile({
     required String name,
-    required int? cityId,
+    int? cityId,
+    File? photo,
   }) async {
     final net = Network(
-      endpoint: EndPoints.profile,
-      requestMethod: RequestMethod.put,
+      endpoint: EndPoints.updateProfile,
+      requestMethod: RequestMethod.post,
     );
 
-    net.setBody = {
+    final form = FormData({
       'name': name,
-      if (cityId != null) 'city_id': cityId,
-    };
+      if (cityId != null) 'city': cityId.toString(),
+      if (photo != null)
+        'profile_photo_path': MultipartFile(photo, filename: photo.path.split(Platform.pathSeparator).last),
+    });
+
+    net.setBody = form;
 
     try {
       final response = await net.response(RoutingUrl.home);

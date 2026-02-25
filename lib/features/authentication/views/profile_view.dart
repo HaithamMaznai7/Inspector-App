@@ -1,9 +1,10 @@
+import 'dart:io';
+
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/city.dart';
 import 'package:fahis_inspector/models/profile.dart';
 import 'package:fahis_inspector/resources/profile_repository.dart';
-import 'package:fahis_inspector/features/authentication/views/team_selector_sheet.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
@@ -11,6 +12,7 @@ import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
@@ -25,6 +27,7 @@ class _ProfileViewState extends State<ProfileView> {
   Profile? _profile;
   List<City> _cities = [];
   City? _selectedCity;
+  File? _pickedPhoto;
   bool _isLoading = true;
   bool _isUpdating = false;
 
@@ -44,17 +47,15 @@ class _ProfileViewState extends State<ProfileView> {
     try {
       final profile = await ProfileRepository().fetchProfile();
       _profile = profile;
-      auth().profile = profile; // Update global profile so team selector has teams
+      auth().profile = profile;
       _nameController.text = profile.name ?? '';
       _selectedCity = profile.city;
     } catch (e) {
-      // Fallback to cached auth profile
       _profile = auth().profile;
       _nameController.text = _profile?.name ?? '';
       _selectedCity = _profile?.city;
     }
 
-    // Load cities (single call, not a stream)
     try {
       final net = Network(endpoint: 'assets/cities');
       final response = await net.response(null);
@@ -68,14 +69,112 @@ class _ProfileViewState extends State<ProfileView> {
     if (mounted) setState(() => _isLoading = false);
   }
 
-  /// Builds a safe avatar URL. The default ui-avatars.com returns SVG
-  /// which Flutter cannot decode — force PNG format.
   String _safeAvatarUrl(String? avatarUrl, String? name) {
     if (avatarUrl != null && !avatarUrl.contains('ui-avatars.com')) {
       return avatarUrl;
     }
     final initial = (name ?? 'U').isNotEmpty ? name![0] : 'U';
     return 'https://ui-avatars.com/api/?name=$initial&color=FF7D41&background=FFF0E8&format=png&size=128';
+  }
+
+  /// Shows a bottom sheet to pick photo from camera or gallery
+  void _showPhotoPickerSheet() {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(FSizes.lg),
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(FSizes.borderRadiusLg),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40, height: 4,
+              margin: const EdgeInsets.only(bottom: FSizes.md),
+              decoration: BoxDecoration(
+                color: FColors.grey.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Text(
+              'Change Photo'.tr,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: FSizes.lg),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _photoOption(
+                  icon: Iconsax.camera,
+                  label: 'Camera'.tr,
+                  onTap: () => _pickImage(ImageSource.camera),
+                ),
+                _photoOption(
+                  icon: Iconsax.gallery,
+                  label: 'Gallery'.tr,
+                  onTap: () => _pickImage(ImageSource.gallery),
+                ),
+              ],
+            ),
+            const SizedBox(height: FSizes.md),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _photoOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+      child: Container(
+        width: 100,
+        padding: const EdgeInsets.symmetric(vertical: FSizes.md),
+        decoration: BoxDecoration(
+          color: FColors.primaryColor.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 32, color: FColors.primaryColor),
+            const SizedBox(height: FSizes.sm),
+            Text(
+              label,
+              style: TextStyle(
+                color: FColors.primaryColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    Get.back(); // close bottom sheet
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 80,
+      );
+      if (picked != null) {
+        setState(() => _pickedPhoto = File(picked.path));
+      }
+    } catch (e) {
+      dd('Error picking image: $e');
+    }
   }
 
   @override
@@ -93,22 +192,44 @@ class _ProfileViewState extends State<ProfileView> {
               ),
               child: Column(
                 children: [
-                  // Avatar
+                  // Avatar with edit button
                   Center(
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundColor: FColors.grey.withValues(alpha: 0.2),
-                      backgroundImage: NetworkImage(
-                        _safeAvatarUrl(_profile?.avatar, _profile?.name),
-                      ),
-                      onBackgroundImageError: (_, __) {},
-                      child: _profile?.avatar == null
-                          ? Icon(
-                              Iconsax.user,
-                              size: 50,
-                              color: FColors.primaryColor,
-                            )
-                          : null,
+                    child: Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundColor: FColors.grey.withValues(alpha: 0.2),
+                          backgroundImage: _pickedPhoto != null
+                              ? FileImage(_pickedPhoto!)
+                              : NetworkImage(
+                                  _safeAvatarUrl(_profile?.avatar, _profile?.name),
+                                ) as ImageProvider,
+                          onBackgroundImageError: (_, __) {},
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: _showPhotoPickerSheet,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: FColors.primaryColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Theme.of(context).scaffoldBackgroundColor,
+                                  width: 2,
+                                ),
+                              ),
+                              child: const Icon(
+                                Iconsax.camera,
+                                size: 16,
+                                color: FColors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: FSizes.lg),
@@ -122,7 +243,7 @@ class _ProfileViewState extends State<ProfileView> {
                   ),
                   const SizedBox(height: FSizes.md),
 
-                  // Email (read-only info)
+                  // Email (read-only)
                   _buildInfoTile(
                     icon: Iconsax.sms,
                     label: FTexts.profileEmail.tr,
@@ -130,7 +251,7 @@ class _ProfileViewState extends State<ProfileView> {
                   ),
                   const SizedBox(height: FSizes.sm),
 
-                  // Phone (read-only info)
+                  // Phone (read-only)
                   _buildInfoTile(
                     icon: Iconsax.call,
                     label: FTexts.profilePhone.tr,
@@ -138,27 +259,8 @@ class _ProfileViewState extends State<ProfileView> {
                   ),
                   const SizedBox(height: FSizes.md),
 
-                  // City dropdown (loaded once)
+                  // City dropdown
                   _buildCityDropdown(),
-                  const SizedBox(height: FSizes.md),
-
-                  // Current team
-                  _buildInfoTile(
-                    icon: Iconsax.people,
-                    label: 'Current Team'.tr,
-                    value: _profile?.currentTeam?.owner?.label
-                        ?? _profile?.currentTeam?.name
-                        ?? '-',
-                  ),
-                  const SizedBox(height: FSizes.sm),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => TeamSelectorSheet.show(),
-                      icon: Icon(Iconsax.repeat, size: 18),
-                      label: Text('Switch Team'.tr),
-                    ),
-                  ),
                   const SizedBox(height: FSizes.lg),
 
                   // Update button
@@ -212,9 +314,10 @@ class _ProfileViewState extends State<ProfileView> {
       leading: Icon(icon, color: FColors.primaryColor, size: 22),
       title: Text(
         label,
-        style: Theme.of(
-          context,
-        ).textTheme.labelSmall?.copyWith(color: FColors.grey),
+        style: Theme.of(context)
+            .textTheme
+            .labelSmall
+            ?.copyWith(color: FColors.grey),
       ),
       subtitle: Text(value, style: Theme.of(context).textTheme.bodyMedium),
       contentPadding: EdgeInsets.zero,
@@ -263,10 +366,15 @@ class _ProfileViewState extends State<ProfileView> {
     setState(() => _isUpdating = true);
 
     try {
-      await ProfileRepository().updateProfile(
+      final updatedProfile = await ProfileRepository().updateProfile(
         name: name,
         cityId: _selectedCity?.id,
+        photo: _pickedPhoto,
       );
+      auth().profile = updatedProfile;
+      _profile = updatedProfile;
+      _pickedPhoto = null; // Reset after successful upload
+      if (mounted) setState(() {});
       FLoader.successSnackBar(title: FTexts.profileUpdate.tr);
     } catch (e) {
       FLoader.errorSnackBar(

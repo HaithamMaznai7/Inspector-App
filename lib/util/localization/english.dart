@@ -423,5 +423,25 @@ class English {
     'You will see your notifications here':
         'You will see your notifications here',
     'Just now': 'Just now',
+
+    /// Team & Profile
+    'Switch Team': 'Switch Team',
+    'Teams': 'Teams',
+    'Current': 'Current',
+    'Team Switched': 'Team Switched',
+    'Error': 'Error',
+    'Failed to switch team': 'Failed to switch team',
+    'Change Photo': 'Change Photo',
+    'Camera': 'Camera',
+    'Gallery': 'Gallery',
+    'Dark Mode': 'Dark Mode',
+    'Light Mode': 'Light Mode',
+    'No Permission': 'No Permission',
+    'Unauthenticated': 'Unauthenticated',
+    'No Connection': 'No Connection',
+    'Server Error': 'Server Error',
+    'Invalid data': 'Invalid data',
+    'Not Found': 'Not Found',
+    'Unknown Error': 'Unknown Error',
   };
 }
