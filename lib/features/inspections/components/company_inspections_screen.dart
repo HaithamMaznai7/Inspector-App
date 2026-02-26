@@ -1,5 +1,6 @@
 import 'package:fahis_inspector/common/widgets/components/back_page_button.dart';
 import 'package:fahis_inspector/features/inspections/components/inspection_card.dart';
+import 'package:fahis_inspector/features/inspections/controller.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/order.dart';
 import 'package:fahis_inspector/routes.dart';
@@ -28,22 +29,23 @@ class CompanyInspectionsScreen extends StatefulWidget {
 
 class _CompanyInspectionsScreenState extends State<CompanyInspectionsScreen> {
   late Order _order;
+  late final InspectionsController _controller;
 
   @override
   void initState() {
     super.initState();
     _order = widget.order;
+    _controller = InspectionsBinding().instance;
   }
 
   /// Re-fetches B2B orders, then finds the updated version of this order
   Future<void> _refresh() async {
     dd('[CompanyInspections] Refreshing data for ${widget.companyName}');
-    final controller = InspectionsBinding().instance;
-    await controller.loadOrdersB2B(reset: true, cache: false);
+    await _controller.loadOrdersB2B(reset: true, cache: false);
     // Find the updated order by ID
-    final updated = controller.ordersB2B
+    final updated = _controller.ordersB2B
         .firstWhereOrNull((o) => o.id == widget.order.id);
-    if (updated != null) {
+    if (updated != null && mounted) {
       setState(() => _order = updated);
     }
     dd('[CompanyInspections] Refreshed: ${_order.items.length} items');
@@ -51,8 +53,6 @@ class _CompanyInspectionsScreenState extends State<CompanyInspectionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = InspectionsBinding().instance;
-
     return Scaffold(
       backgroundColor: FColors.softGrey,
       appBar: AppBar(
@@ -98,8 +98,8 @@ class _CompanyInspectionsScreenState extends State<CompanyInspectionsScreen> {
               stage: StageMapper.mapOrderItemStage(item.stage),
               rejectedNote: null,
               onTap: () async {
-                await controller.openB2BOrderItem(_order, item);
-                _refresh();
+                await _controller.openB2BOrderItem(_order, item);
+                if (mounted) _refresh();
               },
             );
           },
