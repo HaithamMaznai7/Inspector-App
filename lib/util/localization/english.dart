@@ -443,5 +443,10 @@ class English {
     'Invalid data': 'Invalid data',
     'Not Found': 'Not Found',
     'Unknown Error': 'Unknown Error',
+
+    /// Select Team Screen
+    'Select Team to Continue': 'Select Team to Continue',
+    'Please select a team to continue using the app': 'Please select a team to continue using the app',
+    'No teams available': 'No teams available',
   };
 }

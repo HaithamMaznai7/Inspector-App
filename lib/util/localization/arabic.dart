@@ -497,5 +497,10 @@ class Arabic {
     'Invalid data': 'بيانات غير صالحة',
     'Not Found': 'غير موجود',
     'Unknown Error': 'خطأ غير معروف',
+
+    /// Select Team Screen
+    'Select Team to Continue': 'اختر الفريق للمتابعة',
+    'Please select a team to continue using the app': 'يرجى اختيار فريق للمتابعة في استخدام التطبيق',
+    'No teams available': 'لا توجد فرق متاحة',
   };
 }

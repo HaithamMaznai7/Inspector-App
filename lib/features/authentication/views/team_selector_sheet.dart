@@ -28,7 +28,8 @@ class TeamSelectorSheet extends StatefulWidget {
 class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
   bool _isSwitching = false;
 
-  List<Team> get _teams => auth().profile?.teams ?? [];
+  List<Team> get _teams =>
+      (auth().profile?.teams ?? []).where((t) => t.isSelectableTeam).toList();
   Team? get _currentTeam => auth().profile?.currentTeam;
 
   Future<void> _switchTeam(Team team) async {

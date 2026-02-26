@@ -120,11 +120,20 @@ class AuthService extends GetxController {
     if (user != null && _token.value != null) {
       // User is authenticated - navigate immediately, fetch profile in background
       _idToken.value ??= await user.getIdToken();
-      _goTo(RoutingUrl.home);
+
+      // If profile is loaded, check if user has a current team
+      final profileLoaded = _profile.value != null && !_profile.value!.isEmpty;
+      final hasCurrentTeam =
+          profileLoaded && _profile.value!.teams.any((t) => t.isCurrent);
+
+      if (profileLoaded && !hasCurrentTeam) {
+        _goTo(RoutingUrl.selectTeam);
+      } else {
+        _goTo(RoutingUrl.home);
+      }
+
       // Fetch profile in the background so it doesn't block navigation
-      if (_profile.value == null ||
-          _profile.value!.isEmpty ||
-          _profile.value!.isFromFirebase(user)) {
+      if (!profileLoaded || _profile.value!.isFromFirebase(user)) {
         AuthRepository().fetchProfile().then((profile) {
           _profile.value = profile;
         }).catchError((_) {});
@@ -252,6 +261,12 @@ class AuthService extends GetxController {
     if (data.containsKey('token') && data.containsKey('firebase_token')) {
       _token.value = data['token'];
       await SecureTokenStorage().save(_token.value!);
+
+      // Parse profile from login response so we can check for current team
+      if (data['user'] != null) {
+        _profile.value = Profile.fromJson(data['user']);
+      }
+
       await firebase.signInWithCustomToken(data['firebase_token'] as String);
     }
   }

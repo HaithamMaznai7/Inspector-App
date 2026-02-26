@@ -4,6 +4,7 @@ import 'package:fahis_inspector/features/authentication/controllers/reset_passwo
 import 'package:fahis_inspector/features/authentication/views/forget_password_view.dart';
 import 'package:fahis_inspector/features/authentication/views/login_view.dart';
 import 'package:fahis_inspector/features/authentication/views/reset_password_view.dart';
+import 'package:fahis_inspector/features/authentication/views/select_team_screen.dart';
 import 'package:fahis_inspector/features/configuration/view.dart';
 import 'package:fahis_inspector/features/home/view.dart';
 import 'package:fahis_inspector/features/inspection_details/view.dart';
@@ -89,6 +90,12 @@ class AppRoute {
       binding: ResetPasswordBinding(),
       page: () => const ResetPasswordView(),
       middlewares: [GuestMiddleware()],
+    ),
+
+    GetPage(
+      name: RoutingUrl.selectTeam,
+      page: () => const SelectTeamToContinueScreen(),
+      middlewares: [AuthMiddleware()],
     ),
 
     GetPage(

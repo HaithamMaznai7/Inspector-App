@@ -39,5 +39,12 @@ class Team {
 
   bool get isCompany => type == 'company';
 
+  bool get isCenter => type == 'center';
+
+  bool get isCenterBranch => type == 'centerBranch';
+
+  /// Teams eligible for selection (system, center, or centerBranch).
+  bool get isSelectableTeam => isSystem || isCenter || isCenterBranch;
+
   String? get ownerLogo => owner?.avatar;
 }
