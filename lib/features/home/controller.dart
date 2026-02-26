@@ -9,18 +9,13 @@ class HomeController extends GetxController {
 
   final sideController = SideMenuController();
 
-  // @override
-  // void onReady() {
-  //   super.onReady();
-
-  //   InspectionsBinding().dependencies();
-  // }
-
   @override
   void onReady() {
     super.onReady();
-
-    InspectionsBinding().dependencies();
+    // InspectionsController is created by GetBuilder(init:) in the view.
+    // No need to call InspectionsBinding().dependencies() here — doing so
+    // would delete the controller the view is already using and cause a
+    // "ScrollController used after being disposed" error.
   }
 
   void changeTeam(Team team) async {

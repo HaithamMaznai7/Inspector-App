@@ -1,4 +1,5 @@
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
+import 'package:fahis_inspector/features/inspections/controller.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/team.dart';
 import 'package:fahis_inspector/resources/profile_repository.dart';
@@ -44,8 +45,10 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
 
       Get.back(); // close sheet
 
-      // Refresh home data by reloading the page
-      Get.offAllNamed(RoutingUrl.home);
+      // Refresh data in-place instead of Get.offAllNamed('/home').
+      // Re-navigating to the same route causes a GetX race condition
+      // that destroys newly-created controllers before they can fetch data.
+      _refreshHomeData();
 
       FLoader.successSnackBar(
         title: 'Team Switched'.tr,
@@ -59,6 +62,31 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
     } finally {
       if (mounted) setState(() => _isSwitching = false);
     }
+  }
+
+  /// Refresh the InspectionsController data for the new team.
+  /// The sidebar also rebuilds since it uses GetBuilder<InspectionsController>.
+  void _refreshHomeData() {
+    const tag = BindingTags.inspections;
+    if (!Get.isRegistered<InspectionsController>(tag: tag)) return;
+
+    final controller = Get.find<InspectionsController>(tag: tag);
+
+    // Clear B2C data and re-fetch
+    controller.orders.clear();
+    controller.isLoading.value = true;
+
+    // Clear B2B data (will lazy-load when user switches to Companies tab)
+    controller.ordersB2B.clear();
+    controller.isLoadingB2B.value = false;
+
+    // Reset to default Individuals tab
+    controller.selectedSegment.value = 1;
+
+    controller.update();
+
+    // Fetch fresh B2C orders for the new team
+    controller.loadOrders(cache: false);
   }
 
   @override

@@ -13,6 +13,7 @@ import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:fahis_inspector/util/helpers/stage_mapper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
 
 class InspectionList extends StatelessWidget {
   const InspectionList({super.key});
@@ -28,11 +29,6 @@ class InspectionList extends StatelessWidget {
 
           // Show shimmer while loading
           if (isLoad) return OnLoadingInspections();
-
-          // Show empty state if no data at all
-          if (controller.inspections.isEmpty && controller.orders.isEmpty) {
-            return NotMoreInspections();
-          }
 
           // Show segments only when stage=All and no search active
           // Otherwise show flat list (search results or stage-filtered)
@@ -155,14 +151,9 @@ class _CompanyList extends StatelessWidget {
       final b2bOrders = controller.b2bOrders;
 
       if (b2bOrders.isEmpty) {
-        return Center(
-          child: Text(
-            'No company requests'.tr,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(color: FColors.darkGrey),
-          ),
+        return _EmptyOrdersState(
+          message: 'No company requests'.tr,
+          onRefresh: controller.refreshPage,
         );
       }
 
@@ -279,11 +270,9 @@ class _IndividualList extends StatelessWidget {
     final orders = controller.orders;
 
     if (orders.isEmpty) {
-      return Center(
-        child: Text(
-          'No individual requests'.tr,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
-        ),
+      return _EmptyOrdersState(
+        message: 'No individual requests'.tr,
+        onRefresh: controller.refreshPage,
       );
     }
 
@@ -332,11 +321,9 @@ class _IndividualList extends StatelessWidget {
     final list = controller.individualInspections;
 
     if (list.isEmpty) {
-      return Center(
-        child: Text(
-          'No individual requests'.tr,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
-        ),
+      return _EmptyOrdersState(
+        message: 'No individual requests'.tr,
+        onRefresh: controller.refreshPage,
       );
     }
 
@@ -379,6 +366,63 @@ class _IndividualList extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Professional empty-state widget shown when a tab has no orders.
+class _EmptyOrdersState extends StatelessWidget {
+  final String message;
+  final Future<void> Function() onRefresh;
+  const _EmptyOrdersState({required this.message, required this.onRefresh});
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      color: FColors.primaryColor,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: FSizes.defaultSpace),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Iconsax.document,
+                        size: 64,
+                        color: FColors.darkGrey.withOpacity(0.4),
+                      ),
+                      const SizedBox(height: FSizes.md),
+                      Text(
+                        message,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: FColors.darkGrey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: FSizes.xs),
+                      Text(
+                        'Pull down to refresh'.tr,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: FColors.darkGrey.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

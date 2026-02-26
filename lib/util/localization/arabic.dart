@@ -502,5 +502,8 @@ class Arabic {
     'Select Team to Continue': 'اختر الفريق للمتابعة',
     'Please select a team to continue using the app': 'يرجى اختيار فريق للمتابعة في استخدام التطبيق',
     'No teams available': 'لا توجد فرق متاحة',
+    'No individual requests': 'لا توجد طلبات أفراد',
+    'No company requests': 'لا توجد طلبات شركات',
+    'Pull down to refresh': 'اسحب للأسفل للتحديث',
   };
 }

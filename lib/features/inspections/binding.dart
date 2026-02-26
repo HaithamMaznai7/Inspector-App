@@ -9,9 +9,8 @@ class InspectionsBinding extends BindingsService<InspectionsController> {
   void dependencies() async {
     if (isRegistered) {
       Get.find<InspectionsController>(tag: tag);
-    }else{
+    } else {
       Get.put<InspectionsController>(InspectionsController(), tag: tag);
     }
-
   }
 }

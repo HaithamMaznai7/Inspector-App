@@ -110,7 +110,9 @@ class InspectionsController extends GetxController
     ordersRepository = OrdersRepository(box: box, type: 'b2c');
     ordersRepositoryB2B = OrdersRepository(box: box, type: 'b2b');
 
-    await loadOrders();
+    // Skip cache on init — cache is keyed by user UID only, not by team,
+    // so after a team switch it would briefly show the previous team's orders.
+    await loadOrders(cache: false);
   }
 
   @override
