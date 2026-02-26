@@ -154,7 +154,7 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
       onTap: _isSwitching ? null : () => _switchTeam(team),
       leading: _teamAvatar(team),
       title: Text(
-        team.owner?.label ?? team.name ?? '',
+        team.name ?? '',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
           fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
         ),
@@ -188,7 +188,7 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
 
   Widget _teamAvatar(Team team) {
     final logo = team.ownerLogo;
-    final name = team.owner?.label ?? team.name ?? '?';
+    final name = team.name ?? '?';
     final initial = name.isNotEmpty ? name[0] : '?';
 
     if (team.isSystem) {

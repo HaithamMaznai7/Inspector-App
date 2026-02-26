@@ -279,8 +279,7 @@ class SideMenuWrapper extends StatelessWidget {
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                           Text(
-                                            auth().profile?.currentTeam?.owner?.label
-                                                ?? auth().profile?.currentTeam?.name
+                                            auth().profile?.currentTeam?.name
                                                 ?? FTexts.systemInspector.tr,
                                             style: Theme.of(context)
                                                 .textTheme
