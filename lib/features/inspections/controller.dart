@@ -95,7 +95,8 @@ class InspectionsController extends GetxController
     selectedSegment.value = index;
     // Lazy-load b2b data on first switch to Companies tab
     if (index == 0 && ordersB2B.isEmpty && !isLoadingB2B.value) {
-      loadOrdersB2B();
+      isLoadingB2B.value = true;
+      loadOrdersB2B(cache: false);
     }
     update();
   }
