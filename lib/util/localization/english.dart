@@ -451,5 +451,14 @@ class English {
     'No individual requests': 'No individual requests',
     'No company requests': 'No company requests',
     'Pull down to refresh': 'Pull down to refresh',
+
+    /// Onboarding
+    'getStarted': 'Get Started',
+    'onBoardingTitle1': 'Manage Inspections',
+    'onBoardingSubTitle1': 'View and manage all your vehicle inspection requests in one place — easily and efficiently.',
+    'onBoardingTitle2': 'Inspect with Precision',
+    'onBoardingSubTitle2': 'Follow step-by-step inspection stages: photos, body check, OBD diagnostics, and more.',
+    'onBoardingTitle3': 'Stay Connected',
+    'onBoardingSubTitle3': 'Receive real-time notifications and stay updated on every inspection status change.',
   };
 }

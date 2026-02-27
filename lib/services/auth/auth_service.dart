@@ -143,7 +143,18 @@ class AuthService extends GetxController {
       _profile.value = null;
       _token.value = null;
 
-      _goTo(RoutingUrl.login);
+      // Show onboarding for first-time users, otherwise go to login.
+      // The 'AppSettings' box persists across logouts but is cleared on
+      // app uninstall/reinstall, so onboarding only shows once.
+      final settingsBox = await Hive.openBox('AppSettings');
+      final hasSeenOnboarding =
+          settingsBox.get('hasSeenOnboarding', defaultValue: false) as bool;
+
+      if (hasSeenOnboarding) {
+        _goTo(RoutingUrl.login);
+      } else {
+        _goTo(RoutingUrl.onBoarding);
+      }
     }
   }
 

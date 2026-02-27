@@ -500,10 +500,21 @@ class Arabic {
 
     /// Select Team Screen
     'Select Team to Continue': 'اختر الفريق للمتابعة',
-    'Please select a team to continue using the app': 'يرجى اختيار فريق للمتابعة في استخدام التطبيق',
+    'Please select a team to continue using the app':
+        'يرجى اختيار فريق للمتابعة في استخدام التطبيق',
     'No teams available': 'لا توجد فرق متاحة',
-    'No individual requests': 'لا توجد طلبات أفراد',
-    'No company requests': 'لا توجد طلبات شركات',
     'Pull down to refresh': 'اسحب للأسفل للتحديث',
+
+    /// Onboarding
+    'getStarted': 'ابدأ الآن',
+    'onBoardingTitle1': 'إدارة الفحوصات',
+    'onBoardingSubTitle1':
+        'عرض وإدارة جميع طلبات فحص المركبات في مكان واحد — بسهولة وكفاءة.',
+    'onBoardingTitle2': 'افحص بدقة',
+    'onBoardingSubTitle2':
+        'اتبع مراحل الفحص خطوة بخطوة: الصور، فحص الهيكل، تشخيص OBD، والمزيد.',
+    'onBoardingTitle3': 'ابقَ على اطلاع',
+    'onBoardingSubTitle3':
+        'استقبل الإشعارات الفورية وتابع كل تحديث على حالة الفحص.',
   };
 }

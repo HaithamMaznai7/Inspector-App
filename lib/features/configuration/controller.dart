@@ -1,39 +1,48 @@
 import 'package:fahis_inspector/routes.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class OnBoardingController extends GetxController {
 
   /// Variables
+  static const int totalPages = 3;
   final pageController = PageController();
   Rx<int> currentPageIndex = 0.obs;
 
-  /// Update Current Index when Page Scroll
+  bool get isLastPage => currentPageIndex.value == totalPages - 1;
+
   void updatePageIndicator(index) => currentPageIndex.value = index;
 
-  /// Update Current Index when Page Scroll
   void dotNavigatorClick(index) {
     currentPageIndex.value = index;
-    pageController.jumpTo(index);
+    pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
+    );
   }
 
-  /// Update Current Index when Page Scroll
-  void nextPage() {
-    if (currentPageIndex.value == 2) {
-      // AppService.getBox?.put('IS_BOARDER', true);
-
+  void nextPage() async {
+    if (isLastPage) {
+      await _markOnboardingSeen();
       Get.offAllNamed(RoutingUrl.login);
     } else {
-      int page = currentPageIndex.value + 1;
-      pageController.jumpToPage(page);
+      pageController.animateToPage(
+        currentPageIndex.value + 1,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
     }
   }
 
-  /// Update Current Index when Page Scroll
-  void skipPage() {
-
-    // AppService.getBox?.put('IS_BOARDER', true);
-
+  void skipPage() async {
+    await _markOnboardingSeen();
     Get.offAllNamed(RoutingUrl.login);
+  }
+
+  Future<void> _markOnboardingSeen() async {
+    final settingsBox = await Hive.openBox('AppSettings');
+    await settingsBox.put('hasSeenOnboarding', true);
   }
 }
