@@ -26,6 +26,9 @@ class LoginController extends GetxController {
   RxBool isExists = false.obs;
   RxBool isvalidatePassword = false.obs;
   RxBool isPasswordHidden = true.obs;
+  /// True only after the user explicitly submits while the password field is visible.
+  /// Prevents showing server-side errors the moment the password field first appears.
+  RxBool passwordSubmitted = false.obs;
 
   void toggleLoading() => isLoading.toggle();
   void toggleIsExists() => isExists.toggle();
@@ -48,6 +51,8 @@ class LoginController extends GetxController {
   }
 
   Future<void> login() async {
+    // Mark that the user has actively submitted while the password field is visible.
+    if (isExists.value) passwordSubmitted.value = true;
     toggleLoading();
     password = passwordController.text;
     credentialError.value = null;

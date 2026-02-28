@@ -31,8 +31,7 @@ class ForgetPassword extends StatelessWidget {
             return SingleChildScrollView(
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Padding(
+                child: Padding(
                     padding: FSpacingStyle.paddingWithAppBarHeight,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -125,7 +124,6 @@ class ForgetPassword extends StatelessWidget {
                       ],
                     ),
                   ),
-                ),
               ),
             );
           },

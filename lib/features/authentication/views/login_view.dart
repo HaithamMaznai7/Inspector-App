@@ -36,8 +36,7 @@ class Login extends StatelessWidget {
             return SingleChildScrollView(
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Padding(
+                child: Padding(
                     padding: FSpacingStyle.paddingWithAppBarHeight,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -137,10 +136,16 @@ class Login extends StatelessWidget {
                                                     onPressed: controller
                                                         .passwordVisibleChange,
                                                   ),
-                                                  errorText: controller
-                                                      .passwordError
-                                                      .value,
+                                                  errorText: controller.passwordSubmitted.value
+                                                      ? controller.passwordError.value
+                                                      : null,
                                                 ),
+                                                validator: (value) {
+                                                  if (value == null || value.trim().isEmpty) {
+                                                    return 'fieldRequired'.tr;
+                                                  }
+                                                  return null;
+                                                },
                                               ),
                                               const SizedBox(
                                                 height:
@@ -211,7 +216,6 @@ class Login extends StatelessWidget {
                       ],
                     ),
                   ),
-                ),
               ),
             );
           },
