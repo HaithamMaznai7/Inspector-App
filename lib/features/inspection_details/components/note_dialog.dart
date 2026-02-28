@@ -48,8 +48,8 @@ class _NoteInputDialogState extends State<NoteInputDialog> {
           children: [
             // ── Icon ──
             Container(
-              width: 52,
-              height: 52,
+              width: FSizes.iconCircleLg,
+              height: FSizes.iconCircleLg,
               decoration: BoxDecoration(
                 color: (_isFinished ? FColors.primaryColor : FColors.error)
                     .withValues(alpha: 0.1),

@@ -93,8 +93,8 @@ class _ProfileViewState extends State<ProfileView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40,
-              height: 4,
+              width: FSizes.iconCircleSm,
+              height: FSizes.xs,
               margin: const EdgeInsets.only(bottom: FSizes.md),
               decoration: BoxDecoration(
                 color: FColors.grey.withOpacity(0.4),
@@ -279,8 +279,8 @@ class _ProfileViewState extends State<ProfileView> {
                       onPressed: _isUpdating ? null : _updateProfile,
                       child: _isUpdating
                           ? const SizedBox(
-                              height: 20,
-                              width: 20,
+                              height: FSizes.iconInlineSm,
+                              width: FSizes.iconInlineSm,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 color: FColors.white,
@@ -337,9 +337,9 @@ class _ProfileViewState extends State<ProfileView> {
       children: [
         Text(
           FTexts.profileCity.tr,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.titleLarge,
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: FSizes.xs),
         DropdownButtonFormField<City>(
           initialValue: _selectedCity,
           isExpanded: true,

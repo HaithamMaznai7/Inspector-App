@@ -39,7 +39,7 @@ class VehicleDetailsView extends StatelessWidget {
                                 ?.make
                                 ?.avatar ==
                             null
-                        ? const Icon(Iconsax.car, size: 30)
+                        ? const Icon(Iconsax.car, size: FSizes.iconInlineMd)
                         : Image.network(
                             controller
                                 .mainController
@@ -49,8 +49,8 @@ class VehicleDetailsView extends StatelessWidget {
                                 .make!
                                 .avatar!,
                             fit: BoxFit.contain,
-                            width: 30,
-                            height: 30,
+                            width: FSizes.iconInlineMd,
+                            height: FSizes.iconInlineMd,
                           ),
                     const SizedBox(width: FSizes.sm),
                     Text(
@@ -114,6 +114,7 @@ class VehicleDetailsView extends StatelessWidget {
                       ),
                       const SizedBox(height: FSizes.spaceBtwSections),
                       buildEditableField(
+                        context,
                         DetailsPage.vin.tr,
                         'vin',
                         details.vin ?? '',
@@ -130,6 +131,7 @@ class VehicleDetailsView extends StatelessWidget {
                       ),
                       const SizedBox(height: FSizes.spaceBtwItems),
                       buildEditableField(
+                        context,
                         DetailsPage.plateNumber.tr,
                         'plate',
                         details.plate ?? '',
@@ -280,6 +282,7 @@ class VehicleDetailsView extends StatelessWidget {
                       ),
                       const SizedBox(height: FSizes.spaceBtwItems),
                       buildEditableField(
+                        context,
                         DetailsPage.milage.tr,
                         'milage',
                         details.milage ?? '',
@@ -326,6 +329,7 @@ class VehicleDetailsView extends StatelessWidget {
                       ),
                       const SizedBox(height: FSizes.spaceBtwItems),
                       buildEditableField(
+                        context,
                         DetailsPage.engineSize.tr,
                         'engine_size',
                         details.enginSize ?? '',
@@ -368,6 +372,7 @@ class VehicleDetailsView extends StatelessWidget {
                       ),
                       const SizedBox(height: FSizes.spaceBtwItems),
                       buildEditableField(
+                        context,
                         DetailsPage.exteriorColor.tr,
                         'color',
                         details.color ?? '',
@@ -384,6 +389,7 @@ class VehicleDetailsView extends StatelessWidget {
                       ),
                       const SizedBox(height: FSizes.spaceBtwItems),
                       buildEditableField(
+                        context,
                         DetailsPage.interiorColor.tr,
                         'seats_color',
                         details.seatColor ?? '',
@@ -464,6 +470,7 @@ class VehicleDetailsView extends StatelessWidget {
   }
 
   Widget buildEditableField(
+    BuildContext context,
     String label,
     String key,
     String value,
@@ -473,12 +480,12 @@ class VehicleDetailsView extends StatelessWidget {
     textController ??= TextEditingController(text: value);
     final controller = VehicleDetailsBinding().instance;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
+      padding: const EdgeInsets.only(bottom: FSizes.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: Theme.of(Get.context!).textTheme.titleLarge),
-          const SizedBox(height: 4),
+          Text(label, style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: FSizes.xs),
           TextFormField(
             controller: textController,
             decoration: InputDecoration(
@@ -508,22 +515,23 @@ class VehicleDetailsView extends StatelessWidget {
     );
   }
 
-  Widget buildDropdownField<T>({
+  Widget buildDropdownField<T>(
+    BuildContext context, {
     required String label,
     required List<T> items,
     required ValueChanged<T?> onChanged,
     T? value,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
+      padding: const EdgeInsets.only(bottom: FSizes.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.titleLarge,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: FSizes.xs),
           DropdownButton<T>(
             value: value,
             hint: Text("Select $label"),

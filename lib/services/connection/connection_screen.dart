@@ -16,7 +16,7 @@ class OfflineScreen extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 25),
+            padding: const EdgeInsets.symmetric(horizontal: FSizes.defaultSpace),
             child: ListView(
                 children: [
                   SizedBox(height: FDeviceUtils.getAppBarHeight()* .5,),
@@ -31,7 +31,7 @@ class OfflineScreen extends StatelessWidget {
                   Text('disconnected_message'.tr,style: Theme.of(context).textTheme.headlineSmall,textAlign: TextAlign.center,),
                   const SizedBox(height: FSizes.spaceBtwSections ,),
                   GetBuilder<ConnectionService>(builder: (controller){
-                    return SizedBox(height: 60, width: double.infinity , child: ElevatedButton(onPressed: controller.reload, child: controller.isLoading.value
+                    return SizedBox(height: FSizes.buttonHeightLg, width: double.infinity , child: ElevatedButton(onPressed: controller.reload, child: controller.isLoading.value
                         ? const CircularProgressIndicator(color: FColors.white,)
                         : const Text('Reload'),
                     ));

@@ -1,3 +1,4 @@
+import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:flutter/material.dart';
 
 class FDropdownField<T> extends StatelessWidget {
@@ -17,15 +18,15 @@ class FDropdownField<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
+      padding: const EdgeInsets.only(bottom: FSizes.borderRadiusLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.titleLarge,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: FSizes.xs),
           DropdownButton<T>(
             value: value,
             hint: Text("Select $label"),

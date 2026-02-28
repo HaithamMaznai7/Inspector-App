@@ -168,7 +168,7 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
             borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
             child: SizedBox(
               width: double.infinity,
-              height: 280,
+              height: MediaQuery.sizeOf(context).height * 0.35,
               child: EasyImageView(
                 doubleTapZoomable: true,
                 imageProvider: _imageProvider!,
@@ -216,7 +216,7 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
     return GestureDetector(
       onTap: _pickImage,
       child: Container(
-        height: 160,
+        height: MediaQuery.sizeOf(context).height * 0.2,
         decoration: BoxDecoration(
           color: isDark
               ? FColors.darkGrey.withOpacity(.2)

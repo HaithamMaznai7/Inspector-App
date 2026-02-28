@@ -146,7 +146,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
             borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
             child: Image(
               image: _imageProvider!,
-              height: 160,
+              height: FSizes.imagePreviewMd + FSizes.sm,
               width: double.infinity,
               fit: BoxFit.cover,
             ),
@@ -191,7 +191,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
     return GestureDetector(
       onTap: _pickImage,
       child: Container(
-        height: 100,
+        height: FSizes.imagePreviewSm - FSizes.iconInlineSm,
         decoration: BoxDecoration(
           color: isDark
               ? FColors.darkGrey.withOpacity(.2)

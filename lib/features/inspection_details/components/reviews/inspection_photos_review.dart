@@ -118,7 +118,7 @@ class InspectionPhotosReview extends StatelessWidget {
               ),
               // Photo grid — uploaded first, then pending
               SizedBox(
-                height: 200,
+                height: FSizes.imagePreviewLg,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: sorted.length,
@@ -126,7 +126,7 @@ class InspectionPhotosReview extends StatelessWidget {
                     final photo = sorted[index];
                     final hasImage = photo.image != null;
                     return Container(
-                      width: 140,
+                      width: FSizes.imagePreviewSm + FSizes.iconInlineSm,
                       margin: const EdgeInsets.only(right: FSizes.sm),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

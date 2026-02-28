@@ -47,7 +47,7 @@ class PhotoCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: FSizes.xs),
                     // Status chip
                     Row(
                       children: [
@@ -56,7 +56,7 @@ class PhotoCard extends StatelessWidget {
                           size: 14,
                           color: _hasImage ? FColors.success : FColors.grey,
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: FSizes.xs),
                         Text(
                           _hasImage
                               ? InspectionPage.photoUploaded.tr
@@ -97,8 +97,8 @@ class PhotoCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
       child: SizedBox(
-        width: 72,
-        height: 72,
+        width: FSizes.imageThumbSize,
+        height: FSizes.imageThumbSize,
         child: _hasImage
             ? (photo.file != null
                 ? Image.file(photo.file!, fit: BoxFit.cover)

@@ -62,7 +62,7 @@ class InspectionBodyTypeResults extends StatelessWidget {
                 trailing: Badge(
                   label: Text(
                     '$noteCount',
-                    style: const TextStyle(color: FColors.white, fontSize: 11),
+                    style: TextStyle(color: FColors.white, fontSize: FSizes.fontSizeSm - 3),
                   ),
                   backgroundColor:
                       noteCount > 0 ? FColors.primaryColor : FColors.grey,

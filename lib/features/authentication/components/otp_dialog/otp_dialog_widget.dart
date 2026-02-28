@@ -56,7 +56,7 @@ class _OTPDialogVerificationState extends State<OTPDialogVerification> {
                   autoFocus: true,
                   decoration: BoxLooseDecoration(
                     textStyle: const TextStyle(
-                      fontSize: 16,
+                      fontSize: FSizes.fontSizeMd,
                       color: FColors.primaryColor,
                     ),
                     strokeColorBuilder: FixedColorBuilder(
@@ -81,7 +81,7 @@ class _OTPDialogVerificationState extends State<OTPDialogVerification> {
                   children: [
                     Expanded(
                       child: Container(
-                        height: 50,
+                        height: FSizes.iconCircleMd,
                         decoration: BoxDecoration(
                           color: FColors.primaryColor,
                           borderRadius: BorderRadius.only(
@@ -104,8 +104,8 @@ class _OTPDialogVerificationState extends State<OTPDialogVerification> {
                     SizedBox(width: FSizes.sm),
 
                     Container(
-                      width: 50,
-                      height: 50,
+                      width: FSizes.iconCircleMd,
+                      height: FSizes.iconCircleMd,
                       decoration: BoxDecoration(
                         color: FColors.lightGrey,
                         borderRadius: BorderRadius.only(

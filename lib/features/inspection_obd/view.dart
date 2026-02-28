@@ -167,8 +167,8 @@ class OBDCodesView extends StatelessWidget {
                           return ListTile(
                             leading: Skeleton(
                               color: FColors.primaryGradientColor,
-                              height: 20,
-                              width: 20,
+                              height: FSizes.iconInlineSm,
+                              width: FSizes.iconInlineSm,
                             ),
                             title: Skeleton(
                               color: FColors.primaryGradientColor,

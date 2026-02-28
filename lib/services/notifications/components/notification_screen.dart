@@ -179,8 +179,8 @@ class _NotificationTile extends StatelessWidget {
                           ),
                           if (isUnread)
                             Container(
-                              width: 8,
-                              height: 8,
+                              width: FSizes.sm,
+                              height: FSizes.sm,
                               margin: const EdgeInsetsDirectional.only(
                                   start: FSizes.sm),
                               decoration: const BoxDecoration(
@@ -228,8 +228,8 @@ class _NotificationTile extends StatelessWidget {
 
   Widget _buildIcon(bool isUnread) {
     return Container(
-      width: 44,
-      height: 44,
+      width: FSizes.iconCircleSm + FSizes.xs,
+      height: FSizes.iconCircleSm + FSizes.xs,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isUnread

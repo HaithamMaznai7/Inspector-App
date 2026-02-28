@@ -225,20 +225,20 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                         ),
                                         child: Image.network(
                                           marker.image!,
-                                          width: 150,
-                                          height: 150,
+                                          width: FSizes.imagePreviewMd,
+                                          height: FSizes.imagePreviewMd,
                                           fit: BoxFit.cover,
                                           errorBuilder:
                                               (context, error, stackTrace) {
                                                 return Container(
-                                                  width: 150,
-                                                  height: 150,
+                                                  width: FSizes.imagePreviewMd,
+                                                  height: FSizes.imagePreviewMd,
                                                   color: FColors.grey
                                                       .withOpacity(0.1),
                                                   child: Icon(
                                                     Iconsax.image,
                                                     color: FColors.grey,
-                                                    size: 30,
+                                                    size: FSizes.iconInlineMd,
                                                   ),
                                                 );
                                               },

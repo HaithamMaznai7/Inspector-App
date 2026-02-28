@@ -107,8 +107,8 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
           // Drag handle
           Container(
             margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
+            width: FSizes.iconCircleSm,
+            height: FSizes.xs,
             decoration: BoxDecoration(
               color: FColors.grey.withOpacity(0.4),
               borderRadius: BorderRadius.circular(2),

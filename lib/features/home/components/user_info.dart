@@ -2,6 +2,7 @@ import 'package:fahis_inspector/features/authentication/views/profile_view.dart'
 import 'package:fahis_inspector/features/authentication/views/team_selector_sheet.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
+import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -40,7 +41,7 @@ class UserWidget extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(Iconsax.user, size: 18, color: FColors.primaryColor),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: FSizes.sm),
                   Text(FTexts.profileTitle.tr),
                 ],
               ),
@@ -50,7 +51,7 @@ class UserWidget extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(Iconsax.people, size: 18, color: FColors.primaryColor),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: FSizes.sm),
                   Text('Switch Team'.tr),
                 ],
               ),
@@ -60,7 +61,7 @@ class UserWidget extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(Iconsax.logout, size: 18, color: Colors.red),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: FSizes.sm),
                   Text(
                     FTexts.logoutBtn.tr,
                     style: const TextStyle(color: Colors.red),

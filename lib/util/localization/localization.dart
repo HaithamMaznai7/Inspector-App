@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../constants/colors.dart';
+import '../constants/sizes.dart';
 import '../localization/arabic.dart';
 import '../localization/english.dart';
 import 'package:flutter/material.dart';
@@ -21,8 +22,8 @@ class FLocalization extends Translations {
   /// Compact translate icon for app bars (login, reset password screens).
   static Widget localizeIcon() {
     return SizedBox(
-      height: 40,
-      width: 40,
+      height: FSizes.iconCircleSm,
+      width: FSizes.iconCircleSm,
       child: IconButton(
         icon: const Icon(
           Icons.translate,

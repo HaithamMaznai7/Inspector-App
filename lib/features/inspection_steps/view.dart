@@ -100,8 +100,8 @@ class _StepIndicatorRow extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: FSizes.loadingIndicatorSize,
+                  height: FSizes.loadingIndicatorSize,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isActive
@@ -134,7 +134,7 @@ class _StepIndicatorRow extends StatelessWidget {
                           ),
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: FSizes.xs),
                 Text(
                   // Show the stage name (e.g. "Points", "Photos")
                   // instead of "Step N" to avoid confusion on partial orders

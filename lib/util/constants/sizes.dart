@@ -67,4 +67,28 @@ class FSizes{
 
   // Grid View Spacing
   static const double gridViewSpacing = 16.0 ;
+
+  // Icon Circle Sizes (for circular icon containers)
+  static const double iconCircleSm = 40.0;
+  static const double iconCircleMd = 48.0;
+  static const double iconCircleLg = 52.0;
+
+  // Button Heights
+  static const double buttonHeightSm = 44.0;
+  static const double buttonHeightMd = 52.0;
+  static const double buttonHeightLg = 56.0;
+
+  // Logo Heights
+  static const double logoHeightSm = 30.0;
+  static const double logoHeightMd = 60.0;
+  static const double logoHeightLg = 80.0;
+
+  // Image Preview Sizes
+  static const double imagePreviewSm = 120.0;
+  static const double imagePreviewMd = 150.0;
+  static const double imagePreviewLg = 200.0;
+
+  // Small icon display (for inline icons like brand logos)
+  static const double iconInlineSm = 20.0;
+  static const double iconInlineMd = 30.0;
 }

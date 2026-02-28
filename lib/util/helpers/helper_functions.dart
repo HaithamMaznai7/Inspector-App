@@ -8,48 +8,12 @@ class FHelper {
 
   static Color? getColor(String value){
     /// Define your product specific colors here and it will match the attribute colors and show specific \u001b[32mThis is green\u001b[0m
-    if(value == 'green'){
-      return Colors.green;
-    }else if(value == 'yellow'){
-      return Colors.amberAccent;
-    }else if(value == 'grey'){
-      return Colors.grey;
-    }else if(value == 'black'){
-      return Colors.black26;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else if(value == 'Green'){
-      return Colors.green;
-    }else{
-      return Colors.black;
+    switch(value.toLowerCase()){
+      case 'green': return Colors.green;
+      case 'yellow': return Colors.amberAccent;
+      case 'grey': return Colors.grey;
+      case 'black': return Colors.black26;
+      default: return Colors.black;
     }
   }
   
@@ -63,9 +27,9 @@ class FHelper {
     Get.rawSnackbar(
       messageText: Text(
           message,
-          style: const TextStyle(
+          style: TextStyle(
               color: Colors.white,
-              fontSize: 16,
+              fontSize: Theme.of(Get.context!).textTheme.titleMedium?.fontSize,
               fontWeight: FontWeight.w600,
               fontFamily: 'Tajawal'
           )
@@ -82,9 +46,9 @@ class FHelper {
     Get.rawSnackbar(
       messageText: Text(
           message,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
-            fontSize: 14,
+            fontSize: Theme.of(Get.context!).textTheme.bodyLarge?.fontSize,
           )
       ),
       duration: const Duration(days: 1),

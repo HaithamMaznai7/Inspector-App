@@ -100,8 +100,8 @@ class _CameraState extends State<Camera> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            height: 50,
-                            width: 50,
+                            height: FSizes.iconCircleMd,
+                            width: FSizes.iconCircleMd,
                             decoration: BoxDecoration(
                               color: Colors.black.withOpacity(.5),
                               borderRadius: BorderRadius.circular(100),
@@ -129,8 +129,8 @@ class _CameraState extends State<Camera> {
                             },
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 100),
-                              height: 80,
-                              width: 80,
+                              height: FSizes.imageThumbSize,
+                              width: FSizes.imageThumbSize,
                               padding: EdgeInsets.all(isTapped ? 15 : 2),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(100),
@@ -148,8 +148,8 @@ class _CameraState extends State<Camera> {
                             ),
                           ),
                           Container(
-                            height: 50,
-                            width: 50,
+                            height: FSizes.iconCircleMd,
+                            width: FSizes.iconCircleMd,
                             decoration: BoxDecoration(
                               color: Colors.black.withOpacity(.5),
                               borderRadius: BorderRadius.circular(100),

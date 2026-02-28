@@ -76,7 +76,7 @@ class _AddingObdCodeState extends State<AddingObdCode> {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: FSizes.lg),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -108,7 +108,7 @@ class _AddingObdCodeState extends State<AddingObdCode> {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: FSizes.lg),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,

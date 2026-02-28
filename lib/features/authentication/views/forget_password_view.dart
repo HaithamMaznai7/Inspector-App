@@ -40,7 +40,7 @@ class ForgetPassword extends StatelessWidget {
                         // Logo + Subtitle
                         Column(
                           children: [
-                            const Logo(height: 80),
+                            const Logo(height: FSizes.logoHeightLg),
                             const SizedBox(height: FSizes.spaceBtwItems),
                             Text(
                               LoginPage.loginTitle.tr,

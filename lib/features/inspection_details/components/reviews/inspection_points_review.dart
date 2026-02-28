@@ -89,7 +89,7 @@ class InspectionPointsReview extends StatelessWidget {
                             ),
                             if (point.image != null)
                               Container(
-                                height: 120,
+                                height: FSizes.imagePreviewSm,
                                 margin: EdgeInsets.only(
                                   left: FSizes.md,
                                   right: FSizes.md,
@@ -115,7 +115,7 @@ class InspectionPointsReview extends StatelessWidget {
                                     },
                                     child: Image.network(
                                       point.image!,
-                                      height: 120,
+                                      height: FSizes.imagePreviewSm,
                                       fit: BoxFit.cover,
                                     ),
                                   ),

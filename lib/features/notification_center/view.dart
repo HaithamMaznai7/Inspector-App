@@ -13,7 +13,7 @@ class NotificationCenterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Logo(height: 30), leading: BackPageButton()),
+      appBar: AppBar(title: Logo(height: FSizes.logoHeightSm), leading: BackPageButton()),
       body: Container(
         padding: EdgeInsets.symmetric(
           horizontal: FSizes.sm,

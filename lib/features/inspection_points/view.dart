@@ -17,8 +17,8 @@ class InspectionPointResults extends StatelessWidget {
 
   Widget _buildBadge(String value, Color color) {
     return Container(
-      width: 28,
-      height: 28,
+      width: FSizes.iconMd + FSizes.xs,
+      height: FSizes.iconMd + FSizes.xs,
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
@@ -28,7 +28,7 @@ class InspectionPointResults extends StatelessWidget {
         value,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 13,
+          fontSize: FSizes.fontSizeSm - 1,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -134,8 +134,8 @@ class InspectionPointResults extends StatelessWidget {
                         child: Row(
                           children: [
                             Container(
-                              width: 40,
-                              height: 40,
+                              width: FSizes.iconCircleSm,
+                              height: FSizes.iconCircleSm,
                               decoration: BoxDecoration(
                                 color: FColors.primaryColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
@@ -228,7 +228,7 @@ class _SvgNetworkIconState extends State<_SvgNetworkIcon> {
     }
 
     if (_svgString == null) {
-      return const SizedBox(width: 24, height: 24);
+      return const SizedBox(width: FSizes.iconMd, height: FSizes.iconMd);
     }
 
     return SvgPicture.string(

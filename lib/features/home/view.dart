@@ -4,6 +4,7 @@ import 'package:fahis_inspector/features/home/components/menu_side.dart';
 import 'package:fahis_inspector/features/inspections/view.dart';
 import 'package:fahis_inspector/services/notifications/components/notification_icon.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
+import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -30,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
-        title: Logo(height: 30),
+        title: Logo(height: FSizes.logoHeightSm),
         centerTitle: true,
         actions: [
           if (!isSearchActive) NotificationIcon(),

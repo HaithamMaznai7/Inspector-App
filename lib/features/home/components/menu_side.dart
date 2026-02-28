@@ -110,7 +110,7 @@ class SideMenuWrapper extends StatelessWidget {
                                       ?.copyWith(
                                         color: stage.color,
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 11,
+                                        fontSize: FSizes.fontSizeSm - 3,
                                       ),
                                 ),
                               ),

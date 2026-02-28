@@ -21,13 +21,11 @@ class FDeviceUtils {
   }
 
   static bool isLandscapeOrientation(BuildContext context) {
-    final viewInsets = View.of(context).viewInsets;
-    return viewInsets.bottom == 0;
+    return MediaQuery.orientationOf(context) == Orientation.landscape;
   }
 
   static bool isPortraitOrientation(BuildContext context) {
-    final viewInsets = View.of(context).viewInsets;
-    return viewInsets.bottom != 0;
+    return MediaQuery.orientationOf(context) == Orientation.portrait;
   }
 
   static void setFullScreen(bool enable) {

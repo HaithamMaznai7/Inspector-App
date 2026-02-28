@@ -207,8 +207,8 @@ class AlbumPhotos extends StatelessWidget {
             // Drag handle
             Container(
               margin: const EdgeInsets.only(top: FSizes.sm),
-              width: 40,
-              height: 4,
+              width: FSizes.iconCircleSm,
+              height: FSizes.xs,
               decoration: BoxDecoration(
                 color: FColors.grey.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
@@ -236,8 +236,8 @@ class AlbumPhotos extends StatelessWidget {
                   final photo = photos[index];
                   return ListTile(
                     leading: Container(
-                      width: 40,
-                      height: 40,
+                      width: FSizes.iconCircleSm,
+                      height: FSizes.iconCircleSm,
                       decoration: BoxDecoration(
                         color: FColors.primaryColor.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(
@@ -341,7 +341,7 @@ class _UploadedPhotoTile extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: FSizes.xs),
           Text(
             photo.title,
             style: Theme.of(

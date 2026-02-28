@@ -36,8 +36,8 @@ class StepSelector extends StatelessWidget {
                         ),
                         child: submitting
                             ? SizedBox(
-                                width: 20,
-                                height: 20,
+                                width: FSizes.iconInlineSm,
+                                height: FSizes.iconInlineSm,
                                 child: CircularProgressIndicator(
                                   color: FColors.white,
                                   strokeWidth: 2,

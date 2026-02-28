@@ -1,7 +1,6 @@
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
-import 'package:fahis_inspector/util/device/device_utility.dart';
 import 'package:fahis_inspector/util/formatters/formatter.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/helpers/helpers.dart';
@@ -66,13 +65,12 @@ class InspectionInfo extends StatelessWidget {
                               ? Image.network(
                                   c.inspection.value!.vehicle!.make!.avatar!,
                                   fit: BoxFit.contain,
-                                  width: 30,
-                                  height: 30,
+                                  width: FSizes.iconInlineMd,
+                                  height: FSizes.iconInlineMd,
                                 )
                               : SizedBox(),
                           const SizedBox(width: FSizes.sm),
-                          SizedBox(
-                            width: FDeviceUtils.getScreenWidth() * .4,
+                          Expanded(
                             child: Text(
                               '${c.inspection.value?.vehicle?.make?.label} - ${c.inspection.value?.vehicle?.model?.label} - ${c.inspection.value?.vehicle?.year}',
                               style: Theme.of(context).textTheme.bodyLarge,
@@ -93,8 +91,7 @@ class InspectionInfo extends StatelessWidget {
                         children: [
                           const Icon(Iconsax.category),
                           const SizedBox(width: FSizes.sm),
-                          SizedBox(
-                            width: FDeviceUtils.getScreenWidth() * .4,
+                          Expanded(
                             child: Text.rich(
                               TextSpan(
                                 text:

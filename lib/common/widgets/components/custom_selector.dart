@@ -117,7 +117,7 @@ class _CustomSelector extends State<CustomSelector> {
           : FColors.white.withOpacity(.95),
       builder: (context) {
         return ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 300),
+          constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.4),
           child: ListView.separated(
             shrinkWrap: true,
             separatorBuilder: (context, index) {

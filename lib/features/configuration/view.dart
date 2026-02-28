@@ -2,6 +2,7 @@ import 'package:fahis_inspector/features/configuration/controller.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
+import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:fahis_inspector/util/localization/localization.dart';
@@ -123,7 +124,7 @@ class _OnBoardingContent extends StatelessWidget {
           // ── Decorative icon ──
           _GradientIconCircle(icon: icon),
 
-          const SizedBox(height: 48),
+          const SizedBox(height: FSizes.spaceBtwSections),
 
           // ── Title ──
           Text(
@@ -165,9 +166,10 @@ class _GradientIconCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final circleSize = ResponsiveHelper.responsiveValue<double>(context, mobile: 140.0, tablet: 200.0);
     return Container(
-      width: 180,
-      height: 180,
+      width: circleSize,
+      height: circleSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: FColors.primaryColor.withOpacity(0.08),
@@ -191,7 +193,7 @@ class _GradientIconCircle extends StatelessWidget {
               ),
             ],
           ),
-          child: Icon(icon, size: 52, color: Colors.white),
+          child: Icon(icon, size: FSizes.iconCircleLg, color: Colors.white),
         ),
       ),
     );
@@ -244,7 +246,7 @@ class _NextButton extends StatelessWidget {
 
       return SizedBox(
         width: double.infinity,
-        height: 56,
+        height: FSizes.buttonHeightLg,
         child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: FColors.primaryGradient,
@@ -274,14 +276,13 @@ class _NextButton extends StatelessWidget {
                 children: [
                   Text(
                     isLast ? 'getStarted'.tr : FTexts.nextBtn.tr,
-                    style: const TextStyle(
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: Colors.white,
-                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   if (!isLast) ...[
-                    const SizedBox(width: 8),
+                    const SizedBox(width: FSizes.sm),
                     Icon(
                       FLocalization.isArabic
                           ? Iconsax.arrow_left_2
