@@ -186,9 +186,9 @@ class _SvgNetworkIcon extends StatefulWidget {
 }
 
 class _SvgNetworkIconState extends State<_SvgNetworkIcon> {
-  static final Map<String, Uint8List> _cache = {};
+  static final Map<String, String> _cache = {};
 
-  Uint8List? _bytes;
+  String? _svgString;
   bool _hasError = false;
 
   @override
@@ -199,7 +199,7 @@ class _SvgNetworkIconState extends State<_SvgNetworkIcon> {
 
   Future<void> _loadSvg() async {
     if (_cache.containsKey(widget.url)) {
-      if (mounted) setState(() => _bytes = _cache[widget.url]);
+      if (mounted) setState(() => _svgString = _cache[widget.url]);
       return;
     }
 
@@ -208,8 +208,11 @@ class _SvgNetworkIconState extends State<_SvgNetworkIcon> {
       final response = await request.close();
       if (response.statusCode == 200) {
         final bytes = await consolidateHttpClientResponseBytes(response);
-        _cache[widget.url] = bytes;
-        if (mounted) setState(() => _bytes = bytes);
+        var svg = String.fromCharCodes(bytes);
+        // Remove <style> blocks that flutter_svg cannot handle
+        svg = svg.replaceAll(RegExp(r'<style[^>]*>[\s\S]*?</style>'), '');
+        _cache[widget.url] = svg;
+        if (mounted) setState(() => _svgString = svg);
       } else {
         if (mounted) setState(() => _hasError = true);
       }
@@ -224,12 +227,12 @@ class _SvgNetworkIconState extends State<_SvgNetworkIcon> {
       return Icon(Iconsax.category, size: 24, color: FColors.primaryColor);
     }
 
-    if (_bytes == null) {
+    if (_svgString == null) {
       return const SizedBox(width: 24, height: 24);
     }
 
-    return SvgPicture.memory(
-      _bytes!,
+    return SvgPicture.string(
+      _svgString!,
       width: 24,
       height: 24,
       fit: BoxFit.contain,

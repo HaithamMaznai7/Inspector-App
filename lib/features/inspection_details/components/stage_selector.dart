@@ -45,7 +45,7 @@ class StageSelector extends StatelessWidget {
       builder: (controller) {
         final isLoading = controller.isLoading.value;
 
-        if (isLoading) {
+        if (isLoading || controller.inspection.value == null) {
           return const SizedBox();
         }
 
