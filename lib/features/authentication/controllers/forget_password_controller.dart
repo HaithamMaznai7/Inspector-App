@@ -32,9 +32,9 @@ class ForgetPasswordController extends GetxController {
     formKey.currentState!.save();
 
     mobile = mobileController.text.trim();
-    late String verifyToken;
 
     toggleSignIn();
+    String? verifyToken;
     try {
       verifyToken = await auth().forgetPassword(mobile);
     } on FNetworkException catch (e) {
@@ -45,15 +45,19 @@ class ForgetPasswordController extends GetxController {
       toggleSignIn();
     }
 
+    // Don't proceed if forgetPassword() failed
+    if (verifyToken == null) return;
+
     String? token;
     do {
       final result = await Get.dialog(OTPDialog());
 
+      // User dismissed the dialog — abort without touching loading state
+      if (result == null) return;
+
       toggleSignIn();
-
-      final code = result['code'];
-
       try {
+        final code = result['code'];
         token = await auth().verifyOTP(verifyToken, code);
       } on FNetworkException catch (e) {
         e.notify();
