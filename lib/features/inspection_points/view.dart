@@ -1,12 +1,9 @@
-import 'dart:io';
-
 import 'package:fahis_inspector/features/inspection_points/controller.dart';
 import 'package:fahis_inspector/models/review_point.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -177,68 +174,24 @@ class InspectionPointResults extends StatelessWidget {
   }
 }
 
-class _SvgNetworkIcon extends StatefulWidget {
+class _SvgNetworkIcon extends StatelessWidget {
   final String url;
   const _SvgNetworkIcon({required this.url});
 
   @override
-  State<_SvgNetworkIcon> createState() => _SvgNetworkIconState();
-}
-
-class _SvgNetworkIconState extends State<_SvgNetworkIcon> {
-  static final Map<String, String> _cache = {};
-
-  String? _svgString;
-  bool _hasError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSvg();
-  }
-
-  Future<void> _loadSvg() async {
-    if (_cache.containsKey(widget.url)) {
-      if (mounted) setState(() => _svgString = _cache[widget.url]);
-      return;
-    }
-
-    try {
-      final request = await HttpClient().getUrl(Uri.parse(widget.url));
-      final response = await request.close();
-      if (response.statusCode == 200) {
-        final bytes = await consolidateHttpClientResponseBytes(response);
-        var svg = String.fromCharCodes(bytes);
-        // Remove <style> blocks that flutter_svg cannot handle
-        svg = svg.replaceAll(RegExp(r'<style[^>]*>[\s\S]*?</style>'), '');
-        _cache[widget.url] = svg;
-        if (mounted) setState(() => _svgString = svg);
-      } else {
-        if (mounted) setState(() => _hasError = true);
-      }
-    } catch (_) {
-      if (mounted) setState(() => _hasError = true);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (_hasError) {
-      return Icon(Iconsax.category, size: 24, color: FColors.primaryColor);
-    }
-
-    if (_svgString == null) {
-      return const SizedBox(width: FSizes.iconMd, height: FSizes.iconMd);
-    }
-
-    return SvgPicture.string(
-      _svgString!,
+    return SvgPicture.network(
+      url,
       width: 24,
       height: 24,
       fit: BoxFit.contain,
       colorFilter: const ColorFilter.mode(
         FColors.primaryColor,
         BlendMode.srcIn,
+      ),
+      placeholderBuilder: (_) => const SizedBox(
+        width: FSizes.iconMd,
+        height: FSizes.iconMd,
       ),
     );
   }
