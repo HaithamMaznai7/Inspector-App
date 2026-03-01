@@ -115,9 +115,18 @@ class InspectionPhotosController extends GetxController {
     update();
 
     try {
-      photos.assignAll(await repository.fetchFromApi());
-    } on FNetworkException catch (_) {
-      // e.notify();
+      final fetched = await repository.fetchFromApi();
+
+      // 3. If the server returned no photos, auto-initialize them via POST,
+      //    then re-fetch so the UI shows the newly created photo slots.
+      if (fetched.isEmpty) {
+        await repository.generate();
+        photos.assignAll(await repository.fetchFromApi());
+      } else {
+        photos.assignAll(fetched);
+      }
+    } on FNetworkException catch (e) {
+      e.notify();
     } catch (_) {
     } finally {
       isLoading.value = false;
