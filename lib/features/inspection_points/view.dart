@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:fahis_inspector/features/inspection_points/controller.dart';
 import 'package:fahis_inspector/models/review_point.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -174,24 +177,113 @@ class InspectionPointResults extends StatelessWidget {
   }
 }
 
-class _SvgNetworkIcon extends StatelessWidget {
+class _SvgNetworkIcon extends StatefulWidget {
   final String url;
   const _SvgNetworkIcon({required this.url});
 
   @override
+  State<_SvgNetworkIcon> createState() => _SvgNetworkIconState();
+}
+
+class _SvgNetworkIconState extends State<_SvgNetworkIcon> {
+  static final Map<String, String> _cache = {};
+
+  String? _svgString;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSvg();
+  }
+
+  Future<void> _loadSvg() async {
+    if (_cache.containsKey(widget.url)) {
+      if (mounted) setState(() => _svgString = _cache[widget.url]);
+      return;
+    }
+
+    try {
+      final request = await HttpClient().getUrl(Uri.parse(widget.url));
+      final response = await request.close();
+      if (response.statusCode == 200) {
+        final bytes = await consolidateHttpClientResponseBytes(response);
+        final raw = String.fromCharCodes(bytes);
+        final svg = _simplifyForIcon(raw);
+        _cache[widget.url] = svg;
+        if (mounted) setState(() => _svgString = svg);
+      } else {
+        if (mounted) setState(() => _hasError = true);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _hasError = true);
+    }
+  }
+
+  /// Strips the SVG down to only the coloured foreground paths so
+  /// flutter_svg can render it as a simple monochrome icon.
+  ///
+  /// The S3 SVGs use CSS classes: `.cls-1{fill:#fff}` for white
+  /// background/cutout shapes and `.cls-2`, `.cls-3` etc. for the
+  /// actual icon shapes (gradient fills). We:
+  ///  1. Find which classes have a white fill.
+  ///  2. Remove all <path> elements that use those classes.
+  ///  3. Remove <defs> entirely (styles, gradients, xlink refs).
+  ///  4. Clean up leftover class/xlink attributes.
+  ///
+  /// The remaining paths default to black fill, and the colorFilter
+  /// in build() recolours them to primaryColor.
+  static String _simplifyForIcon(String svg) {
+    // 1. Find CSS classes with white fills (#fff / #ffffff)
+    final whiteClasses = <String>{};
+    final styleMatch =
+        RegExp(r'<style[^>]*>([\s\S]*?)</style>').firstMatch(svg);
+    if (styleMatch != null) {
+      final css = styleMatch.group(1)!;
+      for (final m in RegExp(
+        r'\.([\w-]+)\s*\{[^}]*fill\s*:\s*#(?:fff(?:fff)?)\b',
+        caseSensitive: false,
+      ).allMatches(css)) {
+        whiteClasses.add(m.group(1)!);
+      }
+    }
+
+    // 2. Remove <path> elements whose class is a white-fill class
+    for (final cls in whiteClasses) {
+      svg = svg.replaceAll(
+        RegExp('<path[^>]*\\bclass="$cls"[^>]*/>', dotAll: true),
+        '',
+      );
+    }
+
+    // 3. Remove <defs>…</defs> entirely
+    svg = svg.replaceAll(RegExp(r'<defs[\s\S]*?</defs>'), '');
+
+    // 4. Remove leftover class attributes and xlink namespace
+    svg = svg.replaceAll(RegExp(r'\s+class="[^"]*"'), '');
+    svg = svg.replaceAll(RegExp(r'\s+xmlns:xlink="[^"]*"'), '');
+
+    return svg;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SvgPicture.network(
-      url,
+    if (_hasError) {
+      return Icon(Iconsax.category, size: 24, color: FColors.primaryColor);
+    }
+
+    if (_svgString == null) {
+      return const SizedBox(width: FSizes.iconMd, height: FSizes.iconMd);
+    }
+
+    return SvgPicture.string(
+      _svgString!,
       width: 24,
       height: 24,
       fit: BoxFit.contain,
       colorFilter: const ColorFilter.mode(
         FColors.primaryColor,
         BlendMode.srcIn,
-      ),
-      placeholderBuilder: (_) => const SizedBox(
-        width: FSizes.iconMd,
-        height: FSizes.iconMd,
       ),
     );
   }
