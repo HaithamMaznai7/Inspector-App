@@ -265,19 +265,22 @@ class InspectionStepsController extends GetxController {
 
     final oldValue = inspection.value.stage;
 
-    // Use stage-based lookup so navigation works for partial orders
+    // Stores the result of vehicle-info save so we can use it after the API call.
+    // -1 = failed, 0 = saved (no reset), 1 = saved + reset
+    int vehicleSaveResult = 0;
+
+    // ── Step 1: Pre-flight validation & data collection ──────────────────
+    // NOTE: goToTab() is intentionally NOT called here. Navigation only
+    // happens in Step 3, after the API confirms the stage change.
     switch (stage) {
       case InspectionStage.info:
         inspection.value.stage = stage;
-        goToTab(_tabIndexForStage(stage));
         break;
       case InspectionStage.points:
         // Save & validate vehicle details before advancing from Info
-        // onSave returns: -1 = failed, 0 = saved (no reset), 1 = saved + reset
-        int saveResult = 0;
         if (VehicleDetailsBinding().isRegistered) {
-          saveResult = await VehicleDetailsBinding().instance.onSave();
-          if (saveResult < 0) {
+          vehicleSaveResult = await VehicleDetailsBinding().instance.onSave();
+          if (vehicleSaveResult < 0) {
             _log('setSatge(points) – vehicle save/validation failed');
             isSubmitting.toggle();
             update();
@@ -285,28 +288,6 @@ class InspectionStepsController extends GetxController {
           }
         }
         inspection.value.stage = stage;
-        goToTab(_tabIndexForStage(stage));
-        if (InspectionPointsBinding().isRegistered) {
-          final pointsCtrl = InspectionPointsBinding().instance;
-          if (saveResult == 1) {
-            // Reset already fetched points. If backend returned empty
-            // (it clears points on vehicle info change), regenerate them.
-            // Call repository.generate() directly — controller.generate()
-            // shows a confirmation dialog which we don't want here.
-            if (pointsCtrl.allPoints.isEmpty) {
-              _log('setSatge(points) – points empty after reset, regenerating');
-              pointsCtrl.isLoading.value = true;
-              pointsCtrl.update();
-              await pointsCtrl.repository.generate();
-              pointsCtrl.isLoading.value = false;
-              pointsCtrl.update();
-            }
-          } else {
-            // First save — refresh points (initial load may have been empty
-            // because vehicle details weren't saved yet).
-            pointsCtrl.load(isRefresh: true);
-          }
-        }
         break;
       case InspectionStage.photos:
         // Validate points before advancing to photos
@@ -316,7 +297,6 @@ class InspectionStepsController extends GetxController {
           return;
         }
         inspection.value.stage = stage;
-        goToTab(_tabIndexForStage(stage));
         break;
       case InspectionStage.body:
         // Validate photos before advancing to body
@@ -326,11 +306,9 @@ class InspectionStepsController extends GetxController {
           return;
         }
         inspection.value.stage = stage;
-        goToTab(_tabIndexForStage(stage));
         break;
       case InspectionStage.obd:
         inspection.value.stage = stage;
-        goToTab(_tabIndexForStage(stage));
         break;
       case InspectionStage.finished:
         // Validate OBD data if this inspection has an OBD step
@@ -373,21 +351,56 @@ class InspectionStepsController extends GetxController {
       return;
     }
 
+    // ── Step 2: Send to API — navigate only on success ────────────────────
+    bool apiSuccess = false;
     try {
       inspection.value = await repository!.update(inspection.value);
-      // Only navigate back on successful submission
-      if (stage == InspectionStage.finished) {
-        Get.back();
-      }
+      apiSuccess = true;
     } on FNetworkException catch (e) {
+      // Show the server's error (422 validation, 500, etc.) and keep the
+      // user on the current step so they can fix the problem.
       e.notify();
       inspection.value.stage = oldValue;
     } catch (_) {
       inspection.value.stage = oldValue;
-      // load();
     } finally {
       isSubmitting.toggle();
       update();
+    }
+
+    if (!apiSuccess) return;
+
+    // ── Step 3: Navigate & post-navigation setup ──────────────────────────
+    // Only reached when the API confirmed the stage change successfully.
+    if (stage == InspectionStage.finished) {
+      Get.back();
+      return;
+    }
+
+    goToTab(_tabIndexForStage(stage));
+
+    // After advancing to the points tab, trigger a load/regenerate so the
+    // points list reflects the (possibly updated) vehicle info.
+    if (stage == InspectionStage.points &&
+        InspectionPointsBinding().isRegistered) {
+      final pointsCtrl = InspectionPointsBinding().instance;
+      if (vehicleSaveResult == 1) {
+        // Vehicle info was reset — regenerate points if the backend cleared them.
+        // Call repository.generate() directly — controller.generate()
+        // shows a confirmation dialog which we don't want here.
+        if (pointsCtrl.allPoints.isEmpty) {
+          _log('setSatge(points) – points empty after reset, regenerating');
+          pointsCtrl.isLoading.value = true;
+          pointsCtrl.update();
+          await pointsCtrl.repository.generate();
+          pointsCtrl.isLoading.value = false;
+          pointsCtrl.update();
+        }
+      } else {
+        // First save — refresh points (initial load may have been empty
+        // because vehicle details weren't saved yet).
+        pointsCtrl.load(isRefresh: true);
+      }
     }
   }
 

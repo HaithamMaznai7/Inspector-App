@@ -21,81 +21,99 @@ class FNetworkException extends HttpException {
   }
 
   void notify() {
-    // if (title != null) {
-    //   FLoader.errorSnackBar(title: title, message: message, duration: 4);
-    //   return;
-    // }
-
     // Suppress 401/403 snackbars when user is authenticated — sessionExpired()
     // will show its own localized message. This prevents duplicate snackbars.
     if ((statusCode == 403) && _isAuthenticatedUser()) {
       return;
     }
 
+    final msg = _formatMessage();
+
     if (statusCode == 0) {
       FLoader.errorSnackBar(
         title: 'No Connection'.tr,
-        message: message,
+        message: msg,
         duration: 4,
       );
-      return;
-    } else if (statusCode >= 500) {
-      FLoader.errorSnackBar(
-        title: 'Server Error'.tr,
-        message: message,
-        duration: 4,
-      );
-      return;
     } else if (statusCode == 422) {
       FLoader.warningSnackBar(
         title: 'Invalid data'.tr,
-        message: message,
-        duration: 4,
+        message: msg,
+        duration: 5,
       );
-      return;
     } else if (statusCode == 401) {
       FLoader.warningSnackBar(
         title: 'Unauthenticated'.tr,
-        message: message,
+        message: msg,
         duration: 4,
       );
-      return;
-    } else if (statusCode == 404) {
-      FLoader.errorSnackBar(
-        title: 'Not Found'.tr,
-        message: message,
-        duration: 4,
-      );
-      return;
     } else if (statusCode == 403) {
       FLoader.warningSnackBar(
         title: 'No Permission'.tr,
-        message: message,
+        message: msg,
         duration: 4,
       );
-      return;
-    } else if (statusCode == 307) {
+    } else if (statusCode == 404) {
       FLoader.errorSnackBar(
-        title: 'Route is rediredcted'.tr,
-        message: 'The route is redirected multi times',
+        title: 'Not Found'.tr,
+        message: msg,
         duration: 4,
       );
-      return;
     } else if (statusCode == 405) {
       FLoader.warningSnackBar(
-        title: 'Unauthorized'.tr,
-        message: message,
+        title: 'Method Not Allowed'.tr,
+        message: msg,
         duration: 4,
       );
-      return;
+    } else if (statusCode >= 500) {
+      FLoader.errorSnackBar(
+        title: 'Server Error'.tr,
+        message: msg,
+        duration: 4,
+      );
     } else {
       FLoader.errorSnackBar(
-        title: 'Unknown Error'.tr,
-        message: message,
+        title: 'Error'.tr,
+        message: msg,
         duration: 4,
       );
-      return;
     }
+  }
+
+  /// Builds a user-friendly message from the server response.
+  /// Priority: field-level `errors` map → general `message` → fallback.
+  String _formatMessage() {
+    // 1. Summarize field-level validation errors (e.g. 422 responses)
+    if (errors != null && errors!.isNotEmpty) {
+      final lines = <String>[];
+      for (final entry in errors!.entries) {
+        if (entry.value is List) {
+          for (final msg in entry.value) {
+            if (msg is String && msg.isNotEmpty) {
+              lines.add(msg);
+            }
+          }
+        } else if (entry.value is String && (entry.value as String).isNotEmpty) {
+          lines.add(entry.value as String);
+        }
+      }
+      if (lines.isNotEmpty) {
+        // Keep it readable — show up to 3 validation messages
+        final display = lines.take(3).join('\n');
+        if (lines.length > 3) {
+          return '$display\n(+${lines.length - 3} more)';
+        }
+        return display;
+      }
+    }
+
+    // 2. Fall back to the general error string from the server
+    if (message.isNotEmpty) {
+      return message;
+    }
+
+    // 3. Generic fallback
+    return 'Something went wrong, please try again.'.tr;
   }
 
   /// Check if the user is currently authenticated (has a valid session).
