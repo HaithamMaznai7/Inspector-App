@@ -3,8 +3,12 @@ part of '../inspection.dart';
 Inspection _$InspectionFromJson(Map json) => Inspection(
   id: json['id'],
   slug: json['slug'],
-  customer: Customer.fromJson(json['customer']),
-  vehicle: Vehicle.fromJson(json['vehicle']),
+  customer: json['customer'] != null
+      ? Customer.fromJson(json['customer'])
+      : null,
+  vehicle: json['vehicle'] != null
+      ? Vehicle.fromJson(json['vehicle'])
+      : null,
   stage: InspectionStage.fromJson(json['stage']) ,
   uploadStatus: UploadStatus.live,
   createdDate: DateTime.parse(json['created_at']),

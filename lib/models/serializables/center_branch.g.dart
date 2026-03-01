@@ -1,11 +1,17 @@
 part of '../center_branch.dart';
 
 CenterBranch _$CenterBranchFromJson(Map json) => CenterBranch(
-  center: PlaceHolderModel.fromJson(json['center']),
-  branch: PlaceHolderModel.fromJson(json['branch']),
-  city: PlaceHolderModel.fromJson(json['city']),
-  datetime: DateTime.parse(json['date']),
-  date: json['datetime'],
+  center: json['center'] != null
+      ? PlaceHolderModel.fromJson(json['center'])
+      : PlaceHolderModel.empty(),
+  branch: json['branch'] != null
+      ? PlaceHolderModel.fromJson(json['branch'])
+      : null,
+  city: json['city'] != null
+      ? PlaceHolderModel.fromJson(json['city'])
+      : null,
+  datetime: json['date'] != null ? DateTime.tryParse(json['date']) : null,
+  date: json['date'],
 );
 
 Map<String, dynamic> _$CenterBranchToJson(CenterBranch instance) =>
