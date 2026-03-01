@@ -11,7 +11,7 @@ class Network extends GetConnect {
 
   late Map<String, String> _header;
   Map<String, dynamic>? _query;
-  var _body;
+  dynamic _body;
   bool _isMultipart = false;
 
   Map<String, String> get header => _header;

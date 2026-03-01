@@ -48,7 +48,7 @@ class OBDCodesView extends StatelessWidget {
                       child: Container(
                         padding: EdgeInsets.all(FSizes.sm),
                         decoration: BoxDecoration(
-                          color: FColors.primaryColor.withOpacity(
+                          color: FColors.primaryColor.withValues(alpha: 
                             isReport ? 1 : .4,
                           ),
                           borderRadius: BorderRadius.circular(FSizes.cardRadiusMd),
@@ -160,7 +160,7 @@ class OBDCodesView extends StatelessWidget {
                       init: InspectionObdBinding().instance,
                       autoRemove: false,
                       builder: (controller) {
-                        List<OBDCode> codes = controller.codes.value;
+                        List<OBDCode> codes = controller.codes.toList();
                         final isLoading = controller.isLoading.value;
  
                         if (isLoading) {

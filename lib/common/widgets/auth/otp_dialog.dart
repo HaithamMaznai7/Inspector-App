@@ -28,12 +28,11 @@ class _OTPDialogState extends State<OTPDialog> {
   @override
   Widget build(BuildContext context) {
     final isDark = FHelper.isDarkMode(context);
-    return Dialog(
-      child: Container(
-        height: FDeviceUtils.getScreenHeight() * .4,
-        width: FDeviceUtils.getScreenWidth() * .6,
-        padding: const EdgeInsets.all(FSizes.lg),
-        child: Column(
+    final dialogContent = Container(
+      height: FDeviceUtils.getScreenHeight() * .4,
+      width: FDeviceUtils.getScreenWidth() * .6,
+      padding: const EdgeInsets.all(FSizes.lg),
+      child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -63,7 +62,7 @@ class _OTPDialogState extends State<OTPDialog> {
                       isDark ? FColors.white : FColors.primaryColor,
                     ),
                     bgColorBuilder: FixedColorBuilder(
-                      FColors.grey.withOpacity(.2),
+                      FColors.grey.withValues(alpha: .2),
                     ),
                     strokeWidth: 1,
                   ),
@@ -144,8 +143,10 @@ class _OTPDialogState extends State<OTPDialog> {
             ),
           ],
         ),
-      ),
+    );
+    return Dialog(
       backgroundColor: isDark ? FColors.dark : FColors.white,
+      child: dialogContent,
     );
   }
 

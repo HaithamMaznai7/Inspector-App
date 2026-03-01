@@ -31,7 +31,7 @@ class InspectionBodyTypeResults extends StatelessWidget {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-                side: BorderSide(color: FColors.grey.withOpacity(.3)),
+                side: BorderSide(color: FColors.grey.withValues(alpha: .3)),
               ),
               child: ExpansionTile(
                 // Navigate to the body image editing screen
@@ -41,7 +41,7 @@ class InspectionBodyTypeResults extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: FColors.primaryColor.withOpacity(.08),
+                      color: FColors.primaryColor.withValues(alpha: .08),
                       borderRadius: BorderRadius.circular(FSizes.sm),
                     ),
                     child: const Icon(
@@ -77,7 +77,7 @@ class InspectionBodyTypeResults extends StatelessWidget {
                   return Container(
                     margin: const EdgeInsets.only(bottom: FSizes.xs),
                     decoration: BoxDecoration(
-                      color: FColors.grey.withOpacity(.1),
+                      color: FColors.grey.withValues(alpha: .1),
                       borderRadius:
                           BorderRadius.circular(FSizes.borderRadiusSm),
                     ),

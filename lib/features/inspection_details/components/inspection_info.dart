@@ -42,7 +42,7 @@ class InspectionInfo extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: FSizes.sm),
                       decoration: BoxDecoration(
-                        color: c.inspection.value?.stage.color.withOpacity(.1),
+                        color: c.inspection.value?.stage.color.withValues(alpha: .1),
                         borderRadius: BorderRadius.circular(FSizes.sm),
                       ),
                       child: Text(

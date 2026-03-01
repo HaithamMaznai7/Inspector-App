@@ -19,7 +19,7 @@ class InspectionPhotosRepository extends ListRepository<Photo> {
 
   String get channel => "App.Models.Inspection.$slug";
 
-  RxList<Photo> _data = RxList<Photo>([]);
+  final RxList<Photo> _data = RxList<Photo>([]);
 
   Stream<List<Photo>> get stream => _data.stream;
 

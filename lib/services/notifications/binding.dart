@@ -1,9 +1,7 @@
 part of '../../routes.dart';
 
 class NotificationsBinding extends BindingsService<NotificationsService> {
-  
-  @override
-  final String? tag = BindingTags.notificationsService;
+  NotificationsBinding() : super(tag: BindingTags.notificationsService);
 
   @override
   void dependencies() {

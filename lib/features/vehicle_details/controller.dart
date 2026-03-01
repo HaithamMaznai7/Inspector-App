@@ -1,4 +1,3 @@
-import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/features/inspection_steps/controller.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/vehicle_details.dart';

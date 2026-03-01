@@ -67,7 +67,7 @@ class InspectionDetailsScreen extends StatelessWidget {
           onRefresh: () async => controller.load(controller.slug!, refresh: true),
           triggerMode: RefreshIndicatorTriggerMode.onEdge,
           child: Container(
-            color: FColors.grey.withOpacity(0.05),
+            color: FColors.grey.withValues(alpha: 0.05),
             child: ListView(
               scrollDirection: Axis.vertical,
               padding: EdgeInsets.only(top: FSizes.sm, bottom: FSizes.xl),

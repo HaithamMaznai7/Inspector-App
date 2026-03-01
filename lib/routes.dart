@@ -134,7 +134,7 @@ class AppRoute {
     ),
   ];
 
-  static const INITIAL = RoutingUrl.init;
+  static const initial = RoutingUrl.init;
 
   static get route => _routes;
 }

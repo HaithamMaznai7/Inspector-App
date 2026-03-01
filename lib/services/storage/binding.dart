@@ -1,9 +1,7 @@
 part of '../../routes.dart';
 
 class StorageBinding extends BindingsService<StorageService> {
-  
-  @override
-  final String? tag = BindingTags.storageService;
+  StorageBinding() : super(tag: BindingTags.storageService);
 
   @override
   void dependencies() {

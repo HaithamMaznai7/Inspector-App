@@ -18,6 +18,7 @@ enum PointStatus{
     }
   } 
 
+  @override
   String toString(){
     switch(this){
       case PointStatus.good:

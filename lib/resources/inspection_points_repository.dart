@@ -21,7 +21,7 @@ class InspectionPointsRepository extends ListRepository<Point> {
 
   String get channel => "App.Models.Inspection.$slug";
 
-  RxList<Point> _data = RxList<Point>([]);
+  final RxList<Point> _data = RxList<Point>([]);
 
   Stream<List<Point>> get stream => _data.stream;
 
@@ -42,7 +42,7 @@ class InspectionPointsRepository extends ListRepository<Point> {
       await saveToCache();
     }
 
-    return _data.value;
+    return _data.toList();
   }
 
   Future<List<Point>> generate() async {
@@ -127,6 +127,7 @@ class InspectionPointsRepository extends ListRepository<Point> {
     await box.put('Points', points);
   }
 
+  @override
   Stream<List<Point>> listenToBroadcast() async* {
     yield _data;
     final broadcast = BroadcastService.instance;

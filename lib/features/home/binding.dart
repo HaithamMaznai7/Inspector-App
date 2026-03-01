@@ -1,8 +1,7 @@
 part of '../../routes.dart';
 
 class HomeBinding extends BindingsService<HomeController> {
-  @override
-  final String? tag = BindingTags.home;
+  HomeBinding() : super(tag: BindingTags.home);
 
   @override
   void dependencies() async {

@@ -1,9 +1,7 @@
 part of '../../routes.dart';
 
 class AppBinding extends BindingsService<AppServiceProvider> {
-  
-  @override
-  final String? tag = BindingTags.app;
+  AppBinding() : super(tag: BindingTags.app);
 
   @override
   void dependencies() async {

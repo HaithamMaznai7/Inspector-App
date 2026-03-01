@@ -19,7 +19,7 @@ class NotificationRepository extends ListRepository<Notification> {
 
   String get channel => "App.Models.User";
 
-  RxList<Notification> _data = RxList<Notification>([]);
+  final RxList<Notification> _data = RxList<Notification>([]);
 
   Stream<List<Notification>> get stream => _data.stream;
 
@@ -34,7 +34,7 @@ class NotificationRepository extends ListRepository<Notification> {
           .map((item) => Notification.fromJson(Map<String, dynamic>.from(item)))
           .toList();
       _data.assignAll(data);
-      dd(_data.value);
+      dd(_data.toList());
     } catch (e) {
       dd(e.toString());
     } finally {
@@ -59,6 +59,7 @@ class NotificationRepository extends ListRepository<Notification> {
     await box.put('notifications', data);
   }
 
+  @override
   Stream<List<Notification>> listenToBroadcast() async* {
     yield _data;
     final broadcast = BroadcastService.instance;

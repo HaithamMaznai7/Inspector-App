@@ -125,7 +125,7 @@ class FValidation {
         if (result != null) {
           resultMessages[key].add(result);
         }
-      };
+      }
     });
   }
 

@@ -22,9 +22,9 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
   final String channel = "App.Models.Inspection.${auth().profile?.id}";
 
-  RxList<OBDCode> _data = RxList<OBDCode>([]);
+  final RxList<OBDCode> _data = RxList<OBDCode>([]);
 
-  RxnString _report = RxnString();
+  final RxnString _report = RxnString();
 
   Stream<List<OBDCode>> get stream => _data.stream;
 
@@ -81,6 +81,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
     _log('saveToCache – saved ${codes.length} codes');
   }
 
+  @override
   Stream<List<OBDCode>> listenToBroadcast() async* {
     yield _data;
     final broadcast = BroadcastService.instance;

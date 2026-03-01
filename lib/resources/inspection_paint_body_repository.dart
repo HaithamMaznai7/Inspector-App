@@ -20,7 +20,7 @@ class InspectionPaintBodyRepository extends ListRepository<PaintBodyPart> {
 
   String get channel => "App.Models.Inspection.$slug";
 
-  RxList<PaintBodyPart> _data = RxList<PaintBodyPart>([]);
+  final RxList<PaintBodyPart> _data = RxList<PaintBodyPart>([]);
 
   Stream<List<PaintBodyPart>> get stream => _data.stream;
 
@@ -56,6 +56,7 @@ class InspectionPaintBodyRepository extends ListRepository<PaintBodyPart> {
     await box.put(slug, bodySides);
   }
 
+  @override
   Stream<List<PaintBodyPart>> listenToBroadcast() async* {
     yield _data;
     final broadcast = BroadcastService.instance;

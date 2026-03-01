@@ -69,7 +69,7 @@ class SideMenuWrapper extends StatelessWidget {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: FColors.primaryColor.withOpacity(.2),
+                                color: FColors.primaryColor.withValues(alpha: .2),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -101,7 +101,7 @@ class SideMenuWrapper extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? FColors.white
-                                      : stage.color.withOpacity(.15),
+                                      : stage.color.withValues(alpha: .15),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -133,7 +133,7 @@ class SideMenuWrapper extends StatelessWidget {
 
                 SideMenuItemDataDivider(
                   divider: Divider(
-                    color: FColors.grey.withOpacity(.2),
+                    color: FColors.grey.withValues(alpha: .2),
                     thickness: 1,
                     height: FSizes.md,
                   ),
@@ -146,7 +146,7 @@ class SideMenuWrapper extends StatelessWidget {
                   ),
                   onTap: () => TeamSelectorSheet.show(),
                   title: 'Switch Team'.tr,
-                  hoverColor: FColors.primaryColor.withOpacity(.08),
+                  hoverColor: FColors.primaryColor.withValues(alpha: .08),
                   titleStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: isDark ? FColors.light : FColors.dark,
                     fontWeight: FontWeight.w500,
@@ -159,7 +159,7 @@ class SideMenuWrapper extends StatelessWidget {
                 ),
                 SideMenuItemDataDivider(
                   divider: Divider(
-                    color: FColors.grey.withOpacity(.2),
+                    color: FColors.grey.withValues(alpha: .2),
                     thickness: 1,
                     height: FSizes.md,
                   ),
@@ -181,7 +181,7 @@ class SideMenuWrapper extends StatelessWidget {
                   ),
                   onTap: () => FLocalization.changeLocale(),
                   title: FLocalization.isArabic ? 'English' : 'عربي',
-                  hoverColor: FColors.primaryColor.withOpacity(.08),
+                  hoverColor: FColors.primaryColor.withValues(alpha: .08),
                   titleStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: isDark ? FColors.light : FColors.dark,
                     fontWeight: FontWeight.w500,
@@ -200,7 +200,7 @@ class SideMenuWrapper extends StatelessWidget {
                   ),
                   onTap: () => FLocalization.changeTheme(),
                   title: FLocalization.isLight ? 'Dark Mode'.tr : 'Light Mode'.tr,
-                  hoverColor: FColors.primaryColor.withOpacity(.08),
+                  hoverColor: FColors.primaryColor.withValues(alpha: .08),
                   titleStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: isDark ? FColors.light : FColors.dark,
                     fontWeight: FontWeight.w500,
@@ -217,7 +217,7 @@ class SideMenuWrapper extends StatelessWidget {
                     horizontal: FSizes.xs,
                     vertical: 2,
                   ),
-                  hoverColor: FColors.primaryColor.withOpacity(.08),
+                  hoverColor: FColors.primaryColor.withValues(alpha: .08),
                   onTap: () async => await _callSuportTeam(),
                   title: 'Help & Support'.tr,
                   titleStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -286,7 +286,7 @@ class SideMenuWrapper extends StatelessWidget {
                                                 .bodySmall
                                                 ?.copyWith(
                                                   color: FColors.white
-                                                      .withOpacity(.8),
+                                                      .withValues(alpha: .8),
                                                 ),
                                             overflow: TextOverflow.ellipsis,
                                           ),

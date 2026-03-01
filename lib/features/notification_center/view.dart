@@ -81,7 +81,7 @@ class NotificationCard extends StatelessWidget {
         ],
       ),
       child: Card(
-        color: FColors.info.withOpacity(.10),
+        color: FColors.info.withValues(alpha: .10),
         child: ListTile(
           title: Text(title),
           isThreeLine: false,

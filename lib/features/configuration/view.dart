@@ -172,13 +172,13 @@ class _GradientIconCircle extends StatelessWidget {
       height: circleSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: FColors.primaryColor.withOpacity(0.08),
+        color: FColors.primaryColor.withValues(alpha: 0.08),
       ),
       padding: const EdgeInsets.all(16),
       child: Container(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: FColors.primaryColor.withOpacity(0.12),
+          color: FColors.primaryColor.withValues(alpha: 0.12),
         ),
         padding: const EdgeInsets.all(14),
         child: Container(
@@ -187,7 +187,7 @@ class _GradientIconCircle extends StatelessWidget {
             gradient: FColors.primaryGradient,
             boxShadow: [
               BoxShadow(
-                color: FColors.primaryColor.withOpacity(0.35),
+                color: FColors.primaryColor.withValues(alpha: 0.35),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -224,7 +224,7 @@ class _DotIndicators extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                   color: isActive
                       ? FColors.primaryColor
-                      : FColors.primaryColor.withOpacity(0.2),
+                      : FColors.primaryColor.withValues(alpha: 0.2),
                 ),
               );
             },
@@ -253,7 +253,7 @@ class _NextButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(FSizes.buttonRadius),
             boxShadow: [
               BoxShadow(
-                color: FColors.primaryColor.withOpacity(0.3),
+                color: FColors.primaryColor.withValues(alpha: 0.3),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),

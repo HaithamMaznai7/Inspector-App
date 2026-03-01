@@ -8,7 +8,7 @@ Inspection _$InspectionFromJson(Map json) => Inspection(
   stage: InspectionStage.fromJson(json['stage']) ,
   uploadStatus: UploadStatus.live,
   createdDate: DateTime.parse(json['created_at']),
-  center: json['book'] != null && json['book'].runtimeType == json
+  center: json['book'] != null && json['book'] is Map
       ? CenterBranch.fromJson(json['book'])
       : null,
   inspector: json['inspector'] != null

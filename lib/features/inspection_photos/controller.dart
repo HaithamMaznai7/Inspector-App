@@ -8,7 +8,6 @@ import 'package:fahis_inspector/resources/inspection_photos_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:flutter/foundation.dart';
-import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';

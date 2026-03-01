@@ -100,7 +100,7 @@ class InspectionBodyTypeScreen extends StatelessWidget {
                                 child: Container(
                                   padding: const EdgeInsets.all(2),
                                   decoration: BoxDecoration(
-                                    color: FColors.primaryColor.withOpacity(.15),
+                                    color: FColors.primaryColor.withValues(alpha: .15),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(

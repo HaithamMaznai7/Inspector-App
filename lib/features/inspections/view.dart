@@ -2,7 +2,6 @@ import 'package:fahis_inspector/common/widgets/skeletons/skeleton.dart';
 import 'package:fahis_inspector/features/inspections/components/company_card.dart';
 import 'package:fahis_inspector/features/inspections/components/company_inspections_screen.dart';
 import 'package:fahis_inspector/features/inspections/components/inspection_card.dart';
-import 'package:fahis_inspector/features/inspections/components/no_more_inspections.dart';
 import 'package:fahis_inspector/features/inspections/components/on_loading_inspections.dart';
 import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/features/inspections/controller.dart';
@@ -396,7 +395,7 @@ class _EmptyOrdersState extends StatelessWidget {
                       Icon(
                         Iconsax.document,
                         size: 64,
-                        color: FColors.darkGrey.withOpacity(0.4),
+                        color: FColors.darkGrey.withValues(alpha: 0.4),
                       ),
                       const SizedBox(height: FSizes.md),
                       Text(
@@ -412,7 +411,7 @@ class _EmptyOrdersState extends StatelessWidget {
                         'Pull down to refresh'.tr,
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: FColors.darkGrey.withOpacity(0.6),
+                          color: FColors.darkGrey.withValues(alpha: 0.6),
                         ),
                       ),
                     ],

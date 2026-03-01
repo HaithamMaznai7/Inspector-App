@@ -1,10 +1,9 @@
 part of '../../routes.dart';
 
 class AuthBinding extends BindingsService<AuthService> {
+  AuthBinding() : super(tag: BindingTags.authService);
   
   @override
-  final String? tag = BindingTags.authService;
-  
   AuthService get instance {
     if (!Get.isRegistered<AuthService>(tag: tag)) {
       dependencies();

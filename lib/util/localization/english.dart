@@ -448,8 +448,6 @@ class English {
     'Select Team to Continue': 'Select Team to Continue',
     'Please select a team to continue using the app': 'Please select a team to continue using the app',
     'No teams available': 'No teams available',
-    'No individual requests': 'No individual requests',
-    'No company requests': 'No company requests',
     'Pull down to refresh': 'Pull down to refresh',
 
     /// Onboarding

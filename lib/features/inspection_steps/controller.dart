@@ -196,11 +196,6 @@ class InspectionStepsController extends GetxController {
     }
   }
 
-  @override
-  void onClose() {
-    super.onClose();
-  }
-
   /// Safe reset after vehicle info is updated.
   /// Clears all cached data, resets step progress, notes, points,
   /// and controller state so it behaves like first-time inspection entry.

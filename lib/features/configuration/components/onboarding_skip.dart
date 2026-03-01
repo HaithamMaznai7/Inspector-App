@@ -22,7 +22,7 @@ class OnBoardingSkip extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: FHelper.isDarkMode(context)
-                ? FColors.darkGrey.withOpacity(.6)
+                ? FColors.darkGrey.withValues(alpha: .6)
                 : FColors.grey,
             borderRadius: BorderRadiusDirectional.circular(FSizes.md),
           ),

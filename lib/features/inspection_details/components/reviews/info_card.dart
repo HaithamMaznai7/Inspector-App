@@ -46,7 +46,7 @@ class InfoCard extends StatelessWidget {
       dense: true,
       iconColor: iconColor ?? FColors.primaryColor,
       clipBehavior: Clip.antiAlias,
-      splashColor: FColors.grey.withOpacity(0.3),
+      splashColor: FColors.grey.withValues(alpha: 0.3),
       enabled: true,
       shape: Border(
         bottom: BorderSide.none,
@@ -77,7 +77,7 @@ class InfoCard extends StatelessWidget {
         vertical: FSizes.sm,
       ),
       elevation: 2,
-      shadowColor: FColors.grey.withOpacity(0.5),
+      shadowColor: FColors.grey.withValues(alpha: 0.5),
       color: cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),

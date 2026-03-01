@@ -97,7 +97,7 @@ class _ProfileViewState extends State<ProfileView> {
               height: FSizes.xs,
               margin: const EdgeInsets.only(bottom: FSizes.md),
               decoration: BoxDecoration(
-                color: FColors.grey.withOpacity(0.4),
+                color: FColors.grey.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -142,7 +142,7 @@ class _ProfileViewState extends State<ProfileView> {
         width: 100,
         padding: const EdgeInsets.symmetric(vertical: FSizes.md),
         decoration: BoxDecoration(
-          color: FColors.primaryColor.withOpacity(0.08),
+          color: FColors.primaryColor.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
         ),
         child: Column(

@@ -139,7 +139,7 @@ class _AddingObdCodeState extends State<AddingObdCode> {
                   onPressed: _cancelOrDelete,
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(
-                      isDark ? FColors.dark.withOpacity(.4) : FColors.white,
+                      isDark ? FColors.dark.withValues(alpha: .4) : FColors.white,
                     ),
                     side: WidgetStateProperty.all(
                       const BorderSide(color: FColors.primaryColor),

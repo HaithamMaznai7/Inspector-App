@@ -131,12 +131,12 @@ class InspectionBodyNotesReview extends StatelessWidget {
                             ),
                             padding: EdgeInsets.all(FSizes.sm),
                             decoration: BoxDecoration(
-                              color: FColors.grey.withOpacity(0.05),
+                              color: FColors.grey.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(
                                 FSizes.borderRadiusSm,
                               ),
                               border: Border.all(
-                                color: FColors.grey.withOpacity(0.2),
+                                color: FColors.grey.withValues(alpha: 0.2),
                                 width: 1,
                               ),
                             ),
@@ -152,7 +152,7 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: FColors.primaryColor.withOpacity(
+                                        color: FColors.primaryColor.withValues(alpha: 
                                           0.1,
                                         ),
                                         borderRadius: BorderRadius.circular(4),
@@ -234,7 +234,7 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                                   width: FSizes.imagePreviewMd,
                                                   height: FSizes.imagePreviewMd,
                                                   color: FColors.grey
-                                                      .withOpacity(0.1),
+                                                      .withValues(alpha: 0.1),
                                                   child: Icon(
                                                     Iconsax.image,
                                                     color: FColors.grey,
@@ -259,7 +259,7 @@ class InspectionBodyNotesReview extends StatelessWidget {
                             vertical: FSizes.sm,
                           ),
                           child: Divider(
-                            color: FColors.grey.withOpacity(0.2),
+                            color: FColors.grey.withValues(alpha: 0.2),
                             thickness: 1,
                           ),
                         ),

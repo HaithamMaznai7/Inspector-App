@@ -36,7 +36,7 @@ class InspectionPointsReview extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: FColors.grey.withOpacity(0.3),
+                      color: FColors.grey.withValues(alpha: 0.3),
                       width: 1,
                     ),
                     borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
@@ -51,7 +51,7 @@ class InspectionPointsReview extends StatelessWidget {
                     leading: Container(
                       padding: EdgeInsets.symmetric(horizontal: FSizes.sm),
                       decoration: BoxDecoration(
-                        color: FColors.success.withOpacity(.1),
+                        color: FColors.success.withValues(alpha: .1),
                         borderRadius: BorderRadius.circular(50),
                       ),
                       child: Text(
@@ -75,7 +75,7 @@ class InspectionPointsReview extends StatelessWidget {
                                 ),
                                 decoration: BoxDecoration(
                                   color: c.inspection.value?.stage.color
-                                      .withOpacity(.1),
+                                      .withValues(alpha: .1),
                                   borderRadius: BorderRadius.circular(
                                     FSizes.sm,
                                   ),
@@ -130,12 +130,12 @@ class InspectionPointsReview extends StatelessWidget {
                                 ),
                                 padding: EdgeInsets.all(FSizes.sm),
                                 decoration: BoxDecoration(
-                                  color: FColors.grey.withOpacity(.1),
+                                  color: FColors.grey.withValues(alpha: .1),
                                   borderRadius: BorderRadius.circular(
                                     FSizes.borderRadiusSm,
                                   ),
                                   border: Border.all(
-                                    color: FColors.grey.withOpacity(.3),
+                                    color: FColors.grey.withValues(alpha: .3),
                                   ),
                                 ),
                                 child: Text(

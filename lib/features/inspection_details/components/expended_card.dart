@@ -27,7 +27,7 @@ class _ExpandedCardState extends State<ExpandedCard> {
       onTap: cardSizeToggle,
       child: Card(
         shadowColor: Colors.white,
-        color: isDark ? FColors.darkGrey.withOpacity(.2) : FColors.grey,
+        color: isDark ? FColors.darkGrey.withValues(alpha: .2) : FColors.grey,
         elevation: 0,
         child: AnimatedContainer(
             padding: const EdgeInsets.symmetric(vertical: FSizes.lg, horizontal: FSizes.md),

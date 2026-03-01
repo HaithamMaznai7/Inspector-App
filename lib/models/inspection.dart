@@ -57,7 +57,7 @@ class Inspection {
   bool get hasObd => inspectionType?.hasObd ?? false;
 
   Inspection setDetails(Map map) {
-    if (map['book'].runtimeType == Map) {
+    if (map['book'] is Map) {
       center = CenterBranch.fromJson(map['book']);
     }
     inspector = map['inspector'] != null
@@ -70,8 +70,8 @@ class Inspection {
     stage = InspectionStage.fromJson(map['stage']);
     inspectionType = InspectionType.fromJson(map['inspection_type']);
     note = map['note'] ?? '';
-    rejectedNote = map['rejected_note'] ?? null;
-    report = map['report'] ?? null;
+    rejectedNote = map['rejected_note'];
+    report = map['report'];
     inspectedAt = map['inspected_at'] != null
         ? DateTime.parse(map['inspected_at'])
         : null;
@@ -97,6 +97,11 @@ class Inspection {
   saveDetails(Box box) {
     box.put('Inspection-$slug', toJson);
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Inspection && runtimeType == other.runtimeType && id == other.id;
 
   @override
   int get hashCode => id.hashCode;

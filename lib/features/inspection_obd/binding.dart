@@ -1,9 +1,7 @@
 part of '../../routes.dart';
 
 class InspectionObdBinding extends BindingsService<InspectionObdController> {
-  
-  @override
-  final String? tag = BindingTags.inspectionOBD;
+  InspectionObdBinding() : super(tag: BindingTags.inspectionOBD);
 
   @override
   void dependencies() async {

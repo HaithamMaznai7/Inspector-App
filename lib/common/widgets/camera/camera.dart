@@ -103,7 +103,7 @@ class _CameraState extends State<Camera> {
                             height: FSizes.iconCircleMd,
                             width: FSizes.iconCircleMd,
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(.5),
+                              color: Colors.black.withValues(alpha: .5),
                               borderRadius: BorderRadius.circular(100),
                             ),
                             child: IconButton(
@@ -151,7 +151,7 @@ class _CameraState extends State<Camera> {
                             height: FSizes.iconCircleMd,
                             width: FSizes.iconCircleMd,
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(.5),
+                              color: Colors.black.withValues(alpha: .5),
                               borderRadius: BorderRadius.circular(100),
                             ),
                             child: IconButton(
@@ -172,7 +172,7 @@ class _CameraState extends State<Camera> {
                       margin: const EdgeInsets.all(FSizes.spaceBtwItems),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(100),
-                        color: FColors.black.withOpacity(.5),
+                        color: FColors.black.withValues(alpha: .5),
                       ),
                       height: 50,
                       width: 50,
@@ -188,7 +188,7 @@ class _CameraState extends State<Camera> {
                       margin: const EdgeInsets.all(FSizes.spaceBtwItems),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(100),
-                        color: FColors.black.withOpacity(.5),
+                        color: FColors.black.withValues(alpha: .5),
                       ),
                       height: 50,
                       width: 50,
@@ -240,7 +240,7 @@ class _CameraState extends State<Camera> {
                         height: 50,
                         width: 50,
                         decoration: BoxDecoration(
-                          color: FColors.black.withOpacity(.5),
+                          color: FColors.black.withValues(alpha: .5),
                           borderRadius: BorderRadius.circular(50),
                         ),
                         child: IconButton(

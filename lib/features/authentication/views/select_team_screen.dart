@@ -69,7 +69,7 @@ class _SelectTeamToContinueScreenState
               // Header icon
               CircleAvatar(
                 radius: 36,
-                backgroundColor: FColors.primaryColor.withOpacity(0.1),
+                backgroundColor: FColors.primaryColor.withValues(alpha: 0.1),
                 child: Icon(
                   Iconsax.people,
                   color: FColors.primaryColor,
@@ -174,7 +174,7 @@ class _SelectTeamToContinueScreenState
 
     if (team.isSystem) {
       return CircleAvatar(
-        backgroundColor: FColors.primaryColor.withOpacity(0.1),
+        backgroundColor: FColors.primaryColor.withValues(alpha: 0.1),
         child: Icon(
           Iconsax.shield_tick,
           color: FColors.primaryColor,
@@ -186,13 +186,13 @@ class _SelectTeamToContinueScreenState
     if (logo != null && !logo.contains('ui-avatars.com')) {
       return CircleAvatar(
         backgroundImage: NetworkImage(logo),
-        backgroundColor: FColors.grey.withOpacity(0.2),
+        backgroundColor: FColors.grey.withValues(alpha: 0.2),
         onBackgroundImageError: (_, __) {},
       );
     }
 
     return CircleAvatar(
-      backgroundColor: FColors.primaryColor.withOpacity(0.1),
+      backgroundColor: FColors.primaryColor.withValues(alpha: 0.1),
       child: Text(
         initial,
         style: const TextStyle(

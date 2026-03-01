@@ -31,6 +31,7 @@ class InspectionCard extends StatelessWidget {
     final isDark = FHelper.isDarkMode(context);
 
     return InkWell(
+      onTap: onTap,
       child: SizedBox(
         width: double.infinity,
         child: Card(
@@ -38,7 +39,7 @@ class InspectionCard extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
             side: _isRejected
-                ? BorderSide(color: Colors.redAccent.withOpacity(0.4), width: 1)
+                ? BorderSide(color: Colors.redAccent.withValues(alpha: 0.4), width: 1)
                 : BorderSide.none,
           ),
           child: ClipRRect(
@@ -71,7 +72,7 @@ class InspectionCard extends StatelessWidget {
                                 customerName ?? '---',
                                 style: Theme.of(context).textTheme.titleMedium?.apply(
                                   color: isDark
-                                      ? FColors.white.withOpacity(.8)
+                                      ? FColors.white.withValues(alpha: .8)
                                       : FColors.dark,
                                 ),
                               ),
@@ -82,7 +83,7 @@ class InspectionCard extends StatelessWidget {
                                 '${vehicle?.make?.label ?? ''} - ${vehicle?.model?.label ?? ''} - ${vehicle?.year ?? ''}',
                                 style: Theme.of(context).textTheme.bodyMedium?.apply(
                                   color: isDark
-                                      ? FColors.white.withOpacity(.8)
+                                      ? FColors.white.withValues(alpha: .8)
                                       : FColors.dark,
                                 ),
                               ),
@@ -125,7 +126,7 @@ class InspectionCard extends StatelessWidget {
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: FSizes.sm),
                               decoration: BoxDecoration(
-                                color: stage.color.withOpacity(.1),
+                                color: stage.color.withValues(alpha: .1),
                                 borderRadius: BorderRadius.circular(FSizes.sm),
                               ),
                               child: Text(
@@ -152,7 +153,7 @@ class InspectionCard extends StatelessWidget {
                         color: Colors.red.shade50,
                         border: Border(
                           top: BorderSide(
-                            color: Colors.redAccent.withOpacity(0.2),
+                            color: Colors.redAccent.withValues(alpha: 0.2),
                           ),
                         ),
                       ),
@@ -179,7 +180,6 @@ class InspectionCard extends StatelessWidget {
           ),
         ),
       ),
-      onTap: onTap,
     );
   }
 }
@@ -189,6 +189,7 @@ class VehicleRow extends StatelessWidget {
 
   final Vehicle vehicle;
 
+  @override
   Widget build(BuildContext context) {
     final isDark = FHelper.isDarkMode(context);
     return Row(
@@ -205,7 +206,7 @@ class VehicleRow extends StatelessWidget {
           vehicle.make?.label ?? '',
           overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.titleLarge?.apply(
-            color: isDark ? FColors.white.withOpacity(.8) : FColors.dark,
+            color: isDark ? FColors.white.withValues(alpha: .8) : FColors.dark,
           ),
         ),
 
@@ -213,7 +214,7 @@ class VehicleRow extends StatelessWidget {
         //   vehicle.model?.label ?? '',
         //   overflow: TextOverflow.ellipsis,
         //   style: Theme.of(context).textTheme.titleLarge?.apply(
-        //       color: isDark ? FColors.white.withOpacity(.8) : FColors.dark
+        //       color: isDark ? FColors.white.withValues(alpha: .8) : FColors.dark
         //   ),
         // ),
 
@@ -221,7 +222,7 @@ class VehicleRow extends StatelessWidget {
         //  vehicle.year ?? '',
         //   overflow: TextOverflow.ellipsis,
         //   style: Theme.of(context).textTheme.titleLarge?.apply(
-        //       color: isDark ? FColors.white.withOpacity(.8) : FColors.dark
+        //       color: isDark ? FColors.white.withValues(alpha: .8) : FColors.dark
         //   ),
         // ),
       ],

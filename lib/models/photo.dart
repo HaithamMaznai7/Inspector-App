@@ -17,13 +17,7 @@ class Photo {
     _image = value;
   }
 
-  File? _file;
-
-  File? get file => _file;
-
-  set file(File? value) {
-    _file = value;
-  }
+  File? file;
 
   Photo({
     required this.id,

@@ -29,8 +29,8 @@ class _SkeletonState extends State<Skeleton>
 
     // Create color tween animation
     _colorAnimation = ColorTween(
-      begin: widget.color.withOpacity(0.02),
-      end: widget.color.withOpacity(0.5), // Adjust end color as needed
+      begin: widget.color.withValues(alpha: 0.02),
+      end: widget.color.withValues(alpha: 0.5), // Adjust end color as needed
     ).animate(_controller);
 
     // Start animation
@@ -74,7 +74,7 @@ class CircleSkeleton extends StatelessWidget {
       height: size,
       width: size,
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.04),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.04),
         shape: BoxShape.circle,
       ),
     );

@@ -29,7 +29,7 @@ class FRowInput extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-          color: isDark ? FColors.darkGrey.withOpacity(.2) : FColors.grey.withOpacity(.8) ,
+          color: isDark ? FColors.darkGrey.withValues(alpha: .2) : FColors.grey.withValues(alpha: .8) ,
           borderRadius: BorderRadius.circular(FSizes.borderRadiusLg)
       ),
       child: TextFormField(

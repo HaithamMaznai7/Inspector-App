@@ -17,12 +17,11 @@ class OnLoadingInspections extends StatelessWidget {
   }
 }
 
-class PlaceHolderRequestCard extends StatelessWidget{
+class PlaceHolderRequestCard extends StatelessWidget {
   const PlaceHolderRequestCard({super.key});
 
   @override
-  Widget build(BuildContext context){
-    // TODO: implement build
+  Widget build(BuildContext context) {
     final isDark = FHelper.isDarkMode(context);
     return InkWell(
       child: SizedBox(
@@ -39,28 +38,23 @@ class PlaceHolderRequestCard extends StatelessWidget{
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Skeleton(width: 30,color: FColors.primaryColor),
-                    Flexible(
-                      child: Skeleton(width: 180,color: FColors.grey),
-                    ),
-                    Skeleton(width: 80,color: FColors.grey),
+                    Skeleton(width: 30, color: FColors.primaryColor),
+                    Flexible(child: Skeleton(width: 180, color: FColors.grey)),
+                    Skeleton(width: 80, color: FColors.grey),
                   ],
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Skeleton(width: 30,color: FColors.primaryColor),
-                    Flexible(
-                      child: Skeleton(width: 180,color: FColors.grey),
-                    ),
-                    Skeleton(width: 100,color: FColors.grey),
+                    Skeleton(width: 30, color: FColors.primaryColor),
+                    Flexible(child: Skeleton(width: 180, color: FColors.grey)),
+                    Skeleton(width: 100, color: FColors.grey),
                   ],
                 ),
                 Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: <Widget>[
-                      Skeleton(width: 120,color: FColors.grey),
-                    ]),
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[Skeleton(width: 120, color: FColors.grey)],
+                ),
               ],
             ),
           ),

@@ -1,9 +1,7 @@
 part of '../../routes.dart';
 
 class OnBoardingBinding extends BindingsService<OnBoardingController> {
-  
-  @override
-  final String? tag = BindingTags.onBoarding;
+  OnBoardingBinding() : super(tag: BindingTags.onBoarding);
 
   @override
   void dependencies() async {

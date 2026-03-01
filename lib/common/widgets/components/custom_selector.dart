@@ -78,8 +78,8 @@ class _CustomSelector extends State<CustomSelector> {
           child: Container(
             decoration: BoxDecoration(
               color: isDark
-                  ? FColors.darkGrey.withOpacity(.2)
-                  : FColors.grey.withOpacity(.8),
+                  ? FColors.darkGrey.withValues(alpha: .2)
+                  : FColors.grey.withValues(alpha: .8),
               borderRadius: widget.borderRadius,
             ),
             child: Container(
@@ -113,8 +113,8 @@ class _CustomSelector extends State<CustomSelector> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       backgroundColor: isDark
-          ? FColors.darkerGrey.withOpacity(.95)
-          : FColors.white.withOpacity(.95),
+          ? FColors.darkerGrey.withValues(alpha: .95)
+          : FColors.white.withValues(alpha: .95),
       builder: (context) {
         return ConstrainedBox(
           constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.4),

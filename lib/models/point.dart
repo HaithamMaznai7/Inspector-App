@@ -33,13 +33,7 @@ class Point {
     _image = value;
   }
 
-  File? _file;
-
-  File? get file => _file;
-
-  set file(File? value) {
-    _file = value;
-  }
+  File? file;
 
   Point({
     required this.id,

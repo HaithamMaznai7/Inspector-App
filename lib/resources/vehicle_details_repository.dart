@@ -19,10 +19,11 @@ class VehicleDetailsRepository extends BaseRepository<VehicleDetails> {
 
   String get channel => "App.Models.Inspection.$slug";
 
-  Rxn<VehicleDetails> _data = Rxn<VehicleDetails>();
+  final Rxn<VehicleDetails> _data = Rxn<VehicleDetails>();
 
   Stream<VehicleDetails?> get stream => _data.stream;
 
+  @override
   Future<VehicleDetails?> fetchFromApi() async {
     try {
       final n = Network(endpoint: '${EndPoints.inspections}/$slug/details');

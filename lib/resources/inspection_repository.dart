@@ -20,13 +20,13 @@ class InspectionsRepository extends ListRepository<Inspection> {
   final String channel =
       "App.Models.User.${FirebaseAuth.instance.currentUser?.uid}";
 
-  RxList<Inspection> _data = RxList<Inspection>([]);
+  final RxList<Inspection> _data = RxList<Inspection>([]);
 
   int _currentPage = 1;
   int _lastPage = 1;
   RxBool isFetchingMore = false.obs;
-  var _total = 0.obs;
-  RxMap<String, int> _counts = RxMap<String, int>({
+  final _total = 0.obs;
+  final RxMap<String, int> _counts = RxMap<String, int>({
     for (var stage in InspectionStage.allStages)
       "${stage.value ?? 'all'}_total": 0,
   });
@@ -137,16 +137,15 @@ class InspectionsRepository extends ListRepository<Inspection> {
   @override
   Future<void> saveToCache() async {
     Map pages = {};
-    num i = 1;
 
-    for (Inspection inspection in _data.value) {
+    for (Inspection inspection in _data.toList()) {
       await box.put(inspection.slug, inspection.toJson());
       pages[inspection.slug] = inspection.id;
     }
 
     await box.put(
       "Inspections_Meta_User_${FirebaseAuth.instance.currentUser?.uid}",
-      _counts.value,
+      Map<String, int>.from(_counts),
     );
 
     await box.put(
@@ -171,6 +170,7 @@ class InspectionsRepository extends ListRepository<Inspection> {
     }
   }
 
+  @override
   Stream<List<Inspection>> listenToBroadcast() async* {
     yield _data;
     final broadcast = BroadcastService.instance;
@@ -178,7 +178,7 @@ class InspectionsRepository extends ListRepository<Inspection> {
       if (event != null &&
           event.channel == 'private-$channel' &&
           event.event.contains('new-inspection')) {
-        fetchFromApi(stage: this.stage);
+        fetchFromApi(stage: stage);
       }
     });
     yield* stream;

@@ -11,7 +11,6 @@ import 'package:fahis_inspector/models/point.dart';
 import 'package:fahis_inspector/models/point_category.dart';
 import 'package:fahis_inspector/models/review_point.dart';
 import 'package:fahis_inspector/routes.dart';
-import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 

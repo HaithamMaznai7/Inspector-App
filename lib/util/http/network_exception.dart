@@ -5,17 +5,15 @@ import 'package:get/get.dart';
 
 class FNetworkException extends HttpException {
   final String? title;
-  @override
-  final String message;
   final int statusCode;
   final Map<String, dynamic>? errors;
 
   FNetworkException(
-    this.message, {
+    super.message, {
     this.title,
     this.statusCode = 0,
     this.errors,
-  }) : super(message);
+  });
 
   @override
   String toString() {

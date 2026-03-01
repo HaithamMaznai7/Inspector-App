@@ -1,6 +1,5 @@
 import 'package:fahis_inspector/features/inspection_details/components/reviews/info_card.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
-import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
@@ -48,7 +47,7 @@ class VehicleInfoReview extends StatelessWidget {
           ? Container(
             padding: EdgeInsets.symmetric(horizontal: FSizes.sm),
             decoration: BoxDecoration(
-              color: c.inspection.value?.stage.color.withOpacity(.1),
+              color: c.inspection.value?.stage.color.withValues(alpha: .1),
               borderRadius: BorderRadius.circular(FSizes.sm),
             ),
             child: Text(

@@ -28,7 +28,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
   final TextEditingController _textEditingController = TextEditingController();
 
   late Marker _marker;
-  bool _uploading = false;
+  final bool _uploading = false;
 
   @override
   void initState() {
@@ -85,10 +85,10 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
             Container(
               decoration: BoxDecoration(
                 color: isDark
-                    ? FColors.darkGrey.withOpacity(.2)
-                    : FColors.grey.withOpacity(.15),
+                    ? FColors.darkGrey.withValues(alpha: .2)
+                    : FColors.grey.withValues(alpha: .15),
                 borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-                border: Border.all(color: FColors.grey.withOpacity(.4)),
+                border: Border.all(color: FColors.grey.withValues(alpha: .4)),
               ),
               child: TextFormField(
                 controller: _textEditingController,
@@ -155,7 +155,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
             bottom: FSizes.sm,
             right: FSizes.sm,
             child: Material(
-              color: FColors.dark.withOpacity(.6),
+              color: FColors.dark.withValues(alpha: .6),
               borderRadius: BorderRadius.circular(FSizes.sm),
               child: InkWell(
                 onTap: _pickImage,
@@ -194,11 +194,11 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
         height: FSizes.imagePreviewSm - FSizes.iconInlineSm,
         decoration: BoxDecoration(
           color: isDark
-              ? FColors.darkGrey.withOpacity(.2)
-              : FColors.grey.withOpacity(.15),
+              ? FColors.darkGrey.withValues(alpha: .2)
+              : FColors.grey.withValues(alpha: .15),
           borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
           border: Border.all(
-            color: FColors.primaryColor.withOpacity(.3),
+            color: FColors.primaryColor.withValues(alpha: .3),
             width: 1.5,
             style: BorderStyle.solid,
           ),
@@ -206,12 +206,12 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Iconsax.camera, size: 32, color: FColors.primaryColor.withOpacity(.7)),
+            Icon(Iconsax.camera, size: 32, color: FColors.primaryColor.withValues(alpha: .7)),
             const SizedBox(height: FSizes.xs),
             Text(
               FTexts.markerAddPhoto.tr,
               style: Theme.of(context).textTheme.bodyMedium?.apply(
-                    color: FColors.primaryColor.withOpacity(.7),
+                    color: FColors.primaryColor.withValues(alpha: .7),
                   ),
             ),
           ],

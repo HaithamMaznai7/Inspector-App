@@ -35,7 +35,7 @@ class FColors{
 
   // Background Container Colors
   static const Color lightContainer = Color(0xFFF4F1eB);
-  static Color darkContainer = FColors.white.withOpacity(0.1);
+  static Color darkContainer = FColors.white.withValues(alpha: 0.1);
 
   // Button Colors
   static const Color buttonPrimary = Color(0xFFF56969);

@@ -36,7 +36,7 @@ class OBDCodeCard extends StatelessWidget{
                       fontWeight: FontWeight.w800,
                     )),
                     selected: true,
-                    selectedColor: FColors.error.withOpacity(.7),
+                    selectedColor: FColors.error.withValues(alpha: .7),
                     showCheckmark: false,
                   )
                 ],

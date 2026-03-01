@@ -65,7 +65,7 @@ class Boot extends StatelessWidget {
       themeMode: themeMode,
       theme: FAppTheme.lightTheme,
       darkTheme: FAppTheme.darkTheme,
-      initialRoute: AppRoute.INITIAL,
+      initialRoute: AppRoute.initial,
       getPages: AppRoute.route,
       // WHAT: Wrap the app content with a GestureDetector for dismissing keyboard
       //       and ensure an Overlay is always available for snackbars/dialogs.

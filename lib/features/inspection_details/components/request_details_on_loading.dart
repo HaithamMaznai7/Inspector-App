@@ -18,7 +18,7 @@ class RequestDetailsOnLoading extends StatelessWidget {
       children: [
         // Add a padding to the top
         Card(
-          color: isDark ? FColors.darkGrey.withOpacity(.2) : FColors.grey,
+          color: isDark ? FColors.darkGrey.withValues(alpha: .2) : FColors.grey,
           child: Container(
               padding: const EdgeInsets.symmetric(vertical: FSizes.lg, horizontal: FSizes.md),
               width: double.infinity,

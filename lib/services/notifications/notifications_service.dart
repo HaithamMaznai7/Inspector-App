@@ -203,7 +203,7 @@ class NotificationsService extends GetxController {
 
   void onOpen(String id) {
     read(id);
-    notifications.value
+    notifications
         .where((notification) => notification.id == id)
         .first
         .onOpen();
@@ -211,7 +211,7 @@ class NotificationsService extends GetxController {
 
   void read(String id) async {
     try {
-      notifications.value
+      notifications
           .where((notification) => notification.id == id)
           .first
           .read();
@@ -225,7 +225,7 @@ class NotificationsService extends GetxController {
 
   void unread(String id) async {
     try {
-      notifications.value
+      notifications
           .where((notification) => notification.id == id)
           .first
           .unread();

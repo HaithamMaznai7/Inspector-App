@@ -41,9 +41,13 @@ class Selection {
     return value == other;
   }
 
-  operator ==(Object other) =>
+  @override
+  bool operator ==(Object other) =>
       identical(this, other) ||
       other is Selection &&
           runtimeType == other.runtimeType &&
           value == other.value;
+
+  @override
+  int get hashCode => value.hashCode;
 }

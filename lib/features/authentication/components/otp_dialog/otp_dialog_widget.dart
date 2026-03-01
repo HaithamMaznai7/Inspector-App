@@ -18,7 +18,7 @@ class OTPDialogVerification extends StatefulWidget {
 class _OTPDialogVerificationState extends State<OTPDialogVerification> {
   String _code = '';
 
-  TextEditingController _otpController = TextEditingController();
+  final TextEditingController _otpController = TextEditingController();
 
   @override
   void initState() {
@@ -28,12 +28,11 @@ class _OTPDialogVerificationState extends State<OTPDialogVerification> {
   @override
   Widget build(BuildContext context) {
     final isDark = FHelper.isDarkMode(context);
-    return Dialog(
-      child: Container(
-        height: FDeviceUtils.getScreenHeight() * .4,
-        width: FDeviceUtils.getScreenWidth() * .6,
-        padding: const EdgeInsets.all(FSizes.lg),
-        child: Column(
+    final dialogContent = Container(
+      height: FDeviceUtils.getScreenHeight() * .4,
+      width: FDeviceUtils.getScreenWidth() * .6,
+      padding: const EdgeInsets.all(FSizes.lg),
+      child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -63,7 +62,7 @@ class _OTPDialogVerificationState extends State<OTPDialogVerification> {
                       isDark ? FColors.white : FColors.primaryColor,
                     ),
                     bgColorBuilder: FixedColorBuilder(
-                      FColors.grey.withOpacity(.2),
+                      FColors.grey.withValues(alpha: .2),
                     ),
                     strokeWidth: 1,
                   ),
@@ -144,8 +143,10 @@ class _OTPDialogVerificationState extends State<OTPDialogVerification> {
             ),
           ],
         ),
-      ),
+    );
+    return Dialog(
       backgroundColor: isDark ? FColors.dark : FColors.white,
+      child: dialogContent,
     );
   }
 

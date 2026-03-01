@@ -1,9 +1,7 @@
 part of '../../routes.dart';
 
 class LoginBinding extends BindingsService<LoginController> {
-
-  @override
-  final String? tag = BindingTags.login;
+  LoginBinding() : super(tag: BindingTags.login);
 
   @override
   void dependencies() async {
@@ -17,9 +15,7 @@ class LoginBinding extends BindingsService<LoginController> {
 }
 
 class ForgetBinding extends BindingsService<ForgetPasswordController> {
-  
-  @override
-  final String? tag = BindingTags.forgetPassword;
+  ForgetBinding() : super(tag: BindingTags.forgetPassword);
 
   @override
   void dependencies() async {
@@ -34,9 +30,7 @@ class ForgetBinding extends BindingsService<ForgetPasswordController> {
 }
 
 class ResetPasswordBinding extends BindingsService<ResetPasswordController> {
-  
-  @override
-  final String? tag = BindingTags.resetPassword;
+  ResetPasswordBinding() : super(tag: BindingTags.resetPassword);
 
   @override
   void dependencies() async {

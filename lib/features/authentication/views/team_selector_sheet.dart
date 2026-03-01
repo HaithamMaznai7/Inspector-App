@@ -65,7 +65,7 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
   }
 
   /// Refresh the InspectionsController data for the new team.
-  /// The sidebar also rebuilds since it uses GetBuilder<InspectionsController>.
+  /// The sidebar also rebuilds since it uses `GetBuilder<InspectionsController>`.
   void _refreshHomeData() {
     const tag = BindingTags.inspections;
     if (!Get.isRegistered<InspectionsController>(tag: tag)) return;
@@ -110,7 +110,7 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
             width: FSizes.iconCircleSm,
             height: FSizes.xs,
             decoration: BoxDecoration(
-              color: FColors.grey.withOpacity(0.4),
+              color: FColors.grey.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -200,7 +200,7 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
           ? Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: FColors.primaryColor.withOpacity(0.1),
+                color: FColors.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -222,7 +222,7 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
 
     if (team.isSystem) {
       return CircleAvatar(
-        backgroundColor: FColors.primaryColor.withOpacity(0.1),
+        backgroundColor: FColors.primaryColor.withValues(alpha: 0.1),
         child: Icon(Iconsax.shield_tick, color: FColors.primaryColor, size: 20),
       );
     }
@@ -230,13 +230,13 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
     if (logo != null && !logo.contains('ui-avatars.com')) {
       return CircleAvatar(
         backgroundImage: NetworkImage(logo),
-        backgroundColor: FColors.grey.withOpacity(0.2),
+        backgroundColor: FColors.grey.withValues(alpha: 0.2),
         onBackgroundImageError: (_, __) {},
       );
     }
 
     return CircleAvatar(
-      backgroundColor: FColors.primaryColor.withOpacity(0.1),
+      backgroundColor: FColors.primaryColor.withValues(alpha: 0.1),
       child: Text(
         initial,
         style: const TextStyle(

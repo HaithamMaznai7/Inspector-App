@@ -11,13 +11,7 @@ class Marker {
   double dy;
   String? type;
   String? image;
-  File? _file;
-
-  File? get file => _file;
-
-  set file(File? value) {
-    _file = value;
-  }
+  File? file;
 
   Marker({
     required this.id,
