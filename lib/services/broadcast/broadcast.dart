@@ -102,6 +102,12 @@ class BroadcastService extends GetxService {
     }
   }
 
+  void disconnect() {
+    broadcast.sink.close();
+    socketId.value = null;
+    responses.value = null;
+  }
+
   subscribe(String channel, {bool isPrivate = false}) async {
     // Wait until socketId is available
     while (socketId.value == null) {
