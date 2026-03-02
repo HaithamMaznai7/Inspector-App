@@ -13,28 +13,23 @@ class ForceUpdateService {
   late final FirebaseRemoteConfig _remoteConfig;
   bool _initialized = false;
 
-  /// Initializes Remote Config and fetches values.
-  /// Returns `true` if the app must be force-updated (i.e. current < min).
-  /// Returns `false` on any error so the user is never blocked.
-
-  // Duration.zero
+  /// Fetches Remote Config and returns `true` if the app must be force-updated
+  /// (current version < min version). Returns `false` on any error so the user
+  /// is never blocked.
   Future<bool> check() async {
     try {
       if (!_initialized) {
         _remoteConfig = FirebaseRemoteConfig.instance;
-        await _remoteConfig.setConfigSettings(
-          RemoteConfigSettings(
-            fetchTimeout: const Duration(seconds: 10),
-            minimumFetchInterval: kDebugMode
-                ? const Duration(seconds: 3600)
-                : const Duration(seconds: 3600),
-          ),
-        );
+        await _remoteConfig.setConfigSettings(RemoteConfigSettings(
+          fetchTimeout: const Duration(seconds: 10),
+          minimumFetchInterval: kDebugMode
+              ? Duration.zero
+              : const Duration(seconds: 3600),
+        ));
         await _remoteConfig.setDefaults({
           'force_update_min_version': '0.0.0',
           'store_url_ios': '',
           'store_url_android': '',
-          'update_message': '',
         });
         _initialized = true;
       }
@@ -43,18 +38,15 @@ class ForceUpdateService {
 
       final minVersion = _remoteConfig.getString('force_update_min_version');
       final packageInfo = await PackageInfo.fromPlatform();
-      final currentVersion = packageInfo.version;
 
-      return _compareVersions(currentVersion, minVersion) < 0;
+      return _compareVersions(packageInfo.version, minVersion) < 0;
     } catch (e) {
-      debugPrint('ForceUpdateService: check failed — $e');
+      if (kDebugMode) {
+        print(e);
+      }
       return false;
     }
   }
-
-  /// Remote Config update message (may be empty).
-  String get updateMessage =>
-      _initialized ? _remoteConfig.getString('update_message') : '';
 
   /// Opens the appropriate store URL for the current platform.
   Future<void> openStore() async {
@@ -73,9 +65,8 @@ class ForceUpdateService {
     final partsA = a.split('.').map((e) => int.tryParse(e) ?? 0).toList();
     final partsB = b.split('.').map((e) => int.tryParse(e) ?? 0).toList();
 
-    final length = partsA.length > partsB.length
-        ? partsA.length
-        : partsB.length;
+    final length =
+        partsA.length > partsB.length ? partsA.length : partsB.length;
     for (var i = 0; i < length; i++) {
       final va = i < partsA.length ? partsA[i] : 0;
       final vb = i < partsB.length ? partsB[i] : 0;
