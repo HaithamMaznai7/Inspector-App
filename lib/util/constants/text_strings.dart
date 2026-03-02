@@ -114,6 +114,11 @@ class FTexts {
   static const String stageFinished = 'stageFinished';
   static const String stageRejected = 'stageRejected';
   static const String stageReviewed = 'stageReviewed';
+
+  /// Force Update
+  static const String forceUpdateTitle = 'forceUpdateTitle';
+  static const String forceUpdateMessage = 'forceUpdateMessage';
+  static const String forceUpdateButton = 'forceUpdateButton';
 }
 
 class StorageKey {

@@ -516,5 +516,10 @@ class Arabic {
     'onBoardingTitle3': 'ابقَ على اطلاع',
     'onBoardingSubTitle3':
         'استقبل الإشعارات الفورية وتابع كل تحديث على حالة الفحص.',
+
+    /// Force Update
+    FTexts.forceUpdateTitle: 'تحديث مطلوب',
+    FTexts.forceUpdateMessage: 'يتوفر إصدار جديد من التطبيق. يرجى التحديث للمتابعة في استخدام التطبيق.',
+    FTexts.forceUpdateButton: 'تحديث الآن',
   };
 }

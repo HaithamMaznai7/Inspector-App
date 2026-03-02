@@ -458,5 +458,10 @@ class English {
     'onBoardingSubTitle2': 'Follow step-by-step inspection stages: photos, body check, OBD diagnostics, and more.',
     'onBoardingTitle3': 'Stay Connected',
     'onBoardingSubTitle3': 'Receive real-time notifications and stay updated on every inspection status change.',
+
+    /// Force Update
+    FTexts.forceUpdateTitle: 'Update Required',
+    FTexts.forceUpdateMessage: 'A new version of the app is available. Please update to continue using the app.',
+    FTexts.forceUpdateButton: 'Update Now',
   };
 }

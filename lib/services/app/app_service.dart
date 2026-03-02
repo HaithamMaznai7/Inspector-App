@@ -1,4 +1,6 @@
+import 'package:fahis_inspector/boot/app_service_provider.dart';
 import 'package:fahis_inspector/services/app/support/bindings_service.dart';
+import 'package:fahis_inspector/services/force_update/force_update_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
@@ -21,9 +23,19 @@ abstract class AppService extends GetxService with WidgetsBindingObserver {
   Future<AppService> init() async {
 
     await boot();
-    
+
+    // If force update is required, show the blocking screen and stop.
+    // AuthService bindings are never registered so the user stays on
+    // the force-update screen with no way to dismiss it.
+    if (this is AppServiceProvider &&
+        (this as AppServiceProvider).requiresForceUpdate) {
+      FlutterNativeSplash.remove();
+      Get.off(() => const ForceUpdateScreen());
+      return this;
+    }
+
     await _bindingRegistered();
-    
+
     FlutterNativeSplash.remove();
 
     return this;
