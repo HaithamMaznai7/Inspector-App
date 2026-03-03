@@ -15,26 +15,52 @@ Profile _$UserFromFirebase(User user) => Profile(
   lang: Get.deviceLocale,
 );
 
-Profile _$UserFromJson(Map json) 
-  => Profile(
+Profile _$UserFromJson(Map json) {
+  final teamsData = json['teams'];
+
+  List<Team> teams = [];
+  List<Team> invitations = [];
+
+  if (teamsData is Map) {
+    // Legacy backend shape: { "teams": [...], "invitations": [...] }
+    teams = (teamsData['teams'] as List?)
+        ?.map((e) => Team.fromJson(Map<String, dynamic>.from(e)))
+        .toList() ?? [];
+    invitations = (teamsData['invitations'] as List?)
+        ?.map((e) => Team.fromJson(Map<String, dynamic>.from(e)))
+        .toList() ?? [];
+  } else if (teamsData is List) {
+    // Current backend shape: flat list directly under user.teams
+    teams = teamsData
+        .map((e) => Team.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
+  }
+
+  // Invitations are a separate top-level field.
+  // Backend has a typo ("invatations") — check both spellings.
+  final invitationsRaw = json['invitations'] ?? json['invatations'];
+  if (invitationsRaw is List) {
+    invitations = invitationsRaw
+        .map((e) => Team.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
+  }
+
+  return Profile(
       id: json['id'],
       name: json['name'],
       email: json['email'],
-      emailVerification: json['email_verified'],
+      emailVerification: json['email_verified'] ?? false,
       mobile: json['phone_number'],
-      mobileVerification: json['phone_number_verified'],
+      mobileVerification: json['phone_number_verified'] ?? false,
       status: AccounStatus.set(json['account_status']),
       city: json['city'] != null ? City.fromJson(json['city']) : null,
       avatar: json['profile_photo'],
-      role: json['role'],
-      teams: (json['teams']?['teams'] as List?)
-          ?.map((e) => Team.fromJson(Map<String, dynamic>.from(e)))
-          .toList() ?? [],
-      invitations: (json['teams']?['invitations'] as List?)
-          ?.map((e) => Team.fromJson(Map<String, dynamic>.from(e)))
-          .toList() ?? [],
+      role: json['role'] ?? 'User',
+      teams: teams,
+      invitations: invitations,
       lang: Get.deviceLocale,
   );
+}
 
 Map<String, dynamic> _$UserToJson(Profile instance) => <String, dynamic>{
   'id': instance.id,

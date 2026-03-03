@@ -44,7 +44,7 @@ class EndPoints {
   static const String points = 'inspector/points';
   static const String photos = 'inspector/photos';
   static const String notes = 'inspector/notes';
-  static const String obdCodes = 'inspector/codes';
+  static const String obdCodes = 'inspector/obd-codes';
   // inspectio
 
   //config

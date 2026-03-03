@@ -32,9 +32,9 @@ class InspectionOBDReview extends StatelessWidget {
         // EDGE CASES:
         //   - obdData is null → empty list (shows "not yet" message)
         //   - One corrupted entry → skipped, others still display
-        final obdData = c.box?.get(c.slug);
+        final obdData = c.assetsBox?.get(c.slug);
         final List<OBDCode> obdCodes = [];
-        if (obdData != null && obdData is List) {
+        if (obdData != null) {
           for (final item in obdData) {
             try {
               obdCodes.add(

@@ -226,26 +226,11 @@ class InspectionDetailsController extends GetxController
   }
 
   Future<void> loadInspectionOBD() async {
-    if (box == null || slug == null) return;
+    if (assetsBox == null || slug == null) return;
     try {
-      final obdRepo = InspectionObdRepository(box: box!, slug: slug!);
+      final obdRepo = InspectionObdRepository(box: assetsBox!, slug: slug!);
 
-      // DEBUG: Check what's in cache BEFORE API call
-      final cachedBefore = box!.get(slug);
-      dd(
-        'OBD DEBUG [1] cache key="$slug", cached data BEFORE fetch: $cachedBefore',
-      );
-      dd('OBD DEBUG [1] cached type: ${cachedBefore.runtimeType}');
-
-      final result = await obdRepo.fetchFromApi();
-
-      // DEBUG: Check what API returned
-      dd('OBD DEBUG [2] API returned ${result.length} codes: $result');
-
-      // DEBUG: Check what's in cache AFTER API call
-      final cachedAfter = box!.get(slug);
-      dd('OBD DEBUG [3] cached data AFTER fetch: $cachedAfter');
-      dd('OBD DEBUG [3] cached type: ${cachedAfter.runtimeType}');
+      await obdRepo.fetchFromApi();
 
       update();
     } catch (e) {

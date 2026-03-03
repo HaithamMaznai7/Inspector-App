@@ -4,6 +4,7 @@ import 'package:fahis_inspector/models/notification.dart';
 import 'package:fahis_inspector/resources/notification_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
+import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
@@ -76,6 +77,7 @@ class NotificationsService extends GetxController {
   }
 
   void _foregroundNotification(RemoteMessage message) {
+    AppLogger.trace('NotificationsService', 'foreground FCM received: "${message.notification?.title}"', 'messageId: ${message.messageId}');
     String? image;
 
     if (Platform.isAndroid) {
@@ -86,6 +88,7 @@ class NotificationsService extends GetxController {
       image = message.notification?.web?.image;
     }
 
+    AppLogger.trace('NotificationsService', 'dispatching foreground notification to FLoader.notification');
     FLoader.notification(
       title: message.notification?.title,
       message: message.notification?.body,
@@ -95,6 +98,7 @@ class NotificationsService extends GetxController {
   }
 
   void _openedNotification(RemoteMessage message) {
+    AppLogger.trace('NotificationsService', 'notification tapped from system tray: "${message.notification?.title}"', 'messageId: ${message.messageId}');
     String? image;
 
     if (Platform.isAndroid) {
@@ -105,6 +109,7 @@ class NotificationsService extends GetxController {
       image = message.notification?.web?.image;
     }
 
+    AppLogger.trace('NotificationsService', 'dispatching tapped notification to FLoader.notification');
     FLoader.notification(
       title: message.notification?.title,
       message: message.notification?.body,
@@ -174,14 +179,17 @@ class NotificationsService extends GetxController {
   void loadNotifications({bool isRefresh = false}) async {
     // Guard: skip API call if not authenticated (e.g. during logout)
     if (!AuthBinding().isRegistered || !AuthBinding().instance.isAuth) {
+      AppLogger.trace('NotificationsService', 'loadNotifications skipped: not authenticated');
       return;
     }
 
+    AppLogger.trace('NotificationsService', 'loadNotifications called (isRefresh: $isRefresh)');
     dd('[Notifications] loadNotifications called (isRefresh: $isRefresh)');
     if (isRefresh) {
       notifications.value = [];
     } else {
       final cached = repository.fetchFromCache();
+      AppLogger.trace('NotificationsService', 'cache hit: ${cached.length} notifications loaded');
       dd('[Notifications] cached count: ${cached.length}');
       notifications.assignAll(cached);
     }
@@ -189,7 +197,9 @@ class NotificationsService extends GetxController {
     isLoading.value = notifications.isEmpty;
     update();
 
+    AppLogger.trace('NotificationsService', 'fetching notifications from API...');
     final apiData = await repository.fetchFromApi();
+    AppLogger.trace('NotificationsService', 'API fetch complete: ${apiData.length} notifications');
     dd('[Notifications] API returned count: ${apiData.length}');
     notifications.assignAll(apiData);
 
@@ -202,6 +212,7 @@ class NotificationsService extends GetxController {
   }
 
   void onOpen(String id) {
+    AppLogger.trace('NotificationsService', 'notification opened in-app', 'id: $id');
     read(id);
     notifications
         .where((notification) => notification.id == id)

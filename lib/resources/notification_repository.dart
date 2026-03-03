@@ -3,6 +3,7 @@ import 'package:fahis_inspector/models/notification.dart';
 import 'package:fahis_inspector/resources/repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
+import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:fahis_inspector/services/broadcast/broadcast.dart';
@@ -25,6 +26,7 @@ class NotificationRepository extends ListRepository<Notification> {
 
   @override
   Future<List<Notification>> fetchFromApi() async {
+    AppLogger.trace('NotificationRepository', 'fetchFromApi started');
     List<Notification> data = [];
     try {
       final n = Network(endpoint: EndPoints.notifications);
@@ -34,8 +36,10 @@ class NotificationRepository extends ListRepository<Notification> {
           .map((item) => Notification.fromJson(Map<String, dynamic>.from(item)))
           .toList();
       _data.assignAll(data);
+      AppLogger.trace('NotificationRepository', 'fetchFromApi returned ${data.length} notifications');
       dd(_data.toList());
     } catch (e) {
+      AppLogger.error('NotificationRepository', 'fetchFromApi failed', e);
       dd(e.toString());
     } finally {
       await saveToCache();
@@ -46,11 +50,12 @@ class NotificationRepository extends ListRepository<Notification> {
 
   @override
   List<Notification> fetchFromCache() {
-    final data = (box.get('notifications') as List?) ?? [];
-
-    return data
+    final raw = (box.get('notifications') as List?) ?? [];
+    final data = raw
         .map((item) => Notification.fromJson(Map<String, dynamic>.from(item)))
         .toList();
+    AppLogger.trace('NotificationRepository', 'fetchFromCache returned ${data.length} notifications');
+    return data;
   }
 
   @override

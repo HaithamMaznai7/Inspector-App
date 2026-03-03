@@ -32,8 +32,8 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
   @override
   Future<List<OBDCode>> fetchFromApi() async {
-    _log('fetchFromApi – GET ${EndPoints.inspections}/$slug/codes');
-    final n = Network(endpoint: '${EndPoints.inspections}/$slug/codes');
+    _log('fetchFromApi – GET ${EndPoints.inspections}/$slug/obd-codes');
+    final n = Network(endpoint: '${EndPoints.inspections}/$slug/obd-codes');
 
     final r = await n.response(RoutingUrl.home);
 
@@ -98,7 +98,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   Future<List<OBDCode>> store(OBDCode code) async {
     _log('store – POST code="${code.code}", desc="${code.description}"');
     final n = Network(
-      endpoint: '${EndPoints.inspections}/$slug/codes',
+      endpoint: '${EndPoints.inspections}/$slug/obd-codes',
       requestMethod: RequestMethod.post,
     );
 

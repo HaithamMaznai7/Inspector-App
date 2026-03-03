@@ -1,5 +1,6 @@
 import 'package:fahis_inspector/common/widgets/loaders/snackbar_queue.dart';
 import 'package:fahis_inspector/main.dart';
+import 'package:fahis_inspector/util/helpers/logger.dart';
 
 import '../../../util/constants/colors.dart';
 import '../../../util/constants/sizes.dart';
@@ -62,6 +63,7 @@ class FLoader {
     duration = 3,
     String? image,
   }) {
+    AppLogger.trace('FLoader', 'push notification snackbar queued: "$title"');
     SnackbarQueue.show(() {
       _snackBar(
         title: title,

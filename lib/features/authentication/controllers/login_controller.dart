@@ -1,4 +1,3 @@
-// ignore: unused_import
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/routes.dart';
@@ -88,14 +87,12 @@ class LoginController extends GetxController {
     } on FirebaseAuthException catch (e) {
       dd(e);
     } catch (e) {
-      rethrow;
-      // dd(e.toString());
-      // FLoader.errorSnackBar(
-      //   title: 'Unexpected error'.tr,
-      //   message:
-      //       'We are Sorry, There an error that need to handle by technocal team connect with our support team to solve this issue',
-      //   duration: 10,
-      // );
+      dd(e.toString());
+      FLoader.errorSnackBar(
+        title: 'Unexpected error'.tr,
+        message: 'Something went wrong. Please try again.'.tr,
+        duration: 5,
+      );
     } finally {
       toggleLoading();
     }
