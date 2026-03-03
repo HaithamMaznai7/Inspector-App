@@ -32,7 +32,7 @@ class EndPoints {
   static const String resetPassword = 'reset-password';
   static const String verifyOTP = 'verify-otp';
   static const String logout = 'inspector/logout';
-  static const String setTeam = 'user/current-team';
+  static const String setTeam = 'set-team';
   static const String updateProfile = 'user';
   static const String notifications = 'notifications';
 

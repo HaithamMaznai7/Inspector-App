@@ -42,7 +42,7 @@ class ProfileRepository {
     }
   }
 
-  /// Updates the user profile via POST /user with form-data.
+  /// Updates the user profile via PUT /user with form-data.
   /// Accepts: name, city (id), profile_photo_path (File).
   Future<Profile> updateProfile({
     required String name,
@@ -51,7 +51,7 @@ class ProfileRepository {
   }) async {
     final net = Network(
       endpoint: EndPoints.updateProfile,
-      requestMethod: RequestMethod.post,
+      requestMethod: RequestMethod.put,
     );
 
     final form = FormData({
