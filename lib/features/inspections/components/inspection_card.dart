@@ -63,13 +63,20 @@ class InspectionCard extends StatelessWidget {
                       children: [
                         Icon(stage.icon, color: stage.color),
                         const SizedBox(width: FSizes.spaceBtwItems),
-                        Flexible(
+                        // Expanded (tight) gives this Column a strictly bounded width =
+                        // (row width) - (icon + spacers + right-column). Without this,
+                        // Flexible(loose) let the Column collapse to its natural/intrinsic
+                        // width, which passed near-unbounded constraints down to the inner
+                        // Row, causing the 700+ px overflow on every card.
+                        Expanded(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
                                 customerName ?? '---',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: Theme.of(context).textTheme.titleMedium?.apply(
                                   color: isDark
                                       ? FColors.white.withValues(alpha: .8)
@@ -81,6 +88,8 @@ class InspectionCard extends StatelessWidget {
 
                               Text(
                                 '${vehicle?.make?.label ?? ''} - ${vehicle?.model?.label ?? ''} - ${vehicle?.year ?? ''}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: Theme.of(context).textTheme.bodyMedium?.apply(
                                   color: isDark
                                       ? FColors.white.withValues(alpha: .8)
@@ -92,19 +101,31 @@ class InspectionCard extends StatelessWidget {
 
                               Row(
                                 children: [
-                                  vehicle?.make?.avatar != null
-                                      ? Image.network(
-                                          vehicle!.make!.avatar!,
-                                          fit: BoxFit.contain,
-                                          width: 30,
-                                          height: 30,
-                                        )
-                                      : SizedBox(),
-                                  const SizedBox(width: FSizes.sm),
-                                  Text(
-                                    vehicle?.plate ?? '',
-                                    style: Theme.of(context).textTheme.bodyMedium
-                                        ?.apply(color: FColors.primaryColor),
+                                  if (vehicle?.make?.avatar != null)
+                                    Image.network(
+                                      vehicle!.make!.avatar!,
+                                      fit: BoxFit.contain,
+                                      width: FSizes.iconInlineMd,
+                                      height: FSizes.iconInlineMd,
+                                      // Fallback for HTTP 500 / broken image URLs
+                                      errorBuilder: (_, __, ___) => Icon(
+                                        Iconsax.car,
+                                        size: FSizes.iconInlineSm,
+                                        color: FColors.darkGrey,
+                                      ),
+                                    ),
+                                  if (vehicle?.make?.avatar != null)
+                                    const SizedBox(width: FSizes.sm),
+                                  // Flexible so the plate text yields space to the logo
+                                  // and never pushes the Row past its bounded width.
+                                  Flexible(
+                                    child: Text(
+                                      vehicle?.plate ?? '',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context).textTheme.bodyMedium
+                                          ?.apply(color: FColors.primaryColor),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -114,9 +135,12 @@ class InspectionCard extends StatelessWidget {
                         const SizedBox(width: FSizes.spaceBtwItems),
                         Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
                               '#${slug ?? '---'}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.labelMedium?.apply(
                                 color: isDark ? FColors.grey : FColors.darkerGrey,
                                 fontStyle: FontStyle.italic,
@@ -125,12 +149,16 @@ class InspectionCard extends StatelessWidget {
                             const SizedBox(height: FSizes.spaceBtwItems),
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: FSizes.sm),
+                              constraints: const BoxConstraints(maxWidth: 110),
                               decoration: BoxDecoration(
                                 color: stage.color.withValues(alpha: .1),
                                 borderRadius: BorderRadius.circular(FSizes.sm),
                               ),
                               child: Text(
                                 stage.getLabel,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
                                 style: Theme.of(context).textTheme.bodyLarge?.apply(
                                   color: stage.color,
                                 ),
