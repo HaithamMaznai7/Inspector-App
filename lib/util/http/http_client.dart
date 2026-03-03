@@ -140,9 +140,13 @@ class Network extends GetConnect {
     // data in the expected language. Truncate body to avoid log spam.
     if (kDebugMode) {
       final bodyStr = response.body?.toString() ?? '';
-      final preview = bodyStr.length > 300
-          ? '${bodyStr.substring(0, 300)}…'
-          : bodyStr;
+      final isError = response.statusCode != null && response.statusCode! >= 300;
+      // Show full body for errors (422, 500, etc.) to aid debugging
+      final preview = isError
+          ? bodyStr
+          : (bodyStr.length > 300
+              ? '${bodyStr.substring(0, 300)}…'
+              : bodyStr);
       print('┌─── API RESPONSE ──────────────────────────');
       print('│ Status: ${response.statusCode}');
       print('│ Body: $preview');

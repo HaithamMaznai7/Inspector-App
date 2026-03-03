@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter pub get)",
+      "Bash(flutter analyze lib/services/force_update/ lib/boot/app_service_provider.dart lib/services/app/app_service.dart)",
+      "Bash(flutter analyze lib/services/force_update/)"
+    ]
+  }
+}

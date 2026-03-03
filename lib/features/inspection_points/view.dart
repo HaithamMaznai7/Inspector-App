@@ -84,7 +84,9 @@ class InspectionPointResults extends StatelessWidget {
                         style: IconButton.styleFrom(
                           backgroundColor: FColors.grey,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
+                            borderRadius: BorderRadius.circular(
+                              FSizes.borderRadiusSm,
+                            ),
                           ),
                         ),
                       ),
@@ -92,9 +94,8 @@ class InspectionPointResults extends StatelessWidget {
                       Expanded(
                         child: Text(
                           InspectionPage.pointsReview.tr,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                       ),
                       Row(
@@ -121,11 +122,15 @@ class InspectionPointResults extends StatelessWidget {
                     elevation: 1,
                     shadowColor: FColors.grey,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+                      borderRadius: BorderRadius.circular(
+                        FSizes.borderRadiusLg,
+                      ),
                     ),
                     child: InkWell(
                       onTap: () => controller.onEdit(cat: cat),
-                      borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+                      borderRadius: BorderRadius.circular(
+                        FSizes.borderRadiusLg,
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: FSizes.md,
@@ -137,8 +142,12 @@ class InspectionPointResults extends StatelessWidget {
                               width: FSizes.iconCircleSm,
                               height: FSizes.iconCircleSm,
                               decoration: BoxDecoration(
-                                color: FColors.primaryColor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
+                                color: FColors.primaryColor.withValues(
+                                  alpha: 0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                  FSizes.borderRadiusSm,
+                                ),
                               ),
                               alignment: Alignment.center,
                               child: _buildCategoryIcon(cat.category.icon),
@@ -227,8 +236,8 @@ class _SvgNetworkIconState extends State<_SvgNetworkIcon> {
   /// background/cutout shapes and `.cls-2`, `.cls-3` etc. for the
   /// actual icon shapes (gradient fills). We:
   ///  1. Find which classes have a white fill.
-  ///  2. Remove all <path> elements that use those classes.
-  ///  3. Remove <defs> entirely (styles, gradients, xlink refs).
+  ///  2. Remove all <path elements that use those classes.
+  ///  3. Remove <defs entirely (styles, gradients, xlink refs).
   ///  4. Clean up leftover class/xlink attributes.
   ///
   /// The remaining paths default to black fill, and the colorFilter
@@ -236,8 +245,9 @@ class _SvgNetworkIconState extends State<_SvgNetworkIcon> {
   static String _simplifyForIcon(String svg) {
     // 1. Find CSS classes with white fills (#fff / #ffffff)
     final whiteClasses = <String>{};
-    final styleMatch =
-        RegExp(r'<style[^>]*>([\s\S]*?)</style>').firstMatch(svg);
+    final styleMatch = RegExp(
+      r'<style[^>]*>([\s\S]*?)</style>',
+    ).firstMatch(svg);
     if (styleMatch != null) {
       final css = styleMatch.group(1)!;
       for (final m in RegExp(

@@ -352,6 +352,14 @@ class InspectionStepsController extends GetxController {
     }
 
     // ── Step 2: Send to API — navigate only on success ────────────────────
+    if (kDebugMode) {
+      print('┌─── setSatge: API REQUEST ─────────────────');
+      print('│ Old stage : $oldValue (${oldValue.value})');
+      print('│ New stage : ${inspection.value.stage} (${inspection.value.stage.value})');
+      print('│ Note      : "${inspection.value.note}"');
+      print('│ Slug      : ${inspection.value.slug}');
+      print('└────────────────────────────────────────────');
+    }
     bool apiSuccess = false;
     try {
       inspection.value = await repository!.update(inspection.value);
@@ -359,6 +367,14 @@ class InspectionStepsController extends GetxController {
     } on FNetworkException catch (e) {
       // Show the server's error (422 validation, 500, etc.) and keep the
       // user on the current step so they can fix the problem.
+      if (kDebugMode) {
+        print('┌─── setSatge: API ERROR ───────────────────');
+        print('│ Status  : ${e.statusCode}');
+        print('│ Message : ${e.message}');
+        print('│ Title   : ${e.title}');
+        print('│ Errors  : ${e.errors}');
+        print('└────────────────────────────────────────────');
+      }
       e.notify();
       inspection.value.stage = oldValue;
     } catch (_) {
@@ -543,16 +559,26 @@ class InspectionStepsController extends GetxController {
   }
 
   bool _arePhotosValid() {
-    if (!InspectionPhotosBinding().isRegistered) return true;
-    final photos = InspectionPhotosBinding().instance.photos;
-    if (photos.isEmpty) return false;
-    if (isSahrejMode) {
-      // MODE A: ALL required photos must be uploaded
-      return photos.every((p) => p.image != null);
-    } else {
-      // MODE B: at least one photo uploaded
-      return photos.any((p) => p.image != null);
+    if (!InspectionPhotosBinding().isRegistered) {
+      // Controller not registered — if the inspection actually requires
+      // photos we must NOT silently pass. Accessing .instance will
+      // lazy-init the controller, but photos won't be loaded yet.
+      if (inspection.value.hasPhotos) {
+        _log('_arePhotosValid – controller not registered but hasPhotos=true → false');
+        return false;
+      }
+      return true;
     }
+    final photos = InspectionPhotosBinding().instance.photos;
+    final result = photos.isEmpty
+        ? false
+        : isSahrejMode
+            ? photos.every((p) => p.image != null)
+            : photos.any((p) => p.image != null);
+    _log('_arePhotosValid – total=${photos.length}, '
+        'withImage=${photos.where((p) => p.image != null).length}, '
+        'sahrej=$isSahrejMode → $result');
+    return result;
   }
 
   bool _isObdValid() {
