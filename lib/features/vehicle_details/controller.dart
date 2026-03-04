@@ -1,9 +1,14 @@
+import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/features/inspection_steps/controller.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/vehicle_details.dart';
 import 'package:fahis_inspector/resources/assets_repository.dart';
 import 'package:fahis_inspector/resources/vehicle_details_repository.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/util/constants/api_endpoints.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
+import 'package:fahis_inspector/util/http/custom_response.dart';
+import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -24,6 +29,7 @@ class VehicleDetailsController extends GetxController {
 
   final isLoading = false.obs;
   final isSubmitting = false.obs;
+  final isSearchingVin = false.obs;
 
   final vinController = TextEditingController();
   final plateController = TextEditingController();
@@ -150,6 +156,91 @@ class VehicleDetailsController extends GetxController {
 
     formKey.currentState!.save();
     return true;
+  }
+
+  Future<void> searchByVin() async {
+    final vin = vinController.text.trim();
+    if (vin.length != 17) return;
+
+    isSearchingVin.value = true;
+
+    try {
+      final n = Network(endpoint: EndPoints.vinSearch);
+      n.setQuery = {'vin': vin};
+
+      final CustomResponse r = await n.response(RoutingUrl.home);
+
+      if (r.hasError || r.data == null || (r.data is Map && r.data.isEmpty)) {
+        FLoader.infoSnackBar(
+          title: DetailsPage.vinNotFound.tr,
+          message: DetailsPage.vinNotFoundMsg.tr,
+        );
+        return;
+      }
+
+      final Map<String, dynamic> raw = Map<String, dynamic>.from(r.data);
+
+      // Convert all values to String? so VehicleDetails.fromJson won't
+      // throw a TypeError (the API returns ints/doubles for some fields).
+      final Map<String, dynamic> stringified = {};
+      for (final entry in raw.entries) {
+        final v = entry.value;
+        if (v == null || v == 'none' || v == '') {
+          stringified[entry.key] = null;
+        } else {
+          stringified[entry.key] = v.toString();
+        }
+      }
+
+      final searched = VehicleDetails.fromJson(stringified);
+
+      // Merge: only overwrite fields that the search actually returned.
+      final current = inspectionDetails.value ?? VehicleDetails.empty();
+      inspectionDetails.value = current.copyWith(
+        vin: searched.vin ?? current.vin,
+        plate: searched.plate ?? current.plate,
+        bodyType: searched.bodyType ?? current.bodyType,
+        fuelType: searched.fuelType ?? current.fuelType,
+        gasolineType: searched.gasolineType ?? current.gasolineType,
+        drivetrain: searched.drivetrain ?? current.drivetrain,
+        gearbox: searched.gearbox ?? current.gearbox,
+        milage: searched.milage ?? current.milage,
+        cylindersNo: searched.cylindersNo ?? current.cylindersNo,
+        seatsNo: searched.seatsNo ?? current.seatsNo,
+        seatsType: searched.seatsType ?? current.seatsType,
+        color: searched.color ?? current.color,
+        seatColor: searched.seatColor ?? current.seatColor,
+        yearModel: searched.yearModel ?? current.yearModel,
+        enginSize: searched.enginSize ?? current.enginSize,
+      );
+
+      updateDetails();
+      update();
+
+      FLoader.successSnackBar(
+        title: DetailsPage.vinFound.tr,
+        message: DetailsPage.vinFoundMsg.tr,
+      );
+    } on FNetworkException catch (e) {
+      if (e.statusCode == 404) {
+        FLoader.infoSnackBar(
+          title: DetailsPage.vinNotFound.tr,
+          message: DetailsPage.vinNotFoundMsg.tr,
+        );
+      } else {
+        FLoader.warningSnackBar(
+          title: DetailsPage.vinSearchError.tr,
+          message: DetailsPage.vinSearchErrorMsg.tr,
+        );
+      }
+    } catch (_) {
+      FLoader.warningSnackBar(
+        title: DetailsPage.vinSearchError.tr,
+        message: DetailsPage.vinSearchErrorMsg.tr,
+      );
+    } finally {
+      isSearchingVin.value = false;
+    }
   }
 
   /// Returns: -1 = failed, 0 = saved (no reset), 1 = saved + reset ran.

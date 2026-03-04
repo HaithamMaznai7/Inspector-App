@@ -223,6 +223,16 @@ class Arabic {
     DetailsPage.vinValidationIfNull:
         'مافي انسان بدون اثبات و أكيد مافي موتر بدون اثباته (;',
     DetailsPage.vinValidation: '17 حرف و رقم يا ليت تكتبهم بالكامل',
+    DetailsPage.vinSearchBtn: 'بحث',
+    DetailsPage.vinSearching: 'جاري البحث...',
+    DetailsPage.vinFound: 'تم العثور على بيانات المركبة',
+    DetailsPage.vinFoundMsg: 'تم تعبئة الحقول تلقائياً، يمكنك التعديل عليها.',
+    DetailsPage.vinNotFound: 'لم يتم العثور على المركبة',
+    DetailsPage.vinNotFoundMsg: 'لا توجد بيانات لهذا الرقم، يمكنك الإدخال يدوياً.',
+    DetailsPage.vinSearchError: 'خطأ في البحث',
+    DetailsPage.vinSearchErrorMsg: 'تعذر البحث، حاول مرة أخرى.',
+    DetailsPage.vinHelperTyping: 'أدخل 17 حرف للبحث عن بيانات المركبة تلقائياً',
+    DetailsPage.vinHelperReady: 'اضغط على أيقونة البحث لتعبئة البيانات تلقائياً',
 
     DetailsPage.plateNumber: 'رقم اللوحة',
     DetailsPage.plateNumberHint: 'أدخل رقم اللوحة',

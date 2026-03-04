@@ -69,4 +69,15 @@ class DetailsPage {
 
   static const String seatNo = 'seatNo';
   static const String seatNoValidation = 'seatNoValidation';
+
+  static const String vinSearchBtn = 'vinSearchBtn';
+  static const String vinSearching = 'vinSearching';
+  static const String vinFound = 'vinFound';
+  static const String vinFoundMsg = 'vinFoundMsg';
+  static const String vinNotFound = 'vinNotFound';
+  static const String vinNotFoundMsg = 'vinNotFoundMsg';
+  static const String vinSearchError = 'vinSearchError';
+  static const String vinSearchErrorMsg = 'vinSearchErrorMsg';
+  static const String vinHelperTyping = 'vinHelperTyping';
+  static const String vinHelperReady = 'vinHelperReady';
 }

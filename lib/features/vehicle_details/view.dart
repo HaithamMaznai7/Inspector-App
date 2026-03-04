@@ -113,22 +113,7 @@ class VehicleDetailsView extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: FSizes.spaceBtwSections),
-                      buildEditableField(
-                        context,
-                        DetailsPage.vin.tr,
-                        'vin',
-                        details.vin ?? '',
-                        controller.vinController,
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'fieldRequired'.tr;
-                          }
-                          if (value.trim().length != 17) {
-                            return 'vinMustBe17'.tr;
-                          }
-                          return null;
-                        },
-                      ),
+                      _buildVinField(context, controller),
                       const SizedBox(height: FSizes.spaceBtwItems),
                       buildEditableField(
                         context,
@@ -465,6 +450,107 @@ class VehicleDetailsView extends StatelessWidget {
             const SizedBox(height: FSizes.spaceBtwItems * 4),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildVinField(
+    BuildContext context,
+    VehicleDetailsController controller,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: FSizes.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(DetailsPage.vin.tr,
+              style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: FSizes.xs),
+          Obx(() {
+            final isSearching = controller.isSearchingVin.value;
+            final vinLength = controller.vinController.text.trim().length;
+            final canSearch = vinLength == 17 && !isSearching;
+            final showSuffix = canSearch || isSearching;
+
+            return TextFormField(
+              controller: controller.vinController,
+              textCapitalization: TextCapitalization.characters,
+              maxLength: 17,
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                hintText: DetailsPage.vinHint.tr,
+                counterText: '',
+                errorText: controller.formErrors['vin'],
+                suffixIcon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  switchInCurve: Curves.easeOut,
+                  switchOutCurve: Curves.easeIn,
+                  child: showSuffix
+                      ? Padding(
+                          key: const ValueKey('vin_search_btn'),
+                          padding: const EdgeInsetsDirectional.only(
+                              end: 6),
+                          child: GestureDetector(
+                            onTap: canSearch
+                                ? () => controller.searchByVin()
+                                : null,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: FColors.primaryColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: isSearching
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Iconsax.search_normal_1,
+                                          size: 16,
+                                          color: Colors.white,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          DetailsPage.vinSearchBtn.tr,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelMedium
+                                              ?.copyWith(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(
+                          key: ValueKey('vin_empty')),
+                ),
+              ),
+              onChanged: (_) => controller.update(),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'fieldRequired'.tr;
+                }
+                if (value.trim().length != 17) {
+                  return 'vinMustBe17'.tr;
+                }
+                return null;
+              },
+            );
+          }),
+        ],
       ),
     );
   }
