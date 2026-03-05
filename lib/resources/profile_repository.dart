@@ -65,7 +65,7 @@ class ProfileRepository {
 
     try {
       final response = await net.response(RoutingUrl.home);
-      return Profile.fromJson(response.data);
+      return Profile.fromJson(response.data['user']);
     } catch (e) {
       dd('Error updating profile: $e');
       rethrow;

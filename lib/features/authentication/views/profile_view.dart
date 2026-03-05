@@ -385,9 +385,10 @@ class _ProfileViewState extends State<ProfileView> {
       // Navigate back to home to refresh sidebar with updated profile
       Get.offAllNamed(RoutingUrl.home);
     } catch (e) {
+      dd(e.toString());
       FLoader.errorSnackBar(
         title: FTexts.profileUpdate.tr,
-        message: e.toString(),
+        message: 'Failed to update profile. Please try again.'.tr,
       );
     } finally {
       if (mounted) setState(() => _isUpdating = false);
