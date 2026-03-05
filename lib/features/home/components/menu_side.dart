@@ -241,7 +241,7 @@ class SideMenuWrapper extends StatelessWidget {
                         builder: (context, constraints) {
                           if (constraints.maxWidth >= 220) {
                             return InkWell(
-                              onTap: () => Get.to(ProfileView()),
+                              onTap: () => Get.to(() => const ProfileView()),
                               child: AnimatedContainer(
                                 duration: Duration(seconds: 1),
                                 width: constraints.maxWidth,
@@ -309,7 +309,7 @@ class SideMenuWrapper extends StatelessWidget {
                           }
 
                           return InkWell(
-                            onTap: () => Get.to(ProfileView()),
+                            onTap: () => Get.to(() => const ProfileView()),
                             child: FUserAvatar(),
                           );
                         },

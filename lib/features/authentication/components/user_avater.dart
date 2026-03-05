@@ -10,7 +10,7 @@ class FUserAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Get.to(ProfileView()), // Get.toNamed(page),
+      onTap: () => Get.to(() => const ProfileView()), // Get.toNamed(page),
       child: Center(
         child: CircleAvatar(
           radius: FSizes.md,
