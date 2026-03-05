@@ -18,9 +18,11 @@ class BroadcastService extends GetxService {
   Rxn<BroadcastEvent> responses = Rxn<BroadcastEvent>();
   RxnString socketId = RxnString();
 
-  static BroadcastService? get instance => Get.isRegistered<BroadcastService>()
-      ? Get.find<BroadcastService>()
-      : Get.put<BroadcastService>(BroadcastService.init());
+  // WebSocket disabled — re-enable by restoring the getter below.
+  static BroadcastService? get instance => null;
+  // static BroadcastService? get instance => Get.isRegistered<BroadcastService>()
+  //     ? Get.find<BroadcastService>()
+  //     : Get.put<BroadcastService>(BroadcastService.init());
 
   BroadcastService(this.options, this.broadcast);
 

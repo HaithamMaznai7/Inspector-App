@@ -60,6 +60,11 @@ class LoginController extends GetxController {
     try {
       await auth().login(credential, password);
     } on FNetworkException catch (e) {
+      if (e.statusCode != 422) {
+        // No connection, server error, etc. — show the appropriate snackbar.
+        e.notify();
+        return;
+      }
       if (e.statusCode == 422 && e.errors != null) {
         isExists.value =
             !e.errors!.containsKey('email') && !e.errors!.containsKey('mobile');
