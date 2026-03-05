@@ -259,6 +259,21 @@ class InspectionStepsController extends GetxController {
     update();
   }
 
+  /// Returns a progression index for comparing stage order.
+  /// Higher index = further along in the inspection flow.
+  static int _stageProgressIndex(InspectionStage stage) {
+    const order = [
+      InspectionStage.info,     // 0
+      InspectionStage.points,   // 1
+      InspectionStage.photos,   // 2
+      InspectionStage.body,     // 3
+      InspectionStage.obd,      // 4
+      InspectionStage.finished, // 5
+    ];
+    final i = order.indexOf(stage);
+    return i >= 0 ? i : -1;
+  }
+
   Future<void> setSatge(InspectionStage stage) async {
     isSubmitting.toggle();
     update();
@@ -270,11 +285,8 @@ class InspectionStepsController extends GetxController {
     int vehicleSaveResult = 0;
 
     // ── Step 1: Pre-flight validation & data collection ──────────────────
-    // NOTE: goToTab() is intentionally NOT called here. Navigation only
-    // happens in Step 3, after the API confirms the stage change.
     switch (stage) {
       case InspectionStage.info:
-        inspection.value.stage = stage;
         break;
       case InspectionStage.points:
         // Save & validate vehicle details before advancing from Info
@@ -287,7 +299,6 @@ class InspectionStepsController extends GetxController {
             return;
           }
         }
-        inspection.value.stage = stage;
         break;
       case InspectionStage.photos:
         // Validate points before advancing to photos
@@ -296,7 +307,6 @@ class InspectionStepsController extends GetxController {
           update();
           return;
         }
-        inspection.value.stage = stage;
         break;
       case InspectionStage.body:
         // Validate photos before advancing to body
@@ -305,10 +315,8 @@ class InspectionStepsController extends GetxController {
           update();
           return;
         }
-        inspection.value.stage = stage;
         break;
       case InspectionStage.obd:
-        inspection.value.stage = stage;
         break;
       case InspectionStage.finished:
         // Validate OBD data if this inspection has an OBD step
@@ -338,56 +346,58 @@ class InspectionStepsController extends GetxController {
         }
         // Backend requires note when stage is finished; use '-' if empty
         inspection.value.note = note.trim().isEmpty ? '-' : note.trim();
-        inspection.value.stage = stage;
         break;
       default:
         break;
     }
 
-    // Skip API call if stage didn't actually change
-    if (inspection.value.stage == oldValue) {
-      isSubmitting.toggle();
-      update();
-      return;
-    }
+    // ── Step 2: Determine if we need to update the backend stage ─────────
+    // Only call the API when advancing BEYOND the current backend stage.
+    // When re-visiting a previous tab, just validate (Step 1) and navigate
+    // (Step 3) — never regress the backend stage.
+    final isAdvancing =
+        _stageProgressIndex(stage) > _stageProgressIndex(oldValue);
 
-    // ── Step 2: Send to API — navigate only on success ────────────────────
-    if (kDebugMode) {
-      print('┌─── setSatge: API REQUEST ─────────────────');
-      print('│ Old stage : $oldValue (${oldValue.value})');
-      print('│ New stage : ${inspection.value.stage} (${inspection.value.stage.value})');
-      print('│ Note      : "${inspection.value.note}"');
-      print('│ Slug      : ${inspection.value.slug}');
-      print('└────────────────────────────────────────────');
-    }
-    bool apiSuccess = false;
-    try {
-      inspection.value = await repository!.update(inspection.value);
-      apiSuccess = true;
-    } on FNetworkException catch (e) {
-      // Show the server's error (422 validation, 500, etc.) and keep the
-      // user on the current step so they can fix the problem.
+    if (isAdvancing) {
+      inspection.value.stage = stage;
       if (kDebugMode) {
-        print('┌─── setSatge: API ERROR ───────────────────');
-        print('│ Status  : ${e.statusCode}');
-        print('│ Message : ${e.message}');
-        print('│ Title   : ${e.title}');
-        print('│ Errors  : ${e.errors}');
+        print('┌─── setSatge: API REQUEST ─────────────────');
+        print('│ Old stage : $oldValue (${oldValue.value})');
+        print('│ New stage : ${inspection.value.stage} (${inspection.value.stage.value})');
+        print('│ Note      : "${inspection.value.note}"');
+        print('│ Slug      : ${inspection.value.slug}');
         print('└────────────────────────────────────────────');
       }
-      e.notify();
-      inspection.value.stage = oldValue;
-    } catch (_) {
-      inspection.value.stage = oldValue;
-    } finally {
-      isSubmitting.toggle();
-      update();
+      try {
+        inspection.value = await repository!.update(inspection.value);
+      } on FNetworkException catch (e) {
+        if (kDebugMode) {
+          print('┌─── setSatge: API ERROR ───────────────────');
+          print('│ Status  : ${e.statusCode}');
+          print('│ Message : ${e.message}');
+          print('│ Title   : ${e.title}');
+          print('│ Errors  : ${e.errors}');
+          print('└────────────────────────────────────────────');
+        }
+        e.notify();
+        inspection.value.stage = oldValue;
+        isSubmitting.toggle();
+        update();
+        return;
+      } catch (_) {
+        inspection.value.stage = oldValue;
+        isSubmitting.toggle();
+        update();
+        return;
+      }
+    } else {
+      _log('setSatge($stage) – not advancing (backend=$oldValue), skip API');
     }
 
-    if (!apiSuccess) return;
+    isSubmitting.toggle();
+    update();
 
     // ── Step 3: Navigate & post-navigation setup ──────────────────────────
-    // Only reached when the API confirmed the stage change successfully.
     if (stage == InspectionStage.finished) {
       Get.back();
       return;
@@ -412,7 +422,7 @@ class InspectionStepsController extends GetxController {
           pointsCtrl.isLoading.value = false;
           pointsCtrl.update();
         }
-      } else {
+      } else if (isAdvancing) {
         // First save — refresh points (initial load may have been empty
         // because vehicle details weren't saved yet).
         pointsCtrl.load(isRefresh: true);
