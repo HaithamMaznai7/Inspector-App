@@ -15,169 +15,337 @@ import 'package:iconsax/iconsax.dart';
 class InspectionPointResults extends StatelessWidget {
   const InspectionPointResults({super.key});
 
-  Widget _buildBadge(String value, Color color) {
-    return Container(
-      width: FSizes.iconMd + FSizes.xs,
-      height: FSizes.iconMd + FSizes.xs,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        value,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: FSizes.fontSizeSm - 1,
-          fontWeight: FontWeight.w600,
+  // ── compact tinted badge ────────────────────────────────────────────────────
+  Widget _badge(String value, Color color) => Container(
+        constraints: const BoxConstraints(minWidth: 32),
+        padding: const EdgeInsets.symmetric(horizontal: FSizes.xs, vertical: 2),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
+          border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
         ),
-      ),
-    );
-  }
+        alignment: Alignment.center,
+        child: Text(
+          value,
+          style: TextStyle(
+            color: color,
+            fontSize: FSizes.fontSizeSm - 2,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
 
-  Widget _buildCategoryIcon(String iconUrl) {
+  // ── category icon ───────────────────────────────────────────────────────────
+  Widget _catIcon(String iconUrl) {
     if (iconUrl.isEmpty) {
-      return Icon(Iconsax.category, size: 24, color: FColors.primaryColor);
+      return Icon(Iconsax.category, size: 20, color: FColors.primaryColor);
     }
     return _SvgNetworkIcon(url: iconUrl);
   }
 
+  // ── summary stat tile ───────────────────────────────────────────────────────
+  Widget _statTile(
+    BuildContext context, {
+    required String label,
+    required int count,
+    required Color color,
+    required IconData icon,
+  }) =>
+      Expanded(
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            vertical: FSizes.sm,
+            horizontal: FSizes.xs,
+          ),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+            border: Border.all(color: color.withValues(alpha: 0.22), width: 1),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: color, size: 18),
+              const SizedBox(height: 4),
+              Text(
+                '$count',
+                style: TextStyle(
+                  color: color,
+                  fontSize: FSizes.fontSizeMd,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: color.withValues(alpha: 0.8),
+                      fontWeight: FontWeight.w500,
+                    ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final surfaceColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : FColors.primaryColor.withValues(alpha: 0.03);
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : FColors.grey.withValues(alpha: 0.55);
+
     return GetBuilder<InspectionPointsController>(
       init: InspectionPointsBinding().instance,
       builder: (controller) {
         final review = controller.review.value ?? ReviewPoint.set([]);
         final isLoading = controller.isLoading.value;
+
         if (isLoading) {
           return Center(
             child: CircularProgressIndicator(color: FColors.primaryColor),
           );
         }
 
+        final total = review.all;
+        final answered = review.good + review.note;
+        final progress = total > 0 ? answered / total : 0.0;
+        final progressColor =
+            progress == 1.0 ? FColors.success : FColors.primaryColor;
+
         return RefreshIndicator(
+          color: FColors.primaryColor,
           onRefresh: controller.onRefresh,
           child: ListView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: FSizes.md,
-              vertical: FSizes.sm,
+            padding: const EdgeInsets.fromLTRB(
+              FSizes.md,
+              FSizes.sm,
+              FSizes.md,
+              FSizes.lg,
             ),
             children: [
-              // Header card with summary
-              Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-                  side: BorderSide(color: FColors.grey),
+              // ── Summary card ──────────────────────────────────────────────
+              Container(
+                decoration: BoxDecoration(
+                  color: surfaceColor,
+                  borderRadius: BorderRadius.circular(FSizes.cardRadiusLg),
+                  border: Border.all(color: borderColor),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: FSizes.md,
-                    vertical: FSizes.sm,
-                  ),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () => controller.generate(),
-                        icon: const Icon(Iconsax.refresh),
-                        tooltip: InspectionPage.resetPointsTitle.tr,
-                        style: IconButton.styleFrom(
-                          backgroundColor: FColors.grey,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              FSizes.borderRadiusSm,
+                padding: const EdgeInsets.all(FSizes.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title + refresh
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            InspectionPage.pointsReview.tr,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: FSizes.sm),
-                      Expanded(
-                        child: Text(
-                          InspectionPage.pointsReview.tr,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w600),
+                        Tooltip(
+                          message: InspectionPage.resetPointsTitle.tr,
+                          child: InkWell(
+                            onTap: () => controller.generate(),
+                            borderRadius:
+                                BorderRadius.circular(FSizes.borderRadiusMd),
+                            child: Container(
+                              padding: const EdgeInsets.all(FSizes.sm),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.07),
+                                borderRadius: BorderRadius.circular(
+                                  FSizes.borderRadiusMd,
+                                ),
+                              ),
+                              child: Icon(
+                                Iconsax.refresh,
+                                size: FSizes.iconSm,
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.55),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                      Row(
-                        textDirection: TextDirection.ltr,
-                        children: [
-                          _buildBadge('${review.good}', FColors.success),
-                          const SizedBox(width: FSizes.xs),
-                          _buildBadge('${review.note}', FColors.warning),
-                          const SizedBox(width: FSizes.xs),
-                          _buildBadge('${review.none}', FColors.darkGrey),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: FSizes.xs),
+                      ],
+                    ),
+                    const SizedBox(height: FSizes.sm),
 
-              // Category list
-              ...review.cats.map(
-                (cat) => Padding(
-                  padding: const EdgeInsets.only(bottom: FSizes.xs),
-                  child: Card(
-                    elevation: 1,
-                    shadowColor: FColors.grey,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        FSizes.borderRadiusLg,
+                    // Progress bar + count label
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(100),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 6,
+                        backgroundColor:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(progressColor),
                       ),
                     ),
+                    const SizedBox(height: FSizes.xs),
+                    Text(
+                      '$answered / $total',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.45),
+                      ),
+                    ),
+                    const SizedBox(height: FSizes.sm),
+
+                    // Three stat tiles
+                    Row(
+                      children: [
+                        _statTile(
+                          context,
+                          label: FTexts.good.tr,
+                          count: review.good,
+                          color: FColors.success,
+                          icon: Iconsax.tick_circle,
+                        ),
+                        const SizedBox(width: FSizes.xs),
+                        _statTile(
+                          context,
+                          label: FTexts.notes.tr,
+                          count: review.note,
+                          color: FColors.warning,
+                          icon: Iconsax.note_21,
+                        ),
+                        const SizedBox(width: FSizes.xs),
+                        _statTile(
+                          context,
+                          label: FTexts.na.tr,
+                          count: review.none,
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.45),
+                          icon: Iconsax.minus_cirlce,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: FSizes.sm),
+
+              // ── Category rows ─────────────────────────────────────────────
+              ...review.cats.map((cat) {
+                final catTotal = cat.good + cat.note + cat.none;
+                final catAnswered = cat.good + cat.note;
+                final catProgress =
+                    catTotal > 0 ? catAnswered / catTotal : 0.0;
+                final catProgressColor = catProgress == 1.0
+                    ? FColors.success
+                    : FColors.primaryColor.withValues(alpha: 0.7);
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: FSizes.sm),
+                  child: Material(
+                    color: theme.cardColor,
+                    borderRadius:
+                        BorderRadius.circular(FSizes.borderRadiusLg),
+                    clipBehavior: Clip.antiAlias,
                     child: InkWell(
                       onTap: () => controller.onEdit(cat: cat),
-                      borderRadius: BorderRadius.circular(
-                        FSizes.borderRadiusLg,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: FSizes.md,
-                          vertical: FSizes.md,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: borderColor),
+                          borderRadius:
+                              BorderRadius.circular(FSizes.borderRadiusLg),
                         ),
-                        child: Row(
+                        child: Column(
                           children: [
-                            Container(
-                              width: FSizes.iconCircleSm,
-                              height: FSizes.iconCircleSm,
-                              decoration: BoxDecoration(
-                                color: FColors.primaryColor.withValues(
-                                  alpha: 0.1,
-                                ),
-                                borderRadius: BorderRadius.circular(
-                                  FSizes.borderRadiusSm,
-                                ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: FSizes.md,
+                                vertical: FSizes.md,
                               ),
-                              alignment: Alignment.center,
-                              child: _buildCategoryIcon(cat.category.icon),
-                            ),
-                            const SizedBox(width: FSizes.md),
-                            Expanded(
-                              child: Text(
-                                cat.category.title,
-                                style: Theme.of(context).textTheme.titleMedium,
-                                overflow: TextOverflow.ellipsis,
+                              child: Row(
+                                children: [
+                                  // Icon
+                                  Container(
+                                    width: FSizes.iconCircleSm,
+                                    height: FSizes.iconCircleSm,
+                                    decoration: BoxDecoration(
+                                      color: FColors.primaryColor
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(
+                                        FSizes.borderRadiusSm,
+                                      ),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: _catIcon(cat.category.icon),
+                                  ),
+                                  const SizedBox(width: FSizes.md),
+
+                                  // Title + sub-count
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          cat.category.title,
+                                          style: theme.textTheme.titleSmall
+                                              ?.copyWith(
+                                                  fontWeight: FontWeight.w600),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '$catAnswered / $catTotal',
+                                          style: theme.textTheme.labelSmall
+                                              ?.copyWith(
+                                            color: theme.colorScheme.onSurface
+                                                .withValues(alpha: 0.4),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Badges (always LTR)
+                                  Row(
+                                    textDirection: TextDirection.ltr,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      _badge('${cat.good}', FColors.success),
+                                      const SizedBox(width: FSizes.xs),
+                                      _badge('${cat.note}', FColors.warning),
+                                      const SizedBox(width: FSizes.xs),
+                                      _badge(
+                                        '${cat.none}',
+                                        theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.45),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
-                            Row(
-                              textDirection: TextDirection.ltr,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _buildBadge('${cat.good}', FColors.success),
-                                const SizedBox(width: FSizes.xs),
-                                _buildBadge('${cat.note}', FColors.warning),
-                                const SizedBox(width: FSizes.xs),
-                                _buildBadge('${cat.none}', FColors.darkGrey),
-                              ],
+
+                            // Bottom progress strip
+                            LinearProgressIndicator(
+                              value: catProgress,
+                              minHeight: 3,
+                              backgroundColor: Colors.transparent,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  catProgressColor),
                             ),
                           ],
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
+                );
+              }),
             ],
           ),
         );
