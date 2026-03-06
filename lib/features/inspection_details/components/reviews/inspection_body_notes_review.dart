@@ -20,11 +20,11 @@ class InspectionBodyNotesReview extends StatelessWidget {
     }
 
     if (imageUrl.startsWith('https://') || imageUrl.startsWith('http://')) {
-      return NetworkImage(imageUrl);
+      return CachedNetworkImageProvider(imageUrl);
     } else if (imageUrl.startsWith('//s3')) {
-      return NetworkImage('https:$imageUrl');
+      return CachedNetworkImageProvider('https:$imageUrl');
     } else {
-      return NetworkImage(imageUrl);
+      return CachedNetworkImageProvider(imageUrl);
     }
   }
 

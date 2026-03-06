@@ -23,9 +23,9 @@ class InspectionPhotosReview extends StatelessWidget {
       return const AssetImage('assets/images/placeholder.png');
     }
     if (imageUrl.startsWith('//s3')) {
-      return NetworkImage('https:$imageUrl');
+      return CachedNetworkImageProvider('https:$imageUrl');
     }
-    return NetworkImage(imageUrl);
+    return CachedNetworkImageProvider(imageUrl);
   }
 
   void _showFullImage(BuildContext context, Photo photo) {

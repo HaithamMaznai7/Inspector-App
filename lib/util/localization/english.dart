@@ -378,6 +378,8 @@ class English {
     FTexts.markerAddPhoto: 'Take Photo',
     FTexts.markerChangePhoto: 'Change Photo',
     FTexts.bodyInspectionDetails: 'Inspection Details',
+    FTexts.bodyTapHint: 'Tap to add a marker',
+    FTexts.bodyDragHint: 'Drag a marker to reposition',
 
     /// Body part labels
     FTexts.bodyPartTop: 'Top',

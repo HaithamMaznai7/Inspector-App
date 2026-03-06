@@ -433,6 +433,8 @@ class Arabic {
     FTexts.markerAddPhoto: 'التقاط صورة',
     FTexts.markerChangePhoto: 'تغيير الصورة',
     FTexts.bodyInspectionDetails: 'تفاصيل الفحص',
+    FTexts.bodyTapHint: 'اضغط لإضافة علامة',
+    FTexts.bodyDragHint: 'اسحب العلامة لتغيير موضعها',
 
     /// Body part labels
     FTexts.bodyPartTop: 'أعلى',

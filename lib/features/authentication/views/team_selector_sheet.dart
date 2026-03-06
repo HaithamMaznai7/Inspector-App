@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/features/inspections/controller.dart';
 import 'package:fahis_inspector/main.dart';
@@ -229,7 +230,7 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
 
     if (logo != null && !logo.contains('ui-avatars.com')) {
       return CircleAvatar(
-        backgroundImage: NetworkImage(logo),
+        backgroundImage: CachedNetworkImageProvider(logo),
         backgroundColor: FColors.grey.withValues(alpha: 0.2),
         onBackgroundImageError: (_, __) {},
       );

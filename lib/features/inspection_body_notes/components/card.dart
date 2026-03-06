@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:camera/camera.dart';
 import 'package:fahis_inspector/common/widgets/camera/camera.dart';
 import 'package:fahis_inspector/common/widgets/components/custom_selector.dart';
@@ -43,7 +44,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
   /// Resolves the image provider from either network URL or local file
   ImageProvider? get _imageProvider {
     if (_marker.file != null) return FileImage(_marker.file!);
-    if (_marker.image != null) return NetworkImage(_marker.image!);
+    if (_marker.image != null) return CachedNetworkImageProvider(_marker.image!);
     return null;
   }
 

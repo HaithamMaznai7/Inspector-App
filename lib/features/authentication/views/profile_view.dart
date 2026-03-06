@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/city.dart';
@@ -203,13 +204,12 @@ class _ProfileViewState extends State<ProfileView> {
                           backgroundColor: FColors.grey.withValues(alpha: 0.2),
                           backgroundImage: _pickedPhoto != null
                               ? FileImage(_pickedPhoto!)
-                              : NetworkImage(
+                              : CachedNetworkImageProvider(
                                       _safeAvatarUrl(
                                         _profile?.avatar,
                                         _profile?.name,
                                       ),
-                                    )
-                                    as ImageProvider,
+                                    ),
                           onBackgroundImageError: (_, __) {},
                         ),
                         Positioned(

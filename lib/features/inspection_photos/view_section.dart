@@ -266,7 +266,7 @@ class _PhotoGrid extends StatelessWidget {
     final url = photo.image!;
     showImageViewer(
       context,
-      NetworkImage(url.startsWith('//') ? 'https:$url' : url),
+      CachedNetworkImageProvider(url.startsWith('//') ? 'https:$url' : url),
       useSafeArea: true,
       swipeDismissible: true,
     );

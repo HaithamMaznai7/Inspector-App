@@ -78,6 +78,8 @@ class FTexts {
   static const String markerAddPhoto = 'markerAddPhoto';
   static const String markerChangePhoto = 'markerChangePhoto';
   static const String bodyInspectionDetails = 'bodyInspectionDetails';
+  static const String bodyTapHint = 'bodyTapHint';
+  static const String bodyDragHint = 'bodyDragHint';
   static const String bodyPartTop = 'bodyPartTop';
   static const String bodyPartLeft = 'bodyPartLeft';
   static const String bodyPartRight = 'bodyPartRight';
