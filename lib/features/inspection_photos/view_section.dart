@@ -7,9 +7,15 @@ import 'package:fahis_inspector/util/constants/colors.dart';
 
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+
+// ignore_for_file: avoid_print
+void _log(String msg) {
+  if (kDebugMode) print('[PHOTOS_UI] $msg');
+}
 
 /// Tabbed photo album section shown inside the inspection steps screen.
 ///
@@ -180,6 +186,7 @@ class _CategoryTabs extends StatelessWidget {
                       BorderRadius.circular(FSizes.borderRadiusLg),
                 ),
                 onSelected: (_) {
+                  _log('chip tapped → $cat (was: ${controller.category.value})');
                   controller.category.value = cat;
                   controller.update();
                 },

@@ -1,5 +1,5 @@
-import 'dart:developer';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:flutter/foundation.dart';
 import '../constants/api_endpoints.dart';
 import '../http/custom_response.dart';
@@ -95,13 +95,14 @@ class Network extends GetConnect {
     if (token != null) {
       _header['Authorization'] = 'Bearer $token';
     }
+
+    // Prevent requests from hanging indefinitely.
+    httpClient.timeout = const Duration(seconds: 30);
   }
 
   Future<CustomResponse> response(String? route, {Map? parameters}) async {
-    late Response response;
+    Response? response;
 
-    // DEBUG: Log outgoing request details so we can verify the language
-    // header is correct and trace any backend localization issues.
     if (kDebugMode) {
       print('┌─── API REQUEST ───────────────────────────');
       print('│ ${requestMethod.name.toUpperCase()} $url');
@@ -128,29 +129,33 @@ class Network extends GetConnect {
           break;
       }
     } catch (e) {
-      log(
-        'Error: from Network:response:73 line',
-        error: e,
-        level: 1,
-        name: 'Connection Error',
-      );
+      if (kDebugMode) {
+        print('┌─── API ERROR ─────────────────────────────');
+        print('│ ${requestMethod.name.toUpperCase()} $url');
+        print('│ $e');
+        print('└───────────────────────────────────────────');
+      }
     }
 
-    // DEBUG: Log the response so we can verify the backend returned
-    // data in the expected language. Truncate body to avoid log spam.
-    if (kDebugMode) {
+    if (kDebugMode && response != null) {
       final bodyStr = response.body?.toString() ?? '';
-      final isError = response.statusCode != null && response.statusCode! >= 300;
-      // Show full body for errors (422, 500, etc.) to aid debugging
+      final isError =
+          response.statusCode != null && response.statusCode! >= 300;
       final preview = isError
           ? bodyStr
-          : (bodyStr.length > 300
-              ? '${bodyStr.substring(0, 300)}…'
-              : bodyStr);
+          : (bodyStr.length > 300 ? '${bodyStr.substring(0, 300)}…' : bodyStr);
       print('┌─── API RESPONSE ──────────────────────────');
       print('│ Status: ${response.statusCode}');
       print('│ Body: $preview');
       print('└───────────────────────────────────────────');
+    }
+
+    if (response == null || response.statusCode == null) {
+      throw FNetworkException(
+        'Connection error',
+        statusCode: 0,
+        title: 'Connection Error',
+      );
     }
 
     return CustomResponse.set(response);
