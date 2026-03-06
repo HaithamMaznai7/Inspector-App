@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter analyze lib/features/inspection_photos/ lib/resources/inspection_photos_repository.dart)",
+      "Bash(flutter analyze lib/features/inspection_photos/view_section.dart)",
+      "Bash(flutter analyze lib/features/inspection_photos/controller.dart)"
+    ]
+  }
+}

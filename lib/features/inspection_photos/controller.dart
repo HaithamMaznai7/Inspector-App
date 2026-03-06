@@ -25,6 +25,9 @@ class InspectionPhotosController extends GetxController {
   RxList<String> categories = RxList<String>([]);
   RxnString category = RxnString();
 
+  /// Tracks photo IDs currently being uploaded — used to show shimmer.
+  final RxList<int> uploadingIds = RxList<int>([]);
+
   final isLoading = false.obs;
 
   final isEditing = false.obs;
@@ -37,15 +40,14 @@ class InspectionPhotosController extends GetxController {
       categories.assignAll(data.map((p) => p.type).toSet().toList());
       categories.refresh();
 
-      if (categories.isNotEmpty) {
-        category.value = data.firstOrNull?.type ?? categories.first;
-      } else {
-        category.value = null; // nothing selected if no categories
+      // Only auto-select a category on first load — never override the user's
+      // active tab choice when photos update (e.g. after an upload).
+      if (category.value == null && categories.isNotEmpty) {
+        category.value = categories.first;
+      } else if (categories.isEmpty) {
+        category.value = null;
       }
 
-      // mainController.updateInspection(photos: data);
-      category.value = data.firstOrNull?.type ?? categories.firstOrNull;
-      // mainController.updateInspection(photos: data);
       update();
     });
   }
@@ -91,13 +93,14 @@ class InspectionPhotosController extends GetxController {
       categories.assignAll(data.map((p) => p.type).toSet().toList());
       categories.refresh();
 
-      if (categories.isNotEmpty) {
-        category.value = data.firstOrNull?.type ?? categories.first;
-      } else {
-        category.value = null; // nothing selected if no categories
+      // Only auto-select a category on first load — never override the user's
+      // active tab choice when photos update (e.g. after an upload).
+      if (category.value == null && categories.isNotEmpty) {
+        category.value = categories.first;
+      } else if (categories.isEmpty) {
+        category.value = null;
       }
 
-      // mainController.updateInspection(photos: data);
       update();
     });
 
@@ -135,7 +138,6 @@ class InspectionPhotosController extends GetxController {
   }
 
   Future<void> picking(Photo photo) async {
-    final cat = category.value;
     if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
       final cameras = await availableCameras();
       photo.file = await Get.dialog<File>(Camera(cameras: cameras));
@@ -151,9 +153,15 @@ class InspectionPhotosController extends GetxController {
 
     // Only upload if file exists (user didn't cancel)
     if (photo.file != null) {
-      await repository.update(photo);
+      uploadingIds.add(photo.id);
+      update();
+      try {
+        await repository.update(photo);
+      } finally {
+        uploadingIds.remove(photo.id);
+        update();
+      }
     }
-    category.value = cat;
     update();
   }
 

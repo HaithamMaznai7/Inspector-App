@@ -1,3 +1,4 @@
+import 'package:fahis_inspector/features/inspection_photos/components/photo_upload_shimmer.dart';
 import 'package:fahis_inspector/models/photo.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -10,9 +11,13 @@ import 'package:iconsax/iconsax.dart';
 /// A card representing a single inspection photo slot.
 /// Shows the photo title, upload status (uploaded or pending),
 /// a thumbnail (or camera placeholder), and action buttons.
+///
+/// Set [isUploading] to true to display a shimmer animation on the thumbnail
+/// while the photo is being uploaded.
 class PhotoCard extends StatelessWidget {
-  const PhotoCard({super.key, required this.photo});
+  const PhotoCard({super.key, required this.photo, this.isUploading = false});
   final Photo photo;
+  final bool isUploading;
 
   bool get _hasImage => photo.image != null || photo.file != null;
 
@@ -92,8 +97,15 @@ class PhotoCard extends StatelessWidget {
     );
   }
 
-  /// Builds the thumbnail: shows the photo if uploaded, or a camera placeholder
+  /// Builds the thumbnail: shimmer during upload, image when done, placeholder when empty.
   Widget _buildThumbnail() {
+    if (isUploading) {
+      return PhotoUploadShimmer(
+        width: FSizes.imageThumbSize,
+        height: FSizes.imageThumbSize,
+        borderRadius: FSizes.borderRadiusMd,
+      );
+    }
     return ClipRRect(
       borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
       child: SizedBox(

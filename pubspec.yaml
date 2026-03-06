@@ -44,6 +44,7 @@ dependencies:
   retrofit: ^4.9.2
   retrofit_generator: ^10.2.1
   share_plus: ^11.1.0
+  shimmer: ^3.0.0
   smooth_page_indicator: ^1.2.1
   sms_autofill: ^2.4.1
   timer_count_down: ^2.2.2
