@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:fahis_inspector/features/inspection_body_notes/components/editing_screen.dart';
 import 'package:fahis_inspector/features/inspection_body_notes/controller.dart';
 import 'package:fahis_inspector/routes.dart';
@@ -65,10 +66,14 @@ class InspectionBodyTypeResults extends StatelessWidget {
                             width: 52,
                             height: 42,
                             fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(
-                              width: 52,
-                              height: 42,
-                              color: FColors.grey.withValues(alpha: 0.1),
+                            placeholder: (_, __) => Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                width: 52,
+                                height: 42,
+                                color: Colors.white,
+                              ),
                             ),
                             errorWidget: (_, __, ___) => Container(
                               width: 52,

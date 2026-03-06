@@ -122,6 +122,17 @@ class InspectionBodyController extends GetxController {
     }
   }
 
+  /// Called after drag ends to persist the new dx/dy without opening the dialog.
+  /// Only fires for existing markers (id > 0) — new markers have no backend record yet.
+  Future<void> onMoved(Marker marker) async {
+    if (marker.id <= 0) return;
+    try {
+      await repository.update(marker);
+    } catch (_) {
+      // Position drift is non-critical — silently ignore network errors
+    }
+  }
+
   Future<void> onRemove(Marker note) async {
     try {
       await repository.delete(note);

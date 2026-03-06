@@ -69,28 +69,29 @@ class _InspectionBodyTypeScreenState extends State<InspectionBodyTypeScreen> {
                   vertical: 7,
                 ),
                 color: FColors.primaryColor.withValues(alpha: 0.06),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 4,
+                  runSpacing: 4,
                   children: [
                     const Icon(
                       Icons.touch_app_rounded,
                       size: 14,
                       color: FColors.primaryColor,
                     ),
-                    const SizedBox(width: 4),
                     Text(
                       FTexts.bodyTapHint.tr,
                       style: Theme.of(context).textTheme.bodySmall?.apply(
                             color: FColors.primaryColor,
                           ),
                     ),
-                    const SizedBox(width: FSizes.md),
+                    const SizedBox(width: FSizes.xs),
                     const Icon(
                       Icons.open_with_rounded,
                       size: 14,
                       color: FColors.primaryColor,
                     ),
-                    const SizedBox(width: 4),
                     Text(
                       FTexts.bodyDragHint.tr,
                       style: Theme.of(context).textTheme.bodySmall?.apply(
@@ -247,7 +248,7 @@ class _InspectionBodyTypeScreenState extends State<InspectionBodyTypeScreen> {
         },
         onPanEnd: (_) {
           setState(() => _draggingId = null);
-          controller.update();
+          controller.onMoved(note);
         },
         child: AnimatedScale(
           scale: isDragging ? 1.25 : 1.0,
