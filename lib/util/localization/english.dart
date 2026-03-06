@@ -154,6 +154,7 @@ class English {
     InspectionPage.photosProgress: '@uploaded / @total photos',
     InspectionPage.takePhoto: 'Take Photo',
     InspectionPage.deletePhoto: 'Delete Photo',
+    InspectionPage.deletePhotoConfirm: 'Are you sure you want to delete this photo?',
     InspectionPage.photoCategoryExterior: 'Exterior',
     InspectionPage.photoCategoryInterior: 'Interior',
     InspectionPage.startInspection: 'Start Inspection',

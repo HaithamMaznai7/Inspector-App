@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:shimmer/shimmer.dart';
 
 // ignore_for_file: avoid_print
 void _log(String msg) {
@@ -36,9 +37,7 @@ class AlbumPhotos extends StatelessWidget {
           final allPhotos = controller.photos;
 
           if (isLoading && allPhotos.isEmpty) {
-            return const Center(
-              child: CircularProgressIndicator(color: FColors.primaryColor),
-            );
+            return const _PhotoGridShimmer();
           }
 
           final categories = controller.categories;
@@ -280,15 +279,13 @@ class _PhotoGrid extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('حذف الصورة'),
-        content: const Text(
-          'هل أنت متأكد أنك تريد حذف هذه الصورة؟',
-        ),
+        title: Text(InspectionPage.deletePhoto.tr),
+        content: Text(InspectionPage.deletePhotoConfirm.tr),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text(
-              'إلغاء',
+              InspectionPage.cancelBtn.tr,
               style: TextStyle(color: FColors.darkGrey),
             ),
           ),
@@ -297,9 +294,9 @@ class _PhotoGrid extends StatelessWidget {
               Navigator.of(ctx).pop();
               controller.delete(photo);
             },
-            child: const Text(
-              'حذف',
-              style: TextStyle(color: FColors.error),
+            child: Text(
+              FTexts.deleteBtn.tr,
+              style: const TextStyle(color: FColors.error),
             ),
           ),
         ],
@@ -451,6 +448,90 @@ class _PhotoGridCell extends StatelessWidget {
       child: const Center(
         child: Icon(Iconsax.image, color: FColors.grey, size: 28),
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Full-grid shimmer shown while photos are loading for the first time
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _PhotoGridShimmer extends StatelessWidget {
+  const _PhotoGridShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseColor = isDark ? Colors.grey[700]! : Colors.grey[300]!;
+    final highlightColor = isDark ? Colors.grey[600]! : Colors.grey[100]!;
+
+    return Column(
+      children: [
+        // ── Fake tab-bar shimmer ──
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(
+            horizontal: FSizes.md,
+            vertical: FSizes.sm,
+          ),
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            boxShadow: [
+              BoxShadow(
+                color: FColors.grey.withValues(alpha: 0.3),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: List.generate(2, (i) {
+              return Padding(
+                padding: const EdgeInsetsDirectional.only(end: FSizes.xs),
+                child: Shimmer.fromColors(
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
+                  child: Container(
+                    width: 90,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: baseColor,
+                      borderRadius:
+                          BorderRadius.circular(FSizes.borderRadiusLg),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+
+        // ── Fake photo grid shimmer ──
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.all(FSizes.md),
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 9,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: 1,
+            ),
+            itemBuilder: (context, _) => Shimmer.fromColors(
+              baseColor: baseColor,
+              highlightColor: highlightColor,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: baseColor,
+                  borderRadius:
+                      BorderRadius.circular(FSizes.borderRadiusLg),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
