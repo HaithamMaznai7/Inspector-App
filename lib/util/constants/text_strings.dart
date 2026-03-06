@@ -115,6 +115,12 @@ class FTexts {
   static const String stageRejected = 'stageRejected';
   static const String stageReviewed = 'stageReviewed';
 
+  /// Camera
+  static const String cameraRetake = 'cameraRetake';
+  static const String cameraUsePhoto = 'cameraUsePhoto';
+  static const String cameraRetry = 'cameraRetry';
+  static const String cameraOk = 'cameraOk';
+
   /// Force Update
   static const String forceUpdateTitle = 'forceUpdateTitle';
   static const String forceUpdateMessage = 'forceUpdateMessage';

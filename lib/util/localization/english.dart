@@ -469,6 +469,12 @@ class English {
     'onBoardingTitle3': 'Stay Connected',
     'onBoardingSubTitle3': 'Receive real-time notifications and stay updated on every inspection status change.',
 
+    /// Camera
+    FTexts.cameraRetake: 'Retake',
+    FTexts.cameraUsePhoto: 'Use Photo',
+    FTexts.cameraRetry: 'Retry',
+    FTexts.cameraOk: 'OK',
+
     /// Force Update
     FTexts.forceUpdateTitle: 'Update Required',
     FTexts.forceUpdateMessage: 'A new version of the app is available. Please update to continue using the app.',

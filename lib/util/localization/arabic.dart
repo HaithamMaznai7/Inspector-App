@@ -527,6 +527,12 @@ class Arabic {
     'onBoardingSubTitle3':
         'استقبل الإشعارات الفورية وتابع كل تحديث على حالة الفحص.',
 
+    /// Camera
+    FTexts.cameraRetake: 'إعادة التقاط',
+    FTexts.cameraUsePhoto: 'استخدام الصورة',
+    FTexts.cameraRetry: 'إعادة المحاولة',
+    FTexts.cameraOk: 'موافق',
+
     /// Force Update
     FTexts.forceUpdateTitle: 'تحديث مطلوب',
     FTexts.forceUpdateMessage: 'يتوفر إصدار جديد من التطبيق. يرجى التحديث للمتابعة في استخدام التطبيق.',
