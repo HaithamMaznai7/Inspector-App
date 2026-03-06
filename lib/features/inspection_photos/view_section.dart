@@ -427,7 +427,7 @@ class _PhotoGridCell extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
           border: Border.all(
             color: FColors.primaryColor.withValues(alpha: 0.4),
