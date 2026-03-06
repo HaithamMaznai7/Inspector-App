@@ -82,10 +82,7 @@ class InspectionBodyTypeScreen extends StatelessWidget {
                               return ClipRRect(
                                 borderRadius: BorderRadius.circular(FSizes.sm),
                                 child: EasyImageView(
-                                  imageProvider: Image.network(
-                                    body.image,
-                                    fit: BoxFit.cover,
-                                  ).image,
+                                  imageProvider: NetworkImage(body.image),
                                 ),
                               );
                             },

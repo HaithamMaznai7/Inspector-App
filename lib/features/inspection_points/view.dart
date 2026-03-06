@@ -17,23 +17,23 @@ class InspectionPointResults extends StatelessWidget {
 
   // ── compact tinted badge ────────────────────────────────────────────────────
   Widget _badge(String value, Color color) => Container(
-        constraints: const BoxConstraints(minWidth: 32),
-        padding: const EdgeInsets.symmetric(horizontal: FSizes.xs, vertical: 2),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
-          border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          value,
-          style: TextStyle(
-            color: color,
-            fontSize: FSizes.fontSizeSm - 2,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      );
+    constraints: const BoxConstraints(minWidth: 32),
+    padding: const EdgeInsets.symmetric(horizontal: FSizes.xs, vertical: 2),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
+      border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
+    ),
+    alignment: Alignment.center,
+    child: Text(
+      value,
+      style: TextStyle(
+        color: color,
+        fontSize: FSizes.fontSizeSm - 2,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+  );
 
   // ── category icon ───────────────────────────────────────────────────────────
   Widget _catIcon(String iconUrl) {
@@ -50,44 +50,43 @@ class InspectionPointResults extends StatelessWidget {
     required int count,
     required Color color,
     required IconData icon,
-  }) =>
-      Expanded(
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            vertical: FSizes.sm,
-            horizontal: FSizes.xs,
+  }) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.symmetric(
+        vertical: FSizes.sm,
+        horizontal: FSizes.xs,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+        border: Border.all(color: color.withValues(alpha: 0.22), width: 1),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(height: 4),
+          Text(
+            '$count',
+            style: TextStyle(
+              color: color,
+              fontSize: FSizes.fontSizeMd,
+              fontWeight: FontWeight.w800,
+            ),
           ),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-            border: Border.all(color: color.withValues(alpha: 0.22), width: 1),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: color.withValues(alpha: 0.8),
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: color, size: 18),
-              const SizedBox(height: 4),
-              Text(
-                '$count',
-                style: TextStyle(
-                  color: color,
-                  fontSize: FSizes.fontSizeMd,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: color.withValues(alpha: 0.8),
-                      fontWeight: FontWeight.w500,
-                    ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      );
+        ],
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +94,7 @@ class InspectionPointResults extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final surfaceColor = isDark
         ? Colors.white.withValues(alpha: 0.05)
-        : FColors.primaryColor.withValues(alpha: 0.03);
+        : FColors.primaryColor.withValues(alpha: 0.05);
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.08)
         : FColors.grey.withValues(alpha: 0.55);
@@ -115,8 +114,9 @@ class InspectionPointResults extends StatelessWidget {
         final total = review.all;
         final answered = review.good + review.note;
         final progress = total > 0 ? answered / total : 0.0;
-        final progressColor =
-            progress == 1.0 ? FColors.success : FColors.primaryColor;
+        final progressColor = progress == 1.0
+            ? FColors.success
+            : FColors.primaryColor;
 
         return RefreshIndicator(
           color: FColors.primaryColor,
@@ -155,13 +155,15 @@ class InspectionPointResults extends StatelessWidget {
                           message: InspectionPage.resetPointsTitle.tr,
                           child: InkWell(
                             onTap: () => controller.generate(),
-                            borderRadius:
-                                BorderRadius.circular(FSizes.borderRadiusMd),
+                            borderRadius: BorderRadius.circular(
+                              FSizes.borderRadiusMd,
+                            ),
                             child: Container(
                               padding: const EdgeInsets.all(FSizes.sm),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.onSurface
-                                    .withValues(alpha: 0.07),
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.07,
+                                ),
                                 borderRadius: BorderRadius.circular(
                                   FSizes.borderRadiusMd,
                                 ),
@@ -169,8 +171,9 @@ class InspectionPointResults extends StatelessWidget {
                               child: Icon(
                                 Iconsax.refresh,
                                 size: FSizes.iconSm,
-                                color: theme.colorScheme.onSurface
-                                    .withValues(alpha: 0.55),
+                                color: theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.55,
+                                ),
                               ),
                             ),
                           ),
@@ -185,18 +188,21 @@ class InspectionPointResults extends StatelessWidget {
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 6,
-                        backgroundColor:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.1),
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(progressColor),
+                        backgroundColor: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.1,
+                        ),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          progressColor,
+                        ),
                       ),
                     ),
                     const SizedBox(height: FSizes.xs),
                     Text(
                       '$answered / $total',
                       style: theme.textTheme.labelSmall?.copyWith(
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.45),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.45,
+                        ),
                       ),
                     ),
                     const SizedBox(height: FSizes.sm),
@@ -224,8 +230,9 @@ class InspectionPointResults extends StatelessWidget {
                           context,
                           label: FTexts.na.tr,
                           count: review.none,
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.45),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.45,
+                          ),
                           icon: Iconsax.minus_cirlce,
                         ),
                       ],
@@ -239,8 +246,7 @@ class InspectionPointResults extends StatelessWidget {
               ...review.cats.map((cat) {
                 final catTotal = cat.good + cat.note + cat.none;
                 final catAnswered = cat.good + cat.note;
-                final catProgress =
-                    catTotal > 0 ? catAnswered / catTotal : 0.0;
+                final catProgress = catTotal > 0 ? catAnswered / catTotal : 0.0;
                 final catProgressColor = catProgress == 1.0
                     ? FColors.success
                     : FColors.primaryColor.withValues(alpha: 0.7);
@@ -249,16 +255,16 @@ class InspectionPointResults extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: FSizes.sm),
                   child: Material(
                     color: theme.cardColor,
-                    borderRadius:
-                        BorderRadius.circular(FSizes.borderRadiusLg),
+                    borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
                     clipBehavior: Clip.antiAlias,
                     child: InkWell(
                       onTap: () => controller.onEdit(cat: cat),
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           border: Border.all(color: borderColor),
-                          borderRadius:
-                              BorderRadius.circular(FSizes.borderRadiusLg),
+                          borderRadius: BorderRadius.circular(
+                            FSizes.borderRadiusLg,
+                          ),
                         ),
                         child: Column(
                           children: [
@@ -274,8 +280,9 @@ class InspectionPointResults extends StatelessWidget {
                                     width: FSizes.iconCircleSm,
                                     height: FSizes.iconCircleSm,
                                     decoration: BoxDecoration(
-                                      color: FColors.primaryColor
-                                          .withValues(alpha: 0.1),
+                                      color: FColors.primaryColor.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       borderRadius: BorderRadius.circular(
                                         FSizes.borderRadiusSm,
                                       ),
@@ -295,7 +302,8 @@ class InspectionPointResults extends StatelessWidget {
                                           cat.category.title,
                                           style: theme.textTheme.titleSmall
                                               ?.copyWith(
-                                                  fontWeight: FontWeight.w600),
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                         const SizedBox(height: 2),
@@ -303,9 +311,11 @@ class InspectionPointResults extends StatelessWidget {
                                           '$catAnswered / $catTotal',
                                           style: theme.textTheme.labelSmall
                                               ?.copyWith(
-                                            color: theme.colorScheme.onSurface
-                                                .withValues(alpha: 0.4),
-                                          ),
+                                                color: theme
+                                                    .colorScheme
+                                                    .onSurface
+                                                    .withValues(alpha: 0.4),
+                                              ),
                                         ),
                                       ],
                                     ),
@@ -322,8 +332,9 @@ class InspectionPointResults extends StatelessWidget {
                                       const SizedBox(width: FSizes.xs),
                                       _badge(
                                         '${cat.none}',
-                                        theme.colorScheme.onSurface
-                                            .withValues(alpha: 0.45),
+                                        theme.colorScheme.onSurface.withValues(
+                                          alpha: 0.45,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -337,7 +348,8 @@ class InspectionPointResults extends StatelessWidget {
                               minHeight: 3,
                               backgroundColor: Colors.transparent,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                  catProgressColor),
+                                catProgressColor,
+                              ),
                             ),
                           ],
                         ),

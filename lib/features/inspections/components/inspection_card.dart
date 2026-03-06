@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/models/vehicle.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -102,13 +103,13 @@ class InspectionCard extends StatelessWidget {
                               Row(
                                 children: [
                                   if (vehicle?.make?.avatar != null)
-                                    Image.network(
-                                      vehicle!.make!.avatar!,
+                                    CachedNetworkImage(
+                                      imageUrl: vehicle!.make!.avatar!,
                                       fit: BoxFit.contain,
                                       width: FSizes.iconInlineMd,
                                       height: FSizes.iconInlineMd,
-                                      // Fallback for HTTP 500 / broken image URLs
-                                      errorBuilder: (_, __, ___) => Icon(
+                                      placeholder: (_, __) => SizedBox(width: FSizes.iconInlineMd, height: FSizes.iconInlineMd),
+                                      errorWidget: (_, __, ___) => Icon(
                                         Iconsax.car,
                                         size: FSizes.iconInlineSm,
                                         color: FColors.darkGrey,

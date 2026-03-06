@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/info_card.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
@@ -223,25 +224,26 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                         borderRadius: BorderRadius.circular(
                                           FSizes.borderRadiusSm,
                                         ),
-                                        child: Image.network(
-                                          marker.image!,
+                                        child: CachedNetworkImage(
+                                          imageUrl: marker.image!,
                                           width: FSizes.imagePreviewMd,
                                           height: FSizes.imagePreviewMd,
                                           fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                                return Container(
-                                                  width: FSizes.imagePreviewMd,
-                                                  height: FSizes.imagePreviewMd,
-                                                  color: FColors.grey
-                                                      .withValues(alpha: 0.1),
-                                                  child: Icon(
-                                                    Iconsax.image,
-                                                    color: FColors.grey,
-                                                    size: FSizes.iconInlineMd,
-                                                  ),
-                                                );
-                                              },
+                                          placeholder: (_, __) => Container(
+                                            width: FSizes.imagePreviewMd,
+                                            height: FSizes.imagePreviewMd,
+                                            color: FColors.grey.withValues(alpha: 0.1),
+                                          ),
+                                          errorWidget: (_, __, ___) => Container(
+                                            width: FSizes.imagePreviewMd,
+                                            height: FSizes.imagePreviewMd,
+                                            color: FColors.grey.withValues(alpha: 0.1),
+                                            child: Icon(
+                                              Iconsax.image,
+                                              color: FColors.grey,
+                                              size: FSizes.iconInlineMd,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),

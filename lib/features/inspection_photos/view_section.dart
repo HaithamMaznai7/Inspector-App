@@ -10,6 +10,7 @@ import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -371,10 +372,11 @@ class _PhotoGridCell extends StatelessWidget {
               borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
               child: photo.file != null
                   ? Image.file(photo.file!, fit: BoxFit.cover)
-                  : Image.network(
-                      photo.image!,
+                  : CachedNetworkImage(
+                      imageUrl: photo.image!,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _placeholder(),
+                      placeholder: (ctx, _) => _shimmerPlaceholder(ctx),
+                      errorWidget: (_, __, ___) => _placeholder(),
                     ),
             ),
             // Delete badge — top-start
@@ -438,6 +440,17 @@ class _PhotoGridCell extends StatelessWidget {
             size: 28,
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _shimmerPlaceholder(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Shimmer.fromColors(
+      baseColor: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+      highlightColor: isDark ? Colors.grey[600]! : Colors.grey[100]!,
+      child: Container(
+        color: isDark ? Colors.grey[800] : Colors.white,
       ),
     );
   }

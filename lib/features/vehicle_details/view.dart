@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fahis_inspector/common/widgets/components/custom_selector.dart';
 import 'package:fahis_inspector/features/vehicle_details/controller.dart';
 import 'package:fahis_inspector/models/selection.dart';
@@ -40,8 +41,8 @@ class VehicleDetailsView extends StatelessWidget {
                                 ?.avatar ==
                             null
                         ? const Icon(Iconsax.car, size: FSizes.iconInlineMd)
-                        : Image.network(
-                            controller
+                        : CachedNetworkImage(
+                            imageUrl: controller
                                 .mainController
                                 .inspection
                                 .value
@@ -51,6 +52,8 @@ class VehicleDetailsView extends StatelessWidget {
                             fit: BoxFit.contain,
                             width: FSizes.iconInlineMd,
                             height: FSizes.iconInlineMd,
+                            placeholder: (_, __) => SizedBox(width: FSizes.iconInlineMd, height: FSizes.iconInlineMd),
+                            errorWidget: (_, __, ___) => const Icon(Iconsax.car, size: FSizes.iconInlineSm),
                           ),
                     const SizedBox(width: FSizes.sm),
                     Text(

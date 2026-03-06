@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/info_card.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
@@ -145,12 +146,11 @@ class InspectionPhotosReview extends StatelessWidget {
                                       FSizes.borderRadiusMd,
                                     ),
                                     child: hasImage
-                                        ? Image.network(
-                                            photo.image!,
+                                        ? CachedNetworkImage(
+                                            imageUrl: photo.image!,
                                             fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) =>
-                                                    _pendingPlaceholder(),
+                                            placeholder: (_, __) => _pendingPlaceholder(),
+                                            errorWidget: (_, __, ___) => _pendingPlaceholder(),
                                           )
                                         : _pendingPlaceholder(),
                                   ),

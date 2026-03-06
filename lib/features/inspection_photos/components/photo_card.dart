@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fahis_inspector/features/inspection_photos/components/photo_upload_shimmer.dart';
 import 'package:fahis_inspector/models/photo.dart';
 import 'package:fahis_inspector/routes.dart';
@@ -114,10 +115,15 @@ class PhotoCard extends StatelessWidget {
         child: _hasImage
             ? (photo.file != null
                 ? Image.file(photo.file!, fit: BoxFit.cover)
-                : Image.network(
-                    photo.image!,
+                : CachedNetworkImage(
+                    imageUrl: photo.image!,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _placeholder(),
+                    placeholder: (_, __) => PhotoUploadShimmer(
+                      width: FSizes.imageThumbSize,
+                      height: FSizes.imageThumbSize,
+                      borderRadius: FSizes.borderRadiusMd,
+                    ),
+                    errorWidget: (_, __, ___) => _placeholder(),
                   ))
             : _placeholder(),
       ),

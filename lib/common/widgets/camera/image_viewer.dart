@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:fahis_inspector/util/constants/image_strings.dart';
 import 'package:fahis_inspector/util/helpers/helpers.dart';
@@ -38,23 +39,12 @@ class ImageViewer extends StatelessWidget {
     else{ 
       if (image!.startsWith('https://') || image!.startsWith('http://')){
         return EasyImageView(
-          imageProvider: Image.network(
-            image!,
-            fit: BoxFit.contain,
-            width: double.infinity, 
-            height: double.infinity,
-          ).image
+          imageProvider: CachedNetworkImageProvider(image!),
         );
-        // NetworkImage(url: image!);
       }
       else if (image!.startsWith('//s3')){
         return EasyImageView(
-          imageProvider: Image.network(
-            'https:${image!}',
-            fit: BoxFit.contain,
-            width: double.infinity, 
-            height: double.infinity,
-          ).image
+          imageProvider: CachedNetworkImageProvider('https:${image!}'),
         );
       }
       else{
