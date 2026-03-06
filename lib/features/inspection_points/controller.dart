@@ -141,4 +141,39 @@ class InspectionPointsController extends GetxController {
   Future<void> onChangePoint(Point point, PointStatus status) async {
     await repository.update(point, status);
   }
+
+  // ── category navigation helpers ─────────────────────────────────────────────
+
+  List<PointCategory> get categories => review.value?.cats ?? [];
+
+  int get currentCategoryIndex => categories.indexWhere(
+        (c) => c.category.id == category.value?.category.id,
+      );
+
+  bool get isOnFirstCategory => currentCategoryIndex <= 0;
+
+  bool get isOnLastCategory =>
+      currentCategoryIndex >= categories.length - 1;
+
+  void setCategory(PointCategory cat) {
+    category.value = cat;
+    update();
+  }
+
+  void toNextCategory() {
+    final idx = currentCategoryIndex;
+    final cats = categories;
+    if (idx < cats.length - 1) {
+      category.value = cats[idx + 1];
+      update();
+    }
+  }
+
+  void toPreviousCategory() {
+    final idx = currentCategoryIndex;
+    if (idx > 0) {
+      category.value = categories[idx - 1];
+      update();
+    }
+  }
 }

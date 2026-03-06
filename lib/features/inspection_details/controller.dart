@@ -275,7 +275,9 @@ class InspectionDetailsController extends GetxController
           NoteInputDialog(status: stage.value ?? 'rejected'),
         );
         if (note == null) return; // user cancelled
-        inspection.value!.rejectedNote = note.trim().isEmpty ? '-' : note.trim();
+        inspection.value!.rejectedNote = note.trim().isEmpty
+            ? '-'
+            : note.trim();
         inspection.value!.stage = stage;
         break;
       case InspectionStage.pending:
@@ -368,7 +370,7 @@ class InspectionDetailsController extends GetxController
           .share(
             ShareParams(
               uri: Uri(
-                host: EndPoints.websiteDomain,
+                host: EndPoints.domain,
                 scheme: EndPoints.schema,
                 path:
                     "/dashboard/operational-section/inspections-management/$slug",
