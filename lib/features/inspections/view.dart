@@ -23,6 +23,7 @@ class InspectionList extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: FSizes.md),
       child: GetBuilder<InspectionsController>(
         init: InspectionsBinding().instance,
+        autoRemove: false,
         builder: (controller) {
           final isLoad = controller.isLoading.value;
 
