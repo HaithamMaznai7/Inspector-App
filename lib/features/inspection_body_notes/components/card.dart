@@ -59,7 +59,10 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildHeader(context, isDark),
-          Divider(height: 1, color: FColors.grey.withValues(alpha: 0.12)),
+          Divider(
+            height: 1,
+            color: FColors.grey.withValues(alpha: isDark ? 0.15 : 0.2),
+          ),
           Flexible(
             child: SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(
@@ -259,10 +262,10 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
               decoration: BoxDecoration(
                 color: isDark
                     ? FColors.darkGrey.withValues(alpha: 0.2)
-                    : FColors.primaryColor.withValues(alpha: 0.03),
+                    : FColors.primaryColor.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
                 border: Border.all(
-                  color: FColors.primaryColor.withValues(alpha: 0.25),
+                  color: FColors.primaryColor.withValues(alpha: 0.08),
                   width: 1.5,
                 ),
               ),
@@ -319,23 +322,29 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
           decoration: InputDecoration(
             hintText: FTexts.markerInputHint.tr,
             hintStyle: TextStyle(
-              color: FColors.darkGrey.withValues(alpha: 0.02),
+              color: isDark
+                  ? FColors.grey.withValues(alpha: 0.45)
+                  : FColors.darkGrey,
               fontSize: 13,
             ),
             filled: true,
             fillColor: isDark
                 ? FColors.darkGrey.withValues(alpha: 0.2)
-                : FColors.darkGrey.withValues(alpha: 0.02),
+                : FColors.grey.withValues(alpha: 0.13),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
               borderSide: BorderSide(
-                color: FColors.darkGrey.withValues(alpha: 0.9),
+                color: isDark
+                    ? FColors.grey.withValues(alpha: 0.2)
+                    : FColors.darkGrey.withValues(alpha: 0.4),
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
               borderSide: BorderSide(
-                color: FColors.darkGrey.withValues(alpha: 0.9),
+                color: isDark
+                    ? FColors.grey.withValues(alpha: 0.2)
+                    : FColors.darkGrey.withValues(alpha: 0.4),
               ),
             ),
             focusedBorder: OutlineInputBorder(
@@ -374,7 +383,9 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
                 border: Border.all(
-                  color: FColors.darkGrey.withValues(alpha: 0.9),
+                  color: isDark
+                      ? FColors.grey.withValues(alpha: 0.2)
+                      : FColors.darkGrey.withValues(alpha: 0.4),
                 ),
               ),
               child: ClipRRect(
@@ -387,7 +398,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                     height: 1,
                     indent: FSizes.md,
                     endIndent: FSizes.md,
-                    color: FColors.grey.withValues(alpha: 0.1),
+                    color: FColors.grey.withValues(alpha: isDark ? 0.12 : 0.4),
                   ),
                   itemBuilder: (context, index) {
                     final t = types[index];
@@ -400,7 +411,9 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                         duration: const Duration(milliseconds: 150),
                         color: isSelected
                             ? FColors.primaryColor.withValues(alpha: 0.07)
-                            : Colors.transparent,
+                            : isDark
+                            ? FColors.darkGrey.withValues(alpha: 0.2)
+                            : FColors.grey.withValues(alpha: 0.4),
                         padding: const EdgeInsets.symmetric(
                           horizontal: FSizes.md,
                           vertical: 14,
@@ -440,7 +453,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                                       Icons.radio_button_unchecked,
                                       key: const ValueKey(false),
                                       color: FColors.grey.withValues(
-                                        alpha: isDark ? 0.35 : 0.55,
+                                        alpha: isDark ? 0.35 : 0.9,
                                       ),
                                       size: 20,
                                     ),
@@ -493,7 +506,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
           ),
           child: Text(
             FTexts.cancelBtn.tr,
-            style: const TextStyle(fontSize: 14),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
         ),
       ],
@@ -553,7 +566,7 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = FHelper.isDarkMode(context);
-    final color = isDark ? FColors.grey : FColors.darkGrey;
+    final color = isDark ? FColors.grey : FColors.dark;
     return Row(
       children: [
         Icon(icon, size: 14, color: color),

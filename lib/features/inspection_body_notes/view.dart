@@ -54,7 +54,7 @@ class InspectionBodyTypeResults extends StatelessWidget {
                   // ── Thumbnail ──
                   leading: GestureDetector(
                     onTap: () =>
-                        Get.to(InspectionBodyTypeScreen(bodySide: body)),
+                        Get.to(() => InspectionBodyTypeScreen(bodySide: body)),
                     child: Stack(
                       alignment: Alignment.bottomRight,
                       children: [
