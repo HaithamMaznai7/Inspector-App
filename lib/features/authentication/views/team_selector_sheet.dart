@@ -105,17 +105,6 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag handle
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: FSizes.iconCircleSm,
-            height: FSizes.xs,
-            decoration: BoxDecoration(
-              color: FColors.grey.withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
           // Header
           Padding(
             padding: const EdgeInsets.all(FSizes.md),
