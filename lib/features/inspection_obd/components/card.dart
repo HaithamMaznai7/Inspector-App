@@ -27,7 +27,7 @@ class OBDCodeCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: isDark
               ? FColors.darkGrey.withValues(alpha: 0.25)
-              : FColors.grey.withValues(alpha: 0.07),
+              : FColors.grey.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
           border: Border.all(
             color: isDark
@@ -41,10 +41,10 @@ class OBDCodeCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: FColors.error.withValues(alpha: 0.12),
+                color: FColors.primaryColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
                 border: Border.all(
-                  color: FColors.error.withValues(alpha: 0.3),
+                  color: FColors.primaryColor.withValues(alpha: 0.3),
                 ),
               ),
               child: Text(
@@ -52,7 +52,7 @@ class OBDCodeCard extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: FColors.error,
+                  color: FColors.primaryColor,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -63,9 +63,9 @@ class OBDCodeCard extends StatelessWidget {
               child: Text(
                 code.description,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: isDark ? FColors.light : FColors.dark,
-                    ),
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? FColors.light : FColors.dark,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),

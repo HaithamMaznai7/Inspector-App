@@ -260,7 +260,7 @@ class _CodesCard extends StatelessWidget {
           const SizedBox(height: FSizes.sm),
           Divider(
             height: 1,
-            color: FColors.grey.withValues(alpha: isDark ? 0.15 : 0.2),
+            color: FColors.grey.withValues(alpha: isDark ? 0.15 : 0.4),
           ),
           const SizedBox(height: FSizes.sm),
 
@@ -323,7 +323,7 @@ class _SkeletonList extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = isDark
         ? FColors.darkGrey.withValues(alpha: 0.4)
-        : FColors.grey.withValues(alpha: 0.15);
+        : FColors.darkGrey.withValues(alpha: 0.4);
 
     return Column(
       children: List.generate(2, (i) {
@@ -361,7 +361,7 @@ class _Card extends StatelessWidget {
         border: Border.all(
           color: isDark
               ? FColors.grey.withValues(alpha: 0.12)
-              : FColors.grey.withValues(alpha: 0.18),
+              : FColors.darkGrey.withValues(alpha: 0.4),
         ),
       ),
       child: child,
