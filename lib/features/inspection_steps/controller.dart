@@ -319,12 +319,6 @@ class InspectionStepsController extends GetxController {
       case InspectionStage.obd:
         break;
       case InspectionStage.finished:
-        // Validate OBD data if this inspection has an OBD step
-        if (inspection.value.hasObd && !_validateObdData()) {
-          isSubmitting.toggle();
-          update();
-          return;
-        }
         // Validate photos if this inspection has photos (for Sahrej finish)
         if (inspection.value.hasPhotos && !_validatePhotos()) {
           isSubmitting.toggle();
@@ -476,7 +470,7 @@ class InspectionStepsController extends GetxController {
       case InspectionStage.photos:
         return _arePhotosValid();
       case InspectionStage.obd:
-        return _isObdValid();
+        return true;
       default:
         return true;
     }
@@ -498,12 +492,6 @@ class InspectionStepsController extends GetxController {
     if (!canAdvanceFromCurrentStep) {
       _showValidationForCurrentStep();
       _log('finishAndReview – current step validation failed');
-      return;
-    }
-
-    // Validate OBD data if this inspection has an OBD step
-    if (inspection.value.hasObd && !_validateObdData()) {
-      _log('finishAndReview – OBD validation failed');
       return;
     }
 
@@ -591,12 +579,6 @@ class InspectionStepsController extends GetxController {
     return result;
   }
 
-  bool _isObdValid() {
-    if (!InspectionObdBinding().isRegistered) return true;
-    final obdCtrl = InspectionObdBinding().instance;
-    return obdCtrl.isDataReady && obdCtrl.hasData;
-  }
-
   // ─── Validation with UI feedback ───
 
   bool _validateVehicleInfo() {
@@ -648,24 +630,7 @@ class InspectionStepsController extends GetxController {
     return false;
   }
 
-  bool _validateObdData() {
-    if (_isObdValid()) return true;
-    if (InspectionObdBinding().isRegistered) {
-      final obdCtrl = InspectionObdBinding().instance;
-      if (!obdCtrl.isDataReady) {
-        _log('_validateObdData – OBD data still loading');
-      } else {
-        _log('_validateObdData – no OBD data (no report, no codes)');
-      }
-    }
-    FLoader.warningSnackBar(
-      title: InspectionPage.obdDataRequired.tr,
-      message: InspectionPage.obdDataRequiredMsg.tr,
-    );
-    return false;
-  }
-
-  /// Shows a validation snackbar for the current step (used by finishAndReview).
+/// Shows a validation snackbar for the current step (used by finishAndReview).
   void _showValidationForCurrentStep() {
     if (tabs.isEmpty || index >= tabs.length) return;
     final stage = tabs[index]['stage'] as InspectionStage;
@@ -680,7 +645,6 @@ class InspectionStepsController extends GetxController {
         _validatePhotos();
         break;
       case InspectionStage.obd:
-        _validateObdData();
         break;
       default:
         break;

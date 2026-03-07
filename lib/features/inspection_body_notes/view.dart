@@ -44,8 +44,9 @@ class InspectionBodyTypeResults extends StatelessWidget {
               ),
               child: Theme(
                 // Remove the default ExpansionTile divider
-                data: Theme.of(context)
-                    .copyWith(dividerColor: Colors.transparent),
+                data: Theme.of(
+                  context,
+                ).copyWith(dividerColor: Colors.transparent),
                 child: ExpansionTile(
                   tilePadding: const EdgeInsets.symmetric(
                     horizontal: FSizes.md,
@@ -59,8 +60,9 @@ class InspectionBodyTypeResults extends StatelessWidget {
                       alignment: Alignment.bottomRight,
                       children: [
                         ClipRRect(
-                          borderRadius:
-                              BorderRadius.circular(FSizes.borderRadiusSm),
+                          borderRadius: BorderRadius.circular(
+                            FSizes.borderRadiusSm,
+                          ),
                           child: CachedNetworkImage(
                             imageUrl: body.image,
                             width: 52,
@@ -79,8 +81,11 @@ class InspectionBodyTypeResults extends StatelessWidget {
                               width: 52,
                               height: 42,
                               color: FColors.grey.withValues(alpha: 0.1),
-                              child: const Icon(Iconsax.car,
-                                  color: FColors.grey, size: 20),
+                              child: const Icon(
+                                Iconsax.car,
+                                color: FColors.grey,
+                                size: 20,
+                              ),
                             ),
                           ),
                         ),
@@ -91,8 +96,11 @@ class InspectionBodyTypeResults extends StatelessWidget {
                             color: FColors.primaryColor,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.add,
-                              color: Colors.white, size: 10),
+                          child: const Icon(
+                            Icons.add,
+                            color: Colors.white,
+                            size: 10,
+                          ),
                         ),
                       ],
                     ),
@@ -100,28 +108,23 @@ class InspectionBodyTypeResults extends StatelessWidget {
                   // ── Title + subtitle ──
                   title: Text(
                     body.part.label(),
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w600),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   subtitle: hasNotes
                       ? Text(
                           '$noteCount ${FTexts.markerTitle.tr}',
                           style: Theme.of(context).textTheme.bodySmall?.apply(
-                                color: FColors.primaryColor,
-                              ),
+                            color: FColors.primaryColor,
+                          ),
                         )
                       : null,
                   // ── Expand arrow ──
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Iconsax.arrow_down_1,
-                        size: 18,
-                        color: FColors.grey,
-                      ),
+                      Icon(Iconsax.arrow_down_1, size: 18, color: FColors.grey),
                     ],
                   ),
                   showTrailingIcon: false,
@@ -133,23 +136,25 @@ class InspectionBodyTypeResults extends StatelessWidget {
                   children: [
                     if (!hasNotes)
                       Padding(
-                        padding:
-                            const EdgeInsets.symmetric(vertical: FSizes.sm),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: FSizes.sm,
+                        ),
                         child: Text(
                           FTexts.markerAddPhoto.tr,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.apply(color: FColors.grey),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.apply(color: FColors.grey),
                           textAlign: TextAlign.center,
                         ),
                       )
                     else
-                      ...body.notes.map((note) => _NoteItem(
-                            note: note,
-                            onEdit: () => controller.onCreateEdit(body, note),
-                            onDelete: () => controller.onRemove(note),
-                          )),
+                      ...body.notes.map(
+                        (note) => _NoteItem(
+                          note: note,
+                          onEdit: () => controller.onCreateEdit(body, note),
+                          onDelete: () => controller.onRemove(note),
+                        ),
+                      ),
                   ],
                 ),
               ),

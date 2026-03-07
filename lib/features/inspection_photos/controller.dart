@@ -45,6 +45,7 @@ class InspectionPhotosController extends GetxController {
   bool get _isMutating => uploadingIds.isNotEmpty || deletingIds.isNotEmpty;
 
   final isLoading = false.obs;
+  final isResetting = false.obs;
 
   final isEditing = false.obs;
 
@@ -238,6 +239,27 @@ class InspectionPhotosController extends GetxController {
       category.value = savedCategory;
     }
     update();
+  }
+
+  Future<void> deleteAll() async {
+    final savedCategory = category.value;
+    _log('deleteAll — START | savedCategory=$savedCategory');
+    isResetting.value = true;
+    update();
+    try {
+      final reset = await repository.resetAll();
+      _log('deleteAll — COMPLETE | photos=${reset.length}');
+    } on FNetworkException catch (e) {
+      e.notify();
+    } catch (e) {
+      _log('deleteAll — ERROR: $e');
+    } finally {
+      isResetting.value = false;
+      if (savedCategory != null) {
+        category.value = savedCategory;
+      }
+      update();
+    }
   }
 
   Future<void> delete(Photo photo) async {

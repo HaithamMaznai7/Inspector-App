@@ -105,8 +105,81 @@ class _CategoryTabs extends StatelessWidget {
     }
   }
 
+  bool get _hasUploaded => controller.photos.any((p) => p.image != null);
+
+  void _confirmDeleteAll(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? FColors.dark : FColors.light,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: FColors.error.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Iconsax.trash, color: FColors.error, size: 18),
+            ),
+            const SizedBox(width: FSizes.sm),
+            Expanded(
+              child: Text(
+                InspectionPage.deleteAllPhotos.tr,
+                style: Theme.of(ctx)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          InspectionPage.deleteAllPhotosConfirm.tr,
+          style: Theme.of(ctx).textTheme.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(
+              FTexts.cancelBtn.tr,
+              style: TextStyle(
+                color: isDark ? FColors.grey : FColors.darkGrey,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              controller.deleteAll();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: FColors.error,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+              ),
+            ),
+            child: Text(
+              FTexts.deleteBtn.tr,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(
@@ -123,77 +196,129 @@ class _CategoryTabs extends StatelessWidget {
           ),
         ],
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: categories.map((cat) {
-            final isSelected = cat == currentCategory;
-            final catPhotos =
-                controller.photos.where((p) => p.type == cat).toList();
-            final uploaded =
-                catPhotos.where((p) => p.image != null).length;
-            final total = catPhotos.length;
+      child: Row(
+        children: [
+          // ── Category chips ──
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: categories.map((cat) {
+                  final isSelected = cat == currentCategory;
+                  final catPhotos =
+                      controller.photos.where((p) => p.type == cat).toList();
+                  final uploaded =
+                      catPhotos.where((p) => p.image != null).length;
+                  final total = catPhotos.length;
 
-            return Padding(
-              padding: const EdgeInsetsDirectional.only(end: FSizes.xs),
-              child: ChoiceChip(
-                label: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(_localizeCategory(cat)),
-                    const SizedBox(width: FSizes.xs),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 1,
+                  return Padding(
+                    padding: const EdgeInsetsDirectional.only(end: FSizes.xs),
+                    child: ChoiceChip(
+                      label: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(_localizeCategory(cat)),
+                          const SizedBox(width: FSizes.xs),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? Colors.white.withValues(alpha: 0.3)
+                                  : FColors.primaryColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              '$uploaded/$total',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: isSelected
+                                    ? Colors.white
+                                    : FColors.primaryColor,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      decoration: BoxDecoration(
+                      labelStyle: TextStyle(
+                        color:
+                            isSelected ? Colors.white : FColors.primaryColor,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                      ),
+                      selected: isSelected,
+                      showCheckmark: false,
+                      selectedColor: FColors.primaryColor,
+                      backgroundColor:
+                          FColors.primaryColor.withValues(alpha: 0.08),
+                      side: BorderSide(
                         color: isSelected
-                            ? Colors.white.withValues(alpha: 0.3)
-                            : FColors.primaryColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(10),
+                            ? FColors.primaryColor
+                            : FColors.primaryColor.withValues(alpha: 0.3),
                       ),
-                      child: Text(
-                        '$uploaded/$total',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: isSelected
-                              ? Colors.white
-                              : FColors.primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(FSizes.borderRadiusLg),
+                      ),
+                      onSelected: (_) {
+                        _log('chip tapped → $cat (was: ${controller.category.value})');
+                        controller.category.value = cat;
+                        controller.update();
+                      },
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+
+          // ── Delete-all button — only visible when any photo is uploaded ──
+          if (_hasUploaded) ...[
+            const SizedBox(width: FSizes.xs),
+            Obx(
+              () => controller.isResetting.value
+                  ? const SizedBox(
+                      width: 36,
+                      height: 36,
+                      child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: FColors.error,
+                        ),
+                      ),
+                    )
+                  : Tooltip(
+                      message: InspectionPage.deleteAllPhotos.tr,
+                      child: InkWell(
+                        onTap: () => _confirmDeleteAll(context),
+                        borderRadius:
+                            BorderRadius.circular(FSizes.borderRadiusLg),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: FColors.error.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(
+                                FSizes.borderRadiusLg),
+                            border: Border.all(
+                              color: FColors.error
+                                  .withValues(alpha: isDark ? 0.25 : 0.2),
+                            ),
+                          ),
+                          child: const Icon(
+                            Iconsax.trash,
+                            color: FColors.error,
+                            size: 16,
+                          ),
                         ),
                       ),
                     ),
-                  ],
-                ),
-                labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : FColors.primaryColor,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 13,
-                ),
-                selected: isSelected,
-                showCheckmark: false,
-                selectedColor: FColors.primaryColor,
-                backgroundColor:
-                    FColors.primaryColor.withValues(alpha: 0.08),
-                side: BorderSide(
-                  color: isSelected
-                      ? FColors.primaryColor
-                      : FColors.primaryColor.withValues(alpha: 0.3),
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(FSizes.borderRadiusLg),
-                ),
-                onSelected: (_) {
-                  _log('chip tapped → $cat (was: ${controller.category.value})');
-                  controller.category.value = cat;
-                  controller.update();
-                },
-              ),
-            );
-          }).toList(),
-        ),
+            ),
+          ],
+        ],
       ),
     );
   }

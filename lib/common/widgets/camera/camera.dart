@@ -25,8 +25,7 @@ class _CameraState extends State<Camera> {
   bool _isTapped = false;
   FlashMode _flashMode = FlashMode.auto;
 
-  bool get _isIOS =>
-      Theme.of(context).platform == TargetPlatform.iOS;
+  bool get _isIOS => Theme.of(context).platform == TargetPlatform.iOS;
 
   @override
   void initState() {
@@ -87,11 +86,7 @@ class _CameraState extends State<Camera> {
   // ── adaptive icon helper ────────────────────────────────────────────────────
 
   Widget _icon(IconData material, IconData cupertino, {double size = 22}) =>
-      Icon(
-        _isIOS ? cupertino : material,
-        color: FColors.white,
-        size: size,
-      );
+      Icon(_isIOS ? cupertino : material, color: FColors.white, size: size);
 
   IconData get _flashIcon {
     if (_isIOS) {
@@ -114,50 +109,49 @@ class _CameraState extends State<Camera> {
     required VoidCallback onTap,
     required Widget icon,
     double size = FSizes.iconCircleMd,
-  }) =>
-      GestureDetector(
-        onTap: onTap,
-        child: Container(
-          height: size,
-          width: size,
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.45),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.15),
-              width: 1,
-            ),
-          ),
-          child: Center(child: icon),
+  }) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      height: size,
+      width: size,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.45),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.15),
+          width: 1,
         ),
-      );
+      ),
+      child: Center(child: icon),
+    ),
+  );
 
   // ── shutter button ──────────────────────────────────────────────────────────
 
   Widget _shutterButton() => GestureDetector(
-        onTapDown: (_) => setState(() => _isTapped = true),
-        onTapUp: (_) async {
-          setState(() => _isTapped = false);
-          await _pick();
-        },
-        onTapCancel: () => setState(() => _isTapped = false),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 100),
-          height: 76,
-          width: 76,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 4),
-          ),
-          padding: EdgeInsets.all(_isTapped ? 14 : 6),
-          child: Container(
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-            ),
-          ),
+    onTapDown: (_) => setState(() => _isTapped = true),
+    onTapUp: (_) async {
+      setState(() => _isTapped = false);
+      await _pick();
+    },
+    onTapCancel: () => setState(() => _isTapped = false),
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 100),
+      height: 76,
+      width: 76,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 4),
+      ),
+      padding: EdgeInsets.all(_isTapped ? 14 : 6),
+      child: Container(
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white,
         ),
-      );
+      ),
+    ),
+  );
 
   // ── build ───────────────────────────────────────────────────────────────────
 
@@ -293,7 +287,11 @@ class _CameraState extends State<Camera> {
       children: [
         // ── photo fills all space between bars ──
         Expanded(
-          child: Image.file(_pictureFile!, fit: BoxFit.cover, width: double.infinity),
+          child: Image.file(
+            _pictureFile!,
+            fit: BoxFit.cover,
+            width: double.infinity,
+          ),
         ),
 
         // ── bottom action bar ──
@@ -356,33 +354,30 @@ class _CameraState extends State<Camera> {
           vertical: FSizes.md,
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Expanded(
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  side: const BorderSide(color: Colors.white54),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-                  ),
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white54),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
                 ),
-                onPressed: () => setState(() => _pictureFile = null),
-                child: Text(FTexts.cameraRetry.tr),
               ),
+              onPressed: () => setState(() => _pictureFile = null),
+              child: Text(FTexts.cameraRetry.tr),
             ),
-            const SizedBox(width: FSizes.spaceBtwItems),
-            Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: FColors.primaryColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-                  ),
+
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: FColors.primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
                 ),
-                onPressed: _processPickedImage,
-                child: Text(FTexts.cameraOk.tr),
               ),
+              onPressed: _processPickedImage,
+              child: Text(FTexts.cameraOk.tr),
             ),
           ],
         ),
