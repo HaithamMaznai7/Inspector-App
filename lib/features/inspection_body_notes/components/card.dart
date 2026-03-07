@@ -97,17 +97,6 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
       padding: const EdgeInsets.fromLTRB(FSizes.md, 12, FSizes.md, FSizes.sm),
       child: Column(
         children: [
-          // Drag handle
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: FColors.grey.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
           const SizedBox(height: 14),
           Row(
             children: [
