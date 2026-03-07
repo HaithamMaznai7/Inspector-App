@@ -113,29 +113,10 @@ class InspectionBodyTypeResults extends StatelessWidget {
                               ),
                         )
                       : null,
-                  // ── Note count badge ──
+                  // ── Expand arrow ──
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (hasNotes)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: FColors.primaryColor.withValues(alpha: 0.1),
-                            borderRadius:
-                                BorderRadius.circular(FSizes.borderRadiusLg),
-                          ),
-                          child: Text(
-                            '$noteCount',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: FColors.primaryColor,
-                            ),
-                          ),
-                        ),
-                      const SizedBox(width: FSizes.xs),
                       Icon(
                         Iconsax.arrow_down_1,
                         size: 18,
@@ -212,24 +193,6 @@ class _NoteItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Note type chip
-            if (note.type != null)
-              Container(
-                margin: const EdgeInsetsDirectional.only(end: FSizes.xs),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: FColors.warning.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
-                ),
-                child: Text(
-                  note.type ?? '',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: FColors.warning,
-                  ),
-                ),
-              ),
             // Note text
             Expanded(
               child: Text(
