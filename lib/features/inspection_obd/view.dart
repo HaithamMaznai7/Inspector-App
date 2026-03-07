@@ -323,7 +323,7 @@ class _SkeletonList extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = isDark
         ? FColors.darkGrey.withValues(alpha: 0.4)
-        : FColors.darkGrey.withValues(alpha: 0.4);
+        : FColors.white.withValues(alpha: 0.02);
 
     return Column(
       children: List.generate(2, (i) {

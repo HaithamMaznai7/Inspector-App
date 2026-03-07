@@ -70,7 +70,7 @@ class _AddingObdCodeState extends State<AddingObdCode> {
           _buildHeader(context, isDark),
           Divider(
             height: 1,
-            color: FColors.grey.withValues(alpha: isDark ? 0.15 : 0.2),
+            color: FColors.grey.withValues(alpha: isDark ? 0.15 : 0.02),
           ),
           Flexible(
             child: SingleChildScrollView(
@@ -196,7 +196,7 @@ class _AddingObdCodeState extends State<AddingObdCode> {
     final labelColor = isDark ? FColors.grey : FColors.darkGrey;
     final borderColor = isDark
         ? FColors.grey.withValues(alpha: 0.2)
-        : FColors.grey.withValues(alpha: 0.35);
+        : FColors.darkGrey.withValues(alpha: 0.4);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,13 +228,13 @@ class _AddingObdCodeState extends State<AddingObdCode> {
             hintStyle: TextStyle(
               color: isDark
                   ? FColors.grey.withValues(alpha: 0.45)
-                  : FColors.grey,
+                  : FColors.darkGrey.withValues(alpha: 0.9),
               fontSize: 13,
             ),
             filled: true,
             fillColor: isDark
                 ? FColors.darkGrey.withValues(alpha: 0.2)
-                : FColors.grey.withValues(alpha: 0.07),
+                : FColors.grey.withValues(alpha: 0.2),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
               borderSide: BorderSide(color: borderColor),
