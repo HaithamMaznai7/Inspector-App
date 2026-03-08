@@ -119,7 +119,8 @@ class AuthRepository {
       requestMethod: RequestMethod.post,
     );
 
-    net.setBody = {'otp': code, 'token': verifyToken};
+    net.setHeader('Authorization', 'Bearer $verifyToken');
+    net.setBody = {'otp': code};
 
     try {
       final response = await net.response(RoutingUrl.login);

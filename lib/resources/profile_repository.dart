@@ -51,7 +51,7 @@ class ProfileRepository {
   }) async {
     final net = Network(
       endpoint: EndPoints.updateProfile,
-      requestMethod: RequestMethod.put,
+      requestMethod: RequestMethod.post,
     );
 
     final form = FormData({
