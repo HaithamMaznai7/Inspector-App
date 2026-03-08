@@ -4,6 +4,7 @@ import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/device/device_utility.dart';
+import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -83,10 +84,7 @@ class _CameraState extends State<Camera> {
     super.dispose();
   }
 
-  // ── adaptive icon helper ────────────────────────────────────────────────────
-
-  Widget _icon(IconData material, IconData cupertino, {double size = 22}) =>
-      Icon(_isIOS ? cupertino : material, color: FColors.white, size: size);
+  // ── Flash icon ──────────────────────────────────────────────────────────────
 
   IconData get _flashIcon {
     if (_isIOS) {
@@ -103,30 +101,50 @@ class _CameraState extends State<Camera> {
     };
   }
 
-  // ── pill button for overlays ────────────────────────────────────────────────
+  Color get _flashColor => switch (_flashMode) {
+    FlashMode.always => FColors.warning,
+    FlashMode.off => Colors.white54,
+    _ => Colors.white,
+  };
 
-  Widget _pillButton({
+  // ── Responsive helpers ──────────────────────────────────────────────────────
+
+  bool get _isTablet =>
+      ResponsiveHelper.isTablet(context) || ResponsiveHelper.isDesktop(context);
+
+  double get _ctrlBtnSize => _isTablet ? 56 : 44;
+  double get _shutterSize => _isTablet ? 96 : 78;
+  double get _shutterInnerPaddingTapped => _isTablet ? 20 : 16;
+  double get _shutterInnerPaddingNormal => _isTablet ? 9 : 7;
+
+  // ── Control circle button ───────────────────────────────────────────────────
+
+  Widget _circleBtn({
     required VoidCallback onTap,
-    required Widget icon,
-    double size = FSizes.iconCircleMd,
-  }) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      height: size,
-      width: size,
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.45),
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.15),
-          width: 1,
+    required Widget child,
+    double? size,
+    Color bg = const Color(0x7A000000),
+  }) {
+    final btnSize = size ?? _ctrlBtnSize;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: btnSize,
+        height: btnSize,
+        decoration: BoxDecoration(
+          color: bg,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.2),
+            width: 1.5,
+          ),
         ),
+        child: Center(child: child),
       ),
-      child: Center(child: icon),
-    ),
-  );
+    );
+  }
 
-  // ── shutter button ──────────────────────────────────────────────────────────
+  // ── Shutter button ──────────────────────────────────────────────────────────
 
   Widget _shutterButton() => GestureDetector(
     onTapDown: (_) => setState(() => _isTapped = true),
@@ -137,17 +155,19 @@ class _CameraState extends State<Camera> {
     onTapCancel: () => setState(() => _isTapped = false),
     child: AnimatedContainer(
       duration: const Duration(milliseconds: 100),
-      height: 76,
-      width: 76,
+      width: _shutterSize,
+      height: _shutterSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 4),
+        border: Border.all(color: Colors.white, width: _isTablet ? 4.5 : 3.5),
       ),
-      padding: EdgeInsets.all(_isTapped ? 14 : 6),
+      padding: EdgeInsets.all(
+        _isTapped ? _shutterInnerPaddingTapped : _shutterInnerPaddingNormal,
+      ),
       child: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.white,
+          color: _isTapped ? FColors.primaryColor : Colors.white,
         ),
       ),
     ),
@@ -172,63 +192,59 @@ class _CameraState extends State<Camera> {
     );
   }
 
-  // ── viewfinder ──────────────────────────────────────────────────────────────
+  // ── Viewfinder: full-screen preview + gradient overlays ─────────────────────
 
   Widget _buildViewfinder() {
-    return Column(
+    return Stack(
       children: [
-        // ── top bar ──
-        Container(
-          color: Colors.black,
-          child: SafeArea(
-            bottom: false,
-            child: SizedBox(
-              height: 52,
+        // ── Full screen camera ──
+        Positioned.fill(child: CameraPreview(_controller)),
+
+        // ── Top gradient overlay ──
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.65),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+            child: SafeArea(
+              bottom: false,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: FSizes.sm),
+                padding: EdgeInsets.symmetric(
+                  horizontal: _isTablet ? FSizes.md : FSizes.sm,
+                  vertical: _isTablet ? FSizes.sm : FSizes.xs,
+                ),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Cancel / close
-                    _isIOS
-                        ? CupertinoButton(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: FSizes.sm,
-                            ),
-                            onPressed: () => Get.back(),
-                            child: Text(
-                              FTexts.cancelBtn.tr,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          )
-                        : IconButton(
-                            onPressed: () => Get.back(),
-                            icon: const Icon(
-                              Icons.close_rounded,
-                              color: Colors.white,
-                            ),
-                          ),
-                    const Spacer(),
-                    // Flash
-                    _isIOS
-                        ? CupertinoButton(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: FSizes.sm,
-                            ),
-                            onPressed: _cycleFlash,
-                            child: Icon(
-                              _flashIcon,
-                              color: Colors.white,
-                              size: 22,
-                            ),
-                          )
-                        : IconButton(
-                            onPressed: _cycleFlash,
-                            icon: Icon(
-                              _flashIcon,
-                              color: Colors.white,
-                              size: 22,
-                            ),
-                          ),
+                    // Close
+                    _circleBtn(
+                      onTap: () => Get.back(),
+                      child: Icon(
+                        Icons.close_rounded,
+                        color: Colors.white,
+                        size: _isTablet ? 24 : 20,
+                      ),
+                    ),
+
+                    // Flash toggle
+                    _circleBtn(
+                      onTap: _cycleFlash,
+                      child: Icon(
+                        _flashIcon,
+                        color: _flashColor,
+                        size: _isTablet ? 24 : 20,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -236,38 +252,59 @@ class _CameraState extends State<Camera> {
           ),
         ),
 
-        // ── live preview ──
-        Expanded(child: CameraPreview(_controller)),
-
-        // ── bottom bar ──
-        Container(
-          color: Colors.black,
-          child: SafeArea(
-            top: false,
-            child: SizedBox(
-              height: 110,
+        // ── Bottom gradient overlay ──
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.72),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+            child: SafeArea(
+              top: false,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: FSizes.xl),
+                padding: EdgeInsets.fromLTRB(
+                  _isTablet ? 48 : FSizes.xl,
+                  _isTablet ? FSizes.xl : FSizes.lg,
+                  _isTablet ? 48 : FSizes.xl,
+                  _isTablet ? FSizes.xl : FSizes.lg,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Gallery
-                    _pillButton(
+                    _circleBtn(
                       onTap: _pickGalleryImage,
-                      icon: _icon(
-                        Icons.photo_library_outlined,
-                        CupertinoIcons.photo,
+                      child: Icon(
+                        _isIOS
+                            ? CupertinoIcons.photo
+                            : Icons.photo_library_outlined,
+                        color: Colors.white,
+                        size: _isTablet ? 26 : 22,
                       ),
                     ),
+
                     // Shutter
                     _shutterButton(),
-                    // Flip
-                    _pillButton(
+
+                    // Flip camera
+                    _circleBtn(
                       onTap: _changeCamera,
-                      icon: _icon(
-                        Icons.cameraswitch_outlined,
-                        CupertinoIcons.switch_camera,
+                      child: Icon(
+                        _isIOS
+                            ? CupertinoIcons.switch_camera
+                            : Icons.cameraswitch_outlined,
+                        color: Colors.white,
+                        size: _isTablet ? 26 : 22,
                       ),
                     ),
                   ],
@@ -280,13 +317,13 @@ class _CameraState extends State<Camera> {
     );
   }
 
-  // ── preview after capture ───────────────────────────────────────────────────
+  // ── Preview: full-screen photo + gradient action bar ────────────────────────
 
   Widget _buildPreview() {
-    return Column(
+    return Stack(
       children: [
-        // ── photo fills all space between bars ──
-        Expanded(
+        // ── Full screen photo ──
+        Positioned.fill(
           child: Image.file(
             _pictureFile!,
             fit: BoxFit.cover,
@@ -294,94 +331,180 @@ class _CameraState extends State<Camera> {
           ),
         ),
 
-        // ── bottom action bar ──
-        Container(
-          color: Colors.black,
-          child: SafeArea(
-            top: false,
-            child: _isIOS ? _buildIOSPreviewBar() : _buildAndroidPreviewBar(),
+        // ── Bottom gradient action bar ──
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.85),
+                  Colors.transparent,
+                ],
+              ),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  _isTablet ? 48 : FSizes.lg,
+                  _isTablet ? FSizes.xl : FSizes.xl,
+                  _isTablet ? 48 : FSizes.lg,
+                  _isTablet ? FSizes.lg : FSizes.md,
+                ),
+                child: _isIOS ? _buildIOSActions() : _buildAndroidActions(),
+              ),
+            ),
           ),
         ),
       ],
     );
   }
 
-  // iOS: "Retake" (left) — "Use Photo" (right) — plain text, native feel
-  Widget _buildIOSPreviewBar() {
-    return SizedBox(
-      height: 88,
-      child: Row(
-        children: [
-          Expanded(
-            child: CupertinoButton(
-              onPressed: () => setState(() => _pictureFile = null),
-              child: Text(
-                FTexts.cameraRetake.tr,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w400,
-                ),
+  // ── iOS preview actions ─────────────────────────────────────────────────────
+
+  Widget _buildIOSActions() {
+    return Row(
+      children: [
+        // Retake — outlined, white
+        Expanded(
+          child: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () => setState(() => _pictureFile = null),
+            child: Container(
+              height: _isTablet ? 60 : 52,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white54, width: 1.5),
+                borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    CupertinoIcons.arrow_counterclockwise,
+                    color: Colors.white,
+                    size: _isTablet ? 20 : 18,
+                  ),
+                  const SizedBox(width: FSizes.xs),
+                  Text(
+                    FTexts.cameraRetake.tr,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: _isTablet ? 17 : 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          Container(width: 0.5, height: 44, color: Colors.white24),
-          Expanded(
-            child: CupertinoButton(
-              onPressed: _processPickedImage,
-              child: Text(
-                FTexts.cameraUsePhoto.tr,
-                style: TextStyle(
-                  color: FColors.primaryColor,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                ),
+        ),
+
+        const SizedBox(width: FSizes.md),
+
+        // Use photo — filled, orange
+        Expanded(
+          child: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: _processPickedImage,
+            child: Container(
+              height: _isTablet ? 60 : 52,
+              decoration: BoxDecoration(
+                color: FColors.primaryColor,
+                borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+                boxShadow: [
+                  BoxShadow(
+                    color: FColors.primaryColor.withValues(alpha: 0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    CupertinoIcons.checkmark_alt,
+                    color: Colors.white,
+                    size: _isTablet ? 20 : 18,
+                  ),
+                  const SizedBox(width: FSizes.xs),
+                  Text(
+                    FTexts.cameraUsePhoto.tr,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: _isTablet ? 17 : 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  // Android: "Retry" (outlined) — "OK" (filled) — Material feel
-  Widget _buildAndroidPreviewBar() {
-    return SizedBox(
-      height: 88,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: FSizes.lg,
-          vertical: FSizes.md,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Colors.white54),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-                ),
-              ),
-              onPressed: () => setState(() => _pictureFile = null),
-              child: Text(FTexts.cameraRetry.tr),
-            ),
+  // ── Android preview actions ─────────────────────────────────────────────────
 
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: FColors.primaryColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-                ),
+  Widget _buildAndroidActions() {
+    return Row(
+      children: [
+        // Retake — outlined, white
+        Expanded(
+          child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Colors.white54, width: 1.5),
+              padding: EdgeInsets.symmetric(vertical: _isTablet ? 18 : 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
               ),
-              onPressed: _processPickedImage,
-              child: Text(FTexts.cameraOk.tr),
             ),
-          ],
+            onPressed: () => setState(() => _pictureFile = null),
+            icon: Icon(Icons.refresh_rounded, size: _isTablet ? 22 : 20),
+            label: Text(
+              FTexts.cameraRetry.tr,
+              style: TextStyle(
+                fontSize: _isTablet ? 16 : 15,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
         ),
-      ),
+
+        const SizedBox(width: FSizes.md),
+
+        // Confirm — filled, orange with glow
+        Expanded(
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: FColors.primaryColor,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: EdgeInsets.symmetric(vertical: _isTablet ? 18 : 14),
+              shadowColor: FColors.primaryColor.withValues(alpha: 0.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+              ),
+            ),
+            onPressed: _processPickedImage,
+            icon: Icon(Icons.check_rounded, size: _isTablet ? 22 : 20),
+            label: Text(
+              FTexts.cameraOk.tr,
+              style: TextStyle(
+                fontSize: _isTablet ? 16 : 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
