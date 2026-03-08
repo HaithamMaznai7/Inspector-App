@@ -254,8 +254,7 @@ class Arabic {
     DetailsPage.plateNumber: 'رقم اللوحة',
     DetailsPage.plateNumberHint: 'أدخل رقم اللوحة',
     DetailsPage.plateNumberValidationIfNull: 'مطلوب ...',
-    DetailsPage.plateNumberValidation: 'اللوحة تحتوي على حروف و ارقام',
-
+    DetailsPage.plateNumberValidation: 'أكمل اللوحة: مطلوب 3 أحرف و 4 أرقام',
     DetailsPage.bodyType: 'هيكل المركبة',
     DetailsPage.bodyTypeValidation: 'حدد هيكل المركبة ما راح نطقها عين',
 

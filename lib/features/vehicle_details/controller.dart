@@ -151,8 +151,14 @@ class VehicleDetailsController extends GetxController {
     inspectionDetails.value?.seatColor = seatColorController.text;
     formErrors.value = {};
 
+    // Validate plate: must be exactly 3 uppercase letters + space + 4 digits
+    final plate = plateController.text.trim();
+    if (!RegExp(r'^[A-Z]{3} \d{4}$').hasMatch(plate)) {
+      formErrors['plate'] = DetailsPage.plateNumberValidation.tr;
+    }
+
     final isValid = formKey.currentState?.validate() ?? false;
-    if (!isValid) return false;
+    if (!isValid || formErrors.isNotEmpty) return false;
 
     formKey.currentState!.save();
     return true;

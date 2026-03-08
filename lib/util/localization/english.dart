@@ -258,8 +258,7 @@ class English {
     DetailsPage.plateNumberHint: 'Enter Plate Number',
     DetailsPage.plateNumberValidationIfNull: 'The Car Plate must be entered',
     DetailsPage.plateNumberValidation:
-        'The Car Plate length must be less than 9',
-
+        'Please complete the plate: 3 letters and 4 digits required',
     DetailsPage.bodyType: 'Body Type',
     DetailsPage.bodyTypeValidation: 'Automatic',
 

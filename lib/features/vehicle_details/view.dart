@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fahis_inspector/common/widgets/components/custom_selector.dart';
+import 'package:fahis_inspector/common/widgets/components/saudi_plate_picker.dart';
 import 'package:fahis_inspector/features/vehicle_details/controller.dart';
 import 'package:fahis_inspector/models/selection.dart';
 import 'package:fahis_inspector/routes.dart';
@@ -7,6 +8,7 @@ import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/helpers.dart';
+import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import 'package:fahis_inspector/util/validators/validation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -18,11 +20,14 @@ class VehicleDetailsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = VehicleDetailsBinding().instance;
+    final isTablet = ResponsiveHelper.isTablet(context) || ResponsiveHelper.isDesktop(context);
+    final hPad = isTablet ? FSizes.xl * 2 : FSizes.lg;
+
     return SingleChildScrollView(
       scrollDirection: Axis.vertical,
       child: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: FSizes.lg,
+          horizontal: hPad,
           vertical: FSizes.md,
         ),
         child: Column(
@@ -105,31 +110,35 @@ class VehicleDetailsView extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        textDirection: TextDirection.rtl,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            DetailsPage.vehicleInfoTile,
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                        ],
+                      Text(
+                        DetailsPage.vehicleInfoTile.tr,
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: FSizes.spaceBtwSections),
                       _buildVinField(context, controller),
                       const SizedBox(height: FSizes.spaceBtwItems),
-                      buildEditableField(
-                        context,
-                        DetailsPage.plateNumber.tr,
-                        'plate',
-                        details.plate ?? '',
-                        controller.plateController,
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'fieldRequired'.tr;
-                          }
-                          return null;
-                        },
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: FSizes.md),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              DetailsPage.plateNumber.tr,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: FSizes.xs),
+                            SaudiPlatePicker(
+                              controller: controller.plateController,
+                              errorText: controller.formErrors['plate'],
+                              onChanged: () {
+                                if (controller.formErrors.containsKey('plate')) {
+                                  controller.formErrors.remove('plate');
+                                  controller.update();
+                                }
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: FSizes.spaceBtwItems),
                       GetBuilder<VehicleDetailsController>(
@@ -579,7 +588,7 @@ class VehicleDetailsView extends StatelessWidget {
             controller: textController,
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
-              hintText: "Enter $label",
+              hintText: label,
               errorText: VehicleDetailsBinding().instance.formErrors[key],
             ),
             onSaved: (value) {
@@ -604,39 +613,4 @@ class VehicleDetailsView extends StatelessWidget {
     );
   }
 
-  Widget buildDropdownField<T>(
-    BuildContext context, {
-    required String label,
-    required List<T> items,
-    required ValueChanged<T?> onChanged,
-    T? value,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: FSizes.md),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: FSizes.xs),
-          DropdownButton<T>(
-            value: value,
-            hint: Text("Select $label"),
-            isExpanded: true,
-            items: items
-                .map(
-                  (item) => DropdownMenuItem<T>(
-                    value: item,
-                    child: Text(item.toString()),
-                  ),
-                )
-                .toList(),
-            onChanged: (value) => onChanged(value),
-          ),
-        ],
-      ),
-    );
-  }
 }
