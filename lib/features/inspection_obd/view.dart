@@ -288,25 +288,14 @@ class _CodesEmpty extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: FSizes.lg),
       child: Column(
         children: [
-          Icon(
-            Iconsax.cpu,
-            size: 36,
-            color: FColors.grey.withValues(alpha: 0.4),
-          ),
+          Icon(Iconsax.cpu, size: 36, color: FColors.darkGrey),
           const SizedBox(height: FSizes.sm),
           Text(
             InspectionPage.obdNoCodesYet.tr,
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: FColors.grey),
+            ).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
             textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: FSizes.xs),
-          Text(
-            InspectionPage.optionalTag.tr,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: FColors.grey.withValues(alpha: 0.6),
-            ),
           ),
         ],
       ),
