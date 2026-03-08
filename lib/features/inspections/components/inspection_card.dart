@@ -92,7 +92,12 @@ class InspectionCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: EdgeInsets.fromLTRB(pad, pad, pad, FSizes.sm),
+                          padding: EdgeInsets.fromLTRB(
+                            pad,
+                            pad,
+                            pad,
+                            FSizes.sm,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -149,14 +154,13 @@ class InspectionCard extends StatelessWidget {
                                 _vehicleLabel(),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.bodySmall?.copyWith(
-                                  color: isDark
-                                      ? FColors.grey
-                                      : FColors.darkGrey,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: isDark
+                                          ? FColors.grey
+                                          : FColors.darkGrey,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                               ),
 
                               const SizedBox(height: FSizes.sm),
@@ -211,14 +215,15 @@ class InspectionCard extends StatelessWidget {
                                                       ? FColors.grey.withValues(
                                                           alpha: 0.2,
                                                         )
-                                                      : FColors.grey.withValues(
-                                                          alpha: 0.45,
-                                                        ),
+                                                      : FColors.darkGrey
+                                                            .withValues(
+                                                              alpha: 0.45,
+                                                            ),
                                                 ),
                                                 borderRadius:
                                                     BorderRadius.circular(
-                                                  FSizes.borderRadiusMd,
-                                                ),
+                                                      FSizes.borderRadiusMd,
+                                                    ),
                                               ),
                                               child: Text(
                                                 vehicle!.plate!,
@@ -306,7 +311,9 @@ class InspectionCard extends StatelessWidget {
                                   : Colors.red.shade50,
                               border: Border(
                                 top: BorderSide(
-                                  color: Colors.redAccent.withValues(alpha: 0.2),
+                                  color: Colors.redAccent.withValues(
+                                    alpha: 0.2,
+                                  ),
                                 ),
                               ),
                             ),

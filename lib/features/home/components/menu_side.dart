@@ -2,7 +2,6 @@ import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/features/authentication/views/profile_view.dart';
 import 'package:fahis_inspector/features/authentication/views/team_selector_sheet.dart';
 import 'package:fahis_inspector/features/authentication/components/user_avater.dart';
-import 'package:fahis_inspector/features/home/components/user_info.dart';
 import 'package:fahis_inspector/features/inspections/controller.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/routes.dart';
@@ -11,6 +10,7 @@ import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:fahis_inspector/util/localization/localization.dart';
+import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_side_menu/flutter_side_menu.dart';
@@ -25,17 +25,16 @@ class SideMenuWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final homeController = HomeBinding().instance;
+    final isDark = FHelper.isDarkMode(context);
 
     return GetBuilder<InspectionsController>(
       init: InspectionsBinding().instance,
       builder: (controller) {
         final selectedStage = controller.selectedStage.value;
 
-        final isDark = FHelper.isDarkMode(context);
-
         return SideMenu(
           controller: homeController.sideController,
-          backgroundColor: isDark ? FColors.dark : FColors.white,
+          backgroundColor: isDark ? const Color(0xFF1A1A1A) : FColors.light,
           mode: SideMenuMode.open,
           hasResizerToggle: isTablet,
           hasResizer: isTablet,
@@ -43,23 +42,23 @@ class SideMenuWrapper extends StatelessWidget {
           builder: (data) {
             return SideMenuData(
               defaultTileData: SideMenuItemTileDefaults(
-                hoverColor: FColors.primaryColor.withValues(alpha: 0.08),
+                hoverColor: FColors.primaryColor.withValues(alpha: 0.06),
               ),
               animItems: SideMenuItemsAnimationData(),
               items: [
+                // ── Stage filters ──────────────────────────────────
                 ...InspectionStage.allStages.map((stage) {
                   final isSelected = selectedStage == stage;
                   final count =
-                      controller
-                          .repository
-                          ?.total["${stage.value ?? 'all'}_total"] ??
+                      controller.repository
+                          ?.total['${stage.value ?? 'all'}_total'] ??
                       0;
 
                   return SideMenuItemDataTile(
                     hasSelectedLine: false,
                     margin: const EdgeInsetsDirectional.symmetric(
                       horizontal: FSizes.xs,
-                      vertical: 2,
+                      vertical: 1,
                     ),
                     decoration: isSelected
                         ? BoxDecoration(
@@ -69,9 +68,11 @@ class SideMenuWrapper extends StatelessWidget {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: FColors.primaryColor.withValues(alpha: .2),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+                                color: FColors.primaryColor.withValues(
+                                  alpha: 0.25,
+                                ),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
                               ),
                             ],
                           )
@@ -84,239 +85,176 @@ class SideMenuWrapper extends StatelessWidget {
                     isSelected: isSelected,
                     onTap: () => controller.changeStatus(newStage: stage),
                     title: stage.getLabel,
-                    selectedTitleStyle: Theme.of(context).textTheme.bodyMedium!
+                    selectedTitleStyle: Theme.of(context)
+                        .textTheme
+                        .bodyMedium!
                         .copyWith(
-                          color: FColors.white,
+                          color: Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
+                    titleStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      color: isDark ? FColors.light : FColors.dark,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    tooltip: stage.getLabel,
+                    // Icon inside a subtle circle
+                    icon: _StageIcon(
+                      icon: stage.icon,
+                      color: stage.color,
+                      isSelected: isSelected,
+                    ),
                     badgeBuilder: count > 0
                         ? (widget) => Row(
                             children: [
                               Expanded(child: widget),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? FColors.white
-                                      : stage.color.withValues(alpha: .15),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  count.toString(),
-                                  style: Theme.of(context).textTheme.labelSmall
-                                      ?.copyWith(
-                                        color: stage.color,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: FSizes.fontSizeSm - 3,
-                                      ),
-                                ),
+                              _CountBadge(
+                                count: count,
+                                isSelected: isSelected,
+                                color: stage.color,
                               ),
                             ],
                           )
                         : null,
-                    titleStyle: Theme.of(context).textTheme.bodyMedium!
-                        .copyWith(
-                          color: isDark ? FColors.light : FColors.dark,
-                          fontWeight: FontWeight.w500,
-                        ),
-                    tooltip: stage.getLabel,
-                    icon: Icon(
-                      stage.icon,
-                      color: isSelected ? FColors.white : stage.color,
-                      size: 20,
-                    ),
                   );
                 }),
 
+                // ── Divider ────────────────────────────────────────
                 SideMenuItemDataDivider(
                   divider: Divider(
-                    color: FColors.grey.withValues(alpha: .2),
+                    color: isDark
+                        ? FColors.grey.withValues(alpha: 0.1)
+                        : FColors.grey.withValues(alpha: 0.5),
                     thickness: 1,
                     height: FSizes.md,
+                    indent: FSizes.sm,
+                    endIndent: FSizes.sm,
                   ),
                 ),
-                SideMenuItemDataTile(
-                  isSelected: false,
-                  margin: const EdgeInsetsDirectional.symmetric(
-                    horizontal: FSizes.xs,
-                    vertical: 2,
-                  ),
-                  onTap: () => TeamSelectorSheet.show(),
-                  title: 'Switch Team'.tr,
-                  hoverColor: FColors.primaryColor.withValues(alpha: .08),
-                  titleStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: isDark ? FColors.light : FColors.dark,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  icon: Icon(
-                    Iconsax.people,
-                    color: FColors.primaryColor,
-                    size: 20,
-                  ),
-                ),
-                SideMenuItemDataDivider(
-                  divider: Divider(
-                    color: FColors.grey.withValues(alpha: .2),
-                    thickness: 1,
-                    height: FSizes.md,
-                  ),
-                ),
+
+                // ── Settings & Support section label ───────────────
                 SideMenuItemDataTitle(
                   title: 'Settings & Support'.tr,
                   textAlign: TextAlign.start,
-                  titleStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  titleStyle: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: FColors.darkGrey,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
                   ),
                 ),
+
+                // ── Switch Team ────────────────────────────────────
                 SideMenuItemDataTile(
                   isSelected: false,
                   margin: const EdgeInsetsDirectional.symmetric(
                     horizontal: FSizes.xs,
-                    vertical: 2,
+                    vertical: 1,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                  ),
+                  onTap: () => TeamSelectorSheet.show(),
+                  title: 'Switch Team'.tr,
+                  hoverColor: FColors.primaryColor.withValues(alpha: 0.06),
+                  titleStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: isDark ? FColors.light : FColors.dark,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  icon: _ActionIcon(icon: Iconsax.people, color: FColors.info),
+                ),
+
+                // ── Language ───────────────────────────────────────
+                SideMenuItemDataTile(
+                  isSelected: false,
+                  margin: const EdgeInsetsDirectional.symmetric(
+                    horizontal: FSizes.xs,
+                    vertical: 1,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
                   ),
                   onTap: () => FLocalization.changeLocale(),
                   title: FLocalization.isArabic ? 'English' : 'عربي',
-                  hoverColor: FColors.primaryColor.withValues(alpha: .08),
+                  hoverColor: FColors.primaryColor.withValues(alpha: 0.06),
                   titleStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: isDark ? FColors.light : FColors.dark,
                     fontWeight: FontWeight.w500,
                   ),
-                  icon: Icon(
-                    Iconsax.language_circle,
-                    color: FColors.primaryColor,
-                    size: 20,
+                  icon: _ActionIcon(
+                    icon: Iconsax.language_circle,
+                    color: Colors.teal,
                   ),
                 ),
+
+                // ── Theme toggle ───────────────────────────────────
                 SideMenuItemDataTile(
                   isSelected: false,
                   margin: const EdgeInsetsDirectional.symmetric(
                     horizontal: FSizes.xs,
-                    vertical: 2,
+                    vertical: 1,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
                   ),
                   onTap: () => FLocalization.changeTheme(),
-                  title: FLocalization.isLight ? 'Dark Mode'.tr : 'Light Mode'.tr,
-                  hoverColor: FColors.primaryColor.withValues(alpha: .08),
+                  title: FLocalization.isLight
+                      ? 'Dark Mode'.tr
+                      : 'Light Mode'.tr,
+                  hoverColor: FColors.primaryColor.withValues(alpha: 0.06),
                   titleStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: isDark ? FColors.light : FColors.dark,
                     fontWeight: FontWeight.w500,
                   ),
-                  icon: Icon(
-                    FLocalization.isLight ? Iconsax.moon : Iconsax.sun_1,
-                    color: FColors.primaryColor,
-                    size: 20,
+                  icon: _ActionIcon(
+                    icon: FLocalization.isLight ? Iconsax.moon : Iconsax.sun_1,
+                    color: FLocalization.isLight
+                        ? Colors.indigo
+                        : FColors.warning,
                   ),
                 ),
+
+                // ── Help & Support ─────────────────────────────────
                 SideMenuItemDataTile(
                   isSelected: false,
                   margin: const EdgeInsetsDirectional.symmetric(
                     horizontal: FSizes.xs,
-                    vertical: 2,
+                    vertical: 1,
                   ),
-                  hoverColor: FColors.primaryColor.withValues(alpha: .08),
-                  onTap: () async => await _callSuportTeam(),
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                  ),
+                  hoverColor: FColors.primaryColor.withValues(alpha: 0.06),
+                  onTap: () async => await _callSupportTeam(),
                   title: 'Help & Support'.tr,
                   titleStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: isDark ? FColors.light : FColors.dark,
                     fontWeight: FontWeight.w500,
                   ),
-                  icon: Icon(
-                    Iconsax.headphone,
-                    color: FColors.primaryColor,
-                    size: 20,
+                  icon: _ActionIcon(
+                    icon: Iconsax.headphone,
+                    color: FColors.success,
                   ),
                 ),
               ],
+
+              // ── Header ──────────────────────────────────────────
               header: StreamBuilder<User?>(
                 stream: FirebaseAuth.instance.userChanges(),
                 builder: (context, snapshot) {
-                  if (snapshot.hasData && (snapshot.data != null)) {
-                    final user = snapshot.data;
-                    if (user != null) {
-                      return LayoutBuilder(
-                        builder: (context, constraints) {
-                          if (constraints.maxWidth >= 220) {
-                            return InkWell(
-                              onTap: () => Get.to(() => const ProfileView()),
-                              child: AnimatedContainer(
-                                duration: Duration(seconds: 1),
-                                width: constraints.maxWidth,
-                                margin: const EdgeInsets.only(
-                                  left: FSizes.sm,
-                                  right: FSizes.sm,
-                                  bottom: FSizes.sm,
-                                  top: FSizes.lg,
-                                ),
-                                padding: const EdgeInsets.all(FSizes.sm),
-                                decoration: const BoxDecoration(
-                                  gradient: FColors.primaryGradient,
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(FSizes.borderRadiusLg),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    UserWidget(),
-                                    FUserAvatar(),
-                                    const SizedBox(width: FSizes.sm),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            auth().profile?.name ?? user.displayName ?? 'User Name',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium!
-                                                .copyWith(color: FColors.white),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          Text(
-                                            auth().profile?.currentTeam?.name
-                                                ?? FTexts.systemInspector.tr,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
-                                                ?.copyWith(
-                                                  color: FColors.white
-                                                      .withValues(alpha: .8),
-                                                ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () async =>
-                                          await auth().logOut(),
-                                      icon: Icon(
-                                        Iconsax.logout,
-                                        size: 20,
-                                        color: FColors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }
-
-                          return InkWell(
-                            onTap: () => Get.to(() => const ProfileView()),
-                            child: FUserAvatar(),
-                          );
-                        },
-                      );
-                    }
+                  if (snapshot.hasData && snapshot.data != null) {
+                    return LayoutBuilder(
+                      builder: (context, constraints) {
+                        if (constraints.maxWidth >= 220) {
+                          return _ExpandedHeader(context: context);
+                        }
+                        return _CollapsedHeader();
+                      },
+                    );
                   }
-                  return SizedBox();
+                  return const SizedBox.shrink();
                 },
               ),
             );
@@ -326,12 +264,216 @@ class SideMenuWrapper extends StatelessWidget {
     );
   }
 
-  Future<void> _callSuportTeam() async {
+  Future<void> _callSupportTeam() async {
     final Uri launchUri = Uri(scheme: 'tel', path: '+966126818525');
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri);
     } else {
       throw 'Could not launch 966126818525';
     }
+  }
+}
+
+// ── Stage icon: colored circle + icon ───────────────────────────────────────
+
+class _StageIcon extends StatelessWidget {
+  const _StageIcon({
+    required this.icon,
+    required this.color,
+    required this.isSelected,
+  });
+
+  final IconData icon;
+  final Color color;
+  final bool isSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: isSelected
+            ? Colors.white.withValues(alpha: 0.2)
+            : color.withValues(alpha: 0.1),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        icon,
+        size: 15,
+        color: isSelected ? Colors.white : color,
+      ),
+    );
+  }
+}
+
+// ── Action item icon: orange-tinted circle ───────────────────────────────────
+
+class _ActionIcon extends StatelessWidget {
+  const _ActionIcon({required this.icon, required this.color});
+
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(icon, size: 15, color: color),
+    );
+  }
+}
+
+// ── Count badge ──────────────────────────────────────────────────────────────
+
+class _CountBadge extends StatelessWidget {
+  const _CountBadge({
+    required this.count,
+    required this.isSelected,
+    required this.color,
+  });
+
+  final int count;
+  final bool isSelected;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? Colors.white.withValues(alpha: 0.25)
+            : color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+        border: isSelected
+            ? null
+            : Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Text(
+        count.toString(),
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: isSelected ? Colors.white : color,
+        ),
+      ),
+    );
+  }
+}
+
+// ── Expanded header (side menu open / width ≥ 220) ───────────────────────────
+
+class _ExpandedHeader extends StatelessWidget {
+  const _ExpandedHeader({required this.context});
+  final BuildContext context;
+
+  @override
+  Widget build(BuildContext context) {
+    final isTablet = ResponsiveHelper.isTablet(context) ||
+        ResponsiveHelper.isDesktop(context);
+    final vPad = isTablet ? FSizes.lg : FSizes.md;
+
+    return InkWell(
+      onTap: () => Get.to(() => const ProfileView()),
+      borderRadius: const BorderRadius.vertical(
+        bottom: Radius.circular(FSizes.borderRadiusLg),
+      ),
+      child: Container(
+        margin: EdgeInsets.fromLTRB(FSizes.sm, FSizes.lg, FSizes.sm, FSizes.sm),
+        padding: EdgeInsets.all(vPad - 4),
+        decoration: BoxDecoration(
+          gradient: FColors.primaryGradient,
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+          boxShadow: [
+            BoxShadow(
+              color: FColors.primaryColor.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Avatar
+            FUserAvatar(),
+            const SizedBox(width: FSizes.sm),
+            // Name + team
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    auth().profile?.name ??
+                        FirebaseAuth.instance.currentUser?.displayName ??
+                        'User',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    auth().profile?.currentTeam?.name ??
+                        FTexts.systemInspector.tr,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Logout
+            GestureDetector(
+              onTap: () async => await auth().logOut(),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Iconsax.logout,
+                  size: 16,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Collapsed header (side menu icon-only / width < 220) ─────────────────────
+
+class _CollapsedHeader extends StatelessWidget {
+  const _CollapsedHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: FSizes.lg, bottom: FSizes.sm),
+      child: Center(
+        child: InkWell(
+          onTap: () => Get.to(() => const ProfileView()),
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+          child: FUserAvatar(),
+        ),
+      ),
+    );
   }
 }
