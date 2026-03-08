@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:fahis_inspector/common/widgets/camera/camera.dart';
+import 'package:fahis_inspector/util/helpers/camera_permission.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/models/photo.dart';
 import 'package:fahis_inspector/resources/inspection_photos_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:flutter/foundation.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -200,19 +200,12 @@ class InspectionPhotosController extends GetxController {
     _log('picking — START | photo.id=${photo.id} | savedCategory=$savedCategory');
 
     if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+      if (!await CameraPermissionHelper.requestCamera()) return;
       final cameras = await availableCameras();
+      if (cameras.isEmpty) return;
       _log('picking — opening camera dialog');
       photo.file = await Get.dialog<File>(Camera(cameras: cameras));
       _log('picking — camera dialog closed | file=${photo.file != null ? "selected" : "cancelled"} | category.value=${category.value}');
-    } else {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.any,
-      );
-
-      if (result != null && result.files.single.path != null) {
-        photo.file = File(result.files.single.path!);
-      }
-      _log('picking — file picker closed | file=${photo.file != null ? "selected" : "cancelled"} | category.value=${category.value}');
     }
 
     // Only upload if file exists (user didn't cancel)

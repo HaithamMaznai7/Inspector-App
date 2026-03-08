@@ -5,7 +5,6 @@ import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/device/device_utility.dart';
 import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -32,6 +31,10 @@ class _CameraState extends State<Camera> {
   void initState() {
     super.initState();
     FDeviceUtils.hideStatusBar();
+    if (widget.cameras == null || widget.cameras!.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => Get.back());
+      return;
+    }
     _controller = CameraController(
       widget.cameras![0],
       ResolutionPreset.high,
@@ -42,16 +45,6 @@ class _CameraState extends State<Camera> {
       _controller.setFlashMode(_flashMode);
       setState(() {});
     });
-  }
-
-  Future<void> _pickGalleryImage() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowMultiple: false,
-    );
-    if (result != null && result.files.isNotEmpty) {
-      setState(() => _pictureFile = File(result.files.single.path!));
-    }
   }
 
   Future<void> _pick() async {
@@ -281,17 +274,8 @@ class _CameraState extends State<Camera> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Gallery
-                    _circleBtn(
-                      onTap: _pickGalleryImage,
-                      child: Icon(
-                        _isIOS
-                            ? CupertinoIcons.photo
-                            : Icons.photo_library_outlined,
-                        color: Colors.white,
-                        size: _isTablet ? 26 : 22,
-                      ),
-                    ),
+                    // Placeholder to keep shutter centered
+                    SizedBox(width: _ctrlBtnSize),
 
                     // Shutter
                     _shutterButton(),

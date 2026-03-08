@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:camera/camera.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:fahis_inspector/common/widgets/camera/camera.dart';
+import 'package:fahis_inspector/util/helpers/camera_permission.dart';
 import 'package:fahis_inspector/common/widgets/components/back_page_button.dart';
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/models/point.dart';
@@ -296,7 +297,9 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
 
   Future<void> _pickImage() async {
     if (Platform.isAndroid || Platform.isIOS) {
+      if (!await CameraPermissionHelper.requestCamera()) return;
       final cameras = await availableCameras();
+      if (cameras.isEmpty) return;
       final file = await Get.dialog<File>(Camera(cameras: cameras));
       if (file != null) {
         setState(() {

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:camera/camera.dart';
 import 'package:fahis_inspector/common/widgets/camera/camera.dart';
+import 'package:fahis_inspector/util/helpers/camera_permission.dart';
 import 'package:fahis_inspector/models/marker.dart';
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/models/selection.dart';
@@ -10,7 +11,6 @@ import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -576,16 +576,12 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
   }
 
   Future<void> _pickImage() async {
-    if (Platform.isAndroid || Platform.isIOS) {
-      final cameras = await availableCameras();
-      final file = await Get.dialog<File>(Camera(cameras: cameras));
-      if (file != null) setState(() => _marker.file = file);
-    } else {
-      final result = await FilePicker.platform.pickFiles(type: FileType.any);
-      if (result != null && result.files.single.path != null) {
-        setState(() => _marker.file = File(result.files.single.path!));
-      }
-    }
+    if (!Platform.isAndroid && !Platform.isIOS) return;
+    if (!await CameraPermissionHelper.requestCamera()) return;
+    final cameras = await availableCameras();
+    if (cameras.isEmpty) return;
+    final file = await Get.dialog<File>(Camera(cameras: cameras));
+    if (file != null) setState(() => _marker.file = file);
   }
 }
 
