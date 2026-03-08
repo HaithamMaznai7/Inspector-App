@@ -528,7 +528,52 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
 
   void _cancel() => Get.back(result: null);
 
-  void _delete() => Get.back(result: Marker(id: -1, dx: 0, dy: 0));
+  Future<void> _delete() async {
+    final isDark = FHelper.isDarkMode(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? FColors.dark : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+        ),
+        title: Text(
+          InspectionPage.deleteBodyNote.tr,
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            color: isDark ? FColors.light : FColors.dark,
+          ),
+        ),
+        content: Text(
+          InspectionPage.deleteBodyNoteConfirm.tr,
+          style: TextStyle(
+            color: isDark ? FColors.grey : FColors.darkGrey,
+            fontSize: 14,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              FTexts.cancelBtn.tr,
+              style: const TextStyle(color: FColors.grey),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              FTexts.deleteBtn.tr,
+              style: const TextStyle(
+                color: FColors.error,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) Get.back(result: Marker(id: -1, dx: 0, dy: 0));
+  }
 
   Future<void> _pickImage() async {
     if (Platform.isAndroid || Platform.isIOS) {

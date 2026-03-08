@@ -66,6 +66,10 @@ class InspectionPage {
   static const String deleteAllPhotos = 'deleteAllPhotos';
   static const String deleteAllPhotosConfirm = 'deleteAllPhotosConfirm';
   static const String deleteAllPhotosSuccess = 'deleteAllPhotosSuccess';
+  static const String deleteObdCode = 'deleteObdCode';
+  static const String deleteObdCodeConfirm = 'deleteObdCodeConfirm';
+  static const String deleteBodyNote = 'deleteBodyNote';
+  static const String deleteBodyNoteConfirm = 'deleteBodyNoteConfirm';
   static const String photoCategoryExterior = 'photoCategoryExterior';
   static const String photoCategoryInterior = 'photoCategoryInterior';
 

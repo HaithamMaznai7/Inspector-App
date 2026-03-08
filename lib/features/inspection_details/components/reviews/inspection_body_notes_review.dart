@@ -153,8 +153,8 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: FColors.primaryColor.withValues(alpha: 
-                                          0.1,
+                                        color: FColors.primaryColor.withValues(
+                                          alpha: 0.1,
                                         ),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
@@ -194,7 +194,7 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
-                                          ?.apply(color: FColors.grey),
+                                          ?.apply(color: FColors.darkGrey),
                                     ),
                                   ],
                                 ),
@@ -232,18 +232,23 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                           placeholder: (_, __) => Container(
                                             width: FSizes.imagePreviewMd,
                                             height: FSizes.imagePreviewMd,
-                                            color: FColors.grey.withValues(alpha: 0.1),
-                                          ),
-                                          errorWidget: (_, __, ___) => Container(
-                                            width: FSizes.imagePreviewMd,
-                                            height: FSizes.imagePreviewMd,
-                                            color: FColors.grey.withValues(alpha: 0.1),
-                                            child: Icon(
-                                              Iconsax.image,
-                                              color: FColors.grey,
-                                              size: FSizes.iconInlineMd,
+                                            color: FColors.grey.withValues(
+                                              alpha: 0.1,
                                             ),
                                           ),
+                                          errorWidget: (_, __, ___) =>
+                                              Container(
+                                                width: FSizes.imagePreviewMd,
+                                                height: FSizes.imagePreviewMd,
+                                                color: FColors.grey.withValues(
+                                                  alpha: 0.1,
+                                                ),
+                                                child: Icon(
+                                                  Iconsax.image,
+                                                  color: FColors.grey,
+                                                  size: FSizes.iconInlineMd,
+                                                ),
+                                              ),
                                         ),
                                       ),
                                     ),

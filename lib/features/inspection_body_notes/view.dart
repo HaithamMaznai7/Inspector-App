@@ -181,6 +181,53 @@ class _NoteItem extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
+  Future<void> _confirmDelete(BuildContext context) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? FColors.dark : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+        ),
+        title: Text(
+          InspectionPage.deleteBodyNote.tr,
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            color: isDark ? FColors.light : FColors.dark,
+          ),
+        ),
+        content: Text(
+          InspectionPage.deleteBodyNoteConfirm.tr,
+          style: TextStyle(
+            color: isDark ? FColors.grey : FColors.darkGrey,
+            fontSize: 14,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              FTexts.cancelBtn.tr,
+              style: const TextStyle(color: FColors.darkGrey),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              FTexts.deleteBtn.tr,
+              style: const TextStyle(
+                color: FColors.error,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) onDelete();
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -224,7 +271,7 @@ class _NoteItem extends StatelessWidget {
             ),
             // Delete
             InkWell(
-              onTap: onDelete,
+              onTap: () => _confirmDelete(context),
               borderRadius: BorderRadius.circular(FSizes.sm),
               child: const Padding(
                 padding: EdgeInsets.all(4),

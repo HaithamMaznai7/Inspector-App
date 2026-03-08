@@ -58,7 +58,7 @@ class InspectionOBDReview extends StatelessWidget {
                   InspectionPage.notYet.tr,
                   style: Theme.of(
                     context,
-                  ).textTheme.bodyMedium?.apply(color: FColors.grey),
+                  ).textTheme.bodyMedium?.apply(color: FColors.darkGrey),
                 ),
               )
             else
