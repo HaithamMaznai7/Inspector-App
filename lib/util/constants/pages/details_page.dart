@@ -80,4 +80,8 @@ class DetailsPage {
   static const String vinSearchErrorMsg = 'vinSearchErrorMsg';
   static const String vinHelperTyping = 'vinHelperTyping';
   static const String vinHelperReady = 'vinHelperReady';
+
+  static const String sectionIdentification = 'sectionIdentification';
+  static const String sectionSpecifications = 'sectionSpecifications';
+  static const String sectionInterior = 'sectionInterior';
 }

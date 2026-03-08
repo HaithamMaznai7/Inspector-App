@@ -250,6 +250,9 @@ class Arabic {
     DetailsPage.vinSearchErrorMsg: 'تعذر البحث، حاول مرة أخرى.',
     DetailsPage.vinHelperTyping: 'أدخل 17 حرف للبحث عن بيانات المركبة تلقائياً',
     DetailsPage.vinHelperReady: 'اضغط على أيقونة البحث لتعبئة البيانات تلقائياً',
+    DetailsPage.sectionIdentification: 'التعريف',
+    DetailsPage.sectionSpecifications: 'المواصفات',
+    DetailsPage.sectionInterior: 'الألوان والمقاعد',
 
     DetailsPage.plateNumber: 'رقم اللوحة',
     DetailsPage.plateNumberHint: 'أدخل رقم اللوحة',

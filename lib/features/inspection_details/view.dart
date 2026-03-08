@@ -48,15 +48,13 @@ class InspectionDetailsScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(
-                  color: FColors.primaryColor,
-                ),
+                CircularProgressIndicator(color: FColors.primaryColor),
                 SizedBox(height: FSizes.md),
                 Text(
                   InspectionPage.loadingInspectionDetails.tr,
-                  style: Theme.of(context).textTheme.bodyMedium?.apply(
-                        color: FColors.grey,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.apply(color: FColors.darkGrey),
                 ),
               ],
             ),
@@ -64,7 +62,8 @@ class InspectionDetailsScreen extends StatelessWidget {
         }
 
         return RefreshIndicator(
-          onRefresh: () async => controller.load(controller.slug!, refresh: true),
+          onRefresh: () async =>
+              controller.load(controller.slug!, refresh: true),
           triggerMode: RefreshIndicatorTriggerMode.onEdge,
           child: Container(
             color: FColors.grey.withValues(alpha: 0.05),

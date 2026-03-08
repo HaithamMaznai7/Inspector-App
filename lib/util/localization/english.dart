@@ -253,6 +253,9 @@ class English {
     DetailsPage.vinSearchErrorMsg: 'Could not search. Please try again.',
     DetailsPage.vinHelperTyping: 'Enter 17 characters to search vehicle data automatically',
     DetailsPage.vinHelperReady: 'Tap search to auto-fill vehicle details',
+    DetailsPage.sectionIdentification: 'Identification',
+    DetailsPage.sectionSpecifications: 'Specifications',
+    DetailsPage.sectionInterior: 'Colors & Seating',
 
     DetailsPage.plateNumber: 'Plate Number',
     DetailsPage.plateNumberHint: 'Enter Plate Number',
