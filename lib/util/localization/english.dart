@@ -490,6 +490,11 @@ class English {
     'onBoardingTitle3': 'Stay Connected',
     'onBoardingSubTitle3': 'Receive real-time notifications and stay updated on every inspection status change.',
 
+    /// OTP Dialog
+    'enterOTP': 'Enter Verification Code',
+    'otpSentMessage': 'We sent a verification code to your number. Enter it below.',
+    'resendOTP': 'Resend OTP',
+
     /// Camera
     FTexts.cameraRetake: 'Retake',
     FTexts.cameraUsePhoto: 'Use Photo',

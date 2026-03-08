@@ -119,7 +119,7 @@ class AuthRepository {
       requestMethod: RequestMethod.post,
     );
 
-    net.setBody = {'otp': code};
+    net.setBody = {'otp': code, 'token': verifyToken};
 
     try {
       final response = await net.response(RoutingUrl.login);

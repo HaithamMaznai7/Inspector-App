@@ -548,6 +548,11 @@ class Arabic {
     'onBoardingSubTitle3':
         'استقبل الإشعارات الفورية وتابع كل تحديث على حالة الفحص.',
 
+    /// OTP Dialog
+    'enterOTP': 'أدخل رمز التحقق',
+    'otpSentMessage': 'أرسلنا رمز التحقق إلى رقمك. يرجى إدخاله أدناه.',
+    'resendOTP': 'إعادة الإرسال',
+
     /// Camera
     FTexts.cameraRetake: 'إعادة التقاط',
     FTexts.cameraUsePhoto: 'استخدام الصورة',

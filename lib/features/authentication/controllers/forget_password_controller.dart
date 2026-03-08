@@ -55,10 +55,26 @@ class ForgetPasswordController extends GetxController {
       // User dismissed the dialog — abort without touching loading state
       if (result == null) return;
 
+      // Resend action — re-request OTP and loop back to show dialog again
+      if (result['action'] == 'resent') {
+        toggleSignIn();
+        try {
+          verifyToken = await auth().forgetPassword(mobile);
+        } on FNetworkException catch (e) {
+          e.notify();
+        } catch (e) {
+          dd(e.toString());
+        } finally {
+          toggleSignIn();
+        }
+        if (verifyToken == null) return;
+        continue;
+      }
+
       toggleSignIn();
       try {
-        final code = result['code'];
-        token = await auth().verifyOTP(verifyToken, code);
+        final code = result['code'] as String;
+        token = await auth().verifyOTP(verifyToken!, code);
       } on FNetworkException catch (e) {
         e.notify();
       } catch (e) {
