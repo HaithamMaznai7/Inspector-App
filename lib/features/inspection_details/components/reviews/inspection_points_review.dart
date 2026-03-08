@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/info_card.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/models/review_point.dart';
@@ -105,18 +106,22 @@ class InspectionPointsReview extends StatelessWidget {
                                         context: context,
                                         builder: (context) => Dialog(
                                           child: InteractiveViewer(
-                                            child: Image.network(
-                                              point.image!,
+                                            child: CachedNetworkImage(
+                                              imageUrl: point.image!,
                                               fit: BoxFit.contain,
+                                              placeholder: (_, __) => const SizedBox.shrink(),
+                                              errorWidget: (_, __, ___) => const SizedBox.shrink(),
                                             ),
                                           ),
                                         ),
                                       );
                                     },
-                                    child: Image.network(
-                                      point.image!,
+                                    child: CachedNetworkImage(
+                                      imageUrl: point.image!,
                                       height: FSizes.imagePreviewSm,
                                       fit: BoxFit.cover,
+                                      placeholder: (_, __) => SizedBox(height: FSizes.imagePreviewSm),
+                                      errorWidget: (_, __, ___) => SizedBox(height: FSizes.imagePreviewSm),
                                     ),
                                   ),
                                 ),

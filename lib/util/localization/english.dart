@@ -154,6 +154,14 @@ class English {
     InspectionPage.photosProgress: '@uploaded / @total photos',
     InspectionPage.takePhoto: 'Take Photo',
     InspectionPage.deletePhoto: 'Delete Photo',
+    InspectionPage.deletePhotoConfirm: 'Are you sure you want to delete this photo?',
+    InspectionPage.deleteAllPhotos: 'Delete All Photos',
+    InspectionPage.deleteAllPhotosConfirm: 'Are you sure? All uploaded photos will be deleted and reset.',
+    InspectionPage.deleteAllPhotosSuccess: 'All photos have been deleted successfully.',
+    InspectionPage.deleteObdCode: 'Delete Code',
+    InspectionPage.deleteObdCodeConfirm: 'Are you sure you want to delete this OBD code?',
+    InspectionPage.deleteBodyNote: 'Delete Note',
+    InspectionPage.deleteBodyNoteConfirm: 'Are you sure you want to delete this note?',
     InspectionPage.photoCategoryExterior: 'Exterior',
     InspectionPage.photoCategoryInterior: 'Interior',
     InspectionPage.startInspection: 'Start Inspection',
@@ -183,6 +191,15 @@ class English {
     InspectionPage.obdUploadSuccess: 'Report uploaded successfully',
     InspectionPage.obdUploadFailed: 'Failed to upload report',
     InspectionPage.obdDeleteSuccess: 'Report deleted',
+    InspectionPage.obdAddCode: 'Add OBD Code',
+    InspectionPage.obdEditCode: 'Edit OBD Code',
+    InspectionPage.obdCodeLabel: 'OBD Code',
+    InspectionPage.obdCodeHint: 'e.g. P0300',
+    InspectionPage.obdDescLabel: 'Description',
+    InspectionPage.obdDescHint: 'Code description...',
+    InspectionPage.obdNoCodesYet: 'No OBD codes yet',
+    InspectionPage.obdReportSection: 'OBD Report',
+    InspectionPage.obdOptionalBadge: 'optional',
     InspectionPage.stepLabel: 'Step @step',
     InspectionPage.submitValidationTitle: 'Cannot Submit',
     InspectionPage.submitValidationMsg:
@@ -236,13 +253,15 @@ class English {
     DetailsPage.vinSearchErrorMsg: 'Could not search. Please try again.',
     DetailsPage.vinHelperTyping: 'Enter 17 characters to search vehicle data automatically',
     DetailsPage.vinHelperReady: 'Tap search to auto-fill vehicle details',
+    DetailsPage.sectionIdentification: 'Identification',
+    DetailsPage.sectionSpecifications: 'Specifications',
+    DetailsPage.sectionInterior: 'Colors & Seating',
 
     DetailsPage.plateNumber: 'Plate Number',
     DetailsPage.plateNumberHint: 'Enter Plate Number',
     DetailsPage.plateNumberValidationIfNull: 'The Car Plate must be entered',
     DetailsPage.plateNumberValidation:
-        'The Car Plate length must be less than 9',
-
+        'Please complete the plate: 3 letters and 4 digits required',
     DetailsPage.bodyType: 'Body Type',
     DetailsPage.bodyTypeValidation: 'Automatic',
 
@@ -377,6 +396,8 @@ class English {
     FTexts.markerAddPhoto: 'Take Photo',
     FTexts.markerChangePhoto: 'Change Photo',
     FTexts.bodyInspectionDetails: 'Inspection Details',
+    FTexts.bodyTapHint: 'Tap to add a marker',
+    FTexts.bodyDragHint: 'Drag a marker to reposition',
 
     /// Body part labels
     FTexts.bodyPartTop: 'Top',
@@ -468,6 +489,17 @@ class English {
     'onBoardingSubTitle2': 'Follow step-by-step inspection stages: photos, body check, OBD diagnostics, and more.',
     'onBoardingTitle3': 'Stay Connected',
     'onBoardingSubTitle3': 'Receive real-time notifications and stay updated on every inspection status change.',
+
+    /// OTP Dialog
+    'enterOTP': 'Enter Verification Code',
+    'otpSentMessage': 'We sent a verification code to your number. Enter it below.',
+    'resendOTP': 'Resend OTP',
+
+    /// Camera
+    FTexts.cameraRetake: 'Retake',
+    FTexts.cameraUsePhoto: 'Use Photo',
+    FTexts.cameraRetry: 'Retry',
+    FTexts.cameraOk: 'OK',
 
     /// Force Update
     FTexts.forceUpdateTitle: 'Update Required',

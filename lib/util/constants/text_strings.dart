@@ -78,6 +78,8 @@ class FTexts {
   static const String markerAddPhoto = 'markerAddPhoto';
   static const String markerChangePhoto = 'markerChangePhoto';
   static const String bodyInspectionDetails = 'bodyInspectionDetails';
+  static const String bodyTapHint = 'bodyTapHint';
+  static const String bodyDragHint = 'bodyDragHint';
   static const String bodyPartTop = 'bodyPartTop';
   static const String bodyPartLeft = 'bodyPartLeft';
   static const String bodyPartRight = 'bodyPartRight';
@@ -114,6 +116,12 @@ class FTexts {
   static const String stageFinished = 'stageFinished';
   static const String stageRejected = 'stageRejected';
   static const String stageReviewed = 'stageReviewed';
+
+  /// Camera
+  static const String cameraRetake = 'cameraRetake';
+  static const String cameraUsePhoto = 'cameraUsePhoto';
+  static const String cameraRetry = 'cameraRetry';
+  static const String cameraOk = 'cameraOk';
 
   /// Force Update
   static const String forceUpdateTitle = 'forceUpdateTitle';

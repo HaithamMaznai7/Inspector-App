@@ -153,6 +153,14 @@ class Arabic {
     InspectionPage.photosProgress: '@uploaded / @total صور',
     InspectionPage.takePhoto: 'التقاط صورة',
     InspectionPage.deletePhoto: 'حذف الصورة',
+    InspectionPage.deletePhotoConfirm: 'هل أنت متأكد أنك تريد حذف هذه الصورة؟',
+    InspectionPage.deleteAllPhotos: 'حذف جميع الصور',
+    InspectionPage.deleteAllPhotosConfirm: 'هل أنت متأكد؟ سيتم حذف جميع الصور المرفوعة وإعادة تعيينها.',
+    InspectionPage.deleteAllPhotosSuccess: 'تم حذف جميع الصور بنجاح.',
+    InspectionPage.deleteObdCode: 'حذف الكود',
+    InspectionPage.deleteObdCodeConfirm: 'هل أنت متأكد أنك تريد حذف هذا الكود؟',
+    InspectionPage.deleteBodyNote: 'حذف الملاحظة',
+    InspectionPage.deleteBodyNoteConfirm: 'هل أنت متأكد أنك تريد حذف هذه الملاحظة؟',
     InspectionPage.photoCategoryExterior: 'خارجية',
     InspectionPage.photoCategoryInterior: 'داخلية',
     InspectionPage.startInspection: 'ابدأ الفحص',
@@ -181,6 +189,15 @@ class Arabic {
     InspectionPage.obdUploadSuccess: 'تم رفع التقرير بنجاح',
     InspectionPage.obdUploadFailed: 'فشل رفع التقرير',
     InspectionPage.obdDeleteSuccess: 'تم حذف التقرير',
+    InspectionPage.obdAddCode: 'إضافة رمز OBD',
+    InspectionPage.obdEditCode: 'تعديل رمز OBD',
+    InspectionPage.obdCodeLabel: 'رمز OBD',
+    InspectionPage.obdCodeHint: 'مثال: P0300',
+    InspectionPage.obdDescLabel: 'الوصف',
+    InspectionPage.obdDescHint: 'وصف الرمز...',
+    InspectionPage.obdNoCodesYet: 'لا توجد أكواد OBD بعد',
+    InspectionPage.obdReportSection: 'تقرير OBD',
+    InspectionPage.obdOptionalBadge: 'اختياري',
     InspectionPage.stepLabel: 'الخطوة @step',
     InspectionPage.submitValidationTitle: 'لا يمكن الإرسال',
     InspectionPage.submitValidationMsg: 'يرجى إكمال جميع الخطوات قبل الإرسال:',
@@ -233,12 +250,14 @@ class Arabic {
     DetailsPage.vinSearchErrorMsg: 'تعذر البحث، حاول مرة أخرى.',
     DetailsPage.vinHelperTyping: 'أدخل 17 حرف للبحث عن بيانات المركبة تلقائياً',
     DetailsPage.vinHelperReady: 'اضغط على أيقونة البحث لتعبئة البيانات تلقائياً',
+    DetailsPage.sectionIdentification: 'التعريف',
+    DetailsPage.sectionSpecifications: 'المواصفات',
+    DetailsPage.sectionInterior: 'الألوان والمقاعد',
 
     DetailsPage.plateNumber: 'رقم اللوحة',
     DetailsPage.plateNumberHint: 'أدخل رقم اللوحة',
     DetailsPage.plateNumberValidationIfNull: 'مطلوب ...',
-    DetailsPage.plateNumberValidation: 'اللوحة تحتوي على حروف و ارقام',
-
+    DetailsPage.plateNumberValidation: 'أكمل اللوحة: مطلوب 3 أحرف و 4 أرقام',
     DetailsPage.bodyType: 'هيكل المركبة',
     DetailsPage.bodyTypeValidation: 'حدد هيكل المركبة ما راح نطقها عين',
 
@@ -432,6 +451,8 @@ class Arabic {
     FTexts.markerAddPhoto: 'التقاط صورة',
     FTexts.markerChangePhoto: 'تغيير الصورة',
     FTexts.bodyInspectionDetails: 'تفاصيل الفحص',
+    FTexts.bodyTapHint: 'اضغط لإضافة علامة',
+    FTexts.bodyDragHint: 'اسحب العلامة لتغيير موضعها',
 
     /// Body part labels
     FTexts.bodyPartTop: 'أعلى',
@@ -526,6 +547,17 @@ class Arabic {
     'onBoardingTitle3': 'ابقَ على اطلاع',
     'onBoardingSubTitle3':
         'استقبل الإشعارات الفورية وتابع كل تحديث على حالة الفحص.',
+
+    /// OTP Dialog
+    'enterOTP': 'أدخل رمز التحقق',
+    'otpSentMessage': 'أرسلنا رمز التحقق إلى رقمك. يرجى إدخاله أدناه.',
+    'resendOTP': 'إعادة الإرسال',
+
+    /// Camera
+    FTexts.cameraRetake: 'إعادة التقاط',
+    FTexts.cameraUsePhoto: 'استخدام الصورة',
+    FTexts.cameraRetry: 'إعادة المحاولة',
+    FTexts.cameraOk: 'موافق',
 
     /// Force Update
     FTexts.forceUpdateTitle: 'تحديث مطلوب',

@@ -1,8 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/models/vehicle.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/helpers/helper_functions.dart';
+import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -26,105 +28,265 @@ class InspectionCard extends StatelessWidget {
 
   bool get _isRejected => stage == InspectionStage.rejected;
 
+  String _vehicleLabel() {
+    final parts = [
+      vehicle?.make?.label,
+      vehicle?.model?.label,
+      vehicle?.year,
+    ].where((e) => e != null && e.isNotEmpty).map((e) => e!).toList();
+    return parts.isEmpty ? '---' : parts.join(' · ');
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = FHelper.isDarkMode(context);
+    final cardBg = isDark ? FColors.black : Colors.white;
+    final borderColor = isDark
+        ? FColors.grey.withValues(alpha: 0.1)
+        : FColors.grey.withValues(alpha: 0.25);
 
-    return InkWell(
-      onTap: onTap,
-      child: SizedBox(
-        width: double.infinity,
-        child: Card(
-          color: isDark ? FColors.black : FColors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-            side: _isRejected
-                ? BorderSide(color: Colors.redAccent.withValues(alpha: 0.4), width: 1)
-                : BorderSide.none,
+    final pad = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: FSizes.md,
+      tablet: FSizes.lg,
+    );
+    final logoSize = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: FSizes.iconInlineSm,
+      tablet: FSizes.iconInlineMd,
+    );
+    final labelSize = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: 11,
+      tablet: 13,
+    );
+    final detailSize = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: 12,
+      tablet: 14,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: FSizes.sm),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+        child: Container(
+          decoration: BoxDecoration(
+            color: cardBg,
+            borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+            border: Border.all(color: borderColor),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-            child: Container(
-              decoration: _isRejected
-                  ? BoxDecoration(
-                      border: BorderDirectional(
-                        start: BorderSide(color: Colors.redAccent, width: 4),
-                      ),
-                    )
-                  : null,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(FSizes.md),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                  // ── Stage accent bar ───────────────────────────────
+                  Container(width: 4, color: stage.color),
+
+                  // ── Card body ──────────────────────────────────────
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(stage.icon, color: stage.color),
-                        const SizedBox(width: FSizes.spaceBtwItems),
-                        // Expanded (tight) gives this Column a strictly bounded width =
-                        // (row width) - (icon + spacers + right-column). Without this,
-                        // Flexible(loose) let the Column collapse to its natural/intrinsic
-                        // width, which passed near-unbounded constraints down to the inner
-                        // Row, causing the 700+ px overflow on every card.
-                        Expanded(
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            pad,
+                            pad,
+                            pad,
+                            FSizes.sm,
+                          ),
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                customerName ?? '---',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.titleMedium?.apply(
-                                  color: isDark
-                                      ? FColors.white.withValues(alpha: .8)
-                                      : FColors.dark,
-                                ),
-                              ),
-
-                              const SizedBox(height: FSizes.sm),
-
-                              Text(
-                                '${vehicle?.make?.label ?? ''} - ${vehicle?.model?.label ?? ''} - ${vehicle?.year ?? ''}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.bodyMedium?.apply(
-                                  color: isDark
-                                      ? FColors.white.withValues(alpha: .8)
-                                      : FColors.dark,
-                                ),
-                              ),
-
-                              const SizedBox(height: FSizes.sm),
-
+                            children: [
+                              // Row 1: customer name + slug badge
                               Row(
                                 children: [
-                                  if (vehicle?.make?.avatar != null)
-                                    Image.network(
-                                      vehicle!.make!.avatar!,
-                                      fit: BoxFit.contain,
-                                      width: FSizes.iconInlineMd,
-                                      height: FSizes.iconInlineMd,
-                                      // Fallback for HTTP 500 / broken image URLs
-                                      errorBuilder: (_, __, ___) => Icon(
-                                        Iconsax.car,
-                                        size: FSizes.iconInlineSm,
-                                        color: FColors.darkGrey,
-                                      ),
-                                    ),
-                                  if (vehicle?.make?.avatar != null)
-                                    const SizedBox(width: FSizes.sm),
-                                  // Flexible so the plate text yields space to the logo
-                                  // and never pushes the Row past its bounded width.
-                                  Flexible(
+                                  Expanded(
                                     child: Text(
-                                      vehicle?.plate ?? '',
+                                      customerName ?? '---',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(context).textTheme.bodyMedium
-                                          ?.apply(color: FColors.primaryColor),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                            color: isDark
+                                                ? FColors.light
+                                                : FColors.dark,
+                                          ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: FSizes.sm),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: FSizes.sm,
+                                      vertical: FSizes.xs - 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? FColors.grey.withValues(alpha: 0.08)
+                                          : FColors.grey.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(
+                                        FSizes.borderRadiusSm,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      '#${slug ?? '---'}',
+                                      style: TextStyle(
+                                        fontSize: labelSize,
+                                        fontWeight: FontWeight.w600,
+                                        color: FColors.darkGrey,
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: FSizes.xs + 1),
+
+                              // Row 2: Make · Model · Year
+                              Text(
+                                _vehicleLabel(),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: isDark
+                                          ? FColors.grey
+                                          : FColors.darkGrey,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                              ),
+
+                              const SizedBox(height: FSizes.sm),
+
+                              Divider(
+                                height: 1,
+                                color: isDark
+                                    ? FColors.grey.withValues(alpha: 0.08)
+                                    : FColors.grey.withValues(alpha: 0.35),
+                              ),
+
+                              const SizedBox(height: FSizes.sm),
+
+                              // Row 3: plate • stage pill
+                              Row(
+                                children: [
+                                  // Brand logo + plate — Flexible so it yields
+                                  // space to the stage pill on narrow screens
+                                  Flexible(
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (vehicle?.make?.avatar != null) ...[
+                                          CachedNetworkImage(
+                                            imageUrl: vehicle!.make!.avatar!,
+                                            width: logoSize,
+                                            height: logoSize,
+                                            fit: BoxFit.contain,
+                                            placeholder: (_, __) => SizedBox(
+                                              width: logoSize,
+                                              height: logoSize,
+                                            ),
+                                            errorWidget: (_, __, ___) => Icon(
+                                              Iconsax.car,
+                                              size: FSizes.iconSm,
+                                              color: FColors.darkGrey,
+                                            ),
+                                          ),
+                                          const SizedBox(width: FSizes.xs + 2),
+                                        ],
+                                        if (vehicle?.plate != null &&
+                                            vehicle!.plate!.isNotEmpty)
+                                          Flexible(
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: FSizes.sm,
+                                                vertical: FSizes.xs,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                border: Border.all(
+                                                  color: isDark
+                                                      ? FColors.grey.withValues(
+                                                          alpha: 0.2,
+                                                        )
+                                                      : FColors.darkGrey
+                                                            .withValues(
+                                                              alpha: 0.45,
+                                                            ),
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                      FSizes.borderRadiusMd,
+                                                    ),
+                                              ),
+                                              child: Text(
+                                                vehicle!.plate!,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: detailSize,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: FColors.primaryColor,
+                                                  letterSpacing: 1.0,
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        else
+                                          Icon(
+                                            Iconsax.car,
+                                            size: FSizes.iconSm,
+                                            color: FColors.grey,
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: FSizes.sm),
+
+                                  // Stage pill — shrinks label if needed
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: FSizes.sm + 2,
+                                      vertical: FSizes.xs + 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: stage.color.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(
+                                        FSizes.borderRadiusLg,
+                                      ),
+                                      border: Border.all(
+                                        color: stage.color.withValues(
+                                          alpha: 0.25,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          stage.icon,
+                                          size: FSizes.iconXs,
+                                          color: stage.color,
+                                        ),
+                                        const SizedBox(width: FSizes.xs + 1),
+                                        Text(
+                                          stage.getLabel,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: detailSize,
+                                            fontWeight: FontWeight.w600,
+                                            color: stage.color,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -132,76 +294,57 @@ class InspectionCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const SizedBox(width: FSizes.spaceBtwItems),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              '#${slug ?? '---'}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.labelMedium?.apply(
-                                color: isDark ? FColors.grey : FColors.darkerGrey,
-                                fontStyle: FontStyle.italic,
-                              ),
+
+                        // ── Rejection banner ──────────────────────────
+                        if (_isRejected &&
+                            rejectedNote != null &&
+                            rejectedNote!.isNotEmpty)
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: pad,
+                              vertical: FSizes.sm,
                             ),
-                            const SizedBox(height: FSizes.spaceBtwItems),
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: FSizes.sm),
-                              constraints: const BoxConstraints(maxWidth: 110),
-                              decoration: BoxDecoration(
-                                color: stage.color.withValues(alpha: .1),
-                                borderRadius: BorderRadius.circular(FSizes.sm),
-                              ),
-                              child: Text(
-                                stage.getLabel,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodyLarge?.apply(
-                                  color: stage.color,
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? Colors.red.withValues(alpha: 0.08)
+                                  : Colors.red.shade50,
+                              border: Border(
+                                top: BorderSide(
+                                  color: Colors.redAccent.withValues(
+                                    alpha: 0.2,
+                                  ),
                                 ),
                               ),
                             ),
-                          ],
-                        ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Iconsax.warning_2,
+                                  size: FSizes.iconXs + 2,
+                                  color: Colors.redAccent,
+                                ),
+                                const SizedBox(width: FSizes.xs),
+                                Expanded(
+                                  child: Text(
+                                    rejectedNote!,
+                                    style: TextStyle(
+                                      fontSize: detailSize,
+                                      color: isDark
+                                          ? Colors.red.shade300
+                                          : Colors.red.shade700,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                       ],
                     ),
                   ),
-                  // Rejection reason banner
-                  if (_isRejected && rejectedNote != null && rejectedNote!.isNotEmpty)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: FSizes.md,
-                        vertical: FSizes.sm,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade50,
-                        border: Border(
-                          top: BorderSide(
-                            color: Colors.redAccent.withValues(alpha: 0.2),
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Iconsax.warning_2, size: 16, color: Colors.red.shade400),
-                          const SizedBox(width: FSizes.sm),
-                          Expanded(
-                            child: Text(
-                              rejectedNote!,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.red.shade700,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                 ],
               ),
             ),

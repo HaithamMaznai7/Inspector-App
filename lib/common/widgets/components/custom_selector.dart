@@ -44,13 +44,12 @@ class _CustomSelector extends State<CustomSelector> {
         widget.items.where((item) => item.value == widget.value).firstOrNull ??
         Selection.empty();
   }
-  
+
   @override
   void didUpdateWidget(covariant CustomSelector oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.value != widget.value ||
-        oldWidget.items != widget.items) {
+    if (oldWidget.value != widget.value || oldWidget.items != widget.items) {
       setState(() {
         _value =
             widget.items
@@ -117,7 +116,9 @@ class _CustomSelector extends State<CustomSelector> {
           : FColors.white.withValues(alpha: .95),
       builder: (context) {
         return ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.4),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.4,
+          ),
           child: ListView.separated(
             shrinkWrap: true,
             separatorBuilder: (context, index) {

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
@@ -62,11 +63,13 @@ class InspectionInfo extends StatelessWidget {
                       child: Row(
                         children: [
                           c.inspection.value?.vehicle?.make?.avatar != null
-                              ? Image.network(
-                                  c.inspection.value!.vehicle!.make!.avatar!,
+                              ? CachedNetworkImage(
+                                  imageUrl: c.inspection.value!.vehicle!.make!.avatar!,
                                   fit: BoxFit.contain,
                                   width: FSizes.iconInlineMd,
                                   height: FSizes.iconInlineMd,
+                                  placeholder: (_, __) => SizedBox(width: FSizes.iconInlineMd, height: FSizes.iconInlineMd),
+                                  errorWidget: (_, __, ___) => SizedBox(width: FSizes.iconInlineMd, height: FSizes.iconInlineMd),
                                 )
                               : SizedBox(),
                           const SizedBox(width: FSizes.sm),

@@ -131,7 +131,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   Future<List<OBDCode>> update(OBDCode code) async {
     _log('update – POST code id=${code.id}, code="${code.code}"');
     final n = Network(
-      endpoint: '${EndPoints.obdCodes}/${code.id}',
+      endpoint: '${EndPoints.inspections}/$slug/obd-codes/${code.id}',
       requestMethod: RequestMethod.post,
     );
 
@@ -159,7 +159,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   Future<List<OBDCode>> delete(OBDCode code) async {
     _log('delete – DELETE code id=${code.id}');
     final n = Network(
-      endpoint: '${EndPoints.obdCodes}/${code.id}',
+      endpoint: 'inspector/codes/${code.id}',
       requestMethod: RequestMethod.delete,
     );
 

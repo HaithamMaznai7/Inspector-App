@@ -1,13 +1,12 @@
 import 'package:fahis_inspector/boot/app_service_provider.dart';
 import 'package:fahis_inspector/common/widgets/app/logo.dart';
-import 'package:fahis_inspector/common/styles/spacing_style.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
-import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:fahis_inspector/util/localization/localization.dart';
+import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import 'package:fahis_inspector/util/validators/validation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,18 +15,22 @@ import 'package:iconsax/iconsax.dart';
 
 class Login extends StatelessWidget {
   const Login({super.key});
+
   @override
   Widget build(BuildContext context) {
-    // dd(storage().auth.get('user'));
     dd(Get.isRegistered<AppServiceProvider>(tag: BindingTags.app));
     final controller = LoginBinding().instance;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isTablet =
+        ResponsiveHelper.isTablet(context) ||
+        ResponsiveHelper.isDesktop(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        backgroundColor: FHelper.isDarkMode(context)
-            ? FColors.dark
-            : FColors.white,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         actions: [FLocalization.localizeIcon(), FLocalization.themeMode()],
       ),
       body: SafeArea(
@@ -36,186 +39,275 @@ class Login extends StatelessWidget {
             return SingleChildScrollView(
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Padding(
-                    padding: FSpacingStyle.paddingWithAppBarHeight,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Logo + title
-                        Column(
-                          children: [
-                            const Logo(height: FSizes.logoHeightLg),
-                            const SizedBox(height: FSizes.spaceBtwItems),
-                            Text(
-                              LoginPage.loginTitle.tr,
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            ),
-                            Text(
-                              LoginPage.loginSubTitle.tr,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
-
-                        // Form + login button
-                        Form(
-                          key: controller.loginFormKey,
-                          autovalidateMode: AutovalidateMode.onUnfocus,
-                          child: Column(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: isTablet ? 480 : double.infinity,
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 0 : 24,
+                        vertical: 16,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // ── Branding ─────────────────────────────────
+                          Column(
                             children: [
-                              Obx(
-                                () => TextFormField(
-                                  controller: controller.credentialController,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.deny(
-                                      RegExp(r'\s'),
-                                    ),
-                                  ],
-                                  decoration: InputDecoration(
-                                    prefixIcon: const Icon(Iconsax.user),
-                                    labelText: LoginPage.username.tr,
-                                    errorText: controller.credentialError.value,
-                                  ),
-                                  validator: (value) =>
-                                      FValidation.isRequired(
-                                        'credential',
-                                        value,
-                                      ) ??
-                                      (GetUtils.isEmail(value!)
-                                          ? FValidation.validateEmail(
-                                              'credential',
-                                              value,
-                                            )
-                                          : FValidation.validatePhoneNo(
-                                              'credential',
-                                              value,
-                                            )),
-                                  onChanged: (value) {
-                                    if (controller.isExists.value) {
-                                      controller.toggleIsExists();
-                                    }
-                                  },
-                                ),
-                              ),
-                              const SizedBox(
-                                height: FSizes.spaceBtwInputFields,
-                              ),
-                              Obx(() {
-                                final isEmail = controller.isExists.value;
-
-                                return AnimatedSize(
-                                  duration: const Duration(milliseconds: 400),
-                                  curve: Curves.easeInOut,
-                                  child: AnimatedOpacity(
-                                    opacity: isEmail ? 1.0 : 0.0,
-                                    duration: const Duration(milliseconds: 300),
-                                    child: isEmail
-                                        ? Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              TextFormField(
-                                                controller: controller
-                                                    .passwordController,
-                                                obscureText: controller
-                                                    .isPasswordHidden
-                                                    .value,
-                                                decoration: InputDecoration(
-                                                  prefixIcon: const Icon(
-                                                    Iconsax.password_check,
-                                                  ),
-                                                  labelText:
-                                                      LoginPage.password.tr,
-                                                  suffixIcon: IconButton(
-                                                    icon: Icon(
-                                                      controller
-                                                              .isPasswordHidden
-                                                              .value
-                                                          ? Iconsax.eye
-                                                          : Iconsax.eye_slash,
-                                                    ),
-                                                    onPressed: controller
-                                                        .passwordVisibleChange,
-                                                  ),
-                                                  errorText: controller.passwordSubmitted.value
-                                                      ? controller.passwordError.value
-                                                      : null,
-                                                ),
-                                                validator: (value) {
-                                                  if (value == null || value.trim().isEmpty) {
-                                                    return 'fieldRequired'.tr;
-                                                  }
-                                                  return null;
-                                                },
-                                              ),
-                                              const SizedBox(
-                                                height:
-                                                    FSizes.spaceBtwInputFields,
-                                              ),
-                                            ],
-                                          )
-                                        : const SizedBox.shrink(),
-                                  ),
-                                );
-                              }),
-                              Row(
-                                children: [
-                                  TextButton(
-                                    onPressed: () => Get.offAllNamed(
-                                      RoutingUrl.forgetPassword,
-                                    ),
-                                    child: Text(
-                                      LoginPage.forgetBTN.tr,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium!
-                                          .copyWith(color: FColors.info),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              const Logo(height: FSizes.logoHeightLg),
                               const SizedBox(height: FSizes.spaceBtwItems),
-                              Obx(() {
-                                final isLoad = controller.isLoading.value;
-                                if (isLoad) {
-                                  return Container(
-                                    decoration: BoxDecoration(
-                                      color: FColors.primaryColor,
-                                      borderRadius: BorderRadius.circular(
-                                        FSizes.borderRadiusMd,
-                                      ),
+                              Text(
+                                LoginPage.loginTitle.tr,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium
+                                    ?.copyWith(fontWeight: FontWeight.w800),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                LoginPage.loginSubTitle.tr,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: isDark
+                                          ? FColors.grey
+                                          : FColors.darkGrey,
                                     ),
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: FSizes.sm,
-                                    ),
-                                    width: double.infinity,
-                                    child: const Center(
-                                      child: CircularProgressIndicator(
-                                        color: FColors.white,
-                                      ),
-                                    ),
-                                  );
-                                }
-
-                                return SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    onPressed: () => controller.checkLogin(),
-                                    child: Text(
-                                      LoginPage.signIn.tr,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineSmall
-                                          ?.apply(color: FColors.white),
-                                    ),
-                                  ),
-                                );
-                              }),
+                                textAlign: TextAlign.center,
+                              ),
                             ],
                           ),
-                        ),
-                      ],
+
+                          // ── Form card ─────────────────────────────────
+                          Container(
+                            margin: const EdgeInsets.only(top: 40),
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.025)
+                                  : Colors.black.withValues(alpha: 0.025),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.07)
+                                    : Colors.black.withValues(alpha: 0.06),
+                              ),
+                            ),
+                            child: Form(
+                              key: controller.loginFormKey,
+                              autovalidateMode: AutovalidateMode.onUnfocus,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Card header
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 3,
+                                        height: 16,
+                                        decoration: BoxDecoration(
+                                          color: FColors.primaryColor,
+                                          borderRadius: BorderRadius.circular(
+                                            2,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        LoginPage.signIn.tr,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 20),
+
+                                  // Credential field
+                                  Obx(
+                                    () => TextFormField(
+                                      controller:
+                                          controller.credentialController,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.deny(
+                                          RegExp(r'\s'),
+                                        ),
+                                      ],
+                                      decoration: InputDecoration(
+                                        prefixIcon: const Icon(Iconsax.user),
+                                        labelText: LoginPage.username.tr,
+                                        errorText:
+                                            controller.credentialError.value,
+                                      ),
+                                      validator: (value) =>
+                                          FValidation.isRequired(
+                                            'credential',
+                                            value,
+                                          ) ??
+                                          (GetUtils.isEmail(value!)
+                                              ? FValidation.validateEmail(
+                                                  'credential',
+                                                  value,
+                                                )
+                                              : FValidation.validatePhoneNo(
+                                                  'credential',
+                                                  value,
+                                                )),
+                                      onChanged: (value) {
+                                        if (controller.isExists.value) {
+                                          controller.toggleIsExists();
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: FSizes.spaceBtwInputFields,
+                                  ),
+
+                                  // Password field (animated)
+                                  Obx(() {
+                                    final isEmail = controller.isExists.value;
+                                    return AnimatedSize(
+                                      duration: const Duration(
+                                        milliseconds: 400,
+                                      ),
+                                      curve: Curves.easeInOut,
+                                      child: AnimatedOpacity(
+                                        opacity: isEmail ? 1.0 : 0.0,
+                                        duration: const Duration(
+                                          milliseconds: 300,
+                                        ),
+                                        child: isEmail
+                                            ? Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  TextFormField(
+                                                    controller: controller
+                                                        .passwordController,
+                                                    obscureText: controller
+                                                        .isPasswordHidden
+                                                        .value,
+                                                    decoration: InputDecoration(
+                                                      prefixIcon: const Icon(
+                                                        Iconsax.password_check,
+                                                      ),
+                                                      labelText:
+                                                          LoginPage.password.tr,
+                                                      suffixIcon: IconButton(
+                                                        icon: Icon(
+                                                          controller
+                                                                  .isPasswordHidden
+                                                                  .value
+                                                              ? Iconsax.eye
+                                                              : Iconsax
+                                                                    .eye_slash,
+                                                        ),
+                                                        onPressed: controller
+                                                            .passwordVisibleChange,
+                                                      ),
+                                                      errorText:
+                                                          controller
+                                                              .passwordSubmitted
+                                                              .value
+                                                          ? controller
+                                                                .passwordError
+                                                                .value
+                                                          : null,
+                                                    ),
+                                                    validator: (value) {
+                                                      if (value == null ||
+                                                          value
+                                                              .trim()
+                                                              .isEmpty) {
+                                                        return 'fieldRequired'
+                                                            .tr;
+                                                      }
+                                                      return null;
+                                                    },
+                                                  ),
+                                                  const SizedBox(
+                                                    height: FSizes
+                                                        .spaceBtwInputFields,
+                                                  ),
+                                                ],
+                                              )
+                                            : const SizedBox.shrink(),
+                                      ),
+                                    );
+                                  }),
+
+                                  // Forgot password
+                                  Row(
+                                    children: [
+                                      TextButton(
+                                        onPressed: () => Get.offAllNamed(
+                                          RoutingUrl.forgetPassword,
+                                        ),
+                                        child: Text(
+                                          LoginPage.forgetBTN.tr,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(
+                                                color: FColors.info,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: FSizes.spaceBtwItems),
+
+                                  // Login button / loading
+                                  Obx(() {
+                                    final isLoad = controller.isLoading.value;
+                                    if (isLoad) {
+                                      return Container(
+                                        decoration: BoxDecoration(
+                                          color: FColors.primaryColor,
+                                          borderRadius: BorderRadius.circular(
+                                            FSizes.borderRadiusMd,
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: FSizes.sm,
+                                        ),
+                                        width: double.infinity,
+                                        child: const Center(
+                                          child: CircularProgressIndicator(
+                                            color: FColors.white,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    return SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        onPressed: () =>
+                                            controller.checkLogin(),
+                                        child: Text(
+                                          LoginPage.signIn.tr,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineSmall
+                                              ?.apply(color: FColors.white),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
+                ),
               ),
             );
           },

@@ -3,7 +3,6 @@ import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
-import 'package:fahis_inspector/util/device/device_utility.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,6 +11,9 @@ class StepSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return GetBuilder<InspectionStepsController>(
       init: InspectionStepsBinding().instance,
       builder: (controller) {
@@ -19,79 +21,53 @@ class StepSelector extends StatelessWidget {
         final showBack = !controller.isOnFirstTab;
         final showReview = controller.isOnLastTab;
 
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(FSizes.md),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: FDeviceUtils.getScreenWidth() * .9,
+        return Container(
+          decoration: BoxDecoration(
+            color: theme.scaffoldBackgroundColor,
+            boxShadow: [
+              BoxShadow(
+                color: (isDark ? Colors.black : FColors.grey)
+                    .withValues(alpha: 0.3),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: FSizes.lg,
+                vertical: FSizes.md,
+              ),
               child: showReview
-                  ? ElevatedButton(
-                      onPressed: submitting
-                          ? null
-                          : controller.finishAndReview,
-                      child: Padding(
-                        padding: EdgeInsetsGeometry.symmetric(
-                          horizontal: FSizes.md,
-                        ),
-                        child: submitting
-                            ? SizedBox(
-                                width: FSizes.iconInlineSm,
-                                height: FSizes.iconInlineSm,
-                                child: CircularProgressIndicator(
-                                  color: FColors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(FTexts.reviewBtn.tr),
-                      ),
+                  ? _buildButton(
+                      context: context,
+                      onPressed:
+                          submitting ? null : controller.finishAndReview,
+                      isLoading: submitting,
+                      label: FTexts.reviewBtn.tr,
                     )
                   : Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         if (showBack) ...[
                           Expanded(
-                            child: ElevatedButton(
-                              style: Theme.of(context)
-                                  .elevatedButtonTheme
-                                  .style!
-                                  .copyWith(
-                                    backgroundColor: WidgetStateProperty.all(
-                                      FColors.darkGrey,
-                                    ),
-                                  ),
-                              onPressed:
-                                  submitting ? null : controller.toPervious,
-                              child: Padding(
-                                padding: EdgeInsetsGeometry.symmetric(
-                                  horizontal: FSizes.md,
-                                ),
-                                child: Text(FTexts.backBtn.tr),
-                              ),
+                            child: OutlinedButton(
+                              onPressed: submitting
+                                  ? null
+                                  : controller.toPervious,
+                              child: Text(FTexts.backBtn.tr),
                             ),
                           ),
-                          SizedBox(width: FSizes.spaceBtwItems),
+                          const SizedBox(width: FSizes.spaceBtwItems),
                         ],
                         Expanded(
-                          child: ElevatedButton(
-                            onPressed: submitting
-                                ? null
-                                : controller.toNext,
-                            child: Padding(
-                              padding: EdgeInsetsGeometry.symmetric(
-                                horizontal: FSizes.md,
-                              ),
-                              child: submitting
-                                  ? SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        color: FColors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : Text(FTexts.nextBtn.tr),
-                            ),
+                          flex: showBack ? 2 : 1,
+                          child: _buildButton(
+                            context: context,
+                            onPressed:
+                                submitting ? null : controller.toNext,
+                            isLoading: submitting,
+                            label: FTexts.nextBtn.tr,
                           ),
                         ),
                       ],
@@ -100,6 +76,27 @@ class StepSelector extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildButton({
+    required BuildContext context,
+    required VoidCallback? onPressed,
+    required bool isLoading,
+    required String label,
+  }) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      child: isLoading
+          ? const SizedBox(
+              width: FSizes.iconInlineSm,
+              height: FSizes.iconInlineSm,
+              child: CircularProgressIndicator(
+                color: FColors.white,
+                strokeWidth: 2,
+              ),
+            )
+          : Text(label),
     );
   }
 }

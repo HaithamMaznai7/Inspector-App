@@ -8,6 +8,7 @@ import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -215,7 +216,13 @@ class InspectionObdController extends GetxController {
     isLoading.value = true;
     update();
 
-    OBDCode? result = await Get.dialog<OBDCode>(AddingObdCode(code: code));
+    OBDCode? result = await Get.bottomSheet<OBDCode>(
+      AddingObdCode(code: code),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      enableDrag: true,
+      ignoreSafeArea: false,
+    );
 
     try {
       if (result != null && result.id == 0) {

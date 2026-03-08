@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fahis_inspector/common/widgets/loaders/snackbar_queue.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
@@ -115,7 +116,16 @@ class FLoader {
           backgroundColor: color,
           snackPosition: SnackPosition.TOP,
           duration: Duration(seconds: duration),
-          icon: image != null ? Image.network(image) : icon,
+          icon: image != null
+              ? CachedNetworkImage(
+                  imageUrl: image,
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) => const SizedBox.shrink(),
+                  errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                )
+              : icon,
           snackStyle: SnackStyle.FLOATING,
         );
       } catch (e) {

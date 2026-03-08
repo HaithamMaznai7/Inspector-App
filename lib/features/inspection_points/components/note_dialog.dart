@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:camera/camera.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:fahis_inspector/common/widgets/camera/camera.dart';
@@ -35,7 +36,7 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
   ImageProvider? get _imageProvider {
     if (_point.file != null) return FileImage(_point.file!);
     if (_point.image != null && _point.image!.isNotEmpty) {
-      return NetworkImage(_point.image!);
+      return CachedNetworkImageProvider(_point.image!);
     }
     return null;
   }

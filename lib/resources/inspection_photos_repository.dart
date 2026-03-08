@@ -40,6 +40,10 @@ class InspectionPhotosRepository extends ListRepository<Photo> {
     return _data;
   }
 
+  /// Resets all photos to image: null by calling POST /inspections/{slug}/photos.
+  /// Same endpoint as generate — the backend treats it as a full reset.
+  Future<List<Photo>> resetAll() async => generate();
+
   Future<List<Photo>> generate() async {
     final n = Network(endpoint: '${EndPoints.inspections}/$slug/photos', requestMethod: RequestMethod.post);
 

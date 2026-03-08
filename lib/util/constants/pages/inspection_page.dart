@@ -62,6 +62,14 @@ class InspectionPage {
   static const String photosProgress = 'photosProgress';
   static const String takePhoto = 'takePhoto';
   static const String deletePhoto = 'deletePhoto';
+  static const String deletePhotoConfirm = 'deletePhotoConfirm';
+  static const String deleteAllPhotos = 'deleteAllPhotos';
+  static const String deleteAllPhotosConfirm = 'deleteAllPhotosConfirm';
+  static const String deleteAllPhotosSuccess = 'deleteAllPhotosSuccess';
+  static const String deleteObdCode = 'deleteObdCode';
+  static const String deleteObdCodeConfirm = 'deleteObdCodeConfirm';
+  static const String deleteBodyNote = 'deleteBodyNote';
+  static const String deleteBodyNoteConfirm = 'deleteBodyNoteConfirm';
   static const String photoCategoryExterior = 'photoCategoryExterior';
   static const String photoCategoryInterior = 'photoCategoryInterior';
 
@@ -108,6 +116,15 @@ class InspectionPage {
   static const String obdUploadSuccess = 'obdUploadSuccess';
   static const String obdUploadFailed = 'obdUploadFailed';
   static const String obdDeleteSuccess = 'obdDeleteSuccess';
+  static const String obdAddCode = 'obdAddCode';
+  static const String obdEditCode = 'obdEditCode';
+  static const String obdCodeLabel = 'obdCodeLabel';
+  static const String obdCodeHint = 'obdCodeHint';
+  static const String obdDescLabel = 'obdDescLabel';
+  static const String obdDescHint = 'obdDescHint';
+  static const String obdNoCodesYet = 'obdNoCodesYet';
+  static const String obdReportSection = 'obdReportSection';
+  static const String obdOptionalBadge = 'obdOptionalBadge';
 
   /// Steps
   static const String stepLabel = 'stepLabel';

@@ -21,6 +21,7 @@ class InspectionsController extends GetxController
   OrdersRepository? ordersRepositoryB2B;
   late final Box<Map> box;
   final ScrollController scrollController = ScrollController();
+  bool _isClosed = false;
   RxList<Inspection> inspections = <Inspection>[].obs;
   RxList<Order> orders = <Order>[].obs;
   RxList<Order> ordersB2B = <Order>[].obs;
@@ -159,6 +160,7 @@ class InspectionsController extends GetxController
 
   @override
   void onClose() {
+    _isClosed = true;
     scrollController.removeListener(_onScroll);
     scrollController.dispose();
     super.onClose();
@@ -169,6 +171,7 @@ class InspectionsController extends GetxController
   /// This handles the case where cards are too few to enable scrolling.
   void _autoLoadMoreIfNeeded() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_isClosed) return;
       if (!scrollController.hasClients) return;
       if (_isFetchingNextPage) return;
 

@@ -68,7 +68,9 @@ class StageSelector extends StatelessWidget {
                 ? Container(
                     decoration: BoxDecoration(
                       gradient: FColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                      borderRadius: BorderRadius.circular(
+                        FSizes.borderRadiusMd,
+                      ),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: FSizes.sm),
                     height: FDeviceUtils.getBottomNavigationBarHeight(),
@@ -78,71 +80,75 @@ class StageSelector extends StatelessWidget {
                     ),
                   )
                 : state == 1
-                    // ── State 1: Start Inspection ──
-                    ? SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
+                // ── State 1: Start Inspection ──
+                ? SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: controller.openEditing,
+
+                      label: Text(InspectionPage.startInspection.tr),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  )
+                // ── State 2: Edit only (not on last step yet) ──
+                : state == 2
+                ? SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: controller.openEditing,
+                      icon: const Icon(Iconsax.edit_2, size: 18),
+                      label: Text(FTexts.editBtn.tr),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: FColors.primaryColor,
+                        side: const BorderSide(color: FColors.primaryColor),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            FSizes.borderRadiusMd,
+                          ),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  )
+                // ── State 3: Edit + Submit ──
+                : Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
                           onPressed: controller.openEditing,
-                          icon: const Icon(Iconsax.play, size: 20),
-                          label: Text(InspectionPage.startInspection.tr),
+                          icon: const Icon(Iconsax.edit_2, size: 18),
+                          label: Text(FTexts.editBtn.tr),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: FColors.primaryColor,
+                            side: const BorderSide(color: FColors.primaryColor),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                FSizes.borderRadiusMd,
+                              ),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: FSizes.md),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () =>
+                              controller.setSatge(InspectionStage.finished),
+                          icon: const Icon(Iconsax.tick_circle, size: 18),
+                          label: Text(FTexts.submitBtn.tr),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
                         ),
-                      )
-                    // ── State 2: Edit only (not on last step yet) ──
-                    : state == 2
-                        ? SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: controller.openEditing,
-                              icon: const Icon(Iconsax.edit_2, size: 18),
-                              label: Text(FTexts.editBtn.tr),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: FColors.primaryColor,
-                                side: const BorderSide(color: FColors.primaryColor),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-                                ),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                              ),
-                            ),
-                          )
-                        // ── State 3: Edit + Submit ──
-                        : Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: controller.openEditing,
-                                  icon: const Icon(Iconsax.edit_2, size: 18),
-                                  label: Text(FTexts.editBtn.tr),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: FColors.primaryColor,
-                                    side: const BorderSide(color: FColors.primaryColor),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: FSizes.md),
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: () => controller.setSatge(InspectionStage.finished),
-                                  icon: const Icon(Iconsax.send_1, size: 18),
-                                  label: Text(FTexts.submitBtn.tr),
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                      ),
+                    ],
+                  ),
           ),
         );
       },
     );
   }
-
 }

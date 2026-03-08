@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/info_card.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
@@ -19,11 +20,11 @@ class InspectionBodyNotesReview extends StatelessWidget {
     }
 
     if (imageUrl.startsWith('https://') || imageUrl.startsWith('http://')) {
-      return NetworkImage(imageUrl);
+      return CachedNetworkImageProvider(imageUrl);
     } else if (imageUrl.startsWith('//s3')) {
-      return NetworkImage('https:$imageUrl');
+      return CachedNetworkImageProvider('https:$imageUrl');
     } else {
-      return NetworkImage(imageUrl);
+      return CachedNetworkImageProvider(imageUrl);
     }
   }
 
@@ -152,8 +153,8 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                         vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: FColors.primaryColor.withValues(alpha: 
-                                          0.1,
+                                        color: FColors.primaryColor.withValues(
+                                          alpha: 0.1,
                                         ),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
@@ -193,7 +194,7 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
-                                          ?.apply(color: FColors.grey),
+                                          ?.apply(color: FColors.darkGrey),
                                     ),
                                   ],
                                 ),
@@ -223,25 +224,31 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                         borderRadius: BorderRadius.circular(
                                           FSizes.borderRadiusSm,
                                         ),
-                                        child: Image.network(
-                                          marker.image!,
+                                        child: CachedNetworkImage(
+                                          imageUrl: marker.image!,
                                           width: FSizes.imagePreviewMd,
                                           height: FSizes.imagePreviewMd,
                                           fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                                return Container(
-                                                  width: FSizes.imagePreviewMd,
-                                                  height: FSizes.imagePreviewMd,
-                                                  color: FColors.grey
-                                                      .withValues(alpha: 0.1),
-                                                  child: Icon(
-                                                    Iconsax.image,
-                                                    color: FColors.grey,
-                                                    size: FSizes.iconInlineMd,
-                                                  ),
-                                                );
-                                              },
+                                          placeholder: (_, __) => Container(
+                                            width: FSizes.imagePreviewMd,
+                                            height: FSizes.imagePreviewMd,
+                                            color: FColors.grey.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                          ),
+                                          errorWidget: (_, __, ___) =>
+                                              Container(
+                                                width: FSizes.imagePreviewMd,
+                                                height: FSizes.imagePreviewMd,
+                                                color: FColors.grey.withValues(
+                                                  alpha: 0.1,
+                                                ),
+                                                child: Icon(
+                                                  Iconsax.image,
+                                                  color: FColors.grey,
+                                                  size: FSizes.iconInlineMd,
+                                                ),
+                                              ),
                                         ),
                                       ),
                                     ),

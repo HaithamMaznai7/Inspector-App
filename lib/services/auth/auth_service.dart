@@ -120,7 +120,18 @@ class AuthService extends GetxController {
 
     if (user != null && _token.value != null) {
       // User is authenticated - navigate immediately, fetch profile in background
-      _idToken.value ??= await user.getIdToken();
+      // getIdToken() can throw on network failure; we already have the backend
+      // token so navigation should not be blocked by a Firebase network error.
+      if (_idToken.value == null) {
+        try {
+          _idToken.value = await user.getIdToken();
+        } on FirebaseAuthException catch (e) {
+          if (kDebugMode) {
+            debugPrint('[AuthService] getIdToken failed (network?): ${e.message}');
+          }
+          // Non-fatal — continue with null idToken
+        }
+      }
 
       // If profile is loaded, check if user has a current team
       final profileLoaded = _profile.value != null && !_profile.value!.isEmpty;
