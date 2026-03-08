@@ -97,6 +97,7 @@ class _CompanyInspectionsScreenState extends State<CompanyInspectionsScreen> {
               vehicle: item.vehicle,
               stage: StageMapper.mapOrderItemStage(item.stage),
               rejectedNote: null,
+              inspectionTypeTitle: item.inspectionType?.title,
               onTap: () async {
                 await _controller.openB2BOrderItem(_order, item);
                 if (mounted) _refresh();

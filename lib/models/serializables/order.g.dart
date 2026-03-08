@@ -33,6 +33,9 @@ OrderItem _$OrderItemFromJson(Map json) => OrderItem(
   slug: json['slug'],
   stage: json['stage'] ?? 'pending',
   vehicle: Vehicle.fromJson(json['vehicle'] ?? {}),
+  inspectionType: json['inspection_type'] != null
+      ? InspectionType.fromJson(json['inspection_type'])
+      : null,
   enable: json['enable'] ?? true,
   report: json['report'],
   updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
@@ -44,6 +47,7 @@ Map<String, dynamic> _$OrderItemToJson(OrderItem instance) => <String, dynamic>{
   'slug': instance.slug,
   'stage': instance.stage,
   'vehicle': instance.vehicle.toJson(),
+  'inspection_type': instance.inspectionType?.toJson(),
   'enable': instance.enable,
   'report': instance.report,
   'updated_at': instance.updatedAt.toIso8601String(),

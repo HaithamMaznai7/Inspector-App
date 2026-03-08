@@ -16,6 +16,7 @@ class InspectionCard extends StatelessWidget {
     this.vehicle,
     required this.stage,
     this.rejectedNote,
+    this.inspectionTypeTitle,
     required this.onTap,
   });
 
@@ -24,6 +25,7 @@ class InspectionCard extends StatelessWidget {
   final Vehicle? vehicle;
   final InspectionStage stage;
   final String? rejectedNote;
+  final String? inspectionTypeTitle;
   final VoidCallback onTap;
 
   bool get _isRejected => stage == InspectionStage.rejected;
@@ -101,7 +103,7 @@ class InspectionCard extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Row 1: customer name + slug badge
+                              // Row 1: customer name + type badge + slug badge
                               Row(
                                 children: [
                                   Expanded(
@@ -120,6 +122,34 @@ class InspectionCard extends StatelessWidget {
                                           ),
                                     ),
                                   ),
+                                  if (inspectionTypeTitle != null &&
+                                      inspectionTypeTitle!.isNotEmpty) ...[
+                                    const SizedBox(width: FSizes.sm),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: FSizes.sm,
+                                        vertical: FSizes.xs - 1,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: FColors.info.withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(
+                                          FSizes.borderRadiusSm,
+                                        ),
+                                        border: Border.all(
+                                          color: FColors.info.withValues(alpha: 0.3),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        inspectionTypeTitle!,
+                                        style: TextStyle(
+                                          fontSize: labelSize,
+                                          fontWeight: FontWeight.w700,
+                                          color: FColors.info,
+                                          letterSpacing: 0.3,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                   const SizedBox(width: FSizes.sm),
                                   Container(
                                     padding: EdgeInsets.symmetric(

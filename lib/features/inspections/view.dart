@@ -241,6 +241,7 @@ class _SearchResultsList extends StatelessWidget {
             vehicle: inspection.vehicle,
             stage: inspection.stage,
             rejectedNote: inspection.rejectedNote,
+            inspectionTypeTitle: inspection.inspectionType?.title,
             onTap: () => controller.openInspection(inspection),
           );
         },
@@ -295,6 +296,7 @@ class _IndividualList extends StatelessWidget {
                       vehicle: item.vehicle,
                       stage: StageMapper.mapOrderItemStage(item.stage),
                       rejectedNote: null,
+                      inspectionTypeTitle: item.inspectionType?.title,
                       onTap: () => controller.openOrderItem(order, item),
                     ));
                   }).toList(),
@@ -346,6 +348,7 @@ class _IndividualList extends StatelessWidget {
                             vehicle: item.vehicle,
                             stage: item.stage,
                             rejectedNote: item.rejectedNote,
+                            inspectionTypeTitle: item.inspectionType?.title,
                             onTap: () => controller.openInspection(item),
                           ))
                       .toList(),

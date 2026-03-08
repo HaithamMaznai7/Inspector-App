@@ -1,5 +1,6 @@
 import 'customer.dart';
 import 'vehicle.dart';
+import 'inspection_type.dart';
 
 part 'serializables/order.g.dart';
 
@@ -36,6 +37,7 @@ class OrderItem {
   String? slug;
   String stage;
   Vehicle vehicle;
+  InspectionType? inspectionType;
   bool enable;
   String? report;
   DateTime updatedAt;
@@ -46,6 +48,7 @@ class OrderItem {
     this.slug,
     required this.stage,
     required this.vehicle,
+    this.inspectionType,
     required this.enable,
     this.report,
     required this.updatedAt,
