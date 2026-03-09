@@ -134,27 +134,29 @@ class AuthRepository {
   }
 
   Future<String?> resetPassword(
-    String url,
-    String code,
+    String token,
+    String passwordConfirmation,
     String password,
   ) async {
-    // Network net = Network(url: url, requestMethod: RequestMethod.post);
+    final Network net = Network(
+      endpoint: EndPoints.resetPassword,
+      requestMethod: RequestMethod.post,
+    );
 
-    // net.setHeader = {
-    //   'Content-Type': 'application/vnd.api+json',
-    //   'Accept': 'application/vnd.api+json',
-    // };
+    net.setHeader('Authorization', 'Bearer $token');
+    net.setBody = {
+      'password': password,
+      'password_confirmation': passwordConfirmation,
+    };
 
-    // net.setBody = {'otp': code};
     try {
-      // CustomResponse? response = await net.response(RoutingUrl.login);
+      final response = await net.response(null);
+      return response.data['token'];
     } on FNetworkException {
       rethrow;
     } catch (e) {
       rethrow;
     }
-
-    return null;
   }
 
   Future<String> forgetPassword(String mobile) async {

@@ -68,7 +68,26 @@ class UserWidget extends StatelessWidget {
                   ),
                 ],
               ),
-              onTap: () async => await auth().logOut(),
+              onTap: () async {
+                final confirmed = await Get.dialog<bool>(
+                  AlertDialog(
+                    title: Text(FTexts.logoutConfirmTitle.tr),
+                    content: Text(FTexts.logoutConfirmMessage.tr),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Get.back(result: false),
+                        child: Text(FTexts.cancelBtn.tr),
+                      ),
+                      TextButton(
+                        onPressed: () => Get.back(result: true),
+                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                        child: Text(FTexts.logoutBtn.tr),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed == true) await auth().logOut();
+              },
             ),
           ],
         );

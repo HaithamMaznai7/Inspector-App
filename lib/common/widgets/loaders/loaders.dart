@@ -76,19 +76,6 @@ class FLoader {
     }, duration: 1);
   }
 
-  // WHAT: Show a styled snackbar notification at the top of the screen.
-  // WHY: The original code crashed with "No Overlay widget found" because
-  //      Get.snackbar was called before the widget tree was fully built
-  //      (e.g., during navigation transitions or early controller lifecycle).
-  // HOW: We check if the overlay is available before showing the snackbar.
-  //      If the overlay isn't ready yet, we defer the snackbar to the next frame
-  //      using WidgetsBinding.addPostFrameCallback, giving the widget tree
-  //      time to fully build and mount the Overlay.
-  // EDGE CASES:
-  //   - Called during navigation transition → deferred to next frame
-  //   - Called after dispose → caught by try/catch, logged silently
-  //   - Multiple snackbars queued → SnackbarQueue handles sequencing
-  // PERFORMANCE: addPostFrameCallback adds negligible overhead (one frame delay).
   static _snackBar({
     String? title,
     String? message,
@@ -97,7 +84,6 @@ class FLoader {
     Widget? icon,
     String? image,
   }) {
-    // Helper that actually calls Get.snackbar
     void showSnackbar() {
       try {
         Get.snackbar(
@@ -129,19 +115,10 @@ class FLoader {
           snackStyle: SnackStyle.FLOATING,
         );
       } catch (e) {
-        // WHAT: Silently catch any remaining overlay or context errors.
-        // WHY: Even with the deferred approach, edge cases (e.g., app backgrounded)
-        //      could still cause failures. We never want a snackbar to crash the app.
         dd(e.toString());
       }
     }
 
-    // WHAT: Check if the overlay is available before showing the snackbar.
-    // WHY: During navigation transitions, the Overlay widget may not be
-    //      mounted yet. Calling Get.snackbar at that moment causes
-    //      "No Overlay widget found" crash.
-    // HOW: We check if Get.key.currentState?.overlay is non-null.
-    //      If not available, we defer to the next frame.
     if (Get.key.currentState?.overlay != null) {
       showSnackbar();
     } else {

@@ -241,22 +241,18 @@ class SideMenuWrapper extends StatelessWidget {
               ],
 
               // ── Header ──────────────────────────────────────────
-              header: StreamBuilder<User?>(
-                stream: FirebaseAuth.instance.userChanges(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData && snapshot.data != null) {
-                    return LayoutBuilder(
-                      builder: (context, constraints) {
-                        if (constraints.maxWidth >= 220) {
-                          return _ExpandedHeader(context: context);
-                        }
-                        return _CollapsedHeader();
-                      },
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
+              header: Obx(() {
+                auth().profileRx.value; // reactive dependency
+                if (!auth().isAuth) return const SizedBox.shrink();
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth >= 220) {
+                      return _ExpandedHeader(context: context);
+                    }
+                    return _CollapsedHeader();
+                  },
+                );
+              }),
             );
           },
         );
@@ -403,41 +399,66 @@ class _ExpandedHeader extends StatelessWidget {
         child: Row(
           children: [
             // Avatar
-            FUserAvatar(),
+            Obx(() {
+              auth().profileRx.value; // reactive dependency
+              return FUserAvatar();
+            }),
             const SizedBox(width: FSizes.sm),
             // Name + team
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    auth().profile?.name ??
-                        FirebaseAuth.instance.currentUser?.displayName ??
-                        'User',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
+              child: Obx(() {
+                final profile = auth().profileRx.value;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      profile?.name ??
+                          FirebaseAuth.instance.currentUser?.displayName ??
+                          'User',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    auth().profile?.currentTeam?.name ??
-                        FTexts.systemInspector.tr,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.8),
+                    const SizedBox(height: 2),
+                    Text(
+                      profile?.currentTeam?.name ??
+                          FTexts.systemInspector.tr,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                );
+              }),
             ),
             // Logout
             GestureDetector(
-              onTap: () async => await auth().logOut(),
+              onTap: () async {
+                final confirmed = await Get.dialog<bool>(
+                  AlertDialog(
+                    title: Text(FTexts.logoutConfirmTitle.tr),
+                    content: Text(FTexts.logoutConfirmMessage.tr),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Get.back(result: false),
+                        child: Text(FTexts.cancelBtn.tr),
+                      ),
+                      TextButton(
+                        onPressed: () => Get.back(result: true),
+                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                        child: Text(FTexts.logoutBtn.tr),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed == true) await auth().logOut();
+              },
               child: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
@@ -471,7 +492,10 @@ class _CollapsedHeader extends StatelessWidget {
         child: InkWell(
           onTap: () => Get.to(() => const ProfileView()),
           borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-          child: FUserAvatar(),
+          child: Obx(() {
+            auth().profileRx.value;
+            return FUserAvatar();
+          }),
         ),
       ),
     );

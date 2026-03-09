@@ -1,6 +1,5 @@
 import 'package:fahis_inspector/common/widgets/auth/otp_dialog.dart';
 import 'package:fahis_inspector/main.dart';
-import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -84,7 +83,8 @@ class ForgetPasswordController extends GetxController {
       }
     } while (token == null);
 
-    Get.toNamed(RoutingUrl.resetPassword, parameters: {'token': token});
+    // OTP verified — token is the session token, log the user in directly
+    await auth().loginAfterOTP(token);
   }
 
   @override

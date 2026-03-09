@@ -1,51 +1,46 @@
 import 'package:fahis_inspector/main.dart';
-import 'package:fahis_inspector/util/formatters/formatter.dart';
+import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ResetPasswordController extends GetxController {
-  /// Global Keys
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  /// Controllers
   TextEditingController passwordController = TextEditingController();
   TextEditingController passwordConfirmationController =
       TextEditingController();
 
-  final passwordError = RxnString();
-  final passwordConfirmationError = RxnString();
+  late final String resetToken;
 
-  /// Variables
-  var mobile = '';
+  final RxBool isLoading = false.obs;
+  final RxBool showPassword = false.obs;
+  final RxBool showPasswordConfirmation = false.obs;
 
-  /// Flags
-  RxBool isResetPassword = false.obs;
-
-  toggleResetPassword() => isResetPassword.toggle();
+  @override
+  void onInit() {
+    super.onInit();
+    resetToken = Get.parameters['token'] ?? '';
+  }
 
   void resetPassword() async {
-    final isValid = formKey.currentState!.validate();
-
-    if (!isValid) {
-      return;
-    }
-
+    if (!formKey.currentState!.validate()) return;
     formKey.currentState!.save();
 
-    mobile = EFormatter.internationalFormatPhoneNumber(
-      auth().user!.phoneNumber!,
-    );
-
-    toggleResetPassword();
+    isLoading.value = true;
     try {
-      await auth().forgetPassword(mobile);
+      await auth().resetPassword(
+        resetToken,
+        passwordConfirmationController.text.trim(),
+        passwordController.text.trim(),
+      );
+      Get.offAllNamed(RoutingUrl.login);
     } on FNetworkException catch (e) {
       e.notify();
     } catch (e) {
       dd(e.toString());
     } finally {
-      toggleResetPassword();
+      isLoading.value = false;
     }
   }
 

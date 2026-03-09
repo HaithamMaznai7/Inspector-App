@@ -95,6 +95,8 @@ class FTexts {
   static const String systemInspector = 'systemInspector';
   static const String profileTitle = 'profileTitle';
   static const String logoutBtn = 'logoutBtn';
+  static const String logoutConfirmTitle = 'logoutConfirmTitle';
+  static const String logoutConfirmMessage = 'logoutConfirmMessage';
   static const String profileName = 'profileName';
   static const String profileEmail = 'profileEmail';
   static const String profilePhone = 'profilePhone';

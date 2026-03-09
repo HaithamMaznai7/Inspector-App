@@ -31,11 +31,12 @@ class AuthService extends GetxController {
   Stream<String?> get idTokenChange => _idToken.stream;
 
   Profile? get profile => _profile.value;
+  Rxn<Profile> get profileRx => _profile;
 
   /// Update the cached profile (e.g. after team switch).
   set profile(Profile? value) => _profile.value = value;
 
-  bool get isAuth => firebase.currentUser != null && _token.value != null;
+  bool get isAuth => _token.value != null;
 
   late final StreamSubscription<User?> _authSub;
 
@@ -150,6 +151,16 @@ class AuthService extends GetxController {
           _profile.value = profile;
         }).catchError((_) {});
       }
+    } else if (_token.value != null) {
+      // No Firebase user but we have a backend token (OTP / token-only session).
+      // Navigate to home without requiring Firebase sign-in.
+      final profileLoaded = _profile.value != null && !_profile.value!.isEmpty;
+      if (!profileLoaded) {
+        AuthRepository().fetchProfile().then((profile) {
+          _profile.value = profile;
+        }).catchError((_) {});
+      }
+      _goTo(RoutingUrl.home);
     } else {
       _idToken.value = null;
       _profile.value = null;
@@ -236,6 +247,20 @@ class AuthService extends GetxController {
 
   Future<String?> verifyOTP(String verifyToken, String code) async {
     return await AuthRepository().verifyOTP(verifyToken, code);
+  }
+
+  /// Called after a successful OTP-based login (forget-password flow).
+  /// Stores the session token and navigates to home without requiring Firebase sign-in.
+  Future<void> loginAfterOTP(String token) async {
+    _token.value = token;
+    await SecureTokenStorage().save(token);
+
+    // Fetch profile in background — don't block navigation
+    AuthRepository().fetchProfile().then((profile) {
+      _profile.value = profile;
+    }).catchError((_) {});
+
+    _goTo(RoutingUrl.home);
   }
 
   /// Clears all local session data: secure token storage, in-memory
