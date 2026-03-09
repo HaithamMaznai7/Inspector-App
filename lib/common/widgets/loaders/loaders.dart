@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fahis_inspector/common/widgets/loaders/snackbar_queue.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
-
 import '../../../util/constants/colors.dart';
 import '../../../util/constants/sizes.dart';
 import 'package:flutter/material.dart';
