@@ -1,11 +1,15 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
     <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION"/>
     <uses-permission android:name="android.permission.CALL_PHONE" />
+
+    <!-- Block READ_MEDIA_VIDEO auto-injected by image_picker plugin — app never uses video -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove"/>
+    <!-- Block READ_MEDIA_IMAGES auto-injected by image_picker plugin — system photo picker is used instead -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove"/>
 
     <uses-feature
         android:name="android.hardware.camera"
