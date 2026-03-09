@@ -46,29 +46,54 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   Future<void> _loadData() async {
-    try {
-      final profile = await ProfileRepository().fetchProfile();
-      _profile = profile;
-      auth().profile = profile;
-      _nameController.text = profile.name ?? '';
-      _selectedCity = profile.city;
-    } catch (e) {
-      _profile = auth().profile;
-      _nameController.text = _profile?.name ?? '';
-      _selectedCity = _profile?.city;
+    // Show cached profile instantly — no waiting for network
+    final cached = auth().profile;
+    if (cached != null) {
+      _profile = cached;
+      _nameController.text = cached.name ?? '';
+      _selectedCity = cached.city;
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
 
-    try {
-      final net = Network(endpoint: 'assets/cities');
-      final response = await net.response(null);
-      if (!response.hasError && response.data is List) {
-        _cities = (response.data as List)
-            .map((e) => City.fromJson(Map<String, dynamic>.from(e)))
-            .toList();
+    // Show cached cities instantly — no waiting for network
+    final cachedCities = auth().cities;
+    if (cachedCities.isNotEmpty) {
+      if (mounted) {
+        setState(() => _cities = List<City>.from(cachedCities));
       }
-    } catch (_) {}
+    }
 
-    if (mounted) setState(() => _isLoading = false);
+    // Fetch profile + cities in parallel
+    await Future.wait([
+      ProfileRepository().fetchProfile().then((profile) {
+        if (mounted) {
+          setState(() {
+            _profile = profile;
+            _nameController.text = profile.name ?? '';
+            _selectedCity = profile.city;
+            auth().profile = profile;
+          });
+        }
+      }).catchError((_) {}),
+
+      Network(endpoint: 'assets/cities').response(null).then((response) {
+        if (!response.hasError && response.data is List) {
+          final cities = (response.data as List)
+              .map((e) => City.fromJson(Map<String, dynamic>.from(e)))
+              .toList();
+          auth().cities = cities;
+          if (mounted) {
+            setState(() => _cities = cities);
+          }
+        }
+      }).catchError((_) {}),
+    ]);
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
   String _safeAvatarUrl(String? avatarUrl, String? name) {

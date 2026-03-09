@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
+import 'package:fahis_inspector/models/city.dart';
 import 'package:fahis_inspector/models/profile.dart';
 import 'package:fahis_inspector/resources/auth_repository.dart';
 import 'package:fahis_inspector/services/auth/secure_token_storage.dart';
@@ -22,6 +23,7 @@ class AuthService extends GetxController {
   final RxnString _token = RxnString(null);
   final RxnString _idToken = RxnString(null);
   final Rxn<Profile> _profile = Rxn<Profile>(null);
+  final RxList<City> _cities = <City>[].obs;
   User? get user => firebase.currentUser;
   String? get token => _token.value;
   String? get idToken => _idToken.value;
@@ -35,6 +37,9 @@ class AuthService extends GetxController {
 
   /// Update the cached profile (e.g. after team switch).
   set profile(Profile? value) => _profile.value = value;
+
+  List<City> get cities => _cities;
+  set cities(List<City> value) => _cities.assignAll(value);
 
   bool get isAuth => _token.value != null;
 
@@ -274,6 +279,7 @@ class AuthService extends GetxController {
     _token.value = null;
     _idToken.value = null;
     _profile.value = Profile.empty();
+    _cities.clear();
 
     // 3. Disconnect WebSocket so the authenticated connection is closed
     //    and no further events are dispatched with the stale token.
