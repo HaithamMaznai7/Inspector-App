@@ -313,6 +313,11 @@ class _LetterTextFieldState extends State<_LetterTextField>
               decoration: const InputDecoration(
                 counterText: '',
                 border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
               ),
               onChanged: (v) {
@@ -445,6 +450,11 @@ class _DigitBox extends StatelessWidget {
             decoration: const InputDecoration(
               counterText: '',
               border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              errorBorder: InputBorder.none,
+              focusedErrorBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
               contentPadding: EdgeInsets.zero,
             ),
             onChanged: (v) {
