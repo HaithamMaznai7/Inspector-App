@@ -266,6 +266,8 @@ class English {
     DetailsPage.plateNumberValidationIfNull: 'The Car Plate must be entered',
     DetailsPage.plateNumberValidation:
         'Please complete the plate: 3 letters and 4 digits required',
+    'plateLettersLabel': 'Letters',
+    'plateNumbersLabel': 'Numbers',
     DetailsPage.bodyType: 'Body Type',
     DetailsPage.bodyTypeValidation: 'Automatic',
 

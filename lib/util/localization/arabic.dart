@@ -262,6 +262,8 @@ class Arabic {
     DetailsPage.plateNumberHint: 'أدخل رقم اللوحة',
     DetailsPage.plateNumberValidationIfNull: 'مطلوب ...',
     DetailsPage.plateNumberValidation: 'أكمل اللوحة: مطلوب 3 أحرف و 4 أرقام',
+    'plateLettersLabel': 'الحروف',
+    'plateNumbersLabel': 'الأرقام',
     DetailsPage.bodyType: 'هيكل المركبة',
     DetailsPage.bodyTypeValidation: 'حدد هيكل المركبة ما راح نطقها عين',
 

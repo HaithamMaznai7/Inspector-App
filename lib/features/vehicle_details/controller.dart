@@ -7,6 +7,7 @@ import 'package:fahis_inspector/resources/vehicle_details_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
+import 'package:fahis_inspector/util/helpers/plate_converter.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
@@ -134,12 +135,19 @@ class VehicleDetailsController extends GetxController {
 
   void updateDetails() {
     vinController.text = inspectionDetails.value?.vin ?? '';
-    plateController.text = inspectionDetails.value?.plate ?? '';
+
+    // Normalize the plate from any format (Arabic, English, missing spaces)
+    // into the canonical internal format "BRS 1234" before handing it to the
+    // SaudiPlatePicker.  The picker listens to plateController so it will
+    // refresh automatically.
+    final rawPlate = inspectionDetails.value?.plate ?? '';
+    plateController.text =
+        rawPlate.isNotEmpty ? PlateConverter.normalize(rawPlate) : '';
+
     milageController.text = inspectionDetails.value?.milage ?? '';
     enginSizeController.text = inspectionDetails.value?.enginSize ?? '';
     colorController.text = inspectionDetails.value?.color ?? '';
     seatColorController.text = inspectionDetails.value?.seatColor ?? '';
-    // mainController.updateInspection(details: inspectionDetails.value);
   }
 
   bool validateForm() {
@@ -151,9 +159,11 @@ class VehicleDetailsController extends GetxController {
     inspectionDetails.value?.seatColor = seatColorController.text;
     formErrors.value = {};
 
-    // Validate plate: must be exactly 3 uppercase letters + space + 4 digits
+    // Validate plate: must be exactly 3 valid Saudi letters + space + 4 digits.
+    // PlateConverter.isValid() also checks that each letter is one of the 17
+    // permitted Saudi plate characters (A B J D R S X T E G K L Z N H U V).
     final plate = plateController.text.trim();
-    if (!RegExp(r'^[A-Z]{3} \d{4}$').hasMatch(plate)) {
+    if (!PlateConverter.isValid(plate)) {
       formErrors['plate'] = DetailsPage.plateNumberValidation.tr;
     }
 
@@ -200,11 +210,19 @@ class VehicleDetailsController extends GetxController {
 
       final searched = VehicleDetails.fromJson(stringified);
 
+      // Normalize plate from API: may arrive as Arabic or without spaces.
+      // PlateConverter.normalize() handles both and produces "BRS 1234".
+      final rawPlate = searched.plate;
+      final normalizedPlate =
+          rawPlate != null ? PlateConverter.normalize(rawPlate) : null;
+
       // Merge: only overwrite fields that the search actually returned.
       final current = inspectionDetails.value ?? VehicleDetails.empty();
       inspectionDetails.value = current.copyWith(
         vin: searched.vin ?? current.vin,
-        plate: searched.plate ?? current.plate,
+        plate: (normalizedPlate != null && normalizedPlate.isNotEmpty)
+            ? normalizedPlate
+            : current.plate,
         bodyType: searched.bodyType ?? current.bodyType,
         fuelType: searched.fuelType ?? current.fuelType,
         gasolineType: searched.gasolineType ?? current.gasolineType,
