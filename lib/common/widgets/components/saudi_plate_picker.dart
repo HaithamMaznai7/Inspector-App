@@ -107,93 +107,148 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isTablet =
-        ResponsiveHelper.isTablet(context) ||
-        ResponsiveHelper.isDesktop(context);
-    final boxHeight = isTablet ? 62.0 : 54.0;
+
+    // ── Responsive values ─────────────────────────────────────────────────
+    final boxHeight = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: 54,
+      tablet: 60,
+      desktop: 64,
+    );
+    final fontSize = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: 20,
+      tablet: 22,
+      desktop: 24,
+    );
+    final arabicFontSize = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: 12,
+      tablet: 13,
+      desktop: 14,
+    );
+    final gap = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: 6,
+      tablet: 8,
+      desktop: 10,
+    );
+    final dividerMargin = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: 10,
+      tablet: 14,
+      desktop: 16,
+    );
+    // Prevents boxes from spreading absurdly wide on tablet/desktop.
+    final maxWidth = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: double.infinity,
+      tablet: 400,
+      desktop: 440,
+    );
+
+    Widget inputRow = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 3 letter text-fields
+        for (int i = 0; i < 3; i++) ...[
+          Expanded(
+            child: _LetterTextField(
+              ctrl: _letterCtrl[i],
+              focus: _letterFocus[i],
+              idx: i,
+              allLetterFocus: _letterFocus,
+              firstDigitFocus: _digitFocus[0],
+              isDark: isDark,
+              boxHeight: boxHeight,
+              fontSize: fontSize,
+              arabicFontSize: arabicFontSize,
+              onChanged: () => setState(_save),
+            ),
+          ),
+          if (i < 2) SizedBox(width: gap),
+        ],
+
+        // Separator
+        Padding(
+          padding: EdgeInsets.only(top: 2),
+          child: _FieldDivider(
+            isDark: isDark,
+            height: boxHeight - 4,
+            margin: dividerMargin,
+          ),
+        ),
+
+        // 4 digit text-fields
+        for (int i = 0; i < 4; i++) ...[
+          Expanded(
+            child: _DigitBox(
+              ctrl: _digitCtrl[i],
+              focus: _digitFocus,
+              idx: i,
+              isDark: isDark,
+              boxHeight: boxHeight,
+              fontSize: fontSize,
+              arabicSlotHeight: arabicFontSize + 6,
+              onChanged: () => setState(_save),
+              onBackToLetters:
+                  i == 0 ? () => _letterFocus[2].requestFocus() : null,
+            ),
+          ),
+          if (i < 3) SizedBox(width: gap),
+        ],
+      ],
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Input row ─────────────────────────────────────────────────────
+        // ── Input row (constrained + centred on wide screens) ─────────────
         Directionality(
           textDirection: TextDirection.ltr,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 3 letter text-fields
-              for (int i = 0; i < 3; i++) ...[
-                Expanded(
-                  child: _LetterTextField(
-                    ctrl: _letterCtrl[i],
-                    focus: _letterFocus[i],
-                    idx: i,
-                    allLetterFocus: _letterFocus,
-                    firstDigitFocus: _digitFocus[0],
-                    isDark: isDark,
-                    boxHeight: boxHeight,
-                    onChanged: () => setState(_save),
-                  ),
-                ),
-                if (i < 2) const SizedBox(width: 6),
-              ],
-
-              // Separator
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: _FieldDivider(isDark: isDark, height: boxHeight - 4),
-              ),
-
-              // 4 digit text-fields
-              for (int i = 0; i < 4; i++) ...[
-                Expanded(
-                  child: _DigitBox(
-                    ctrl: _digitCtrl[i],
-                    focus: _digitFocus,
-                    idx: i,
-                    isDark: isDark,
-                    boxHeight: boxHeight,
-                    onChanged: () => setState(_save),
-                    onBackToLetters: i == 0
-                        ? () => _letterFocus[2].requestFocus()
-                        : null,
-                  ),
-                ),
-                if (i < 3) const SizedBox(width: 6),
-              ],
-            ],
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxWidth),
+              child: inputRow,
+            ),
           ),
         ),
 
         // ── Sub-labels ────────────────────────────────────────────────────
         Directionality(
           textDirection: TextDirection.ltr,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    'plateLettersLabel'.tr,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelSmall?.copyWith(color: FColors.darkGrey),
-                    textAlign: TextAlign.center,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxWidth),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      'plateLettersLabel'.tr,
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelSmall
+                          ?.copyWith(color: FColors.darkGrey),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 30),
-                Expanded(
-                  flex: 4,
-                  child: Text(
-                    'plateNumbersLabel'.tr,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelSmall?.copyWith(color: FColors.darkGrey),
-                    textAlign: TextAlign.center,
+                  SizedBox(width: dividerMargin * 2 + 2),
+                  Expanded(
+                    flex: 4,
+                    child: Text(
+                      'plateNumbersLabel'.tr,
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelSmall
+                          ?.copyWith(color: FColors.darkGrey),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -205,9 +260,10 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
             padding: const EdgeInsets.only(left: FSizes.xs),
             child: Text(
               widget.errorText!,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: FColors.error),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: FColors.error),
             ),
           ),
         ],
@@ -226,6 +282,8 @@ class _LetterTextField extends StatefulWidget {
   final FocusNode firstDigitFocus;
   final bool isDark;
   final double boxHeight;
+  final double fontSize;
+  final double arabicFontSize;
   final VoidCallback onChanged;
 
   const _LetterTextField({
@@ -236,6 +294,8 @@ class _LetterTextField extends StatefulWidget {
     required this.firstDigitFocus,
     required this.isDark,
     required this.boxHeight,
+    required this.fontSize,
+    required this.arabicFontSize,
     required this.onChanged,
   });
 
@@ -305,7 +365,7 @@ class _LetterTextFieldState extends State<_LetterTextField>
                 _SaudiPlateLetterFormatter(onRejected: _triggerShake),
               ],
               style: TextStyle(
-                fontSize: 20,
+                fontSize: widget.fontSize,
                 fontWeight: FontWeight.w800,
                 color: widget.isDark ? FColors.light : FColors.dark,
                 height: 1,
@@ -340,15 +400,16 @@ class _LetterTextFieldState extends State<_LetterTextField>
               ),
             ),
           ),
-          // Fixed-height slot keeps digit boxes aligned even when no letter yet.
+          // Fixed-height slot: shows Arabic translation or stays empty.
+          // Height is derived from arabicFontSize so it scales with the font.
           SizedBox(
-            height: 18,
+            height: widget.arabicFontSize + 6,
             child: arabic != null
                 ? Center(
                     child: Text(
                       arabic,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: widget.arabicFontSize,
                         fontWeight: FontWeight.w600,
                         color: FColors.primaryColor,
                         height: 1,
@@ -412,6 +473,8 @@ class _DigitBox extends StatelessWidget {
   final int idx;
   final bool isDark;
   final double boxHeight;
+  final double fontSize;
+  final double arabicSlotHeight;
   final VoidCallback onChanged;
   final VoidCallback? onBackToLetters;
 
@@ -421,6 +484,8 @@ class _DigitBox extends StatelessWidget {
     required this.idx,
     required this.isDark,
     required this.boxHeight,
+    required this.fontSize,
+    required this.arabicSlotHeight,
     required this.onChanged,
     this.onBackToLetters,
   });
@@ -442,7 +507,7 @@ class _DigitBox extends StatelessWidget {
             keyboardType: TextInputType.phone,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             style: TextStyle(
-              fontSize: 20,
+              fontSize: fontSize,
               fontWeight: FontWeight.w800,
               color: isDark ? FColors.light : FColors.dark,
               height: 1,
@@ -469,8 +534,8 @@ class _DigitBox extends StatelessWidget {
             ),
           ),
         ),
-        // Spacer matching the letter-box Arabic-translation slot height
-        const SizedBox(height: 18),
+        // Spacer matching the letter-box Arabic-translation slot height.
+        SizedBox(height: arabicSlotHeight),
       ],
     );
   }
@@ -519,13 +584,18 @@ class _BoxShell extends StatelessWidget {
 class _FieldDivider extends StatelessWidget {
   final bool isDark;
   final double height;
+  final double margin;
 
-  const _FieldDivider({required this.isDark, required this.height});
+  const _FieldDivider({
+    required this.isDark,
+    required this.height,
+    this.margin = 10,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 10),
+      margin: EdgeInsets.symmetric(horizontal: margin),
       width: 2,
       height: height,
       decoration: BoxDecoration(
