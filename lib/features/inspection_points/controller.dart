@@ -139,6 +139,10 @@ class InspectionPointsController extends GetxController {
   }
 
   Future<void> onChangePoint(Point point, PointStatus status) async {
+    // Trigger an immediate rebuild so the progress bar reflects the
+    // local state change (point already mutated by PointCard) before
+    // the API call returns.
+    update();
     await repository.update(point, status);
   }
 

@@ -1,3 +1,4 @@
+import 'package:fahis_inspector/enums/point_status.dart';
 import 'package:fahis_inspector/features/inspection_points/components/card.dart';
 import 'package:fahis_inspector/features/inspection_points/controller.dart';
 import 'package:fahis_inspector/models/point_category.dart';
@@ -29,6 +30,10 @@ class InspectionPointsScreen extends StatelessWidget {
       body: Column(
         children: [
           const _CategoryTabStrip(),
+          // Thin progress bar shows how many points in this category
+          // have been explicitly rated (جيد or ملاحظة) vs still at N/A.
+          // Makes it obvious to the inspector when they still have work to do.
+          const _CategoryProgressBar(),
           const Expanded(child: _PointsList()),
         ],
       ),
@@ -198,6 +203,63 @@ class _CategoryTabStrip extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Category progress bar
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _CategoryProgressBar extends StatelessWidget {
+  const _CategoryProgressBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<InspectionPointsController>(
+      init: InspectionPointsBinding().instance,
+      builder: (controller) {
+        final cat = controller.category.value;
+        if (cat == null) return const SizedBox.shrink();
+
+        // Compute counts from the live point objects, not the pre-computed
+        // PointCategory fields — ensures immediate update when a chip is tapped
+        // (the Point object is mutated locally before the API round-trip).
+        final points = cat.points;
+        final total = points.length;
+        final answered = points
+            .where((p) => p.status != PointStatus.none)
+            .length;
+        final fraction = total == 0 ? 0.0 : answered / total;
+        final isDone = answered == total;
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: FSizes.md,
+                vertical: FSizes.xs,
+              ),
+              child: Text(
+                '$answered / $total',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: isDone ? FColors.success : FColors.darkGrey,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ),
+            LinearProgressIndicator(
+              value: fraction,
+              minHeight: 2,
+              backgroundColor: FColors.grey.withValues(alpha: 0.18),
+              valueColor: AlwaysStoppedAnimation(
+                isDone ? FColors.success : FColors.primaryColor,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Points list for the current category
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -312,17 +374,31 @@ class _CategoryNavBar extends StatelessWidget {
               ),
               child: Row(
                 children: [
+                  // Back: icon-only button — available but not competing
+                  // with the primary "Next" action for visual attention.
                   if (!isFirst) ...[
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: controller.toPreviousCategory,
-                        child: Text(FTexts.backBtn.tr),
+                    OutlinedButton(
+                      onPressed: controller.toPreviousCategory,
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(48, 48),
+                        padding: EdgeInsets.zero,
+                        side: BorderSide(
+                          color: FColors.grey.withValues(alpha: 0.35),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(FSizes.borderRadiusLg),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_ios_rounded,
+                        size: 18,
                       ),
                     ),
-                    const SizedBox(width: FSizes.spaceBtwItems),
+                    const SizedBox(width: FSizes.sm),
                   ],
+                  // Next / Done: full-width primary CTA — the only bold action
                   Expanded(
-                    flex: isFirst ? 1 : 2,
                     child: ElevatedButton(
                       onPressed: isLast
                           ? () => Get.back()

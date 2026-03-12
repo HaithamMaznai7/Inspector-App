@@ -77,6 +77,7 @@ class InspectionPage {
   static const String pointsReview = 'pointsReview';
   static const String inspectionDetailsTitle = 'inspectionDetailsTitle';
   static const String doneBtn = 'doneBtn';
+  static const String remaining = 'remaining';
   static const String imageRequired = 'imageRequired';
   static const String imageRequiredMsg = 'imageRequiredMsg';
   static const String noteRequired = 'noteRequired';

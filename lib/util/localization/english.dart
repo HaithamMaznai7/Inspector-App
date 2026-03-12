@@ -134,6 +134,7 @@ class English {
     InspectionPage.pointsReview: 'Points Review',
     InspectionPage.inspectionDetailsTitle: 'Inspection Details',
     InspectionPage.doneBtn: 'Done',
+    InspectionPage.remaining: 'remaining',
     InspectionPage.imageRequired: 'Image Required',
     InspectionPage.imageRequiredMsg:
         'You should document the note with an image that describes the status',

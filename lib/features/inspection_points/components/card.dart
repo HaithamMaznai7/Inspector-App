@@ -40,8 +40,6 @@ class _PointCardState extends State<PointCard> {
     Point newPoint = _point;
     try {
       if (status == PointStatus.note) {
-        // Always open the note dialog for note status, even if already set,
-        // so the inspector can review / update the note text and photo.
         final result = await Get.dialog<Point>(
           InspectionNotesDialog(_point),
           barrierDismissible: false,
@@ -60,30 +58,35 @@ class _PointCardState extends State<PointCard> {
   @override
   Widget build(BuildContext context) {
     final isDark = FHelper.isDarkMode(context);
+
     final chipHeight = ResponsiveHelper.responsiveValue<double>(
       context,
-      mobile: 38,
-      tablet: 42,
-      desktop: 46,
+      mobile: 32,
+      tablet: 36,
+      desktop: 40,
     );
     final chipFontSize = ResponsiveHelper.responsiveValue<double>(
       context,
-      mobile: 12,
-      tablet: 13,
-      desktop: 14,
+      mobile: 11,
+      tablet: 12,
+      desktop: 13,
     );
     final chipIconSize = ResponsiveHelper.responsiveValue<double>(
       context,
-      mobile: 14,
-      tablet: 15,
-      desktop: 16,
+      mobile: 13,
+      tablet: 14,
+      desktop: 15,
     );
 
     return Card(
-      elevation: 1,
-      shadowColor: FColors.grey,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+        side: BorderSide(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.07)
+              : Colors.black.withValues(alpha: 0.07),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
@@ -108,13 +111,13 @@ class _PointCardState extends State<PointCard> {
 
             const SizedBox(height: FSizes.sm),
 
-            // ── Labeled segmented chips ────────────────────────────────────
-            // Three equal-width chips spanning the full card width.
-            // Text + icon on each chip makes the choice self-describing for
-            // first-time users — no need to guess icon meanings.
+            // ── Radio-style selector row ───────────────────────────────────
+            // Active chip: light colored tint + colored border + colored text.
+            // Feels like "I selected this" (a radio option), NOT a CTA button.
+            // Inactive chip: neutral ghost + muted text — "available, not chosen".
             Row(
               children: [
-                _StatusChip(
+                _RadioChip(
                   status: PointStatus.good,
                   current: _point.status,
                   height: chipHeight,
@@ -124,7 +127,7 @@ class _PointCardState extends State<PointCard> {
                   onTap: () => _setStatus(PointStatus.good),
                 ),
                 const SizedBox(width: FSizes.xs),
-                _StatusChip(
+                _RadioChip(
                   status: PointStatus.note,
                   current: _point.status,
                   height: chipHeight,
@@ -134,7 +137,7 @@ class _PointCardState extends State<PointCard> {
                   onTap: () => _setStatus(PointStatus.note),
                 ),
                 const SizedBox(width: FSizes.xs),
-                _StatusChip(
+                _RadioChip(
                   status: PointStatus.none,
                   current: _point.status,
                   height: chipHeight,
@@ -147,55 +150,32 @@ class _PointCardState extends State<PointCard> {
             ),
 
             // ── Note preview ───────────────────────────────────────────────
-            // Shown as a compact tappable row below the chips so it doesn't
-            // disrupt the visual rhythm of the list. Tapping it re-opens the
-            // note dialog for editing.
             if (_point.status == PointStatus.note) ...[
               const SizedBox(height: FSizes.xs),
               GestureDetector(
                 onTap: () => _setStatus(PointStatus.note),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: FSizes.sm,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: FColors.warning.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-                    border: Border.all(
-                      color: FColors.warning.withValues(alpha: 0.25),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.edit_outlined,
+                      size: 12,
+                      color: FColors.warning.withValues(alpha: 0.7),
                     ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        PointStatus.note.icon(),
-                        color: FColors.warning,
-                        size: 14,
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        _point.note?.isNotEmpty == true
+                            ? _point.note!
+                            : '...',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: FColors.warning,
+                              fontStyle: FontStyle.italic,
+                            ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
-                      const SizedBox(width: FSizes.xs),
-                      Expanded(
-                        child: Text(
-                          _point.note?.isNotEmpty == true
-                              ? _point.note!
-                              : '...',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: isDark
-                                    ? FColors.grey
-                                    : FColors.darkerGrey,
-                              ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ),
-                      const SizedBox(width: FSizes.xs),
-                      Icon(
-                        Icons.edit_outlined,
-                        size: 13,
-                        color: FColors.warning.withValues(alpha: 0.7),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -208,9 +188,13 @@ class _PointCardState extends State<PointCard> {
   }
 }
 
-// ── Labeled status chip ───────────────────────────────────────────────────────
+// ── Radio-style chip ──────────────────────────────────────────────────────────
+//
+// Selected state: light tinted background + colored border + bold colored text.
+// This reads as "I chose this" rather than "tap me to do something".
+// Unselected state: near-invisible ghost — available but not chosen.
 
-class _StatusChip extends StatelessWidget {
+class _RadioChip extends StatelessWidget {
   final PointStatus status;
   final PointStatus current;
   final double height;
@@ -219,7 +203,7 @@ class _StatusChip extends StatelessWidget {
   final bool isDark;
   final VoidCallback onTap;
 
-  const _StatusChip({
+  const _RadioChip({
     required this.status,
     required this.current,
     required this.height,
@@ -232,46 +216,56 @@ class _StatusChip extends StatelessWidget {
   bool get _isActive => status == current;
   Color get _statusColor => status.color();
 
+  // N/A is the backend default — keep it more visible when inactive so
+  // inspectors can clearly read the option label on every unanswered card.
+  bool get _isNa => status == PointStatus.none;
+
   @override
   Widget build(BuildContext context) {
     final bg = _isActive
-        ? _statusColor
+        ? _statusColor.withValues(alpha: 0.10)
         : (isDark
-            ? _statusColor.withValues(alpha: 0.12)
-            : _statusColor.withValues(alpha: 0.08));
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.04));
+
+    final borderColor = _isActive
+        ? _statusColor.withValues(alpha: 0.65)
+        : (isDark
+            ? Colors.white.withValues(alpha: _isNa ? 0.20 : 0.10)
+            : Colors.black.withValues(alpha: _isNa ? 0.18 : 0.08));
 
     final contentColor = _isActive
-        ? Colors.white
-        : _statusColor.withValues(alpha: isDark ? 0.75 : 0.65);
+        ? _statusColor
+        : (isDark
+            ? Colors.white.withValues(alpha: _isNa ? 0.50 : 0.30)
+            : Colors.black.withValues(alpha: _isNa ? 0.45 : 0.28));
 
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeInOut,
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOut,
           height: height,
           decoration: BoxDecoration(
             color: bg,
             borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-            border: _isActive
-                ? null
-                : Border.all(
-                    color: _statusColor.withValues(alpha: 0.25),
-                    width: 1.0,
-                  ),
+            border: Border.all(
+              color: borderColor,
+              width: _isActive ? 1.5 : 1.0,
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(status.icon(), size: iconSize, color: contentColor),
-              const SizedBox(width: 4),
+              const SizedBox(width: 3),
               Text(
                 status.toString(),
                 style: TextStyle(
                   fontSize: fontSize,
                   fontWeight:
-                      _isActive ? FontWeight.w700 : FontWeight.w500,
+                      _isActive ? FontWeight.w700 : FontWeight.w400,
                   color: contentColor,
                   height: 1,
                 ),

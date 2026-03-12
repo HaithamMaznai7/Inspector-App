@@ -134,6 +134,7 @@ class Arabic {
     InspectionPage.pointsReview: 'مراجعة النقاط',
     InspectionPage.inspectionDetailsTitle: 'تفاصيل الفحص',
     InspectionPage.doneBtn: 'تم',
+    InspectionPage.remaining: 'متبقية',
     InspectionPage.imageRequired: 'الصورة مطلوبة',
     InspectionPage.imageRequiredMsg: 'يجب توثيق الملاحظة بصورة توضح الحالة',
     InspectionPage.noteRequired: 'الملاحظة مطلوبة',
