@@ -159,12 +159,18 @@ class VehicleDetailsController extends GetxController {
     inspectionDetails.value?.seatColor = seatColorController.text;
     formErrors.value = {};
 
-    // Validate plate: must be exactly 3 valid Saudi letters + space + 4 digits.
-    // PlateConverter.isValid() also checks that each letter is one of the 17
-    // permitted Saudi plate characters (A B J D R S X T E G K L Z N H U V).
+    // Plate: must be exactly 3 valid Saudi letters + space + 4 digits.
     final plate = plateController.text.trim();
     if (!PlateConverter.isValid(plate)) {
       formErrors['plate'] = DetailsPage.plateNumberValidation.tr;
+    }
+
+    // Colors: validated here because they use a custom picker (not TextFormField).
+    if (colorController.text.trim().isEmpty) {
+      formErrors['color'] = 'fieldRequired'.tr;
+    }
+    if (seatColorController.text.trim().isEmpty) {
+      formErrors['seats_color'] = 'fieldRequired'.tr;
     }
 
     final isValid = formKey.currentState?.validate() ?? false;

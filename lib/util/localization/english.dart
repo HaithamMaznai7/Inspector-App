@@ -288,13 +288,14 @@ class English {
     DetailsPage.yearModel: 'Year Model',
     DetailsPage.yearModelValidation: 'Automatic',
 
-    DetailsPage.exteriorColor: 'Exterior Color',
-    DetailsPage.exteriorColorHint: 'Enter Exterior Color',
+    DetailsPage.exteriorColor: 'Exterior Vehicle Color',
+    DetailsPage.exteriorColorHint: 'Select exterior color',
     DetailsPage.exteriorColorValidation: 'Automatic',
 
-    DetailsPage.interiorColor: 'Exterior Color',
-    DetailsPage.interiorColorHint: 'Enter Exterior Color',
+    DetailsPage.interiorColor: 'Interior Vehicle Color',
+    DetailsPage.interiorColorHint: 'Select interior color',
     DetailsPage.interiorColorValidation: 'Automatic',
+    'colorSelectHint': 'Select a color',
 
     DetailsPage.gearboxType: 'GearBox Type',
     DetailsPage.gearboxTypeValidation: 'Automatic',

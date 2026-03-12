@@ -289,9 +289,10 @@ class Arabic {
     DetailsPage.exteriorColorHint: 'Enter Exterior Color',
     DetailsPage.exteriorColorValidation: 'Automatic',
 
-    DetailsPage.interiorColor: 'لون المقاعد الداخلي',
-    DetailsPage.interiorColorHint: 'وش لون المزيونه ؟!',
+    DetailsPage.interiorColor: 'لون المركبة الداخلي',
+    DetailsPage.interiorColorHint: 'اختر اللون الداخلي',
     DetailsPage.interiorColorValidation: 'Automatic',
+    'colorSelectHint': 'اختر لوناً',
 
     DetailsPage.gearboxType: 'نوع التروس',
     DetailsPage.gearboxTypeValidation: 'Automatic',

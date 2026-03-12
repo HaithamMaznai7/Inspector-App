@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fahis_inspector/common/widgets/components/color_picker_field.dart';
 import 'package:fahis_inspector/common/widgets/components/custom_selector.dart';
 import 'package:fahis_inspector/common/widgets/components/saudi_plate_picker.dart';
 import 'package:fahis_inspector/features/vehicle_details/controller.dart';
@@ -7,6 +8,7 @@ import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
+import 'package:fahis_inspector/util/constants/vehicle_colors.dart';
 import 'package:fahis_inspector/util/helpers/helpers.dart';
 import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import 'package:fahis_inspector/util/validators/validation.dart';
@@ -272,37 +274,37 @@ class VehicleDetailsView extends StatelessWidget {
                         children: [
                           _twoCol(
                             isTablet,
-                            buildEditableField(
-                              context,
-                              DetailsPage.exteriorColor.tr,
-                              'color',
-                              details.color ?? '',
-                              controller.colorController,
-                              validator: (v) {
-                                if (v == null || v.trim().isEmpty) {
-                                  return 'fieldRequired'.tr;
-                                }
-                                if (RegExp(r'\d').hasMatch(v.trim())) {
-                                  return 'colorNoNumbers'.tr;
-                                }
-                                return null;
-                              },
+                            GetBuilder<VehicleDetailsController>(
+                              init: VehicleDetailsBinding().instance,
+                              autoRemove: false,
+                              builder: (c) => ColorPickerField(
+                                label: DetailsPage.exteriorColor.tr,
+                                colors: VehicleColors.exterior,
+                                controller: c.colorController,
+                                errorText: c.formErrors['color'],
+                                onChanged: () {
+                                  if (c.formErrors.containsKey('color')) {
+                                    c.formErrors.remove('color');
+                                    c.update();
+                                  }
+                                },
+                              ),
                             ),
-                            buildEditableField(
-                              context,
-                              DetailsPage.interiorColor.tr,
-                              'seats_color',
-                              details.seatColor ?? '',
-                              controller.seatColorController,
-                              validator: (v) {
-                                if (v == null || v.trim().isEmpty) {
-                                  return 'fieldRequired'.tr;
-                                }
-                                if (RegExp(r'\d').hasMatch(v.trim())) {
-                                  return 'colorNoNumbers'.tr;
-                                }
-                                return null;
-                              },
+                            GetBuilder<VehicleDetailsController>(
+                              init: VehicleDetailsBinding().instance,
+                              autoRemove: false,
+                              builder: (c) => ColorPickerField(
+                                label: DetailsPage.interiorColor.tr,
+                                colors: VehicleColors.interior,
+                                controller: c.seatColorController,
+                                errorText: c.formErrors['seats_color'],
+                                onChanged: () {
+                                  if (c.formErrors.containsKey('seats_color')) {
+                                    c.formErrors.remove('seats_color');
+                                    c.update();
+                                  }
+                                },
+                              ),
                             ),
                           ),
                           const SizedBox(height: FSizes.spaceBtwItems),
