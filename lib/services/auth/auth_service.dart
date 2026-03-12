@@ -20,6 +20,7 @@ class AuthService extends GetxController {
   FirebaseAuth get firebase => FirebaseAuth.instance;
 
   RxBool isLoggingIn = false.obs;
+  RxBool isLoggingOut = false.obs;
   final RxnString _token = RxnString(null);
   final RxnString _idToken = RxnString(null);
   final Rxn<Profile> _profile = Rxn<Profile>(null);
@@ -187,20 +188,32 @@ class AuthService extends GetxController {
   }
 
   Future<void> logOut() async {
-    // Call backend logout while we still have a valid token
+    if (isLoggingOut.value) return;
+    isLoggingOut.value = true;
+    FLoader.showLogoutLoading();
+
     try {
-      await AuthRepository().logOut(token);
-    } catch (_) {
-      // Continue logout even if API call fails
+      // Call backend logout while we still have a valid token.
+      try {
+        await AuthRepository().logOut(token);
+      } catch (_) {
+        // Continue logout even if API call fails.
+      }
+
+      // Clear local auth state BEFORE firebase sign-out so that
+      // any listeners (e.g. NotificationsService) that react to
+      // token changes won't fire API calls with an invalid token.
+      await clearLocalData();
+
+      // Firebase sign-out triggers changeUser(null) → navigates to login,
+      // which naturally dismisses the loading dialog.
+      await firebase.signOut();
+    } finally {
+      isLoggingOut.value = false;
+      // Safety net: if navigation did not dismiss the dialog (e.g. a rare
+      // signOut error), close it manually so the app is never left blocked.
+      if (Get.isDialogOpen ?? false) Get.back();
     }
-
-    // Clear local auth state BEFORE firebase sign-out so that
-    // any listeners (e.g. NotificationsService) that react to
-    // token changes won't fire API calls with an invalid token.
-    await clearLocalData();
-
-    // Firebase sign-out triggers changeUser(null) → navigates to login
-    await firebase.signOut();
   }
 
   /// Called when the backend returns 401 or the token is invalid.

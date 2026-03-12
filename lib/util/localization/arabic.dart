@@ -481,6 +481,8 @@ class Arabic {
     FTexts.logoutBtn: 'تسجيل الخروج',
     FTexts.logoutConfirmTitle: 'تسجيل الخروج',
     FTexts.logoutConfirmMessage: 'هل أنت متأكد أنك تريد تسجيل الخروج؟',
+    FTexts.loggingOutTitle: 'جاري تسجيل الخروج',
+    FTexts.loggingOutSubtitle: 'يرجى الانتظار...',
     FTexts.profileName: 'الاسم',
     FTexts.profileEmail: 'البريد الإلكتروني',
     FTexts.profilePhone: 'رقم الجوال',

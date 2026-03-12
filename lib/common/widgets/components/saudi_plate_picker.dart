@@ -4,6 +4,7 @@ import 'package:fahis_inspector/util/helpers/plate_converter.dart';
 import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 /// Saudi license-plate input widget.
 ///
 /// Each letter field accepts only the 17 valid Saudi plate letters.
@@ -189,8 +190,9 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
               fontSize: fontSize,
               arabicFontSize: arabicFontSize,
               onChanged: () => setState(_save),
-              onBackToLetters:
-                  i == 0 ? () => _letterFocus[2].requestFocus() : null,
+              onBackToLetters: i == 0
+                  ? () => _letterFocus[2].requestFocus()
+                  : null,
             ),
           ),
           if (i < 3) SizedBox(width: gap),
@@ -220,10 +222,9 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
             padding: const EdgeInsets.only(left: FSizes.xs),
             child: Text(
               widget.errorText!,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: FColors.error),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: FColors.error),
             ),
           ),
         ],
@@ -370,7 +371,7 @@ class _LetterTextFieldState extends State<_LetterTextField>
                       arabic,
                       style: TextStyle(
                         fontSize: widget.arabicFontSize,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                         color: FColors.primaryColor,
                         height: 1,
                       ),
@@ -548,7 +549,9 @@ class _DigitBoxState extends State<_DigitBox>
                 if (v.isEmpty && widget.idx > 0) {
                   widget.focus[widget.idx - 1].requestFocus();
                 }
-                if (v.isEmpty && widget.idx == 0) widget.onBackToLetters?.call();
+                if (v.isEmpty && widget.idx == 0) {
+                  widget.onBackToLetters?.call();
+                }
               },
               onTap: () => widget.ctrl.selection = TextSelection(
                 baseOffset: 0,
@@ -565,7 +568,7 @@ class _DigitBoxState extends State<_DigitBox>
                       arabic,
                       style: TextStyle(
                         fontSize: widget.arabicFontSize,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                         color: FColors.primaryColor,
                         height: 1,
                       ),

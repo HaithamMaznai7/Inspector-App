@@ -426,6 +426,8 @@ class English {
     FTexts.logoutBtn: 'Logout',
     FTexts.logoutConfirmTitle: 'Sign Out',
     FTexts.logoutConfirmMessage: 'Are you sure you want to sign out?',
+    FTexts.loggingOutTitle: 'Signing out',
+    FTexts.loggingOutSubtitle: 'Please wait...',
     FTexts.profileName: 'Name',
     FTexts.profileEmail: 'Email',
     FTexts.profilePhone: 'Phone Number',

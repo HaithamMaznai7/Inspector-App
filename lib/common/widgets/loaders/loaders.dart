@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fahis_inspector/common/widgets/loaders/snackbar_queue.dart';
 import 'package:fahis_inspector/main.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
+import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import '../../../util/constants/colors.dart';
 import '../../../util/constants/sizes.dart';
 import 'package:flutter/material.dart';
@@ -75,6 +77,17 @@ class FLoader {
     }, duration: 1);
   }
 
+  /// Shows a non-dismissible full-screen logout loading overlay.
+  /// Navigation (Get.offAllNamed) dismisses it automatically when done.
+  static void showLogoutLoading() {
+    if (Get.isDialogOpen ?? false) return;
+    Get.dialog(
+      const _LogoutLoadingDialog(),
+      barrierDismissible: false,
+      barrierColor: Colors.black54,
+    );
+  }
+
   static _snackBar({
     String? title,
     String? message,
@@ -126,5 +139,106 @@ class FLoader {
         showSnackbar();
       });
     }
+  }
+}
+
+// ── Logout loading dialog ──────────────────────────────────────────────────────
+
+class _LogoutLoadingDialog extends StatelessWidget {
+  const _LogoutLoadingDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final subtitleColor =
+        isDark ? FColors.grey.withValues(alpha: 0.7) : FColors.darkGrey;
+
+    // Responsive card width: compact on phones, slightly wider on tablets.
+    final cardWidth = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: 240,
+      tablet: 280,
+      desktop: 300,
+    );
+    final spinnerSize = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: 52,
+      tablet: 60,
+      desktop: 64,
+    );
+    final titleSize = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: 16,
+      tablet: 18,
+      desktop: 19,
+    );
+    final subtitleSize = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: 13,
+      tablet: 14,
+      desktop: 15,
+    );
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: Container(
+        width: cardWidth,
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 36),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
+              blurRadius: 32,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Branded spinner with a subtle track
+            SizedBox(
+              width: spinnerSize,
+              height: spinnerSize,
+              child: CircularProgressIndicator(
+                strokeWidth: 3.5,
+                valueColor:
+                    const AlwaysStoppedAnimation(FColors.primaryColor),
+                backgroundColor: FColors.primaryColor.withValues(alpha: 0.15),
+              ),
+            ),
+            const SizedBox(height: 28),
+
+            // Title
+            Text(
+              FTexts.loggingOutTitle.tr,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: titleSize,
+                fontWeight: FontWeight.w700,
+                color: isDark ? FColors.light : FColors.dark,
+                height: 1.2,
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // Subtitle
+            Text(
+              FTexts.loggingOutSubtitle.tr,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: subtitleSize,
+                color: subtitleColor,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -61,12 +61,14 @@ class _ColorPickerFieldState extends State<ColorPickerField> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final matched = VehicleColors.find(widget.colors, widget.controller.text);
-    final displayValue = matched?.localizedName ??
+    final displayValue =
+        matched?.localizedName ??
         (widget.controller.text.trim().isNotEmpty
             ? widget.controller.text.trim()
             : null);
-    final swatch =
-        matched != null ? VehicleColors.swatches[matched.english] : null;
+    final swatch = matched != null
+        ? VehicleColors.swatches[matched.english]
+        : null;
     final hasError = widget.errorText != null;
 
     return Column(
@@ -75,10 +77,9 @@ class _ColorPickerFieldState extends State<ColorPickerField> {
         // ── Label ─────────────────────────────────────────────────────────
         Text(
           widget.label,
-          style: Theme.of(context)
-              .textTheme
-              .titleSmall
-              ?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: FSizes.xs),
 
@@ -98,8 +99,8 @@ class _ColorPickerFieldState extends State<ColorPickerField> {
                 color: hasError
                     ? FColors.error
                     : isDark
-                        ? FColors.grey.withValues(alpha: 0.3)
-                        : FColors.grey,
+                    ? FColors.grey.withValues(alpha: 0.3)
+                    : FColors.grey,
               ),
             ),
             child: Row(
@@ -115,18 +116,14 @@ class _ColorPickerFieldState extends State<ColorPickerField> {
                   child: Text(
                     displayValue ?? 'colorSelectHint'.tr,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: displayValue != null
-                              ? (isDark ? FColors.light : FColors.dark)
-                              : FColors.darkGrey,
-                        ),
+                      color: displayValue != null
+                          ? (isDark ? FColors.light : FColors.dark)
+                          : FColors.darkGrey,
+                    ),
                   ),
                 ),
 
-                Icon(
-                  Iconsax.arrow_down_1,
-                  size: 16,
-                  color: FColors.darkGrey,
-                ),
+                Icon(Iconsax.arrow_down_1, size: 16, color: FColors.darkGrey),
               ],
             ),
           ),
@@ -139,10 +136,9 @@ class _ColorPickerFieldState extends State<ColorPickerField> {
             padding: const EdgeInsets.only(left: FSizes.xs),
             child: Text(
               widget.errorText!,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: FColors.error),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: FColors.error),
             ),
           ),
         ],
@@ -151,7 +147,10 @@ class _ColorPickerFieldState extends State<ColorPickerField> {
   }
 
   void _openSheet(
-      BuildContext context, String label, List<VehicleColor> colors) {
+    BuildContext context,
+    String label,
+    List<VehicleColor> colors,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -214,14 +213,7 @@ class _ColorSheet extends StatelessWidget {
             Center(
               child: Padding(
                 padding: const EdgeInsets.only(top: 12, bottom: 16),
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: FColors.grey,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
+                child: SizedBox(width: 36, height: 4),
               ),
             ),
 
@@ -230,10 +222,9 @@ class _ColorSheet extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
               child: Text(
                 title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
               ),
             ),
 
@@ -277,9 +268,7 @@ class _ColorSheet extends StatelessWidget {
                           Expanded(
                             child: Text(
                               c.localizedName,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
+                              style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
                                     fontWeight: selected
                                         ? FontWeight.w700

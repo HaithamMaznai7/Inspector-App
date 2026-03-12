@@ -97,6 +97,8 @@ class FTexts {
   static const String logoutBtn = 'logoutBtn';
   static const String logoutConfirmTitle = 'logoutConfirmTitle';
   static const String logoutConfirmMessage = 'logoutConfirmMessage';
+  static const String loggingOutTitle = 'loggingOutTitle';
+  static const String loggingOutSubtitle = 'loggingOutSubtitle';
   static const String profileName = 'profileName';
   static const String profileEmail = 'profileEmail';
   static const String profilePhone = 'profilePhone';
