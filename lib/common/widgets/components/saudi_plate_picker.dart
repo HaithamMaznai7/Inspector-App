@@ -146,39 +146,12 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
       desktop: 440,
     );
 
+    // Saudi plates read: numbers first, then letters.
+    // Visual order: [1][2][3][4] | [A][B][C]
     Widget inputRow = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 3 letter text-fields
-        for (int i = 0; i < 3; i++) ...[
-          Expanded(
-            child: _LetterTextField(
-              ctrl: _letterCtrl[i],
-              focus: _letterFocus[i],
-              idx: i,
-              allLetterFocus: _letterFocus,
-              firstDigitFocus: _digitFocus[0],
-              isDark: isDark,
-              boxHeight: boxHeight,
-              fontSize: fontSize,
-              arabicFontSize: arabicFontSize,
-              onChanged: () => setState(_save),
-            ),
-          ),
-          if (i < 2) SizedBox(width: gap),
-        ],
-
-        // Separator
-        Padding(
-          padding: EdgeInsets.only(top: 2),
-          child: _FieldDivider(
-            isDark: isDark,
-            height: boxHeight - 4,
-            margin: dividerMargin,
-          ),
-        ),
-
-        // 4 digit text-fields
+        // 4 digit text-fields (shown first — Saudi plate convention)
         for (int i = 0; i < 4; i++) ...[
           Expanded(
             child: _DigitBox(
@@ -190,12 +163,41 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
               fontSize: fontSize,
               arabicFontSize: arabicFontSize,
               onChanged: () => setState(_save),
-              onBackToLetters: i == 0
-                  ? () => _letterFocus[2].requestFocus()
-                  : null,
+              // Last digit → advance to first letter box
+              firstLetterFocus: i == 3 ? _letterFocus[0] : null,
             ),
           ),
           if (i < 3) SizedBox(width: gap),
+        ],
+
+        // Separator
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: _FieldDivider(
+            isDark: isDark,
+            height: boxHeight - 4,
+            margin: dividerMargin,
+          ),
+        ),
+
+        // 3 letter text-fields (shown second)
+        for (int i = 0; i < 3; i++) ...[
+          Expanded(
+            child: _LetterTextField(
+              ctrl: _letterCtrl[i],
+              focus: _letterFocus[i],
+              idx: i,
+              allLetterFocus: _letterFocus,
+              // First letter backspace → return to last digit box
+              lastDigitFocus: _digitFocus[3],
+              isDark: isDark,
+              boxHeight: boxHeight,
+              fontSize: fontSize,
+              arabicFontSize: arabicFontSize,
+              onChanged: () => setState(_save),
+            ),
+          ),
+          if (i < 2) SizedBox(width: gap),
         ],
       ],
     );
@@ -240,7 +242,9 @@ class _LetterTextField extends StatefulWidget {
   final FocusNode focus;
   final int idx;
   final List<FocusNode> allLetterFocus;
-  final FocusNode firstDigitFocus;
+  /// Focus to return to when the first letter box is backspaced empty.
+  /// Points to the last digit box (digits are now before letters).
+  final FocusNode lastDigitFocus;
   final bool isDark;
   final double boxHeight;
   final double fontSize;
@@ -252,7 +256,7 @@ class _LetterTextField extends StatefulWidget {
     required this.focus,
     required this.idx,
     required this.allLetterFocus,
-    required this.firstDigitFocus,
+    required this.lastDigitFocus,
     required this.isDark,
     required this.boxHeight,
     required this.fontSize,
@@ -344,14 +348,18 @@ class _LetterTextFieldState extends State<_LetterTextField>
               onChanged: (v) {
                 widget.onChanged();
                 if (v.isNotEmpty) {
+                  // Advance to the next letter; letters are the last fields
+                  // so there is no "advance to digits" anymore.
                   if (widget.idx < 2) {
                     widget.allLetterFocus[widget.idx + 1].requestFocus();
-                  } else {
-                    widget.firstDigitFocus.requestFocus();
                   }
                 } else {
+                  // Backspace: go to previous letter, or back to last digit
+                  // when clearing the first letter box.
                   if (widget.idx > 0) {
                     widget.allLetterFocus[widget.idx - 1].requestFocus();
+                  } else {
+                    widget.lastDigitFocus.requestFocus();
                   }
                 }
               },
@@ -451,7 +459,9 @@ class _DigitBox extends StatefulWidget {
   final double fontSize;
   final double arabicFontSize;
   final VoidCallback onChanged;
-  final VoidCallback? onBackToLetters;
+  /// Focus to advance to when the last digit (idx == 3) is filled.
+  /// Points to the first letter box (letters come after digits now).
+  final FocusNode? firstLetterFocus;
 
   const _DigitBox({
     required this.ctrl,
@@ -462,7 +472,7 @@ class _DigitBox extends StatefulWidget {
     required this.fontSize,
     required this.arabicFontSize,
     required this.onChanged,
-    this.onBackToLetters,
+    this.firstLetterFocus,
   });
 
   @override
@@ -543,14 +553,19 @@ class _DigitBoxState extends State<_DigitBox>
               ),
               onChanged: (v) {
                 widget.onChanged();
-                if (v.isNotEmpty && widget.idx < 3) {
-                  widget.focus[widget.idx + 1].requestFocus();
-                }
-                if (v.isEmpty && widget.idx > 0) {
-                  widget.focus[widget.idx - 1].requestFocus();
-                }
-                if (v.isEmpty && widget.idx == 0) {
-                  widget.onBackToLetters?.call();
+                if (v.isNotEmpty) {
+                  // Advance to next digit, or to first letter on last digit
+                  if (widget.idx < 3) {
+                    widget.focus[widget.idx + 1].requestFocus();
+                  } else {
+                    widget.firstLetterFocus?.requestFocus();
+                  }
+                } else {
+                  // Backspace: go to previous digit.
+                  // idx == 0 is now the very first field — nowhere to go back.
+                  if (widget.idx > 0) {
+                    widget.focus[widget.idx - 1].requestFocus();
+                  }
                 }
               },
               onTap: () => widget.ctrl.selection = TextSelection(
