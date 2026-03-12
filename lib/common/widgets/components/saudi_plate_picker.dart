@@ -4,8 +4,6 @@ import 'package:fahis_inspector/util/helpers/plate_converter.dart';
 import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-
 /// Saudi license-plate input widget.
 ///
 /// Each letter field accepts only the 17 valid Saudi plate letters.
@@ -189,7 +187,7 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
               isDark: isDark,
               boxHeight: boxHeight,
               fontSize: fontSize,
-              arabicSlotHeight: arabicFontSize + 6,
+              arabicFontSize: arabicFontSize,
               onChanged: () => setState(_save),
               onBackToLetters:
                   i == 0 ? () => _letterFocus[2].requestFocus() : null,
@@ -211,44 +209,6 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
             child: ConstrainedBox(
               constraints: BoxConstraints(maxWidth: maxWidth),
               child: inputRow,
-            ),
-          ),
-        ),
-
-        // ── Sub-labels ────────────────────────────────────────────────────
-        Directionality(
-          textDirection: TextDirection.ltr,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: maxWidth),
-            child: Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Text(
-                      'plateLettersLabel'.tr,
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelSmall
-                          ?.copyWith(color: FColors.darkGrey),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  SizedBox(width: dividerMargin * 2 + 2),
-                  Expanded(
-                    flex: 4,
-                    child: Text(
-                      'plateNumbersLabel'.tr,
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelSmall
-                          ?.copyWith(color: FColors.darkGrey),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
         ),
@@ -467,14 +427,28 @@ class _SaudiPlateLetterFormatter extends TextInputFormatter {
 
 // ── Digit box ─────────────────────────────────────────────────────────────────
 
-class _DigitBox extends StatelessWidget {
+/// Maps English digit characters to their Arabic-Indic equivalents for display.
+const _arabicDigits = {
+  '0': '٠',
+  '1': '١',
+  '2': '٢',
+  '3': '٣',
+  '4': '٤',
+  '5': '٥',
+  '6': '٦',
+  '7': '٧',
+  '8': '٨',
+  '9': '٩',
+};
+
+class _DigitBox extends StatefulWidget {
   final TextEditingController ctrl;
   final List<FocusNode> focus;
   final int idx;
   final bool isDark;
   final double boxHeight;
   final double fontSize;
-  final double arabicSlotHeight;
+  final double arabicFontSize;
   final VoidCallback onChanged;
   final VoidCallback? onBackToLetters;
 
@@ -485,59 +459,176 @@ class _DigitBox extends StatelessWidget {
     required this.isDark,
     required this.boxHeight,
     required this.fontSize,
-    required this.arabicSlotHeight,
+    required this.arabicFontSize,
     required this.onChanged,
     this.onBackToLetters,
   });
 
   @override
+  State<_DigitBox> createState() => _DigitBoxState();
+}
+
+class _DigitBoxState extends State<_DigitBox>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _shakeCtrl;
+  late final Animation<double> _shakeAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _shakeCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 380),
+    );
+    _shakeAnim = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -6.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -6.0, end: 6.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 6.0, end: -4.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: -4.0, end: 4.0), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 4.0, end: 0.0), weight: 1),
+    ]).animate(CurvedAnimation(parent: _shakeCtrl, curve: Curves.linear));
+  }
+
+  @override
+  void dispose() {
+    _shakeCtrl.dispose();
+    super.dispose();
+  }
+
+  void _triggerShake() => _shakeCtrl.forward(from: 0);
+
+  @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _BoxShell(
-          isDark: isDark,
-          hasValue: ctrl.text.isNotEmpty,
-          height: boxHeight,
-          child: TextField(
-            controller: ctrl,
-            focusNode: focus[idx],
-            maxLength: 1,
-            textAlign: TextAlign.center,
-            keyboardType: TextInputType.phone,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            style: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.w800,
-              color: isDark ? FColors.light : FColors.dark,
-              height: 1,
-            ),
-            decoration: const InputDecoration(
-              counterText: '',
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              errorBorder: InputBorder.none,
-              focusedErrorBorder: InputBorder.none,
-              disabledBorder: InputBorder.none,
-              contentPadding: EdgeInsets.zero,
-            ),
-            onChanged: (v) {
-              onChanged();
-              if (v.isNotEmpty && idx < 3) focus[idx + 1].requestFocus();
-              if (v.isEmpty && idx > 0) focus[idx - 1].requestFocus();
-              if (v.isEmpty && idx == 0) onBackToLetters?.call();
-            },
-            onTap: () => ctrl.selection = TextSelection(
-              baseOffset: 0,
-              extentOffset: ctrl.text.length,
+    final digit = widget.ctrl.text;
+    final arabic = digit.isNotEmpty ? _arabicDigits[digit] : null;
+
+    return AnimatedBuilder(
+      animation: _shakeAnim,
+      builder: (context, child) => Transform.translate(
+        offset: Offset(_shakeAnim.value, 0),
+        child: child,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _BoxShell(
+            isDark: widget.isDark,
+            hasValue: digit.isNotEmpty,
+            height: widget.boxHeight,
+            child: TextField(
+              controller: widget.ctrl,
+              focusNode: widget.focus[widget.idx],
+              maxLength: 1,
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.phone,
+              inputFormatters: [
+                _SaudiPlateDigitFormatter(onRejected: _triggerShake),
+              ],
+              style: TextStyle(
+                fontSize: widget.fontSize,
+                fontWeight: FontWeight.w800,
+                color: widget.isDark ? FColors.light : FColors.dark,
+                height: 1,
+              ),
+              decoration: const InputDecoration(
+                counterText: '',
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+              ),
+              onChanged: (v) {
+                widget.onChanged();
+                if (v.isNotEmpty && widget.idx < 3) {
+                  widget.focus[widget.idx + 1].requestFocus();
+                }
+                if (v.isEmpty && widget.idx > 0) {
+                  widget.focus[widget.idx - 1].requestFocus();
+                }
+                if (v.isEmpty && widget.idx == 0) widget.onBackToLetters?.call();
+              },
+              onTap: () => widget.ctrl.selection = TextSelection(
+                baseOffset: 0,
+                extentOffset: widget.ctrl.text.length,
+              ),
             ),
           ),
-        ),
-        // Spacer matching the letter-box Arabic-translation slot height.
-        SizedBox(height: arabicSlotHeight),
-      ],
+          // Fixed-height slot: shows Arabic numeral or stays empty.
+          SizedBox(
+            height: widget.arabicFontSize + 6,
+            child: arabic != null
+                ? Center(
+                    child: Text(
+                      arabic,
+                      style: TextStyle(
+                        fontSize: widget.arabicFontSize,
+                        fontWeight: FontWeight.w600,
+                        color: FColors.primaryColor,
+                        height: 1,
+                      ),
+                    ),
+                  )
+                : null,
+          ),
+        ],
+      ),
     );
+  }
+}
+
+/// Accepts English digits 0-9 and Arabic-Indic digits ٠-٩ (converting them
+/// to English). All other characters are rejected with a shake callback.
+class _SaudiPlateDigitFormatter extends TextInputFormatter {
+  final VoidCallback? onRejected;
+
+  /// Arabic-Indic → English digit mapping (Unicode \u0660–\u0669).
+  static const _arabicToEnglish = {
+    '٠': '0',
+    '١': '1',
+    '٢': '2',
+    '٣': '3',
+    '٤': '4',
+    '٥': '5',
+    '٦': '6',
+    '٧': '7',
+    '٨': '8',
+    '٩': '9',
+  };
+
+  const _SaudiPlateDigitFormatter({this.onRejected});
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) return newValue;
+
+    final char = newValue.text[newValue.text.length - 1];
+
+    // Arabic-Indic digit → convert to English
+    final fromArabic = _arabicToEnglish[char];
+    if (fromArabic != null) {
+      return TextEditingValue(
+        text: fromArabic,
+        selection: const TextSelection.collapsed(offset: 1),
+      );
+    }
+
+    // English digit — accept as-is
+    if (char.codeUnitAt(0) >= 48 && char.codeUnitAt(0) <= 57) {
+      return TextEditingValue(
+        text: char,
+        selection: const TextSelection.collapsed(offset: 1),
+      );
+    }
+
+    // Invalid — reject and shake
+    onRejected?.call();
+    return oldValue;
   }
 }
 
