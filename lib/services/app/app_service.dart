@@ -18,12 +18,8 @@ abstract class AppService extends GetxService with WidgetsBindingObserver {
   List<BindingsService> register();
 
   Future<AppService> init() async {
-
     await boot();
 
-    // If force update is required, show the blocking screen and stop.
-    // AuthService bindings are never registered so the user stays on
-    // the force-update screen with no way to dismiss it.
     if (this is AppServiceProvider &&
         (this as AppServiceProvider).requiresForceUpdate) {
       FlutterNativeSplash.remove();

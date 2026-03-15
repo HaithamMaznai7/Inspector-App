@@ -1,11 +1,9 @@
-import 'package:fahis_inspector/firebase_options.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/services/app/app_service.dart';
 import 'package:fahis_inspector/services/app/support/bindings_service.dart';
 import 'package:fahis_inspector/services/force_update/force_update_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
 class AppServiceProvider extends AppService {
@@ -16,21 +14,12 @@ class AppServiceProvider extends AppService {
 
   @override
   Future<void> boot() async {
-    super.boot();
-
+    // Firebase is already initialized in main() — no need to repeat here.
     try {
-      // await Hive.initFlutter();
-
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-
       if (kIsWeb) {
         await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
       }
 
-      // Check force update after Firebase is ready.
-      // On failure the service returns false — user is never blocked.
       requiresForceUpdate = await ForceUpdateService.instance.check();
     } catch (_) {
       dd('error on boot method');

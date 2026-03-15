@@ -13,8 +13,7 @@ class StorageService extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    await Hive.initFlutter();
-
+    // Hive is already initialized in main() — just open the boxes.
     auth = await Hive.openBox<List>('Auth');
     assets = await Hive.openBox<List>('Assets');
     inspections = await Hive.openBox<List>('Inspections');

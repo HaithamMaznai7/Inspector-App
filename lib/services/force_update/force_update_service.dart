@@ -21,7 +21,7 @@ class ForceUpdateService {
       if (!_initialized) {
         _remoteConfig = FirebaseRemoteConfig.instance;
         await _remoteConfig.setConfigSettings(RemoteConfigSettings(
-          fetchTimeout: const Duration(seconds: 10),
+          fetchTimeout: const Duration(seconds: 5),
           minimumFetchInterval: kDebugMode
               ? Duration.zero
               : const Duration(seconds: 3600),

@@ -1,4 +1,5 @@
 import 'package:fahis_inspector/boot/app_service_provider.dart';
+import 'package:fahis_inspector/firebase_options.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/services/auth/auth_service.dart';
 import 'package:fahis_inspector/services/notifications/notifications_service.dart';
@@ -14,9 +15,19 @@ import 'boot.dart';
 part 'helpers.dart';
 part 'notifications.dart';
 
+Future<void> _initHive() async {
+  await Hive.initFlutter();
+  await Hive.openBox('AppSettings');
+}
+
 void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  await Hive.initFlutter();
+
+  await Future.wait([
+    _initHive(),
+    Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+  ]);
+
   runApp(const Boot());
 }
