@@ -155,6 +155,54 @@ class _ReportUploaded extends StatelessWidget {
   final InspectionObdController controller;
   final bool isDark;
 
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isDark ? FColors.dark : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+        ),
+        title: Text(
+          InspectionPage.obdDeleteReportTitle.tr,
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            color: isDark ? FColors.light : FColors.dark,
+          ),
+        ),
+        content: Text(
+          InspectionPage.obdDeleteReportConfirm.tr,
+          style: TextStyle(
+            color: isDark ? FColors.grey : FColors.darkGrey,
+            fontSize: 14,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              FTexts.cancelBtn.tr,
+              style: const TextStyle(color: FColors.darkGrey),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              FTexts.deleteBtn.tr,
+              style: const TextStyle(
+                color: FColors.error,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await controller.deleteReport();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -198,12 +246,12 @@ class _ReportUploaded extends StatelessWidget {
             onTap: controller.openReport,
           ),
           const SizedBox(width: FSizes.xs),
-          // Delete
+          // Delete — requires confirmation
           _IconBtn(
             icon: Iconsax.trash,
             color: FColors.error,
             bg: FColors.error.withValues(alpha: 0.08),
-            onTap: controller.deleteReport,
+            onTap: () => _confirmDelete(context),
           ),
         ],
       ),

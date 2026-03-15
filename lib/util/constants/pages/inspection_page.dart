@@ -117,6 +117,15 @@ class InspectionPage {
   static const String obdUploadSuccess = 'obdUploadSuccess';
   static const String obdUploadFailed = 'obdUploadFailed';
   static const String obdDeleteSuccess = 'obdDeleteSuccess';
+  static const String obdDeleteReportTitle = 'obdDeleteReportTitle';
+  static const String obdDeleteReportConfirm = 'obdDeleteReportConfirm';
+  static const String obdCodeDeletedSuccess = 'obdCodeDeletedSuccess';
+  static const String obdCodeDeletedSuccessMsg = 'obdCodeDeletedSuccessMsg';
+  static const String obdCodeAddSuccess = 'obdCodeAddSuccess';
+  static const String obdCodeAddSuccessMsg = 'obdCodeAddSuccessMsg';
+  static const String obdCodeEditSuccess = 'obdCodeEditSuccess';
+  static const String obdCodeEditSuccessMsg = 'obdCodeEditSuccessMsg';
+  static const String obdActionError = 'obdActionError';
   static const String obdAddCode = 'obdAddCode';
   static const String obdEditCode = 'obdEditCode';
   static const String obdCodeLabel = 'obdCodeLabel';

@@ -203,8 +203,13 @@ class InspectionObdController extends GetxController {
     try {
       await repository.delete(code);
       _log('delete code – success');
+      FLoader.successSnackBar(
+        title: InspectionPage.obdCodeDeletedSuccess.tr,
+        message: InspectionPage.obdCodeDeletedSuccessMsg.tr,
+      );
     } catch (e) {
       _log('delete code – error: $e');
+      FLoader.errorSnackBar(title: InspectionPage.obdActionError.tr);
     } finally {
       isLoading.value = false;
       update();
@@ -229,12 +234,20 @@ class InspectionObdController extends GetxController {
         _log('onCreateEdit – storing new code: ${result.code}');
         await repository.store(result);
         _log('onCreateEdit – stored successfully');
+        FLoader.successSnackBar(
+          title: InspectionPage.obdCodeAddSuccess.tr,
+          message: InspectionPage.obdCodeAddSuccessMsg.tr,
+        );
       }
 
       if (result != null && result.id > 0) {
         _log('onCreateEdit – updating code id=${result.id}: ${result.code}');
         await repository.update(result);
         _log('onCreateEdit – updated successfully');
+        FLoader.successSnackBar(
+          title: InspectionPage.obdCodeEditSuccess.tr,
+          message: InspectionPage.obdCodeEditSuccessMsg.tr,
+        );
       }
 
       if (result == null) {
@@ -242,6 +255,7 @@ class InspectionObdController extends GetxController {
       }
     } catch (e) {
       _log('onCreateEdit – error: $e');
+      FLoader.errorSnackBar(title: InspectionPage.obdActionError.tr);
     } finally {
       isLoading.value = false;
       update();
