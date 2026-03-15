@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:fahis_inspector/common/widgets/camera/camera.dart';
-import 'package:fahis_inspector/util/helpers/camera_permission.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/models/photo.dart';
 import 'package:fahis_inspector/resources/inspection_photos_repository.dart';
@@ -200,7 +199,6 @@ class InspectionPhotosController extends GetxController {
     _log('picking — START | photo.id=${photo.id} | savedCategory=$savedCategory');
 
     if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-      if (!await CameraPermissionHelper.requestCamera()) return;
       final cameras = await availableCameras();
       if (cameras.isEmpty) return;
       _log('picking — opening camera dialog');
