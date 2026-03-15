@@ -1,6 +1,7 @@
 flutter_native_splash:
+  # iOS & Android below 12
   color: "#ffffff"
-  image: assets/images/logos/fahis_logo.png
-  android: true
-  ios: true
-  web: true
+  image: assets/images/logos/fahis_new_logo.png
+  android_12:
+    color: "#ffffff"
+    image: assets/images/logos/fahis_new_logo.png
