@@ -90,7 +90,6 @@ class _AddingObdCodeState extends State<AddingObdCode> {
                     icon: Iconsax.cpu,
                     controller: _codeController,
                     hint: InspectionPage.obdCodeHint.tr,
-                    capitalization: TextCapitalization.characters,
                   ),
                   const SizedBox(height: FSizes.lg),
                   _buildField(
@@ -102,7 +101,6 @@ class _AddingObdCodeState extends State<AddingObdCode> {
                     hint: InspectionPage.obdDescHint.tr,
                     maxLines: 4,
                     minLines: 2,
-                    keyboardType: TextInputType.multiline,
                   ),
                   const SizedBox(height: FSizes.lg),
                   _buildActions(context, isDark),
@@ -188,8 +186,6 @@ class _AddingObdCodeState extends State<AddingObdCode> {
     required IconData icon,
     required TextEditingController controller,
     required String hint,
-    TextInputType keyboardType = TextInputType.text,
-    TextCapitalization capitalization = TextCapitalization.none,
     int maxLines = 1,
     int minLines = 1,
   }) {
@@ -218,8 +214,6 @@ class _AddingObdCodeState extends State<AddingObdCode> {
         const SizedBox(height: FSizes.sm),
         TextFormField(
           controller: controller,
-          keyboardType: keyboardType,
-          textCapitalization: capitalization,
           maxLines: maxLines,
           minLines: minLines,
           style: Theme.of(context).textTheme.bodyMedium,
