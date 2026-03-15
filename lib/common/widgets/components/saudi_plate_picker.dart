@@ -324,6 +324,7 @@ class _LetterTextFieldState extends State<_LetterTextField>
               textAlign: TextAlign.center,
               textCapitalization: TextCapitalization.characters,
               keyboardType: TextInputType.text,
+              textInputAction: TextInputAction.next,
               autocorrect: false,
               enableSuggestions: false,
               inputFormatters: [
@@ -532,6 +533,7 @@ class _DigitBoxState extends State<_DigitBox>
               maxLength: 1,
               textAlign: TextAlign.center,
               keyboardType: TextInputType.phone,
+              textInputAction: TextInputAction.next,
               inputFormatters: [
                 _SaudiPlateDigitFormatter(onRejected: _triggerShake),
               ],
