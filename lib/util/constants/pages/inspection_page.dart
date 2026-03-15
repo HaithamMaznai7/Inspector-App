@@ -90,6 +90,7 @@ class InspectionPage {
   static const String noteHint = 'noteHint';
   static const String noteFieldLabel = 'noteFieldLabel';
   static const String noteValidation = 'noteValidation';
+  static const String noteSavedSuccessMsg = 'noteSavedSuccessMsg';
 
   static const String startInspection = 'startInspection';
   static const String generalNoteTitle = 'generalNoteTitle';

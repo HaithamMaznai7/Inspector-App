@@ -1,9 +1,11 @@
+import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/enums/point_status.dart';
 import 'package:fahis_inspector/features/inspection_points/components/note_dialog.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/point.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +52,9 @@ class _PointCardState extends State<PointCard> {
       newPoint.setStatus = status;
       setState(() => _point = newPoint);
       await widget.onChange(newPoint, status);
+      if (status == PointStatus.note) {
+        FLoader.successSnackBar(message: InspectionPage.noteSavedSuccessMsg.tr);
+      }
     } catch (e) {
       dd(e.toString());
     }
@@ -101,10 +106,9 @@ class _PointCardState extends State<PointCard> {
             // ── Point title ────────────────────────────────────────────────
             Text(
               _point.title,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -164,13 +168,11 @@ class _PointCardState extends State<PointCard> {
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
-                        _point.note?.isNotEmpty == true
-                            ? _point.note!
-                            : '...',
+                        _point.note?.isNotEmpty == true ? _point.note! : '...',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: FColors.warning,
-                              fontStyle: FontStyle.italic,
-                            ),
+                          color: FColors.warning,
+                          fontStyle: FontStyle.italic,
+                        ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
@@ -223,22 +225,22 @@ class _RadioChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bg = _isActive
-        ? _statusColor.withValues(alpha: 0.10)
+        ? _statusColor.withValues(alpha: (_isActive && _isNa) ? 0.40 : 0.10)
         : (isDark
-            ? Colors.white.withValues(alpha: 0.05)
-            : Colors.black.withValues(alpha: 0.04));
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.04));
 
     final borderColor = _isActive
-        ? _statusColor.withValues(alpha: 0.65)
+        ? _statusColor.withValues(alpha: (_isActive && _isNa) ? 0.90 : 0.65)
         : (isDark
-            ? Colors.white.withValues(alpha: _isNa ? 0.20 : 0.10)
-            : Colors.black.withValues(alpha: _isNa ? 0.18 : 0.08));
+              ? Colors.white.withValues(alpha: _isNa ? 0.20 : 0.10)
+              : Colors.black.withValues(alpha: _isNa ? 0.18 : 0.08));
 
     final contentColor = _isActive
         ? _statusColor
         : (isDark
-            ? Colors.white.withValues(alpha: _isNa ? 0.50 : 0.30)
-            : Colors.black.withValues(alpha: _isNa ? 0.45 : 0.28));
+              ? Colors.white.withValues(alpha: _isNa ? 0.50 : 0.30)
+              : Colors.black.withValues(alpha: _isNa ? 0.45 : 0.28));
 
     return Expanded(
       child: GestureDetector(
@@ -264,8 +266,7 @@ class _RadioChip extends StatelessWidget {
                 status.toString(),
                 style: TextStyle(
                   fontSize: fontSize,
-                  fontWeight:
-                      _isActive ? FontWeight.w700 : FontWeight.w400,
+                  fontWeight: _isActive ? FontWeight.w700 : FontWeight.w400,
                   color: contentColor,
                   height: 1,
                 ),

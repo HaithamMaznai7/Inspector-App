@@ -146,6 +146,7 @@ class English {
     InspectionPage.resetPointsConfirm: 'Reset',
     InspectionPage.selectStatus: 'Select Status',
     InspectionPage.addNoteTitle: 'Add Note',
+    InspectionPage.noteSavedSuccessMsg: 'The note has been saved successfully',
     InspectionPage.noteHint: 'Type your note here...',
     InspectionPage.noteFieldLabel: 'Note',
     InspectionPage.noteValidation: 'Note is required',
@@ -159,14 +160,19 @@ class English {
     InspectionPage.photosProgress: '@uploaded / @total photos',
     InspectionPage.takePhoto: 'Take Photo',
     InspectionPage.deletePhoto: 'Delete Photo',
-    InspectionPage.deletePhotoConfirm: 'Are you sure you want to delete this photo?',
+    InspectionPage.deletePhotoConfirm:
+        'Are you sure you want to delete this photo?',
     InspectionPage.deleteAllPhotos: 'Delete All Photos',
-    InspectionPage.deleteAllPhotosConfirm: 'Are you sure? All uploaded photos will be deleted and reset.',
-    InspectionPage.deleteAllPhotosSuccess: 'All photos have been deleted successfully.',
+    InspectionPage.deleteAllPhotosConfirm:
+        'Are you sure? All uploaded photos will be deleted and reset.',
+    InspectionPage.deleteAllPhotosSuccess:
+        'All photos have been deleted successfully.',
     InspectionPage.deleteObdCode: 'Delete Code',
-    InspectionPage.deleteObdCodeConfirm: 'Are you sure you want to delete this OBD code?',
+    InspectionPage.deleteObdCodeConfirm:
+        'Are you sure you want to delete this OBD code?',
     InspectionPage.deleteBodyNote: 'Delete Note',
-    InspectionPage.deleteBodyNoteConfirm: 'Are you sure you want to delete this note?',
+    InspectionPage.deleteBodyNoteConfirm:
+        'Are you sure you want to delete this note?',
     InspectionPage.photoCategoryExterior: 'Exterior',
     InspectionPage.photoCategoryInterior: 'Interior',
     InspectionPage.startInspection: 'Start Inspection',
@@ -181,7 +187,7 @@ class English {
         'Are you sure you want to reject this inspection?',
     InspectionPage.addNoteLabel: 'Add Note',
     InspectionPage.optionalTag: 'optional',
-    InspectionPage.obdFileName: 'File name',
+    InspectionPage.obdFileName: 'OBD Report',
     InspectionPage.uploadObdReport: 'Upload OBD Report',
     InspectionPage.obdCodesTitle: 'OBD Codes',
     InspectionPage.obdCodeRequired: 'Code Required',
@@ -197,13 +203,16 @@ class English {
     InspectionPage.obdUploadFailed: 'Failed to upload report',
     InspectionPage.obdDeleteSuccess: 'Report deleted',
     InspectionPage.obdDeleteReportTitle: 'Delete Report',
-    InspectionPage.obdDeleteReportConfirm: 'Are you sure you want to delete the OBD report?',
+    InspectionPage.obdDeleteReportConfirm:
+        'Are you sure you want to delete the OBD report?',
     InspectionPage.obdCodeDeletedSuccess: 'Code Deleted',
-    InspectionPage.obdCodeDeletedSuccessMsg: 'OBD code has been deleted successfully',
+    InspectionPage.obdCodeDeletedSuccessMsg:
+        'OBD code has been deleted successfully',
     InspectionPage.obdCodeAddSuccess: 'Code Added',
     InspectionPage.obdCodeAddSuccessMsg: 'OBD code has been added successfully',
     InspectionPage.obdCodeEditSuccess: 'Code Updated',
-    InspectionPage.obdCodeEditSuccessMsg: 'OBD code has been updated successfully',
+    InspectionPage.obdCodeEditSuccessMsg:
+        'OBD code has been updated successfully',
     InspectionPage.obdActionError: 'Something went wrong, please try again',
     InspectionPage.obdAddCode: 'Add OBD Code',
     InspectionPage.obdEditCode: 'Edit OBD Code',
@@ -262,10 +271,12 @@ class English {
     DetailsPage.vinFound: 'Vehicle data found',
     DetailsPage.vinFoundMsg: 'Fields have been auto-filled. You can edit them.',
     DetailsPage.vinNotFound: 'Vehicle not found',
-    DetailsPage.vinNotFoundMsg: 'No data for this VIN. You can fill in manually.',
+    DetailsPage.vinNotFoundMsg:
+        'No data for this VIN. You can fill in manually.',
     DetailsPage.vinSearchError: 'Search failed',
     DetailsPage.vinSearchErrorMsg: 'Could not search. Please try again.',
-    DetailsPage.vinHelperTyping: 'Enter 17 characters to search vehicle data automatically',
+    DetailsPage.vinHelperTyping:
+        'Enter 17 characters to search vehicle data automatically',
     DetailsPage.vinHelperReady: 'Tap search to auto-fill vehicle details',
     DetailsPage.sectionIdentification: 'Identification',
     DetailsPage.sectionSpecifications: 'Specifications',
@@ -427,6 +438,9 @@ class English {
     /// Marker success / error
     FTexts.markerSavedSuccess: 'Note Saved',
     FTexts.markerSavedSuccessMsg: 'The note has been saved successfully',
+    FTexts.markerMovedSuccess: 'Position Updated',
+    FTexts.markerMovedSuccessMsg:
+        'The note position has been updated successfully',
     FTexts.markerDeletedSuccess: 'Note Deleted',
     FTexts.markerDeletedSuccessMsg: 'The note has been deleted successfully',
     FTexts.markerErrorTitle: 'Error',
@@ -498,22 +512,27 @@ class English {
 
     /// Select Team Screen
     'Select Team to Continue': 'Select Team to Continue',
-    'Please select a team to continue using the app': 'Please select a team to continue using the app',
+    'Please select a team to continue using the app':
+        'Please select a team to continue using the app',
     'No teams available': 'No teams available',
     'Pull down to refresh': 'Pull down to refresh',
 
     /// Onboarding
     'getStarted': 'Get Started',
     'onBoardingTitle1': 'Manage Inspections',
-    'onBoardingSubTitle1': 'View and manage all your vehicle inspection requests in one place — easily and efficiently.',
+    'onBoardingSubTitle1':
+        'View and manage all your vehicle inspection requests in one place — easily and efficiently.',
     'onBoardingTitle2': 'Inspect with Precision',
-    'onBoardingSubTitle2': 'Follow step-by-step inspection stages: photos, body check, OBD diagnostics, and more.',
+    'onBoardingSubTitle2':
+        'Follow step-by-step inspection stages: photos, body check, OBD diagnostics, and more.',
     'onBoardingTitle3': 'Stay Connected',
-    'onBoardingSubTitle3': 'Receive real-time notifications and stay updated on every inspection status change.',
+    'onBoardingSubTitle3':
+        'Receive real-time notifications and stay updated on every inspection status change.',
 
     /// OTP Dialog
     'enterOTP': 'Enter Verification Code',
-    'otpSentMessage': 'We sent a verification code to your number. Enter it below.',
+    'otpSentMessage':
+        'We sent a verification code to your number. Enter it below.',
     'resendOTP': 'Resend OTP',
 
     /// Camera
@@ -524,7 +543,8 @@ class English {
 
     /// Force Update
     FTexts.forceUpdateTitle: 'Update Required',
-    FTexts.forceUpdateMessage: 'A new version of the app is available. Please update to continue using the app.',
+    FTexts.forceUpdateMessage:
+        'A new version of the app is available. Please update to continue using the app.',
     FTexts.forceUpdateButton: 'Update Now',
   };
 }

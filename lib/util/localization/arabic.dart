@@ -145,6 +145,7 @@ class Arabic {
     InspectionPage.resetPointsConfirm: 'إعادة تعيين',
     InspectionPage.selectStatus: 'اختر الحالة',
     InspectionPage.addNoteTitle: 'إضافة ملاحظة',
+    InspectionPage.noteSavedSuccessMsg: 'تم حفظ الملاحظة بنجاح',
     InspectionPage.noteHint: 'اكتب ملاحظتك هنا...',
     InspectionPage.noteFieldLabel: 'الملاحظة',
     InspectionPage.noteValidation: 'الملاحظة مطلوبة',
@@ -160,12 +161,14 @@ class Arabic {
     InspectionPage.deletePhoto: 'حذف الصورة',
     InspectionPage.deletePhotoConfirm: 'هل أنت متأكد أنك تريد حذف هذه الصورة؟',
     InspectionPage.deleteAllPhotos: 'حذف جميع الصور',
-    InspectionPage.deleteAllPhotosConfirm: 'هل أنت متأكد؟ سيتم حذف جميع الصور المرفوعة وإعادة تعيينها.',
+    InspectionPage.deleteAllPhotosConfirm:
+        'هل أنت متأكد؟ سيتم حذف جميع الصور المرفوعة وإعادة تعيينها.',
     InspectionPage.deleteAllPhotosSuccess: 'تم حذف جميع الصور بنجاح.',
     InspectionPage.deleteObdCode: 'حذف الكود',
     InspectionPage.deleteObdCodeConfirm: 'هل أنت متأكد أنك تريد حذف هذا الكود؟',
     InspectionPage.deleteBodyNote: 'حذف الملاحظة',
-    InspectionPage.deleteBodyNoteConfirm: 'هل أنت متأكد أنك تريد حذف هذه الملاحظة؟',
+    InspectionPage.deleteBodyNoteConfirm:
+        'هل أنت متأكد أنك تريد حذف هذه الملاحظة؟',
     InspectionPage.photoCategoryExterior: 'خارجية',
     InspectionPage.photoCategoryInterior: 'داخلية',
     InspectionPage.startInspection: 'ابدأ الفحص',
@@ -178,7 +181,7 @@ class Arabic {
     InspectionPage.rejectConfirmSubtitle: 'هل أنت متأكد من رفض هذا الفحص؟',
     InspectionPage.addNoteLabel: 'إضافة ملاحظة',
     InspectionPage.optionalTag: 'اختياري',
-    InspectionPage.obdFileName: 'اسم الملف',
+    InspectionPage.obdFileName: 'تقرير OBD',
     InspectionPage.uploadObdReport: 'رفع تقرير OBD',
     InspectionPage.obdCodesTitle: 'أكواد OBD',
     InspectionPage.obdCodeRequired: 'الرمز مطلوب',
@@ -195,7 +198,8 @@ class Arabic {
     InspectionPage.obdUploadFailed: 'فشل رفع التقرير',
     InspectionPage.obdDeleteSuccess: 'تم حذف التقرير',
     InspectionPage.obdDeleteReportTitle: 'حذف التقرير',
-    InspectionPage.obdDeleteReportConfirm: 'هل أنت متأكد أنك تريد حذف تقرير OBD؟',
+    InspectionPage.obdDeleteReportConfirm:
+        'هل أنت متأكد أنك تريد حذف تقرير OBD؟',
     InspectionPage.obdCodeDeletedSuccess: 'تم الحذف',
     InspectionPage.obdCodeDeletedSuccessMsg: 'تم حذف رمز OBD بنجاح',
     InspectionPage.obdCodeAddSuccess: 'تمت الإضافة',
@@ -259,11 +263,13 @@ class Arabic {
     DetailsPage.vinFound: 'تم العثور على بيانات المركبة',
     DetailsPage.vinFoundMsg: 'تم تعبئة الحقول تلقائياً، يمكنك التعديل عليها.',
     DetailsPage.vinNotFound: 'لم يتم العثور على المركبة',
-    DetailsPage.vinNotFoundMsg: 'لا توجد بيانات لهذا الرقم، يمكنك الإدخال يدوياً.',
+    DetailsPage.vinNotFoundMsg:
+        'لا توجد بيانات لهذا الرقم، يمكنك الإدخال يدوياً.',
     DetailsPage.vinSearchError: 'خطأ في البحث',
     DetailsPage.vinSearchErrorMsg: 'تعذر البحث، حاول مرة أخرى.',
     DetailsPage.vinHelperTyping: 'أدخل 17 حرف للبحث عن بيانات المركبة تلقائياً',
-    DetailsPage.vinHelperReady: 'اضغط على أيقونة البحث لتعبئة البيانات تلقائياً',
+    DetailsPage.vinHelperReady:
+        'اضغط على أيقونة البحث لتعبئة البيانات تلقائياً',
     DetailsPage.sectionIdentification: 'التعريف',
     DetailsPage.sectionSpecifications: 'المواصفات',
     DetailsPage.sectionInterior: 'الألوان والمقاعد',
@@ -482,6 +488,8 @@ class Arabic {
     /// Marker success / error
     FTexts.markerSavedSuccess: 'تم الحفظ',
     FTexts.markerSavedSuccessMsg: 'تم حفظ الملاحظة بنجاح',
+    FTexts.markerMovedSuccess: 'تم تحديث الموضع',
+    FTexts.markerMovedSuccessMsg: 'تم تحديث موضع الملاحظة بنجاح',
     FTexts.markerDeletedSuccess: 'تم الحذف',
     FTexts.markerDeletedSuccessMsg: 'تم حذف الملاحظة بنجاح',
     FTexts.markerErrorTitle: 'خطأ',
@@ -582,7 +590,8 @@ class Arabic {
 
     /// Force Update
     FTexts.forceUpdateTitle: 'تحديث مطلوب',
-    FTexts.forceUpdateMessage: 'يتوفر إصدار جديد من التطبيق. يرجى التحديث للمتابعة في استخدام التطبيق.',
+    FTexts.forceUpdateMessage:
+        'يتوفر إصدار جديد من التطبيق. يرجى التحديث للمتابعة في استخدام التطبيق.',
     FTexts.forceUpdateButton: 'تحديث الآن',
   };
 }

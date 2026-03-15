@@ -133,8 +133,15 @@ class InspectionBodyController extends GetxController {
     if (marker.id <= 0) return;
     try {
       await repository.update(marker);
+      FLoader.successSnackBar(
+        title: FTexts.markerMovedSuccess.tr,
+        message: FTexts.markerMovedSuccessMsg.tr,
+      );
     } catch (_) {
-      // Position drift is non-critical — silently ignore network errors
+      FLoader.errorSnackBar(
+        title: FTexts.markerErrorTitle.tr,
+        message: FTexts.markerErrorMsg.tr,
+      );
     }
   }
 

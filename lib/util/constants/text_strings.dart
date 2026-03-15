@@ -88,6 +88,8 @@ class FTexts {
   static const String bodyPartInterior = 'bodyPartInterior';
   static const String markerSavedSuccess = 'markerSavedSuccess';
   static const String markerSavedSuccessMsg = 'markerSavedSuccessMsg';
+  static const String markerMovedSuccess = 'markerMovedSuccess';
+  static const String markerMovedSuccessMsg = 'markerMovedSuccessMsg';
   static const String markerDeletedSuccess = 'markerDeletedSuccess';
   static const String markerDeletedSuccessMsg = 'markerDeletedSuccessMsg';
   static const String markerErrorTitle = 'markerErrorTitle';
