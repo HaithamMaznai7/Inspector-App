@@ -13,10 +13,7 @@ abstract class AppService extends GetxService with WidgetsBindingObserver {
 
   RxString status = 'initilizing'.obs;
 
-  Future<void> boot() async {
-    final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  }
+  Future<void> boot() async {}
 
   List<BindingsService> register();
 
