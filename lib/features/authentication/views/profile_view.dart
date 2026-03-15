@@ -104,6 +104,69 @@ class _ProfileViewState extends State<ProfileView> {
     return 'https://ui-avatars.com/api/?name=$initial&color=FF7D41&background=FFF0E8&format=png&size=128';
   }
 
+  bool _hasRealAvatar(String? url) =>
+      url != null && url.isNotEmpty && !url.contains('ui-avatars.com');
+
+  /// Opens a full-screen dark overlay with the current profile picture.
+  /// Tapping anywhere or the close button dismisses it.
+  void _viewFullScreen() {
+    final ImageProvider imageProvider;
+    if (_pickedPhoto != null) {
+      imageProvider = FileImage(_pickedPhoto!);
+    } else if (_hasRealAvatar(_profile?.avatar)) {
+      imageProvider = CachedNetworkImageProvider(_profile!.avatar!);
+    } else {
+      return; // nothing real to show
+    }
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.92),
+      builder: (_) => GestureDetector(
+        onTap: () => Navigator.pop(context),
+        child: Dialog.fullscreen(
+          backgroundColor: Colors.transparent,
+          child: Stack(
+            children: [
+              // Zoomable image centred on screen
+              Center(
+                child: InteractiveViewer(
+                  minScale: 0.8,
+                  maxScale: 4.0,
+                  child: Image(
+                    image: imageProvider,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+
+              // Close button — top-right
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 8,
+                right: 16,
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.close_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Shows a bottom sheet to pick photo from camera or gallery
   void _showPhotoPickerSheet() {
     Get.bottomSheet(
@@ -224,19 +287,25 @@ class _ProfileViewState extends State<ProfileView> {
                   Center(
                     child: Stack(
                       children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundColor: FColors.grey.withValues(alpha: 0.2),
-                          backgroundImage: _pickedPhoto != null
-                              ? FileImage(_pickedPhoto!)
-                              : CachedNetworkImageProvider(
-                                      _safeAvatarUrl(
-                                        _profile?.avatar,
-                                        _profile?.name,
-                                      ),
+                        // Tap avatar to view full screen
+                        GestureDetector(
+                          onTap: _viewFullScreen,
+                          child: CircleAvatar(
+                            radius: 50,
+                            backgroundColor:
+                                FColors.grey.withValues(alpha: 0.2),
+                            backgroundImage: _pickedPhoto != null
+                                ? FileImage(_pickedPhoto!)
+                                : CachedNetworkImageProvider(
+                                    _safeAvatarUrl(
+                                      _profile?.avatar,
+                                      _profile?.name,
                                     ),
-                          onBackgroundImageError: (_, __) {},
+                                  ),
+                            onBackgroundImageError: (_, __) {},
+                          ),
                         ),
+                        // Edit button — bottom-right of avatar
                         Positioned(
                           bottom: 0,
                           right: 0,
