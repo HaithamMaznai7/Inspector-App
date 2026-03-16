@@ -267,7 +267,6 @@ class _PinGroupState extends State<_PinGroup>
       TweenSequenceItem(tween: Tween(begin: 4.0, end: 0.0), weight: 1),
     ]).animate(CurvedAnimation(parent: _shakeCtrl, curve: Curves.linear));
 
-    // Formatters are created here so they capture _triggerShake.
     _formatters = [
       if (widget.isLetterGroup)
         _SaudiPlateLetterFormatter(onRejected: _triggerShake)
@@ -276,20 +275,18 @@ class _PinGroupState extends State<_PinGroup>
     ];
 
     widget.focus.addListener(_onFocusChange);
-    widget.ctrl.addListener(_rebuild);
+    widget.ctrl.addListener(_onTextChanged);
   }
 
   @override
   void dispose() {
     widget.focus.removeListener(_onFocusChange);
-    widget.ctrl.removeListener(_rebuild);
+    widget.ctrl.removeListener(_onTextChanged);
     _shakeCtrl.dispose();
     super.dispose();
   }
 
   void _onFocusChange() {
-    // When this group gains focus, push cursor to end so _activeIndex is
-    // always the next-to-fill box, regardless of how focus was obtained.
     if (widget.focus.hasFocus) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -299,10 +296,10 @@ class _PinGroupState extends State<_PinGroup>
         }
       });
     }
-    _rebuild();
+    if (mounted) setState(() {});
   }
 
-  void _rebuild() {
+  void _onTextChanged() {
     if (mounted) setState(() {});
   }
 
