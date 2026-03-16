@@ -6,11 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 /// Saudi license-plate input widget.
-///
-/// Each letter field accepts only the 17 valid Saudi plate letters.
-/// Invalid characters are silently rejected with a shake animation.
-/// Arabic input is auto-converted to the English equivalent.
-/// Focus auto-advances / auto-backs between boxes.
+
 class SaudiPlatePicker extends StatefulWidget {
   final TextEditingController controller;
   final String? errorText;
@@ -28,10 +24,10 @@ class SaudiPlatePicker extends StatefulWidget {
 }
 
 class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
-  final _letterCtrl = List.generate(3, (_) => TextEditingController());
-  final _letterFocus = List.generate(3, (_) => FocusNode());
-  final _digitCtrl = List.generate(4, (_) => TextEditingController());
-  final _digitFocus = List.generate(4, (_) => FocusNode());
+  final _digitCtrl = TextEditingController();
+  final _digitFocus = FocusNode();
+  final _letterCtrl = TextEditingController();
+  final _letterFocus = FocusNode();
 
   bool _internalChange = false;
 
@@ -55,18 +51,10 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
   @override
   void dispose() {
     widget.controller.removeListener(_onExternalControllerChanged);
-    for (final c in _letterCtrl) {
-      c.dispose();
-    }
-    for (final f in _letterFocus) {
-      f.dispose();
-    }
-    for (final c in _digitCtrl) {
-      c.dispose();
-    }
-    for (final f in _digitFocus) {
-      f.dispose();
-    }
+    _digitCtrl.dispose();
+    _digitFocus.dispose();
+    _letterCtrl.dispose();
+    _letterFocus.dispose();
     super.dispose();
   }
 
@@ -77,29 +65,16 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
   void _load() {
     final normalized = PlateConverter.normalize(widget.controller.text);
     final parsed = PlateConverter.parse(normalized);
-
-    for (int i = 0; i < 3; i++) {
-      if (i < parsed.letters.length) {
-        final l = parsed.letters[i];
-        _letterCtrl[i].text = PlateConverter.validLetters.contains(l) ? l : '';
-      } else {
-        _letterCtrl[i].text = '';
-      }
-    }
-
-    for (int i = 0; i < 4; i++) {
-      _digitCtrl[i].text = i < parsed.digits.length ? parsed.digits[i] : '';
-    }
+    _digitCtrl.text = parsed.digits;
+    _letterCtrl.text = parsed.letters;
   }
 
   void _save() {
-    final letters = _letterCtrl.map((c) => c.text).join();
-    final digits = _digitCtrl.map((c) => c.text).join();
-
+    final letters = _letterCtrl.text;
+    final digits = _digitCtrl.text;
     _internalChange = true;
     widget.controller.text = '$letters $digits'.trim();
     _internalChange = false;
-
     widget.onChanged?.call();
   }
 
@@ -107,7 +82,6 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // ── Responsive values ─────────────────────────────────────────────────
     final boxHeight = ResponsiveHelper.responsiveValue<double>(
       context,
       mobile: 54,
@@ -138,7 +112,6 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
       tablet: 14,
       desktop: 16,
     );
-    // Prevents boxes from spreading absurdly wide on tablet/desktop.
     final maxWidth = ResponsiveHelper.responsiveValue<double>(
       context,
       mobile: double.infinity,
@@ -146,31 +119,39 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
       desktop: 440,
     );
 
-    // Saudi plates read: numbers first, then letters.
+    // Saudi plates: numbers first, then letters.
     // Visual order: [1][2][3][4] | [A][B][C]
-    Widget inputRow = Row(
+    final Widget inputRow = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 4 digit text-fields (shown first — Saudi plate convention)
-        for (int i = 0; i < 4; i++) ...[
-          Expanded(
-            child: _DigitBox(
-              ctrl: _digitCtrl[i],
-              focus: _digitFocus,
-              idx: i,
-              isDark: isDark,
-              boxHeight: boxHeight,
-              fontSize: fontSize,
-              arabicFontSize: arabicFontSize,
-              onChanged: () => setState(_save),
-              // Last digit → advance to first letter box
-              firstLetterFocus: i == 3 ? _letterFocus[0] : null,
-            ),
+        // ── 4-digit group ──────────────────────────────────────────────────
+        Expanded(
+          flex: 4,
+          child: _PinGroup(
+            count: 4,
+            ctrl: _digitCtrl,
+            focus: _digitFocus,
+            isLetterGroup: false,
+            isDark: isDark,
+            boxHeight: boxHeight,
+            fontSize: fontSize,
+            arabicFontSize: arabicFontSize,
+            gap: gap,
+            onChanged: () {
+              _save();
+              // Auto-advance to letter group when all 4 digits are filled.
+              // addPostFrameCallback gives iOS time to commit the current IME
+              // session before opening the new one — prevents the jump.
+              if (_digitCtrl.text.length == 4) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _letterFocus.requestFocus();
+                });
+              }
+            },
           ),
-          if (i < 3) SizedBox(width: gap),
-        ],
+        ),
 
-        // Separator
+        // ── Separator ──────────────────────────────────────────────────────
         Padding(
           padding: const EdgeInsets.only(top: 2),
           child: _FieldDivider(
@@ -180,32 +161,28 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
           ),
         ),
 
-        // 3 letter text-fields (shown second)
-        for (int i = 0; i < 3; i++) ...[
-          Expanded(
-            child: _LetterTextField(
-              ctrl: _letterCtrl[i],
-              focus: _letterFocus[i],
-              idx: i,
-              allLetterFocus: _letterFocus,
-              // First letter backspace → return to last digit box
-              lastDigitFocus: _digitFocus[3],
-              isDark: isDark,
-              boxHeight: boxHeight,
-              fontSize: fontSize,
-              arabicFontSize: arabicFontSize,
-              onChanged: () => setState(_save),
-            ),
+        // ── 3-letter group ─────────────────────────────────────────────────
+        Expanded(
+          flex: 3,
+          child: _PinGroup(
+            count: 3,
+            ctrl: _letterCtrl,
+            focus: _letterFocus,
+            isLetterGroup: true,
+            isDark: isDark,
+            boxHeight: boxHeight,
+            fontSize: fontSize,
+            arabicFontSize: arabicFontSize,
+            gap: gap,
+            onChanged: _save,
           ),
-          if (i < 2) SizedBox(width: gap),
-        ],
+        ),
       ],
     );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Input row (constrained + centred on wide screens) ─────────────
         Directionality(
           textDirection: TextDirection.ltr,
           child: Align(
@@ -216,8 +193,6 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
             ),
           ),
         ),
-
-        // ── Error text ────────────────────────────────────────────────────
         if (widget.errorText != null) ...[
           const SizedBox(height: 4),
           Padding(
@@ -235,52 +210,55 @@ class _SaudiPlatePickerState extends State<SaudiPlatePicker> {
   }
 }
 
-// ── Letter text-field ─────────────────────────────────────────────────────────
+// ── Pin group ─────────────────────────────────────────────────────────────────
+//
+// Renders [count] visual boxes backed by a single hidden TextField.
+// iOS sees ONE IME connection for the entire group, so there is no
+// keyboard animation when the user moves from box to box within the group.
 
-class _LetterTextField extends StatefulWidget {
+class _PinGroup extends StatefulWidget {
+  final int count;
   final TextEditingController ctrl;
   final FocusNode focus;
-  final int idx;
-  final List<FocusNode> allLetterFocus;
-  /// Focus to return to when the first letter box is backspaced empty.
-  /// Points to the last digit box (digits are now before letters).
-  final FocusNode lastDigitFocus;
+  final bool isLetterGroup;
   final bool isDark;
   final double boxHeight;
   final double fontSize;
   final double arabicFontSize;
+  final double gap;
   final VoidCallback onChanged;
 
-  const _LetterTextField({
+  const _PinGroup({
+    required this.count,
     required this.ctrl,
     required this.focus,
-    required this.idx,
-    required this.allLetterFocus,
-    required this.lastDigitFocus,
+    required this.isLetterGroup,
     required this.isDark,
     required this.boxHeight,
     required this.fontSize,
     required this.arabicFontSize,
+    required this.gap,
     required this.onChanged,
   });
 
   @override
-  State<_LetterTextField> createState() => _LetterTextFieldState();
+  State<_PinGroup> createState() => _PinGroupState();
 }
 
-class _LetterTextFieldState extends State<_LetterTextField>
+class _PinGroupState extends State<_PinGroup>
     with SingleTickerProviderStateMixin {
   late final AnimationController _shakeCtrl;
   late final Animation<double> _shakeAnim;
+  late final List<TextInputFormatter> _formatters;
 
   @override
   void initState() {
     super.initState();
+
     _shakeCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 380),
     );
-    // Oscillates left–right 3 times, tapering to zero.
     _shakeAnim = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 0.0, end: -6.0), weight: 1),
       TweenSequenceItem(tween: Tween(begin: -6.0, end: 6.0), weight: 2),
@@ -288,54 +266,139 @@ class _LetterTextFieldState extends State<_LetterTextField>
       TweenSequenceItem(tween: Tween(begin: -4.0, end: 4.0), weight: 2),
       TweenSequenceItem(tween: Tween(begin: 4.0, end: 0.0), weight: 1),
     ]).animate(CurvedAnimation(parent: _shakeCtrl, curve: Curves.linear));
+
+    // Formatters are created here so they capture _triggerShake.
+    _formatters = [
+      if (widget.isLetterGroup)
+        _SaudiPlateLetterFormatter(onRejected: _triggerShake)
+      else
+        _SaudiPlateDigitFormatter(onRejected: _triggerShake),
+    ];
+
+    widget.focus.addListener(_onFocusChange);
+    widget.ctrl.addListener(_rebuild);
   }
 
   @override
   void dispose() {
+    widget.focus.removeListener(_onFocusChange);
+    widget.ctrl.removeListener(_rebuild);
     _shakeCtrl.dispose();
     super.dispose();
   }
 
+  void _onFocusChange() {
+    // When this group gains focus, push cursor to end so _activeIndex is
+    // always the next-to-fill box, regardless of how focus was obtained.
+    if (widget.focus.hasFocus) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          widget.ctrl.selection = TextSelection.collapsed(
+            offset: widget.ctrl.text.length,
+          );
+        }
+      });
+    }
+    _rebuild();
+  }
+
+  void _rebuild() {
+    if (mounted) setState(() {});
+  }
+
   void _triggerShake() => _shakeCtrl.forward(from: 0);
+
+  /// Index of the box that should appear active (next position to be typed).
+  int get _activeIndex {
+    final len = widget.ctrl.text.length;
+    return len < widget.count ? len : widget.count - 1;
+  }
+
+  String? _arabicFor(String char) {
+    if (char.isEmpty) return null;
+    return widget.isLetterGroup
+        ? PlateConverter.letterToArabic(char)
+        : _arabicDigits[char];
+  }
 
   @override
   Widget build(BuildContext context) {
-    final letter = widget.ctrl.text;
-    final arabic = letter.isNotEmpty
-        ? PlateConverter.letterToArabic(letter)
-        : null;
+    final isFocused = widget.focus.hasFocus;
+    final text = widget.ctrl.text;
 
     return AnimatedBuilder(
       animation: _shakeAnim,
-      builder: (context, child) => Transform.translate(
+      builder: (ctx, child) => Transform.translate(
         offset: Offset(_shakeAnim.value, 0),
         child: child,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Stack(
         children: [
-          _BoxShell(
-            isDark: widget.isDark,
-            hasValue: letter.isNotEmpty,
-            height: widget.boxHeight,
+          // ── Visual boxes (non-interactive — the hidden TextField below
+          //    absorbs all pointer events via Positioned.fill) ─────────────
+          IgnorePointer(
+            child: Row(
+              children: [
+                for (int i = 0; i < widget.count; i++) ...[
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildBox(i, text, isFocused),
+                        SizedBox(
+                          height: widget.arabicFontSize + 6,
+                          child: () {
+                            final arabic = i < text.length
+                                ? _arabicFor(text[i])
+                                : null;
+                            if (arabic == null || arabic.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+                            return Center(
+                              child: Text(
+                                arabic,
+                                style: TextStyle(
+                                  fontSize: widget.arabicFontSize,
+                                  fontWeight: FontWeight.bold,
+                                  color: FColors.primaryColor,
+                                  height: 1,
+                                ),
+                              ),
+                            );
+                          }(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (i < widget.count - 1) SizedBox(width: widget.gap),
+                ],
+              ],
+            ),
+          ),
+
+          // ── Hidden functional TextField ────────────────────────────────
+          // Fills the same area as the visual boxes so any tap focuses it.
+          // Text color and cursor are transparent — only the boxes are seen.
+          Positioned.fill(
             child: TextField(
               controller: widget.ctrl,
               focusNode: widget.focus,
-              textAlign: TextAlign.center,
-              textCapitalization: TextCapitalization.characters,
-              keyboardType: TextInputType.text,
+              maxLength: widget.count,
+              keyboardType: widget.isLetterGroup
+                  ? TextInputType.text
+                  : TextInputType.phone,
+              textCapitalization: widget.isLetterGroup
+                  ? TextCapitalization.characters
+                  : TextCapitalization.none,
               textInputAction: TextInputAction.next,
               autocorrect: false,
               enableSuggestions: false,
-              inputFormatters: [
-                _SaudiPlateLetterFormatter(onRejected: _triggerShake),
-              ],
-              style: TextStyle(
-                fontSize: widget.fontSize,
-                fontWeight: FontWeight.w800,
-                color: widget.isDark ? FColors.light : FColors.dark,
-                height: 1,
-              ),
+              smartDashesType: SmartDashesType.disabled,
+              smartQuotesType: SmartQuotesType.disabled,
+              showCursor: false,
+              inputFormatters: _formatters,
+              style: const TextStyle(color: Colors.transparent),
+              cursorColor: Colors.transparent,
               decoration: const InputDecoration(
                 counterText: '',
                 border: InputBorder.none,
@@ -345,60 +408,67 @@ class _LetterTextFieldState extends State<_LetterTextField>
                 focusedErrorBorder: InputBorder.none,
                 disabledBorder: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
+                filled: true,
+                fillColor: Colors.transparent,
               ),
-              onChanged: (v) {
-                widget.onChanged();
-                if (v.isNotEmpty) {
-                  if (widget.idx < 2) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      widget.allLetterFocus[widget.idx + 1].requestFocus();
-                    });
-                  }
-                } else {
-                  if (widget.idx > 0) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      widget.allLetterFocus[widget.idx - 1].requestFocus();
-                    });
-                  } else {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      widget.lastDigitFocus.requestFocus();
-                    });
-                  }
-                }
+              onChanged: (_) => widget.onChanged(),
+              onTap: () {
+                widget.ctrl.selection = TextSelection.collapsed(
+                  offset: widget.ctrl.text.length,
+                );
               },
-              onTap: () => widget.ctrl.selection = TextSelection(
-                baseOffset: 0,
-                extentOffset: widget.ctrl.text.length,
-              ),
             ),
-          ),
-          // Fixed-height slot: shows Arabic translation or stays empty.
-          // Height is derived from arabicFontSize so it scales with the font.
-          SizedBox(
-            height: widget.arabicFontSize + 6,
-            child: arabic != null
-                ? Center(
-                    child: Text(
-                      arabic,
-                      style: TextStyle(
-                        fontSize: widget.arabicFontSize,
-                        fontWeight: FontWeight.bold,
-                        color: FColors.primaryColor,
-                        height: 1,
-                      ),
-                    ),
-                  )
-                : null,
           ),
         ],
       ),
     );
   }
+
+  Widget _buildBox(int i, String text, bool isFocused) {
+    final char = i < text.length ? text[i] : '';
+    final isActive = isFocused && i == _activeIndex;
+    final hasValue = char.isNotEmpty;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 120),
+      height: widget.boxHeight,
+      decoration: BoxDecoration(
+        color: widget.isDark
+            ? FColors.darkGrey.withValues(alpha: 0.2)
+            : FColors.grey.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+        border: Border.all(
+          color: isActive
+              ? FColors.primaryColor.withValues(alpha: 0.85)
+              : hasValue
+              ? FColors.primaryColor.withValues(alpha: 0.5)
+              : widget.isDark
+              ? FColors.grey.withValues(alpha: 0.3)
+              : FColors.grey.withValues(alpha: 0.5),
+          width: isActive || hasValue ? 1.5 : 1.0,
+        ),
+      ),
+      child: Center(
+        child: Text(
+          char,
+          style: TextStyle(
+            fontSize: widget.fontSize,
+            fontWeight: FontWeight.w800,
+            color: widget.isDark ? FColors.light : FColors.dark,
+            height: 1,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-/// Accepts only the 17 valid Saudi plate letters (English or Arabic).
-/// Calls [onRejected] for every character that doesn't pass, so the
-/// parent widget can trigger haptic / visual feedback.
+// ── Letter formatter ──────────────────────────────────────────────────────────
+//
+// Accepts only the 17 valid Saudi plate letters (English or Arabic-converted).
+// Handles multi-character groups: keeps existing valid text and appends newly
+// typed valid characters, rejecting invalid ones with a shake callback.
+
 class _SaudiPlateLetterFormatter extends TextInputFormatter {
   final VoidCallback? onRejected;
 
@@ -409,35 +479,44 @@ class _SaudiPlateLetterFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    if (newValue.text.isEmpty) return newValue;
+    // Deletion — always allow unchanged.
+    if (newValue.text.length <= oldValue.text.length) return newValue;
 
-    final char = newValue.text[newValue.text.length - 1];
+    // Characters added — validate each new one.
+    final added = newValue.text.substring(oldValue.text.length);
+    final result = StringBuffer(oldValue.text);
+    bool anyRejected = false;
 
-    // Arabic letter → convert to English equivalent
-    final fromArabic = PlateConverter.arabicToEnglishMap[char];
-    if (fromArabic != null) {
-      return TextEditingValue(
-        text: fromArabic,
-        selection: const TextSelection.collapsed(offset: 1),
-      );
+    for (final char in added.characters) {
+      // Arabic letter → convert to English equivalent
+      final fromArabic = PlateConverter.arabicToEnglishMap[char];
+      if (fromArabic != null) {
+        result.write(fromArabic);
+        continue;
+      }
+      // English letter → must be one of the 17 valid Saudi plate letters
+      final upper = char.toUpperCase();
+      if (PlateConverter.validLetters.contains(upper)) {
+        result.write(upper);
+      } else {
+        anyRejected = true;
+      }
     }
 
-    // English letter → must be one of the 17 valid Saudi plate letters
-    final upper = char.toUpperCase();
-    if (PlateConverter.validLetters.contains(upper)) {
-      return TextEditingValue(
-        text: upper,
-        selection: const TextSelection.collapsed(offset: 1),
-      );
-    }
+    if (anyRejected) onRejected?.call();
 
-    // Invalid — reject and notify for visual feedback
-    onRejected?.call();
-    return oldValue;
+    final text = result.toString();
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
   }
 }
 
-// ── Digit box ─────────────────────────────────────────────────────────────────
+// ── Digit formatter ───────────────────────────────────────────────────────────
+//
+// Accepts English digits 0-9 and Arabic-Indic digits ٠-٩ (converted to English).
+// Handles multi-character groups the same way as the letter formatter.
 
 /// Maps English digit characters to their Arabic-Indic equivalents for display.
 const _arabicDigits = {
@@ -453,159 +532,6 @@ const _arabicDigits = {
   '9': '٩',
 };
 
-class _DigitBox extends StatefulWidget {
-  final TextEditingController ctrl;
-  final List<FocusNode> focus;
-  final int idx;
-  final bool isDark;
-  final double boxHeight;
-  final double fontSize;
-  final double arabicFontSize;
-  final VoidCallback onChanged;
-  /// Focus to advance to when the last digit (idx == 3) is filled.
-  /// Points to the first letter box (letters come after digits now).
-  final FocusNode? firstLetterFocus;
-
-  const _DigitBox({
-    required this.ctrl,
-    required this.focus,
-    required this.idx,
-    required this.isDark,
-    required this.boxHeight,
-    required this.fontSize,
-    required this.arabicFontSize,
-    required this.onChanged,
-    this.firstLetterFocus,
-  });
-
-  @override
-  State<_DigitBox> createState() => _DigitBoxState();
-}
-
-class _DigitBoxState extends State<_DigitBox>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _shakeCtrl;
-  late final Animation<double> _shakeAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _shakeCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 380),
-    );
-    _shakeAnim = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: -6.0), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: -6.0, end: 6.0), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 6.0, end: -4.0), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: -4.0, end: 4.0), weight: 2),
-      TweenSequenceItem(tween: Tween(begin: 4.0, end: 0.0), weight: 1),
-    ]).animate(CurvedAnimation(parent: _shakeCtrl, curve: Curves.linear));
-  }
-
-  @override
-  void dispose() {
-    _shakeCtrl.dispose();
-    super.dispose();
-  }
-
-  void _triggerShake() => _shakeCtrl.forward(from: 0);
-
-  @override
-  Widget build(BuildContext context) {
-    final digit = widget.ctrl.text;
-    final arabic = digit.isNotEmpty ? _arabicDigits[digit] : null;
-
-    return AnimatedBuilder(
-      animation: _shakeAnim,
-      builder: (context, child) => Transform.translate(
-        offset: Offset(_shakeAnim.value, 0),
-        child: child,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _BoxShell(
-            isDark: widget.isDark,
-            hasValue: digit.isNotEmpty,
-            height: widget.boxHeight,
-            child: TextField(
-              controller: widget.ctrl,
-              focusNode: widget.focus[widget.idx],
-              maxLength: 1,
-              textAlign: TextAlign.center,
-              keyboardType: TextInputType.phone,
-              textInputAction: TextInputAction.next,
-              inputFormatters: [
-                _SaudiPlateDigitFormatter(onRejected: _triggerShake),
-              ],
-              style: TextStyle(
-                fontSize: widget.fontSize,
-                fontWeight: FontWeight.w800,
-                color: widget.isDark ? FColors.light : FColors.dark,
-                height: 1,
-              ),
-              decoration: const InputDecoration(
-                counterText: '',
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                errorBorder: InputBorder.none,
-                focusedErrorBorder: InputBorder.none,
-                disabledBorder: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-              ),
-              onChanged: (v) {
-                widget.onChanged();
-                if (v.isNotEmpty) {
-                  if (widget.idx < 3) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      widget.focus[widget.idx + 1].requestFocus();
-                    });
-                  } else {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      widget.firstLetterFocus?.requestFocus();
-                    });
-                  }
-                } else {
-                  if (widget.idx > 0) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      widget.focus[widget.idx - 1].requestFocus();
-                    });
-                  }
-                }
-              },
-              onTap: () => widget.ctrl.selection = TextSelection(
-                baseOffset: 0,
-                extentOffset: widget.ctrl.text.length,
-              ),
-            ),
-          ),
-          // Fixed-height slot: shows Arabic numeral or stays empty.
-          SizedBox(
-            height: widget.arabicFontSize + 6,
-            child: arabic != null
-                ? Center(
-                    child: Text(
-                      arabic,
-                      style: TextStyle(
-                        fontSize: widget.arabicFontSize,
-                        fontWeight: FontWeight.bold,
-                        color: FColors.primaryColor,
-                        height: 1,
-                      ),
-                    ),
-                  )
-                : null,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Accepts English digits 0-9 and Arabic-Indic digits ٠-٩ (converting them
-/// to English). All other characters are rejected with a shake callback.
 class _SaudiPlateDigitFormatter extends TextInputFormatter {
   final VoidCallback? onRejected;
 
@@ -630,72 +556,40 @@ class _SaudiPlateDigitFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    if (newValue.text.isEmpty) return newValue;
+    // Deletion — always allow unchanged.
+    if (newValue.text.length <= oldValue.text.length) return newValue;
 
-    final char = newValue.text[newValue.text.length - 1];
+    // Characters added — validate each new one.
+    final added = newValue.text.substring(oldValue.text.length);
+    final result = StringBuffer(oldValue.text);
+    bool anyRejected = false;
 
-    // Arabic-Indic digit → convert to English
-    final fromArabic = _arabicToEnglish[char];
-    if (fromArabic != null) {
-      return TextEditingValue(
-        text: fromArabic,
-        selection: const TextSelection.collapsed(offset: 1),
-      );
+    for (final char in added.characters) {
+      // Arabic-Indic digit → convert to English
+      final fromArabic = _arabicToEnglish[char];
+      if (fromArabic != null) {
+        result.write(fromArabic);
+        continue;
+      }
+      // English digit — accept as-is
+      if (char.codeUnitAt(0) >= 48 && char.codeUnitAt(0) <= 57) {
+        result.write(char);
+      } else {
+        anyRejected = true;
+      }
     }
 
-    // English digit — accept as-is
-    if (char.codeUnitAt(0) >= 48 && char.codeUnitAt(0) <= 57) {
-      return TextEditingValue(
-        text: char,
-        selection: const TextSelection.collapsed(offset: 1),
-      );
-    }
+    if (anyRejected) onRejected?.call();
 
-    // Invalid — reject and shake
-    onRejected?.call();
-    return oldValue;
-  }
-}
-
-// ── Shared shell ──────────────────────────────────────────────────────────────
-
-class _BoxShell extends StatelessWidget {
-  final bool isDark;
-  final bool hasValue;
-  final double height;
-  final Widget child;
-
-  const _BoxShell({
-    required this.isDark,
-    required this.hasValue,
-    required this.height,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: height,
-      decoration: BoxDecoration(
-        color: isDark
-            ? FColors.darkGrey.withValues(alpha: 0.2)
-            : FColors.grey.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-        border: Border.all(
-          color: hasValue
-              ? FColors.primaryColor.withValues(alpha: 0.5)
-              : isDark
-              ? FColors.grey.withValues(alpha: 0.3)
-              : FColors.grey.withValues(alpha: 0.5),
-          width: hasValue ? 1.5 : 1.0,
-        ),
-      ),
-      child: child,
+    final text = result.toString();
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
   }
 }
 
-// ── Divider between letters and digits ───────────────────────────────────────
+// ── Divider between digit group and letter group ──────────────────────────────
 
 class _FieldDivider extends StatelessWidget {
   final bool isDark;

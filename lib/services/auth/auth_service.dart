@@ -193,26 +193,42 @@ class AuthService extends GetxController {
     FLoader.showLogoutLoading();
 
     try {
-      // Call backend logout while we still have a valid token.
+      // 1. Backend logout — best effort, never block on failure.
       try {
         await AuthRepository().logOut(token);
-      } catch (_) {
-        // Continue logout even if API call fails.
-      }
+      } catch (_) {}
 
-      // Clear local auth state BEFORE firebase sign-out so that
-      // any listeners (e.g. NotificationsService) that react to
-      // token changes won't fire API calls with an invalid token.
+      // 2. Clear all local state while we still control the UI.
       await clearLocalData();
 
-      // Firebase sign-out triggers changeUser(null) → navigates to login,
-      // which naturally dismisses the loading dialog.
-      await firebase.signOut();
+      // 3. Determine destination before touching navigation.
+      final settingsBox = await Hive.openBox('AppSettings');
+      final hasSeenOnboarding =
+          settingsBox.get('hasSeenOnboarding', defaultValue: false) as bool;
+      final destination =
+          hasSeenOnboarding ? RoutingUrl.login : RoutingUrl.onBoarding;
+
+      // 4. Dismiss the loading dialog BEFORE navigating.
+      //    On iOS, calling Get.offAllNamed while a dialog is on the stack
+      //    can fail to clear the underlying routes, leaving the home screen
+      //    visible. Closing the dialog first gives us a clean nav stack.
+      if (Get.isDialogOpen ?? false) Get.back();
+
+      // 5. Navigate explicitly and clear the entire back stack.
+      //    We do this here rather than relying on the changeUser(null)
+      //    listener so the navigation happens exactly once, deterministically,
+      //    without any race condition with the Firebase auth state stream.
+      Get.offAllNamed(destination);
+
+      // 6. Firebase sign-out fires in the background after we have already
+      //    navigated away. When changeUser(null) eventually fires, _goTo's
+      //    guard (Get.currentRoute == destination) prevents a second navigation.
+      unawaited(firebase.signOut().catchError((_) {}));
+    } catch (e) {
+      if (kDebugMode) debugPrint('[AuthService] logOut – error: $e');
+      if (Get.isDialogOpen ?? false) Get.back();
     } finally {
       isLoggingOut.value = false;
-      // Safety net: if navigation did not dismiss the dialog (e.g. a rare
-      // signOut error), close it manually so the app is never left blocked.
-      if (Get.isDialogOpen ?? false) Get.back();
     }
   }
 

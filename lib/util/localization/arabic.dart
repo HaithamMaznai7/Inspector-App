@@ -56,7 +56,7 @@ class Arabic {
     ///
     /// Login Page
     LoginPage.loginTitle: 'تطبيق مراكز الفحص',
-    LoginPage.loginSubTitle: 'مرحباً بعودتك ,..',
+    LoginPage.loginSubTitle: 'مرحباً بعودتك',
     LoginPage.phoneNumber: 'رقم الجوال',
     LoginPage.phoneNumberValidation: 'يجب ان يكون رقم جوال صحيح',
     LoginPage.username: 'البريد الإلكتروني او الجوال',

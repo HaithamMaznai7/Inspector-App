@@ -57,7 +57,7 @@ class English {
     ///
     /// Login Page
     LoginPage.loginTitle: 'Inspection Center App',
-    LoginPage.loginSubTitle: 'Welcome Back,..',
+    LoginPage.loginSubTitle: 'Welcome Back',
     LoginPage.phoneNumber: 'Phone Number',
     LoginPage.phoneNumberValidation: 'Phone Number must be a correct',
     LoginPage.username: 'Email or mobile',
