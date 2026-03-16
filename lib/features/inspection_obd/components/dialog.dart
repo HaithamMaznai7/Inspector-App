@@ -216,6 +216,7 @@ class _AddingObdCodeState extends State<AddingObdCode> {
           controller: controller,
           maxLines: maxLines,
           minLines: minLines,
+          keyboardType: TextInputType.text,
           style: Theme.of(context).textTheme.bodyMedium,
           decoration: InputDecoration(
             hintText: hint,

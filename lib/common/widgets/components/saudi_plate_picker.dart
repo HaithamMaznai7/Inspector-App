@@ -349,18 +349,20 @@ class _LetterTextFieldState extends State<_LetterTextField>
               onChanged: (v) {
                 widget.onChanged();
                 if (v.isNotEmpty) {
-                  // Advance to the next letter; letters are the last fields
-                  // so there is no "advance to digits" anymore.
                   if (widget.idx < 2) {
-                    widget.allLetterFocus[widget.idx + 1].requestFocus();
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      widget.allLetterFocus[widget.idx + 1].requestFocus();
+                    });
                   }
                 } else {
-                  // Backspace: go to previous letter, or back to last digit
-                  // when clearing the first letter box.
                   if (widget.idx > 0) {
-                    widget.allLetterFocus[widget.idx - 1].requestFocus();
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      widget.allLetterFocus[widget.idx - 1].requestFocus();
+                    });
                   } else {
-                    widget.lastDigitFocus.requestFocus();
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      widget.lastDigitFocus.requestFocus();
+                    });
                   }
                 }
               },
@@ -556,17 +558,20 @@ class _DigitBoxState extends State<_DigitBox>
               onChanged: (v) {
                 widget.onChanged();
                 if (v.isNotEmpty) {
-                  // Advance to next digit, or to first letter on last digit
                   if (widget.idx < 3) {
-                    widget.focus[widget.idx + 1].requestFocus();
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      widget.focus[widget.idx + 1].requestFocus();
+                    });
                   } else {
-                    widget.firstLetterFocus?.requestFocus();
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      widget.firstLetterFocus?.requestFocus();
+                    });
                   }
                 } else {
-                  // Backspace: go to previous digit.
-                  // idx == 0 is now the very first field — nowhere to go back.
                   if (widget.idx > 0) {
-                    widget.focus[widget.idx - 1].requestFocus();
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      widget.focus[widget.idx - 1].requestFocus();
+                    });
                   }
                 }
               },
