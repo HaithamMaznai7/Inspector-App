@@ -174,6 +174,14 @@ class VehicleDetailsController extends GetxController {
     }
 
     final isValid = formKey.currentState?.validate() ?? false;
+
+    dd('[validateForm] plate="${plateController.text}" '
+        'plateValid=${PlateConverter.isValid(plate)} '
+        'color="${colorController.text}" '
+        'seatColor="${seatColorController.text}" '
+        'formStateValid=$isValid '
+        'formErrors=$formErrors');
+
     if (!isValid || formErrors.isNotEmpty) return false;
 
     formKey.currentState!.save();

@@ -439,9 +439,8 @@ class _PinGroupState extends State<_PinGroup>
               ? FColors.primaryColor.withValues(alpha: 0.85)
               : hasValue
               ? FColors.primaryColor.withValues(alpha: 0.5)
-              : widget.isDark
-              ? FColors.grey.withValues(alpha: 0.3)
-              : FColors.grey.withValues(alpha: 0.5),
+              : FColors.darkGrey,
+
           width: isActive || hasValue ? 1.5 : 1.0,
         ),
       ),
