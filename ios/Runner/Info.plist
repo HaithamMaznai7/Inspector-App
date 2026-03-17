@@ -3,9 +3,9 @@
 <plist version="1.0">
 	<dict>
 		<key>NSCameraUsageDescription</key>
-		<string>This app needs camera access to take inspection photos.</string>
+		<string>Fahis requires camera access to capture and upload photos of vehicle conditions during the inspection process to generate your report.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>This app needs photo library access to select inspection photos.</string>
+		<string>Fahis requires photo library access to select and upload vehicle inspection photos and your profile picture.</string>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
 		<key>CFBundleDevelopmentRegion</key>
