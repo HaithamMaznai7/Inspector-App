@@ -67,28 +67,34 @@ class _ProfileViewState extends State<ProfileView> {
 
     // Fetch profile + cities in parallel
     await Future.wait([
-      ProfileRepository().fetchProfile().then((profile) {
-        if (mounted) {
-          setState(() {
-            _profile = profile;
-            _nameController.text = profile.name ?? '';
-            _selectedCity = profile.city;
-            auth().profile = profile;
-          });
-        }
-      }).catchError((_) {}),
+      ProfileRepository()
+          .fetchProfile()
+          .then((profile) {
+            if (mounted) {
+              setState(() {
+                _profile = profile;
+                _nameController.text = profile.name ?? '';
+                _selectedCity = profile.city;
+                auth().profile = profile;
+              });
+            }
+          })
+          .catchError((_) {}),
 
-      Network(endpoint: 'assets/cities').response(null).then((response) {
-        if (!response.hasError && response.data is List) {
-          final cities = (response.data as List)
-              .map((e) => City.fromJson(Map<String, dynamic>.from(e)))
-              .toList();
-          auth().cities = cities;
-          if (mounted) {
-            setState(() => _cities = cities);
-          }
-        }
-      }).catchError((_) {}),
+      Network(endpoint: 'assets/cities')
+          .response(null)
+          .then((response) {
+            if (!response.hasError && response.data is List) {
+              final cities = (response.data as List)
+                  .map((e) => City.fromJson(Map<String, dynamic>.from(e)))
+                  .toList();
+              auth().cities = cities;
+              if (mounted) {
+                setState(() => _cities = cities);
+              }
+            }
+          })
+          .catchError((_) {}),
     ]);
 
     if (mounted) {
@@ -133,10 +139,7 @@ class _ProfileViewState extends State<ProfileView> {
                 child: InteractiveViewer(
                   minScale: 0.8,
                   maxScale: 4.0,
-                  child: Image(
-                    image: imageProvider,
-                    fit: BoxFit.contain,
-                  ),
+                  child: Image(image: imageProvider, fit: BoxFit.contain),
                 ),
               ),
 
@@ -167,95 +170,10 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  /// Shows a bottom sheet to pick photo from camera or gallery
-  void _showPhotoPickerSheet() {
-    Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.all(FSizes.lg),
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(FSizes.borderRadiusLg),
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: FSizes.iconCircleSm,
-              height: FSizes.xs,
-              margin: const EdgeInsets.only(bottom: FSizes.md),
-              decoration: BoxDecoration(
-                color: FColors.grey.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Text(
-              'Change Photo'.tr,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: FSizes.lg),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _photoOption(
-                  icon: Iconsax.camera,
-                  label: 'Camera'.tr,
-                  onTap: () => _pickImage(ImageSource.camera),
-                ),
-                _photoOption(
-                  icon: Iconsax.gallery,
-                  label: 'Gallery'.tr,
-                  onTap: () => _pickImage(ImageSource.gallery),
-                ),
-              ],
-            ),
-            const SizedBox(height: FSizes.md),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _photoOption({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-      child: Container(
-        width: 100,
-        padding: const EdgeInsets.symmetric(vertical: FSizes.md),
-        decoration: BoxDecoration(
-          color: FColors.primaryColor.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 32, color: FColors.primaryColor),
-            const SizedBox(height: FSizes.sm),
-            Text(
-              label,
-              style: TextStyle(
-                color: FColors.primaryColor,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _pickImage(ImageSource source) async {
-    Get.back(); // close bottom sheet
+  Future<void> _pickImageFromGallery() async {
     try {
       final picked = await ImagePicker().pickImage(
-        source: source,
+        source: ImageSource.gallery,
         maxWidth: 1024,
         maxHeight: 1024,
         imageQuality: 80,
@@ -292,8 +210,9 @@ class _ProfileViewState extends State<ProfileView> {
                           onTap: _viewFullScreen,
                           child: CircleAvatar(
                             radius: 50,
-                            backgroundColor:
-                                FColors.grey.withValues(alpha: 0.2),
+                            backgroundColor: FColors.grey.withValues(
+                              alpha: 0.2,
+                            ),
                             backgroundImage: _pickedPhoto != null
                                 ? FileImage(_pickedPhoto!)
                                 : CachedNetworkImageProvider(
@@ -310,7 +229,7 @@ class _ProfileViewState extends State<ProfileView> {
                           bottom: 0,
                           right: 0,
                           child: GestureDetector(
-                            onTap: _showPhotoPickerSheet,
+                            onTap: _pickImageFromGallery,
                             child: Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
@@ -418,7 +337,7 @@ class _ProfileViewState extends State<ProfileView> {
         label,
         style: Theme.of(
           context,
-        ).textTheme.labelSmall?.copyWith(color: FColors.grey),
+        ).textTheme.labelSmall?.copyWith(color: FColors.darkGrey),
       ),
       subtitle: Text(value, style: Theme.of(context).textTheme.bodyMedium),
       contentPadding: EdgeInsets.zero,
@@ -431,26 +350,269 @@ class _ProfileViewState extends State<ProfileView> {
       children: [
         Text(
           FTexts.profileCity.tr,
-          style: Theme.of(context).textTheme.titleLarge,
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: FSizes.xs),
-        DropdownButtonFormField<City>(
-          initialValue: _selectedCity,
-          isExpanded: true,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        const SizedBox(height: FSizes.sm),
+        GestureDetector(
+          onTap: _showCitiesBottomSheet,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: FSizes.md,
+              vertical: FSizes.sm + 4,
+            ),
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              border: Border.all(
+                color: FColors.darkGrey.withValues(alpha: 0.3),
+              ),
+              borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Iconsax.buildings,
+                  color: FColors.primaryColor,
+                  size: FSizes.iconSm,
+                ),
+                const SizedBox(width: FSizes.sm),
+                Expanded(
+                  child: Text(
+                    _selectedCity?.name ?? FTexts.profileCity.tr,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: _selectedCity == null ? FColors.darkerGrey : null,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Iconsax.arrow_down_1,
+                  size: FSizes.iconSm,
+                  color: FColors.darkerGrey,
+                ),
+              ],
+            ),
           ),
-          hint: Text(FTexts.profileCity.tr),
-          items: _cities
-              .map(
-                (city) =>
-                    DropdownMenuItem<City>(value: city, child: Text(city.name)),
-              )
-              .toList(),
-          onChanged: (city) => setState(() => _selectedCity = city),
         ),
       ],
+    );
+  }
+
+  void _showCitiesBottomSheet() {
+    final searchController = TextEditingController();
+
+    Get.bottomSheet(
+      StatefulBuilder(
+        builder: (context, setSheetState) {
+          final query = searchController.text.toLowerCase();
+          final filteredCities = _cities
+              .where((city) => city.name.toLowerCase().contains(query))
+              .toList();
+
+          return Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.85,
+            ),
+            padding: const EdgeInsets.only(top: FSizes.md),
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(FSizes.borderRadiusLg * 2),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: FSizes.sm),
+                // Title
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: FSizes.lg),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Iconsax.buildings,
+                        color: FColors.primaryColor,
+                        size: FSizes.iconSm,
+                      ),
+                      const SizedBox(width: FSizes.sm),
+                      Text(
+                        FTexts.profileCity.tr,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: FSizes.sm),
+                // Search Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: FSizes.lg),
+                  child: TextFormField(
+                    controller: searchController,
+                    onChanged: (value) => setSheetState(() {}),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    decoration: InputDecoration(
+                      hintText: 'Search...'.tr,
+                      prefixIcon: const Icon(
+                        Iconsax.search_normal_1,
+                        color: FColors.darkerGrey,
+                        size: FSizes.iconSm,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: FSizes.sm,
+                        vertical: FSizes.xs,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(
+                          FSizes.borderRadiusMd,
+                        ),
+                        borderSide: BorderSide(
+                          color: FColors.darkGrey.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(
+                          FSizes.borderRadiusMd,
+                        ),
+                        borderSide: BorderSide(
+                          color: FColors.grey.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(
+                          FSizes.borderRadiusMd,
+                        ),
+                        borderSide: const BorderSide(
+                          color: FColors.primaryColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: FSizes.sm),
+                Divider(color: FColors.grey.withValues(alpha: 0.1), height: 1),
+                // Cities List
+                Flexible(
+                  child: filteredCities.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.all(FSizes.xl),
+                          child: Text(
+                            'No cities found'.tr,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: FSizes.lg,
+                            vertical: FSizes.md,
+                          ),
+                          itemCount: filteredCities.length,
+                          itemBuilder: (context, index) {
+                            final city = filteredCities[index];
+                            final isSelected = _selectedCity?.id == city.id;
+
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() => _selectedCity = city);
+                                Get.back(); // close sheet
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                margin: const EdgeInsets.only(
+                                  bottom: FSizes.sm,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: FSizes.sm,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? FColors.primaryColor.withValues(
+                                          alpha: 0.12,
+                                        )
+                                      : Theme.of(
+                                          context,
+                                        ).scaffoldBackgroundColor,
+                                  borderRadius: BorderRadius.circular(
+                                    FSizes.borderRadiusMd,
+                                  ),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? FColors.primaryColor.withValues(
+                                            alpha: 0.5,
+                                          )
+                                        : FColors.grey.withValues(alpha: 0.2),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    // Leading Icon (Location Pin)
+                                    Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? FColors.primaryColor
+                                            : FColors.grey.withValues(
+                                                alpha: 0.1,
+                                              ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Iconsax.location,
+                                        size: FSizes.iconXs + 2,
+                                        color: isSelected
+                                            ? FColors.white
+                                            : FColors.darkerGrey,
+                                      ),
+                                    ),
+                                    const SizedBox(width: FSizes.sm),
+                                    // City Name
+                                    Expanded(
+                                      child: Text(
+                                        city.name,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              fontWeight: isSelected
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
+                                              color: isSelected
+                                                  ? FColors.primaryColor
+                                                  : null,
+                                            ),
+                                      ),
+                                    ),
+                                    // Trailing Icon (Check mark)
+                                    if (isSelected)
+                                      const Padding(
+                                        padding: EdgeInsets.only(
+                                          right: FSizes.xs,
+                                        ),
+                                        child: Icon(
+                                          Iconsax.tick_circle,
+                                          color: FColors.primaryColor,
+                                          size: 18,
+                                        ),
+                                      )
+                                    else
+                                      const SizedBox(width: 18 + FSizes.xs),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
     );
   }
 
