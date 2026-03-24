@@ -14,12 +14,34 @@ class OTPDialog extends StatefulWidget {
   State<OTPDialog> createState() => _OTPDialogState();
 }
 
-class _OTPDialogState extends State<OTPDialog> {
+class _OTPDialogState extends State<OTPDialog> with CodeAutoFill {
   final _otpController = TextEditingController();
   final int _timerKey = 0;
 
   @override
+  void initState() {
+    super.initState();
+    // Start listening for the incoming OTP SMS.
+
+    SmsAutoFill().listenForCode();
+  }
+
+  // Called automatically by the CodeAutoFill mixin when the SMS arrives.
+  @override
+  void codeUpdated() {
+    if (code != null && code!.length == 4) {
+      // Push the extracted code into the pin-field controller so
+      // PinFieldAutoFill renders it visually.
+      _otpController.text = code!;
+      // Then immediately verify so the dialog closes without user interaction.
+      _verify(code);
+    }
+  }
+
+  @override
   void dispose() {
+    SmsAutoFill().unregisterListener();
+    cancel();
     _otpController.dispose();
     super.dispose();
   }
@@ -45,7 +67,8 @@ class _OTPDialogState extends State<OTPDialog> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isTablet =
-        ResponsiveHelper.isTablet(context) || ResponsiveHelper.isDesktop(context);
+        ResponsiveHelper.isTablet(context) ||
+        ResponsiveHelper.isDesktop(context);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -89,10 +112,9 @@ class _OTPDialogState extends State<OTPDialog> {
                 const SizedBox(width: 8),
                 Text(
                   'enterOTP'.tr,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w700),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const Spacer(),
                 IconButton(
@@ -108,8 +130,8 @@ class _OTPDialogState extends State<OTPDialog> {
             Text(
               'otpSentMessage'.tr,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: isDark ? FColors.grey : FColors.darkGrey,
-                  ),
+                color: isDark ? FColors.grey : FColors.darkGrey,
+              ),
             ),
             const SizedBox(height: 24),
 
@@ -178,9 +200,7 @@ class _OTPDialogState extends State<OTPDialog> {
                         const SizedBox(width: 4),
                         Text(
                           '${remaining.toInt()}s',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
+                          style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
                                 color: isDark ? FColors.grey : FColors.darkGrey,
                               ),
@@ -203,7 +223,9 @@ class _OTPDialogState extends State<OTPDialog> {
                       foregroundColor: FColors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                        borderRadius: BorderRadius.circular(
+                          FSizes.borderRadiusMd,
+                        ),
                       ),
                     ),
                   ),
