@@ -21,9 +21,11 @@ class _OTPDialogState extends State<OTPDialog> with CodeAutoFill {
   @override
   void initState() {
     super.initState();
-    // Start listening for the incoming OTP SMS.
+    _listenForOtp();
+  }
 
-    SmsAutoFill().listenForCode();
+  void _listenForOtp() async {
+    await SmsAutoFill().listenForCode();
   }
 
   // Called automatically by the CodeAutoFill mixin when the SMS arrives.

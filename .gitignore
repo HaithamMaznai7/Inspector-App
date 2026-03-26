@@ -46,7 +46,6 @@ app.*.map.json
 **/android/key.properties
 **/android/app/upload-keystore.jks
 upload_certificate.der
-claude.md
 
 # CocoaPods
 **/ios/Pods/
@@ -56,3 +55,4 @@ claude.md
 ios/Flutter/Generated.xcconfig
 macos/Flutter/Generated.xcconfig
 macos/Flutter/GeneratedPluginRegistrant.swift
+FILES
