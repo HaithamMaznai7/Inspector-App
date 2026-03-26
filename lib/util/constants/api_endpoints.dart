@@ -14,9 +14,6 @@ class EndPoints {
 
   static const String websiteDomain = 'fahis.test';
   static const String websiteUrl = 'https://$websiteDomain';
-  static const String reverbApp = 'q0ppjj2j99aqpjbe0wra';
-  static const int wssPort = 443;
-  static const int wsPort = 8090;
   static const int port = 8000;
   static const String baseUrl = "$schema://$domain/api/";
 
@@ -26,7 +23,6 @@ class EndPoints {
   static const String fcmToken = 'inspector/user/fcm';
   static const String profile = 'inspector/user';
   static const String services = 'services';
-  static const String reverbAuthenticate = 'broadcasting/auth';
   static const String verifyMobile = 'sent-otp';
   static const String forgetPassword = 'forget-password';
   static const String resetPassword = 'reset-password';
@@ -78,4 +74,19 @@ class EndPoints {
 
   // test
   static const testConnection = 'google.com';
+}
+
+class ApiConfig {
+  ApiConfig._();
+
+  static String _baseUrl = EndPoints.baseUrl;
+
+  static String get baseUrl => _baseUrl;
+
+  // Fallback to hardcoded domain if Remote Config returns empty.
+  static void init(String remoteDomain) {
+    if (remoteDomain.isNotEmpty) {
+      _baseUrl = '${EndPoints.schema}://$remoteDomain/api/';
+    }
+  }
 }

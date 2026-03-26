@@ -2,7 +2,6 @@ import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/photo.dart';
 import 'package:fahis_inspector/resources/repository.dart';
 import 'package:fahis_inspector/routes.dart';
-import 'package:fahis_inspector/services/broadcast/broadcast.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
@@ -16,8 +15,6 @@ class InspectionPhotosRepository extends ListRepository<Photo> {
   final String slug;
 
   InspectionPhotosRepository({required this.box, required this.slug});
-
-  String get channel => "App.Models.Inspection.$slug";
 
   final RxList<Photo> _data = RxList<Photo>([]);
 
@@ -73,20 +70,6 @@ class InspectionPhotosRepository extends ListRepository<Photo> {
   Future<void> saveToCache() async {
     final photos = _data.map((i) => i.toJson()).toList();
     await box.put('Photos', photos);
-  }
-
-  @override
-  Stream<List<Photo>> listenToBroadcast() async* {
-    yield _data;
-    final broadcast = BroadcastService.instance;
-    broadcast?.responses.listen((event) {
-      if (event != null &&
-          event.channel == 'private-$channel' &&
-          event.event.contains('update-photos')) {
-        fetchFromApi();
-      }
-    });
-    yield* stream;
   }
 
   Future<void> update(Photo photo) async {

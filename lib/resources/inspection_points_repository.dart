@@ -3,7 +3,6 @@ import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/point.dart';
 import 'package:fahis_inspector/resources/repository.dart';
 import 'package:fahis_inspector/routes.dart';
-import 'package:fahis_inspector/services/broadcast/broadcast.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
@@ -18,8 +17,6 @@ class InspectionPointsRepository extends ListRepository<Point> {
   InspectionPointsRepository({required this.box, required this.slug}) {
     fetchFromCache();
   }
-
-  String get channel => "App.Models.Inspection.$slug";
 
   final RxList<Point> _data = RxList<Point>([]);
 
@@ -127,17 +124,4 @@ class InspectionPointsRepository extends ListRepository<Point> {
     await box.put('Points', points);
   }
 
-  @override
-  Stream<List<Point>> listenToBroadcast() async* {
-    yield _data;
-    final broadcast = BroadcastService.instance;
-    broadcast?.responses.listen((event) {
-      if (event != null &&
-          event.channel == 'private-$channel' &&
-          event.event.contains('update-points')) {
-        fetchFromApi();
-      }
-    });
-    yield* stream;
-  }
 }

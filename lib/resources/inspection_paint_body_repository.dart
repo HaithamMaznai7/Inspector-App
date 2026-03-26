@@ -5,7 +5,6 @@ import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
-import 'package:fahis_inspector/services/broadcast/broadcast.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -17,8 +16,6 @@ class InspectionPaintBodyRepository extends ListRepository<PaintBodyPart> {
   final String slug;
 
   InspectionPaintBodyRepository({required this.box, required this.slug});
-
-  String get channel => "App.Models.Inspection.$slug";
 
   final RxList<PaintBodyPart> _data = RxList<PaintBodyPart>([]);
 
@@ -54,20 +51,6 @@ class InspectionPaintBodyRepository extends ListRepository<PaintBodyPart> {
   Future<void> saveToCache() async {
     final bodySides = _data.map((i) => i.toJson()).toList();
     await box.put(slug, bodySides);
-  }
-
-  @override
-  Stream<List<PaintBodyPart>> listenToBroadcast() async* {
-    yield _data;
-    final broadcast = BroadcastService.instance;
-    broadcast?.responses.listen((event) {
-      if (event != null &&
-          event.channel == 'private-$channel' &&
-          event.event.contains('update-body-notes')) {
-        fetchFromApi();
-      }
-    });
-    yield* stream;
   }
 
   Future<List<PaintBodyPart>> update(PaintBodyPart part) async {

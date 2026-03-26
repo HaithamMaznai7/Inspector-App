@@ -1,12 +1,10 @@
 import 'dart:io';
-import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/obd_code.dart';
 import 'package:fahis_inspector/resources/repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
-import 'package:fahis_inspector/services/broadcast/broadcast.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
@@ -19,8 +17,6 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   final String slug;
 
   InspectionObdRepository({required this.box, required this.slug});
-
-  final String channel = "App.Models.Inspection.${auth().profile?.id}";
 
   final RxList<OBDCode> _data = RxList<OBDCode>([]);
 
@@ -79,20 +75,6 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
     final codes = _data.map((i) => i.toJson()).toList();
     await box.put(slug, codes);
     _log('saveToCache – saved ${codes.length} codes');
-  }
-
-  @override
-  Stream<List<OBDCode>> listenToBroadcast() async* {
-    yield _data;
-    final broadcast = BroadcastService.instance;
-    broadcast?.responses.listen((event) {
-      if (event != null &&
-          event.channel == 'private-$channel' &&
-          event.event.contains('update-codes')) {
-        fetchFromApi();
-      }
-    });
-    yield* stream;
   }
 
   Future<List<OBDCode>> store(OBDCode code) async {

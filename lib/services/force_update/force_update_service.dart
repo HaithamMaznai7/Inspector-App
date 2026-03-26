@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -13,9 +14,6 @@ class ForceUpdateService {
   late final FirebaseRemoteConfig _remoteConfig;
   bool _initialized = false;
 
-  /// Fetches Remote Config and returns `true` if the app must be force-updated
-  /// (current version < min version). Returns `false` on any error so the user
-  /// is never blocked.
   Future<bool> check() async {
     try {
       if (!_initialized) {
@@ -30,11 +28,13 @@ class ForceUpdateService {
           'force_update_min_version': '0.0.0',
           'store_url_ios': '',
           'store_url_android': '',
+          'api_domain': EndPoints.domain,
         });
         _initialized = true;
       }
 
       await _remoteConfig.fetchAndActivate();
+      ApiConfig.init(_remoteConfig.getString('api_domain'));
 
       final minVersion = _remoteConfig.getString('force_update_min_version');
       final packageInfo = await PackageInfo.fromPlatform();
