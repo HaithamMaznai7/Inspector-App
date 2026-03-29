@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
+import 'package:flutter/foundation.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:smart_auth/smart_auth.dart';
 import 'package:sms_autofill/sms_autofill.dart';
 import 'package:timer_count_down/timer_count_down.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +29,30 @@ class _OTPDialogState extends State<OTPDialog> with CodeAutoFill {
   }
 
   void _listenForOtp() async {
+    if (Platform.isAndroid) {
+      _listenWithConsent();
+    }
     await SmsAutoFill().listenForCode();
+    if (kDebugMode) {
+      final signature = await SmsAutoFill().getAppSignature;
+      debugPrint('SMS Autofill app signature: $signature');
+    }
+  }
+
+  // Android: SMS User Consent API — no hash needed, shows a system consent
+  // dialog when an SMS arrives and auto-extracts the 4-digit OTP from it.
+  Future<void> _listenWithConsent() async {
+    final result = await SmartAuth.instance.getSmsWithUserConsentApi(
+      matcher: r'\d{4}',
+    );
+    if (!mounted) return;
+    if (result.hasData) {
+      final code = result.requireData.code;
+      if (code != null && code.length == 4) {
+        _otpController.text = code;
+        _verify(code);
+      }
+    }
   }
 
   // Called automatically by the CodeAutoFill mixin when the SMS arrives.
@@ -44,6 +71,9 @@ class _OTPDialogState extends State<OTPDialog> with CodeAutoFill {
   void dispose() {
     SmsAutoFill().unregisterListener();
     cancel();
+    if (Platform.isAndroid) {
+      SmartAuth.instance.removeUserConsentApiListener();
+    }
     _otpController.dispose();
     super.dispose();
   }
