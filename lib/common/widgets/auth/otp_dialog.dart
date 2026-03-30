@@ -2,14 +2,14 @@ import 'dart:io';
 
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
+import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
-import 'package:flutter/foundation.dart';
-import 'package:iconsax/iconsax.dart';
-import 'package:smart_auth/smart_auth.dart';
-import 'package:sms_autofill/sms_autofill.dart';
-import 'package:timer_count_down/timer_count_down.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
+import 'package:pinput/pinput.dart';
+import 'package:smart_auth/smart_auth.dart';
+import 'package:timer_count_down/timer_count_down.dart';
 
 class OTPDialog extends StatefulWidget {
   const OTPDialog({super.key});
@@ -18,70 +18,66 @@ class OTPDialog extends StatefulWidget {
   State<OTPDialog> createState() => _OTPDialogState();
 }
 
-class _OTPDialogState extends State<OTPDialog> with CodeAutoFill {
-  final _otpController = TextEditingController();
+class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
+  final _pinController = TextEditingController();
+  final _focusNode = FocusNode();
   final int _timerKey = 0;
 
   @override
   void initState() {
     super.initState();
-    _listenForOtp();
-  }
-
-  void _listenForOtp() async {
+    WidgetsBinding.instance.addObserver(this);
     if (Platform.isAndroid) {
       _listenWithConsent();
     }
-    await SmsAutoFill().listenForCode();
-    if (kDebugMode) {
-      final signature = await SmsAutoFill().getAppSignature;
-      debugPrint('SMS Autofill app signature: $signature');
+  }
+
+  /// Re-focus the pin field when the user returns from another app so the
+  /// keyboard reappears and can show its OTP autofill suggestion.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted && !_focusNode.hasFocus) {
+          _focusNode.requestFocus();
+        }
+      });
     }
   }
 
-  // Android: SMS User Consent API — no hash needed, shows a system consent
-  // dialog when an SMS arrives and auto-extracts the 4-digit OTP from it.
   Future<void> _listenWithConsent() async {
+    AppLogger.trace('OTP', 'Starting SMS User Consent API listener');
     final result = await SmartAuth.instance.getSmsWithUserConsentApi(
       matcher: r'\d{4}',
     );
+    AppLogger.trace('OTP', 'User Consent API result', result);
     if (!mounted) return;
     if (result.hasData) {
       final code = result.requireData.code;
+      AppLogger.info('OTP', 'Extracted code from SMS', code);
       if (code != null && code.length == 4) {
-        _otpController.text = code;
-        _verify(code);
+        _pinController.text = code;
       }
-    }
-  }
-
-  // Called automatically by the CodeAutoFill mixin when the SMS arrives.
-  @override
-  void codeUpdated() {
-    if (code != null && code!.length == 4) {
-      // Push the extracted code into the pin-field controller so
-      // PinFieldAutoFill renders it visually.
-      _otpController.text = code!;
-      // Then immediately verify so the dialog closes without user interaction.
-      _verify(code);
+    } else if (result.isCanceled) {
+      AppLogger.warn('OTP', 'User dismissed the SMS consent dialog');
+    } else if (result.hasError) {
+      AppLogger.error('OTP', 'SMS User Consent API failed', result.error);
     }
   }
 
   @override
   void dispose() {
-    SmsAutoFill().unregisterListener();
-    cancel();
+    WidgetsBinding.instance.removeObserver(this);
     if (Platform.isAndroid) {
       SmartAuth.instance.removeUserConsentApiListener();
     }
-    _otpController.dispose();
+    _pinController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
-  void _verify(String? code) {
-    if (code != null && code.length == 4) {
-      Get.back(result: {'action': 'verify', 'code': code});
-    }
+  void _verify(String code) {
+    Get.back(result: {'action': 'verify', 'code': code});
   }
 
   void _resend() {
@@ -89,7 +85,7 @@ class _OTPDialogState extends State<OTPDialog> with CodeAutoFill {
   }
 
   void _submit() {
-    final code = _otpController.text.trim();
+    final code = _pinController.text.trim();
     if (code.length == 4) {
       _verify(code);
     }
@@ -101,6 +97,37 @@ class _OTPDialogState extends State<OTPDialog> with CodeAutoFill {
     final isTablet =
         ResponsiveHelper.isTablet(context) ||
         ResponsiveHelper.isDesktop(context);
+
+    // ── Pin Themes ──────────────────────────────────────
+    final defaultPinTheme = PinTheme(
+      width: 56,
+      height: 56,
+      textStyle: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: FColors.primaryColor,
+      ),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.04)
+            : FColors.grey.withValues(alpha: 0.06),
+        border: Border.all(
+          color: isDark
+              ? FColors.grey.withValues(alpha: 0.4)
+              : FColors.grey.withValues(alpha: 0.6),
+          width: 1.5,
+        ),
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+      ),
+    );
+
+    final focusedPinTheme = defaultPinTheme.copyDecorationWith(
+      border: Border.all(color: FColors.primaryColor, width: 1.5),
+    );
+
+    final submittedPinTheme = defaultPinTheme.copyDecorationWith(
+      border: Border.all(color: FColors.primaryColor, width: 1.5),
+    );
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -168,44 +195,29 @@ class _OTPDialogState extends State<OTPDialog> with CodeAutoFill {
             const SizedBox(height: 24),
 
             // ── OTP Input ─────────────────────────────────────
-            PinFieldAutoFill(
-              textInputAction: TextInputAction.done,
-              codeLength: 4,
-              autoFocus: true,
-              decoration: BoxLooseDecoration(
-                textStyle: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: FColors.primaryColor,
+            AutofillGroup(
+              child: Directionality(
+                textDirection: TextDirection.ltr,
+                child: Pinput(
+                  length: 4,
+                  controller: _pinController,
+                  focusNode: _focusNode,
+                  autofocus: true,
+                  autofillHints: const [AutofillHints.oneTimeCode],
+                  defaultPinTheme: defaultPinTheme,
+                  focusedPinTheme: focusedPinTheme,
+                  submittedPinTheme: submittedPinTheme,
+                  keyboardType: TextInputType.number,
+                  closeKeyboardWhenCompleted: false,
+                  onCompleted: _verify,
                 ),
-                strokeColorBuilder: PinListenColorBuilder(
-                  FColors.primaryColor,
-                  isDark
-                      ? FColors.grey.withValues(alpha: 0.4)
-                      : FColors.grey.withValues(alpha: 0.6),
-                ),
-                bgColorBuilder: FixedColorBuilder(
-                  isDark
-                      ? Colors.white.withValues(alpha: 0.04)
-                      : FColors.grey.withValues(alpha: 0.06),
-                ),
-                strokeWidth: 1.5,
-                radius: const Radius.circular(FSizes.borderRadiusMd),
               ),
-              onCodeSubmitted: _verify,
-              controller: _otpController,
-              onCodeChanged: (code) {
-                if (code != null && code.length == 4) {
-                  _verify(code);
-                }
-              },
             ),
             const SizedBox(height: 24),
 
             // ── Actions ───────────────────────────────────────
             Row(
               children: [
-                // Resend / countdown
                 Countdown(
                   key: ValueKey(_timerKey),
                   seconds: 60,
@@ -243,7 +255,6 @@ class _OTPDialogState extends State<OTPDialog> with CodeAutoFill {
                 ),
                 const Spacer(),
 
-                // Verify button
                 SizedBox(
                   height: 44,
                   child: ElevatedButton.icon(
