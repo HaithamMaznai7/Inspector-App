@@ -6,7 +6,6 @@ import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
-import 'package:fahis_inspector/services/broadcast/broadcast.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -16,8 +15,6 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
   final String slug;
 
   InspectionBodyRepository({required this.box, required this.slug});
-
-  String get channel => "App.Models.Inspection.$slug";
 
   final RxList<CarBody> _data = RxList<CarBody>([]);
 
@@ -68,20 +65,6 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
   Future<void> saveToCache() async {
     final bodySides = _data.map((i) => i.toJson()).toList();
     await box.put('BodyNotes', bodySides);
-  }
-
-  @override
-  Stream<List<CarBody>> listenToBroadcast() async* {
-    yield _data;
-    final broadcast = BroadcastService.instance;
-    broadcast?.responses.listen((event) {
-      if (event != null &&
-          event.channel == 'private-$channel' &&
-          event.event.contains('update-body-notes')) {
-        fetchFromApi();
-      }
-    });
-    yield* stream;
   }
 
   Future<void> store(CarBody body, Marker note) async {

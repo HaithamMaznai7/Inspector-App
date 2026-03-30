@@ -1,7 +1,7 @@
 part of 'main.dart';
 
-// This will handle messages when the app is in background or terminated
+@pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   dd('Background message received: ${message.messageId}');
 }

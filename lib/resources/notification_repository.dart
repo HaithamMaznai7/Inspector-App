@@ -6,7 +6,6 @@ import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
-import 'package:fahis_inspector/services/broadcast/broadcast.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -17,8 +16,6 @@ class NotificationRepository extends ListRepository<Notification> {
   final Box box;
 
   NotificationRepository({required this.box});
-
-  String get channel => "App.Models.User";
 
   final RxList<Notification> _data = RxList<Notification>([]);
 
@@ -62,20 +59,6 @@ class NotificationRepository extends ListRepository<Notification> {
   Future<void> saveToCache() async {
     final data = _data.map((i) => i.toJson()).toList();
     await box.put('notifications', data);
-  }
-
-  @override
-  Stream<List<Notification>> listenToBroadcast() async* {
-    yield _data;
-    final broadcast = BroadcastService.instance;
-    broadcast?.responses.listen((event) {
-      if (event != null &&
-          event.channel == 'private-$channel' &&
-          event.event.contains('update-body-notes')) {
-        fetchFromApi();
-      }
-    });
-    yield* stream;
   }
 
   Future<List<Notification>> update(

@@ -74,7 +74,7 @@ class Network extends GetConnect {
       throw Exception('No Url');
     }
 
-    this.url = url ?? "${EndPoints.baseUrl}$endpoint";
+    this.url = url ?? "${ApiConfig.baseUrl}$endpoint";
 
     // Resolve token: use provided token, or fall back to AuthService token
     if (token == null && AuthBinding().isRegistered) {

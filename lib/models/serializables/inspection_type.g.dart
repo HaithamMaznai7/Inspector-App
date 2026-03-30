@@ -1,15 +1,17 @@
 part of '../inspection_type.dart';
 
+bool _toBool(dynamic value) => value == true || value == 1;
+
 InspectionType _$InspectionTypeFromJson(Map json) => InspectionType(
     id: json['id'],
     title: json['title'],
     description: json['description'],
-    hasPoints: json['has_points'] == 1,
-    hasPhotos: json['has_photos']  == 1,
-    hasBody: json['has_body'] == 1,
-    hasObd: json['has_obd'] == 1,
-    hasDetails: json['has_details'] == 1,
-    hasPaintBody: json['has_body_points'] == 1
+    hasPoints: _toBool(json['has_points']),
+    hasPhotos: _toBool(json['has_photos']),
+    hasBody: _toBool(json['has_body']),
+    hasObd: _toBool(json['has_obd']),
+    hasDetails: _toBool(json['has_details']),
+    hasPaintBody: _toBool(json['has_body_points']),
 );
 
 Map<String, dynamic> _$InspectionTypeToJson(InspectionType instance) => <String, dynamic>{

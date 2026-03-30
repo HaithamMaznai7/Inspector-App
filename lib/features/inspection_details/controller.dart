@@ -42,7 +42,6 @@ class InspectionDetailsController extends GetxController
 
     if (newInspection != null) {
       newSlug = newInspection.slug;
-      inspection.value = newInspection;
     } else {
       newSlug = Get.parameters['slug'];
     }
@@ -54,20 +53,6 @@ class InspectionDetailsController extends GetxController
     }
   }
 
-  // WHAT: Load an inspection by slug, fetch from cache first, then API,
-  //       then load sub-resources (details, points, photos, body, OBD).
-  // WHY: The original code fired all sub-resource loads in the `finally` block,
-  //      meaning they ran even when the main fetch failed (e.g., no internet).
-  //      This caused 5 simultaneous error snackbars and the Overlay crash.
-  // HOW: Sub-resource loads are now in a separate method `_loadSubResources()`
-  //      called only after the main inspection is confirmed loaded.
-  //      A `apiFetchSucceeded` flag tracks whether the API was reachable.
-  // EDGE CASES:
-  //   - No internet + cached inspection: shows cached data, skips API sub-loads
-  //   - No internet + no cache: shows loading then stays on screen with cached data
-  //   - 404/401/403: navigates back immediately
-  // PERFORMANCE: Sub-resources are loaded in parallel (fire-and-forget) for speed,
-  //              but only when we know the network is available.
   Future<void> load(String newSlug, {bool refresh = false}) async {
     slug = newSlug;
 
@@ -124,22 +109,11 @@ class InspectionDetailsController extends GetxController
       update();
     }
 
-    // WHAT: Load sub-resources only if the API is reachable.
-    // WHY: If we're offline, all sub-resource API calls will also fail,
-    //      flooding the user with identical error snackbars.
-    // HOW: When offline, we still have cached inspection data (if any)
-    //      displayed to the user — sub-resources will load from cache
-    //      via their respective controllers when those screens are opened.
     if (apiFetchSucceeded) {
       _loadSubResources();
     }
   }
 
-  // WHAT: Fire all sub-resource loads in parallel.
-  // WHY: Separated from load() for clarity and to control when they execute.
-  // HOW: Each load is fire-and-forget (not awaited) for parallel execution.
-  //      Each method has its own try/catch so one failure doesn't block others.
-  // RELATED: loadVehicleDetails(), loadInspectionPoints(), etc.
   void _loadSubResources() {
     if (inspection.value?.hasDetails ?? false) {
       loadVehicleDetails();
@@ -352,19 +326,6 @@ class InspectionDetailsController extends GetxController
   }
 
   void share() {
-    // XFile? file;
-    // final url = Uri.parse('https://drive.google.com/file/d/1sYS1z3u3A8Truq-b8kYi0zH1SC-thuDa/view?usp=sharing');
-    // try {
-    //   final url = Uri.parse(
-    //     'https://images.sampletemplates.com/wp-content/uploads/2017/02/Survey-Analysis-Report.pdf',
-    //   );
-
-    //   file = XFile.fromData(File.fromUri(url).readAsBytesSync());
-    // } catch (e) {
-    //   dd(e.toString());
-    //   file = null;
-    // }
-
     try {
       SharePlus.instance
           .share(

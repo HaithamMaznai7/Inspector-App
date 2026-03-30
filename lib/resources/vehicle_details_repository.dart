@@ -3,7 +3,6 @@ import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/vehicle_details.dart';
 import 'package:fahis_inspector/resources/repository.dart';
 import 'package:fahis_inspector/routes.dart';
-import 'package:fahis_inspector/services/broadcast/broadcast.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
@@ -16,8 +15,6 @@ class VehicleDetailsRepository extends BaseRepository<VehicleDetails> {
   final String slug;
 
   VehicleDetailsRepository({required this.box, required this.slug});
-
-  String get channel => "App.Models.Inspection.$slug";
 
   final Rxn<VehicleDetails> _data = Rxn<VehicleDetails>();
 
@@ -58,32 +55,6 @@ class VehicleDetailsRepository extends BaseRepository<VehicleDetails> {
   @override
   Future<void> saveToCache() async {
     await box.put(slug, _data.value?.toJson());
-  }
-
-  @override
-  Stream<VehicleDetails?> listenToBroadcast() async* {
-    yield _data.value;
-
-    final broadcast = BroadcastService.instance;
-
-    // while(broadcast?.socketId.value == null)
-    // {
-    //   await Future.delayed(Duration(seconds: 3));
-    // }
-
-    // broadcast?.subscribe(channel, isPrivate: true);
-
-    broadcast?.responses.listen((event) {
-      dd('update-details');
-      dd(event);
-
-      if (event != null &&
-          event.channel == 'private-$channel' &&
-          event.event.contains('update-details')) {
-        fetchFromApi();
-      }
-    });
-    yield* stream;
   }
 
   Future<bool> update(String slug, VehicleDetails body) async {

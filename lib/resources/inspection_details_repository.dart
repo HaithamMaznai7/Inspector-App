@@ -16,8 +16,6 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
 
   InspectionDetailsRepository({required this.box, required this.slug});
 
-  String get channel => "App.Models.Inspection.$slug";
-
   final Rxn<Inspection> _data = Rxn<Inspection>(null);
 
   Stream<Inspection?> get stream => _data.stream;
@@ -34,7 +32,6 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
     } catch (e) {
       rethrow;
     } finally {
-      listenToBroadcast();
       yield* stream;
     }
   }
@@ -92,23 +89,6 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
       data.add(item.toJson());
     }
     await box.put('inspections', data);
-  }
-
-  @override
-  Stream<Inspection?> listenToBroadcast() async* {
-    yield _data.value;
-    // final broadcast = BroadcastService.instance;
-
-    // broadcast?.subscribe(channel, isPrivate: true);
-
-    // broadcast?.responses.listen((event) {
-    //   if (event != null &&
-    //       event.channel == 'private-$channel' &&
-    //       event.event.contains('new-inspection')) {
-    //     fetchFromApi();
-    //   }
-    // });
-    yield* stream;
   }
 
   // Future<List<Inspection>> inspections({

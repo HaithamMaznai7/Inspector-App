@@ -4,7 +4,6 @@ import 'package:fahis_inspector/models/city.dart';
 import 'package:fahis_inspector/models/profile.dart';
 import 'package:fahis_inspector/resources/auth_repository.dart';
 import 'package:fahis_inspector/services/auth/secure_token_storage.dart';
-import 'package:fahis_inspector/services/broadcast/broadcast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:flutter/foundation.dart';
@@ -310,11 +309,7 @@ class AuthService extends GetxController {
     _profile.value = Profile.empty();
     _cities.clear();
 
-    // 3. Disconnect WebSocket so the authenticated connection is closed
-    //    and no further events are dispatched with the stale token.
-    BroadcastService.instance?.disconnect();
-
-    // 4. Hive caches — clear boxes that hold inspection data.
+    // 3. Hive caches — clear boxes that hold inspection data.
     //    These boxes are typed as Box<List> in StorageService.
     try {
       // Clear typed boxes if they are open

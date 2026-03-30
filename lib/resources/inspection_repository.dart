@@ -1,7 +1,6 @@
 import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/resources/repository.dart';
-import 'package:fahis_inspector/services/broadcast/broadcast.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/models/inspection.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
@@ -16,9 +15,6 @@ class InspectionsRepository extends ListRepository<Inspection> {
   final InspectionStage stage;
 
   InspectionsRepository({required this.box, this.stage = InspectionStage.all});
-
-  final String channel =
-      "App.Models.User.${FirebaseAuth.instance.currentUser?.uid}";
 
   final RxList<Inspection> _data = RxList<Inspection>([]);
 
@@ -170,17 +166,4 @@ class InspectionsRepository extends ListRepository<Inspection> {
     }
   }
 
-  @override
-  Stream<List<Inspection>> listenToBroadcast() async* {
-    yield _data;
-    final broadcast = BroadcastService.instance;
-    broadcast?.responses.listen((event) {
-      if (event != null &&
-          event.channel == 'private-$channel' &&
-          event.event.contains('new-inspection')) {
-        fetchFromApi(stage: stage);
-      }
-    });
-    yield* stream;
-  }
 }

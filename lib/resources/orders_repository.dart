@@ -169,11 +169,6 @@ class OrdersRepository extends ListRepository<Order> {
     }
   }
 
-  @override
-  void listenToBroadcast() {
-    // No broadcast support for orders yet
-  }
-
   Future<String?> createOrderItem(int itemId) async {
     final n = Network(
       endpoint: '${EndPoints.orderItems}/$itemId',

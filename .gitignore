@@ -55,7 +55,14 @@ upload_certificate.der
 ios/Flutter/Generated.xcconfig
 macos/Flutter/Generated.xcconfig
 macos/Flutter/GeneratedPluginRegistrant.swift
+<<<<<<< HEAD
 claude.md
 FLUTTER_RULES.md
 .claude
 docs
+=======
+docs
+FLUTTER_RULES.md
+claude.md
+.claude
+>>>>>>> mod
