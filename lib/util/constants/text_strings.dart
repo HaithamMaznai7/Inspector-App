@@ -128,6 +128,12 @@ class FTexts {
   static const String cameraUsePhoto = 'cameraUsePhoto';
   static const String cameraRetry = 'cameraRetry';
   static const String cameraOk = 'cameraOk';
+  static const String cameraGuidance = 'cameraGuidance';
+  static const String cameraQualityDark = 'cameraQualityDark';
+  static const String cameraQualityBright = 'cameraQualityBright';
+  static const String cameraQualityBlurry = 'cameraQualityBlurry';
+  static const String cameraInitError = 'cameraInitError';
+  static const String cameraCaptureError = 'cameraCaptureError';
 
   /// Force Update
   static const String forceUpdateTitle = 'forceUpdateTitle';

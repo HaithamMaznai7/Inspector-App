@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:camera/camera.dart';
 import 'package:fahis_inspector/common/widgets/camera/camera.dart';
 import 'package:fahis_inspector/models/marker.dart';
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
@@ -576,9 +575,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
 
   Future<void> _pickImage() async {
     if (!Platform.isAndroid && !Platform.isIOS) return;
-    final cameras = await availableCameras();
-    if (cameras.isEmpty) return;
-    final file = await Get.dialog<File>(Camera(cameras: cameras));
+    final file = await Camera.open();
     if (file != null) setState(() => _marker.file = file);
   }
 }

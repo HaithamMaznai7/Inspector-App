@@ -587,6 +587,13 @@ class Arabic {
     FTexts.cameraUsePhoto: 'استخدام الصورة',
     FTexts.cameraRetry: 'إعادة المحاولة',
     FTexts.cameraOk: 'موافق',
+    FTexts.cameraGuidance: 'تأكد من أن الصورة واضحة ومضاءة جيداً ومركّزة',
+    FTexts.cameraQualityDark: 'الصورة تبدو مظلمة — يُنصح بإعادة التقاطها',
+    FTexts.cameraQualityBright:
+        'الصورة تبدو ساطعة جداً — يُنصح بإعادة التقاطها',
+    FTexts.cameraQualityBlurry: 'الصورة قد تكون ضبابية — يُنصح بإعادة التقاطها',
+    FTexts.cameraInitError: 'تعذر تشغيل الكاميرا',
+    FTexts.cameraCaptureError: 'تعذر التقاط الصورة — يرجى المحاولة مرة أخرى',
 
     /// Force Update
     FTexts.forceUpdateTitle: 'تحديث مطلوب',

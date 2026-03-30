@@ -540,6 +540,14 @@ class English {
     FTexts.cameraUsePhoto: 'Use Photo',
     FTexts.cameraRetry: 'Retry',
     FTexts.cameraOk: 'OK',
+    FTexts.cameraGuidance:
+        'Ensure the subject is clear, well-lit, and in focus',
+    FTexts.cameraQualityDark: 'Photo appears too dark — retake recommended',
+    FTexts.cameraQualityBright:
+        'Photo appears overexposed — retake recommended',
+    FTexts.cameraQualityBlurry: 'Photo may be blurry — retake recommended',
+    FTexts.cameraInitError: 'Could not start camera',
+    FTexts.cameraCaptureError: 'Could not capture photo — please try again',
 
     /// Force Update
     FTexts.forceUpdateTitle: 'Update Required',
