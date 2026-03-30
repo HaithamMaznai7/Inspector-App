@@ -45,6 +45,10 @@ class VehicleDetailsController extends GetxController {
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
+  // Set to true at the very start of onClose(), before any TextEditingController
+  // is disposed. Guards all async continuations that run after await gaps.
+  bool _disposed = false;
+
   @override
   void onInit() async {
     super.onInit();
@@ -96,6 +100,7 @@ class VehicleDetailsController extends GetxController {
 
     // Init cache + repo
     box = await Hive.openBox('Inspection_$slug');
+    if (_disposed) return;
     repository = VehicleDetailsRepository(slug: slug!, box: box!);
 
     // Fast path (navigation with arguments)
@@ -108,12 +113,14 @@ class VehicleDetailsController extends GetxController {
     try {
       inspectionDetails.value = await repository!.fetchFromApi();
     } catch (e) {
-      if (inspectionDetails.value == null) {
+      if (inspectionDetails.value == null && !_disposed) {
         Future.microtask(() {
           Get.offAllNamed(RoutingUrl.home);
         });
       }
     }
+
+    if (_disposed) return;
 
     // Populate text controllers once with final data
     updateDetails();
@@ -123,6 +130,7 @@ class VehicleDetailsController extends GetxController {
 
   @override
   void onClose() {
+    _disposed = true;
     super.onClose();
     vinController.dispose();
     plateController.dispose();
@@ -134,6 +142,7 @@ class VehicleDetailsController extends GetxController {
   }
 
   void updateDetails() {
+    if (_disposed) return;
     vinController.text = inspectionDetails.value?.vin ?? '';
 
     // Normalize the plate from any format (Arabic, English, missing spaces)

@@ -20,7 +20,14 @@ class FNetworkException extends HttpException {
     return message;
   }
 
+  /// Whether this exception represents a cancelled/aborted request rather than
+  /// a real network or server error. These should never be shown to the user.
+  bool get isCancelled => statusCode == -1;
+
   void notify() {
+    // Cancelled requests (user navigated away) are silent — not a real error.
+    if (isCancelled) return;
+
     // Suppress 401/403 snackbars when user is authenticated — sessionExpired()
     // will show its own localized message. This prevents duplicate snackbars.
     if ((statusCode == 403) && _isAuthenticatedUser()) {
@@ -129,11 +136,7 @@ class FNetworkException extends HttpException {
 
   factory FNetworkException.set(Response? response) {
     if (response == null || response.statusCode == null) {
-      return FNetworkException(
-        'No Internet Connection',
-        statusCode: 0,
-        title: 'No Connection',
-      );
+      return FNetworkException('', statusCode: -1);
     }
 
     return FNetworkException(

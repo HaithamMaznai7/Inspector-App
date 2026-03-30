@@ -540,6 +540,12 @@ class English {
     FTexts.cameraUsePhoto: 'Use Photo',
     FTexts.cameraRetry: 'Retry',
     FTexts.cameraOk: 'OK',
+    FTexts.cameraCheckingQuality: 'Checking image quality',
+    FTexts.cameraQualityTooDark: 'Photo is too dark — try better lighting',
+    FTexts.cameraQualityTooBright: 'Photo is overexposed — reduce light or flash',
+    FTexts.cameraQualityMayBeBlurry: 'Photo may be blurry — hold the device steady',
+    FTexts.cameraQualityRetakeAdvice: 'Please retake the photo',
+    FTexts.cameraCaptureFailed: 'Failed to capture photo, please try again',
 
     /// Force Update
     FTexts.forceUpdateTitle: 'Update Required',

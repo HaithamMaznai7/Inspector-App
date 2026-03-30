@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:camera/camera.dart';
 import 'package:fahis_inspector/common/widgets/camera/camera.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/models/photo.dart';
@@ -199,11 +198,9 @@ class InspectionPhotosController extends GetxController {
     _log('picking — START | photo.id=${photo.id} | savedCategory=$savedCategory');
 
     if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-      final cameras = await availableCameras();
-      if (cameras.isEmpty) return;
-      _log('picking — opening camera dialog');
-      photo.file = await Get.dialog<File>(Camera(cameras: cameras));
-      _log('picking — camera dialog closed | file=${photo.file != null ? "selected" : "cancelled"} | category.value=${category.value}');
+      _log('picking — opening camera');
+      photo.file = await Camera.open();
+      _log('picking — camera closed | file=${photo.file != null ? "selected" : "cancelled"} | category.value=${category.value}');
     }
 
     // Only upload if file exists (user didn't cancel)

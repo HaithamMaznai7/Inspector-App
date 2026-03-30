@@ -151,10 +151,13 @@ class Network extends GetConnect {
     }
 
     if (response == null || response.statusCode == null) {
+      // A null response with no caught exception means the request was
+      // cancelled (e.g. user navigated away). This is not a real network
+      // failure — throw silently so callers can handle it without showing
+      // a misleading "No Connection" snackbar to the user.
       throw FNetworkException(
-        'Connection error',
-        statusCode: 0,
-        title: 'Connection Error',
+        '',
+        statusCode: -1,
       );
     }
 
