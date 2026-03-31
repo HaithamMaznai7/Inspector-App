@@ -179,7 +179,9 @@ class AuthService extends GetxController {
           settingsBox.get('hasSeenOnboarding', defaultValue: false) as bool;
 
       if (hasSeenOnboarding) {
-        _goTo(RoutingUrl.join);
+        final hasSeenDecision =
+            settingsBox.get('hasSeenDecision', defaultValue: false) as bool;
+        _goTo(hasSeenDecision ? RoutingUrl.login : RoutingUrl.join);
       } else {
         _goTo(RoutingUrl.onBoarding);
       }

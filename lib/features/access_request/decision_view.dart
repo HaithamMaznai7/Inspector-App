@@ -1,6 +1,6 @@
 import 'package:fahis_inspector/common/widgets/app/logo.dart';
-
 import 'package:fahis_inspector/routes.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
@@ -11,6 +11,11 @@ import 'package:get/get.dart';
 
 class DecisionScreen extends StatelessWidget {
   const DecisionScreen({super.key});
+
+  static Future<void> _markDecisionSeen() async {
+    final box = await Hive.openBox('AppSettings');
+    await box.put('hasSeenDecision', true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +92,10 @@ class DecisionScreen extends StatelessWidget {
                         ],
                       ),
                       child: ElevatedButton(
-                        onPressed: () => Get.offAllNamed(RoutingUrl.login),
+                        onPressed: () async {
+                          await _markDecisionSeen();
+                          Get.offAllNamed(RoutingUrl.login);
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
@@ -116,7 +124,10 @@ class DecisionScreen extends StatelessWidget {
                     width: double.infinity,
                     height: FSizes.buttonHeightLg,
                     child: OutlinedButton(
-                      onPressed: () => Get.toNamed(RoutingUrl.requestAccess),
+                      onPressed: () async {
+                        await _markDecisionSeen();
+                        Get.toNamed(RoutingUrl.requestAccess);
+                      },
                       child: Text(
                         AccessRequestPage.requestMembership.tr,
                         style: Theme.of(context).textTheme.titleMedium
