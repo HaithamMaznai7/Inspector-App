@@ -74,7 +74,7 @@ class English {
     'passwordMismatch': 'Passwords do not match',
     LoginPage.forgetBTN: 'Forget password?',
     LoginPage.loginWithEmail: 'Login using email address',
-    LoginPage.otpTitle: 'Enter verification code',
+    LoginPage.otpTitle: 'One-Time Password',
     LoginPage.resendBtnWithTime: 'Resend (after @s \'s)',
     LoginPage.resendBtn: 'Resend',
     LoginPage.editPhoneNumber: 'Edit phone number',
@@ -529,11 +529,15 @@ class English {
     'onBoardingSubTitle3':
         'Receive real-time notifications and stay updated on every inspection status change.',
 
-    /// OTP Dialog
+    /// OTP
     'enterOTP': 'Enter Verification Code',
+    'otpSentTo': 'OTP has been sent to',
+    'otpSending': 'Sending verification code to',
     'otpSentMessage':
         'We sent a verification code to your number. Enter it below.',
-    'resendOTP': 'Resend OTP',
+    'resendOTP': 'Resend Code',
+    'resendIn': 'Resend in ',
+    'secondsShort': 's',
 
     /// Camera
     FTexts.cameraRetake: 'Retake',
@@ -542,8 +546,10 @@ class English {
     FTexts.cameraOk: 'OK',
     FTexts.cameraCheckingQuality: 'Checking image quality',
     FTexts.cameraQualityTooDark: 'Photo is too dark — try better lighting',
-    FTexts.cameraQualityTooBright: 'Photo is overexposed — reduce light or flash',
-    FTexts.cameraQualityMayBeBlurry: 'Photo may be blurry — hold the device steady',
+    FTexts.cameraQualityTooBright:
+        'Photo is overexposed — reduce light or flash',
+    FTexts.cameraQualityMayBeBlurry:
+        'Photo may be blurry — hold the device steady',
     FTexts.cameraQualityRetakeAdvice: 'Please retake the photo',
     FTexts.cameraCaptureFailed: 'Failed to capture photo, please try again',
 

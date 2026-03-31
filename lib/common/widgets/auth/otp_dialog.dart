@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
+import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,7 +13,58 @@ import 'package:smart_auth/smart_auth.dart';
 import 'package:timer_count_down/timer_count_down.dart';
 
 class OTPDialog extends StatefulWidget {
-  const OTPDialog({super.key});
+  const OTPDialog({
+    super.key,
+    this.phoneNumber,
+    this.sendOtpFuture,
+    this.onResend,
+  });
+
+  /// The phone number to display (masked automatically).
+  final String? phoneNumber;
+
+  /// Future that resolves with the verify token when the send-OTP API completes.
+  /// When provided, the OTP screen shows a "Sending..." state until it resolves.
+  /// When null, the PIN input is immediately enabled (legacy/retry mode).
+  final Future<String>? sendOtpFuture;
+
+  /// Callback to resend OTP. Should register SMS listener and fire the API.
+  /// Returns the new verify token. When null, resend falls back to returning
+  /// `{'action': 'resent'}` for the controller to handle externally.
+  final Future<String> Function()? onResend;
+
+  // ── Pre-send SMS listener ───────────────────────────────────────────
+  static Future<SmartAuthResult<SmartAuthSms>>? _pendingSmsResult;
+
+  /// Call BEFORE the API that sends the OTP.
+  static void startSmsListener() {
+    if (!Platform.isAndroid) return;
+    AppLogger.trace(
+      'OTP',
+      'Pre-registering SMS User Consent listener (before API call)',
+    );
+    _pendingSmsResult = SmartAuth.instance.getSmsWithUserConsentApi(
+      matcher: r'\d{4}',
+    );
+    AppLogger.trace('OTP', 'Listener Future obtained — waiting for SMS');
+  }
+
+  /// Cancel any pending listener (e.g. if the API call fails).
+  static void cancelSmsListener() {
+    if (!Platform.isAndroid) return;
+    AppLogger.trace('OTP', 'Cancelling pre-registered SMS listener');
+    _pendingSmsResult = null;
+    SmartAuth.instance.removeUserConsentApiListener();
+  }
+
+  static String maskPhone(String phone) {
+    final digits = phone.replaceAll(RegExp(r'\D'), '');
+    if (digits.length <= 7) return phone;
+    final prefix = digits.substring(0, 4);
+    final suffix = digits.substring(digits.length - 3);
+    final masked = '*' * (digits.length - 7);
+    return '$prefix $masked $suffix';
+  }
 
   @override
   State<OTPDialog> createState() => _OTPDialogState();
@@ -21,22 +73,58 @@ class OTPDialog extends StatefulWidget {
 class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
   final _pinController = TextEditingController();
   final _focusNode = FocusNode();
-  final int _timerKey = 0;
+  int _timerKey = 0;
+
+  /// True while waiting for the send-OTP API to respond.
+  bool _isSending = false;
+
+  /// The verify token returned by the send-OTP API.
+  String? _verifyToken;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    if (Platform.isAndroid) {
-      _listenWithConsent();
+    _consumeSmsListener();
+    _awaitOtpSend();
+  }
+
+  // ── API await ──────────────────────────────────────────────────────
+
+  Future<void> _awaitOtpSend() async {
+    if (widget.sendOtpFuture == null) {
+      // No future → PIN is ready immediately (retry or legacy usage).
+      return;
+    }
+
+    setState(() => _isSending = true);
+
+    try {
+      final token = await widget.sendOtpFuture!;
+      if (!mounted) return;
+      AppLogger.info('OTP', 'Send-OTP API succeeded, token received');
+      setState(() {
+        _verifyToken = token;
+        _isSending = false;
+      });
+    } on FNetworkException catch (e) {
+      if (!mounted) return;
+      AppLogger.error('OTP', 'Send-OTP API failed (network)', e);
+      e.notify();
+      Get.back();
+    } catch (e) {
+      if (!mounted) return;
+      AppLogger.error('OTP', 'Send-OTP API failed', e);
+      Get.back();
     }
   }
 
-  /// Re-focus the pin field when the user returns from another app so the
-  /// keyboard reappears and can show its OTP autofill suggestion.
+  // ── SMS listener ───────────────────────────────────────────────────
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && mounted) {
+      AppLogger.trace('OTP', 'App resumed — re-requesting focus');
       Future.delayed(const Duration(milliseconds: 300), () {
         if (mounted && !_focusNode.hasFocus) {
           _focusNode.requestFocus();
@@ -45,23 +133,69 @@ class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _listenWithConsent() async {
-    AppLogger.trace('OTP', 'Starting SMS User Consent API listener');
-    final result = await SmartAuth.instance.getSmsWithUserConsentApi(
-      matcher: r'\d{4}',
-    );
-    AppLogger.trace('OTP', 'User Consent API result', result);
-    if (!mounted) return;
-    if (result.hasData) {
-      final code = result.requireData.code;
-      AppLogger.info('OTP', 'Extracted code from SMS', code);
-      if (code != null && code.length == 4) {
-        _pinController.text = code;
+  Future<void> _consumeSmsListener() async {
+    if (!Platform.isAndroid) return;
+
+    final pending = OTPDialog._pendingSmsResult;
+    OTPDialog._pendingSmsResult = null;
+
+    if (pending != null) {
+      AppLogger.trace('OTP', 'Consuming pre-registered SMS listener');
+      await _handleSmsResult(pending);
+    } else {
+      AppLogger.warn(
+        'OTP',
+        'No pre-registered listener found — starting fresh (SMS may have '
+            'already arrived, consent dialog might not appear)',
+      );
+      final fresh = SmartAuth.instance.getSmsWithUserConsentApi(
+        matcher: r'\d{4}',
+      );
+      await _handleSmsResult(fresh);
+    }
+  }
+
+  Future<void> _handleSmsResult(
+    Future<SmartAuthResult<SmartAuthSms>> future,
+  ) async {
+    try {
+      final result = await future;
+
+      if (!mounted) {
+        AppLogger.warn('OTP', 'Widget disposed before SMS result arrived');
+        return;
       }
-    } else if (result.isCanceled) {
-      AppLogger.warn('OTP', 'User dismissed the SMS consent dialog');
-    } else if (result.hasError) {
-      AppLogger.error('OTP', 'SMS User Consent API failed', result.error);
+
+      if (result.hasData) {
+        final sms = result.requireData;
+        AppLogger.info('OTP', 'SMS received via consent', {
+          'code': sms.code,
+          'sms': sms.sms.substring(0, sms.sms.length.clamp(0, 40)),
+        });
+        final code = sms.code;
+        if (code != null && code.length == 4) {
+          _pinController.text = code;
+        } else {
+          AppLogger.warn(
+            'OTP',
+            'Extracted code is null or unexpected length',
+            code,
+          );
+        }
+      } else if (result.isCanceled) {
+        AppLogger.warn('OTP', 'User tapped Deny on the consent dialog');
+      } else if (result.hasError) {
+        AppLogger.error('OTP', 'SMS Consent API error', result.error);
+      } else {
+        AppLogger.warn('OTP', 'SMS Consent returned with no data/error', {
+          'hasData': result.hasData,
+          'isCanceled': result.isCanceled,
+          'hasError': result.hasError,
+        });
+      }
+    } catch (e, st) {
+      AppLogger.error('OTP', 'Exception in SMS consent handler', e);
+      AppLogger.trace('OTP', 'Stack trace', st);
     }
   }
 
@@ -76,206 +210,282 @@ class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
     super.dispose();
   }
 
+  // ── Actions ────────────────────────────────────────────────────────
+
   void _verify(String code) {
-    Get.back(result: {'action': 'verify', 'code': code});
+    if (_isSending) return; // Guard: API hasn't responded yet
+    AppLogger.info('OTP', 'Submitting OTP', code);
+    Get.back(
+      result: {
+        'action': 'verify',
+        'code': code,
+        if (_verifyToken != null) 'token': _verifyToken,
+      },
+    );
   }
 
-  void _resend() {
-    Get.back(result: {'action': 'resent'});
-  }
+  Future<void> _resend() async {
+    if (widget.onResend == null) {
+      // Legacy: let the controller handle resend externally.
+      AppLogger.trace('OTP', 'User tapped Resend (legacy mode)');
+      Get.back(result: {'action': 'resent'});
+      return;
+    }
 
-  void _submit() {
-    final code = _pinController.text.trim();
-    if (code.length == 4) {
-      _verify(code);
+    AppLogger.trace('OTP', 'User tapped Resend — calling onResend callback');
+    setState(() {
+      _isSending = true;
+      _pinController.clear();
+    });
+
+    try {
+      final token = await widget.onResend!();
+      if (!mounted) return;
+      AppLogger.info('OTP', 'Resend succeeded, new token received');
+      setState(() {
+        _verifyToken = token;
+        _isSending = false;
+        _timerKey++; // Reset the countdown timer
+      });
+    } on FNetworkException catch (e) {
+      if (!mounted) return;
+      AppLogger.error('OTP', 'Resend failed (network)', e);
+      setState(() => _isSending = false);
+      e.notify();
+    } catch (e) {
+      if (!mounted) return;
+      AppLogger.error('OTP', 'Resend failed', e);
+      setState(() => _isSending = false);
     }
   }
 
+  // ── UI ─────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final isTablet =
         ResponsiveHelper.isTablet(context) ||
         ResponsiveHelper.isDesktop(context);
 
+    final bgColor = isDark ? const Color(0xFF1A1A1A) : Colors.white;
+    final subtitleColor = isDark ? FColors.grey : FColors.darkGrey;
+
     // ── Pin Themes ──────────────────────────────────────
     final defaultPinTheme = PinTheme(
-      width: 56,
-      height: 56,
+      width: 64,
+      height: 64,
       textStyle: TextStyle(
-        fontSize: 18,
+        fontSize: 24,
         fontWeight: FontWeight.w700,
-        color: FColors.primaryColor,
+        color: isDark ? Colors.white : FColors.textPrimary,
+      ),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withValues(alpha: 0.06) : FColors.softGrey,
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : FColors.borderSecondary,
+        ),
+      ),
+    );
+
+    final focusedPinTheme = defaultPinTheme.copyWith(
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white,
+        border: Border.all(color: FColors.primaryColor, width: 2),
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+      ),
+    );
+
+    final submittedPinTheme = defaultPinTheme.copyWith(
+      decoration: BoxDecoration(
+        color: isDark
+            ? FColors.primaryColor.withValues(alpha: 0.12)
+            : FColors.primaryColor.withValues(alpha: 0.06),
+        border: Border.all(
+          color: FColors.primaryColor.withValues(alpha: 0.5),
+          width: 1.5,
+        ),
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+      ),
+    );
+
+    final disabledPinTheme = defaultPinTheme.copyWith(
+      textStyle: TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+        color: (isDark ? Colors.white : FColors.textPrimary).withValues(
+          alpha: 0.3,
+        ),
       ),
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.white.withValues(alpha: 0.04)
-            : FColors.grey.withValues(alpha: 0.06),
+            ? Colors.white.withValues(alpha: 0.03)
+            : FColors.grey.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
         border: Border.all(
           color: isDark
-              ? FColors.grey.withValues(alpha: 0.4)
-              : FColors.grey.withValues(alpha: 0.6),
-          width: 1.5,
+              ? Colors.white.withValues(alpha: 0.04)
+              : FColors.borderSecondary.withValues(alpha: 0.5),
         ),
-        borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
       ),
     );
 
-    final focusedPinTheme = defaultPinTheme.copyDecorationWith(
-      border: Border.all(color: FColors.primaryColor, width: 1.5),
-    );
+    final maskedPhone = widget.phoneNumber != null
+        ? OTPDialog.maskPhone(widget.phoneNumber!)
+        : null;
 
-    final submittedPinTheme = defaultPinTheme.copyDecorationWith(
-      border: Border.all(color: FColors.primaryColor, width: 1.5),
-    );
-
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: EdgeInsets.symmetric(
-        horizontal: isTablet ? 120 : 24,
-        vertical: 40,
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.07)
-                : Colors.black.withValues(alpha: 0.06),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.08),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: bgColor,
+        body: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: isTablet ? 120 : FSizes.lg,
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Header ────────────────────────────────────────
-            Row(
+            child: Column(
               children: [
-                Container(
-                  width: 3,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: FColors.primaryColor,
-                    borderRadius: BorderRadius.circular(2),
+                const SizedBox(height: FSizes.sm),
+
+                // ── Top bar with close button ──
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: IconButton(
+                    onPressed: () => Get.back(),
+                    icon: const Icon(Icons.close, size: 20),
+                    style: IconButton.styleFrom(
+                      backgroundColor: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : FColors.softGrey,
+                      shape: const CircleBorder(),
+                      padding: const EdgeInsets.all(10),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8),
+
+                const Spacer(flex: 2),
+
+                // ── Lock icon ──
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: FColors.primaryColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Iconsax.lock_1,
+                    size: 32,
+                    color: FColors.primaryColor,
+                  ),
+                ),
+                const SizedBox(height: FSizes.lg),
+
+                // ── Title ──
                 Text(
-                  'enterOTP'.tr,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                  'otpTitle'.tr,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () => Get.back(),
-                  icon: const Icon(Iconsax.close_circle, size: 20),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  color: isDark ? FColors.grey : FColors.darkGrey,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'otpSentMessage'.tr,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: isDark ? FColors.grey : FColors.darkGrey,
-              ),
-            ),
-            const SizedBox(height: 24),
+                const SizedBox(height: FSizes.sm),
 
-            // ── OTP Input ─────────────────────────────────────
-            AutofillGroup(
-              child: Directionality(
-                textDirection: TextDirection.ltr,
-                child: Pinput(
-                  length: 4,
-                  controller: _pinController,
-                  focusNode: _focusNode,
-                  autofocus: true,
-                  autofillHints: const [AutofillHints.oneTimeCode],
-                  defaultPinTheme: defaultPinTheme,
-                  focusedPinTheme: focusedPinTheme,
-                  submittedPinTheme: submittedPinTheme,
-                  keyboardType: TextInputType.number,
-                  closeKeyboardWhenCompleted: false,
-                  onCompleted: _verify,
+                // ── Subtitle + phone number ──
+                Text(
+                  _isSending ? 'otpSending'.tr : 'otpSentTo'.tr,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: subtitleColor,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-            ),
-            const SizedBox(height: 24),
+                if (maskedPhone != null) ...[
+                  const SizedBox(height: FSizes.xs),
+                  Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: Text(
+                      maskedPhone,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 2,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
 
-            // ── Actions ───────────────────────────────────────
-            Row(
-              children: [
-                Countdown(
-                  key: ValueKey(_timerKey),
-                  seconds: 60,
-                  build: (context, remaining) {
-                    if (remaining == 0) {
-                      return TextButton.icon(
-                        onPressed: _resend,
-                        icon: const Icon(Iconsax.redo, size: 16),
-                        label: Text('resendOTP'.tr),
-                        style: TextButton.styleFrom(
-                          foregroundColor: FColors.primaryColor,
-                          padding: EdgeInsets.zero,
-                        ),
-                      );
-                    }
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Iconsax.clock,
-                          size: 14,
-                          color: isDark ? FColors.grey : FColors.darkGrey,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${remaining.toInt()}s',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: isDark ? FColors.grey : FColors.darkGrey,
-                              ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                const Spacer(),
+                const SizedBox(height: FSizes.xl + FSizes.sm),
 
-                SizedBox(
-                  height: 44,
-                  child: ElevatedButton.icon(
-                    onPressed: _submit,
-                    icon: const Icon(Iconsax.arrow_right_3, size: 16),
-                    label: Text('verify'.tr),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: FColors.primaryColor,
-                      foregroundColor: FColors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          FSizes.borderRadiusMd,
-                        ),
+                // ── OTP Input ──
+                AnimatedOpacity(
+                  opacity: _isSending ? 0.5 : 1.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: AutofillGroup(
+                    child: Directionality(
+                      textDirection: TextDirection.ltr,
+                      child: Pinput(
+                        length: 4,
+                        controller: _pinController,
+                        focusNode: _focusNode,
+                        autofocus: true,
+                        enabled: !_isSending,
+                        autofillHints: const [AutofillHints.oneTimeCode],
+                        defaultPinTheme: _isSending
+                            ? disabledPinTheme
+                            : defaultPinTheme,
+                        focusedPinTheme: focusedPinTheme,
+                        submittedPinTheme: submittedPinTheme,
+                        keyboardType: TextInputType.number,
+                        closeKeyboardWhenCompleted: false,
+                        separatorBuilder: (_) => const SizedBox(width: 16),
+                        onCompleted: _verify,
                       ),
                     ),
                   ),
                 ),
+
+                const SizedBox(height: FSizes.xl),
+
+                // ── Sending indicator / Timer / Resend ──
+                if (_isSending)
+                  CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: FColors.primaryColor,
+                  )
+                else
+                  Countdown(
+                    key: ValueKey(_timerKey),
+                    seconds: 60,
+                    build: (context, remaining) {
+                      if (remaining == 0) {
+                        return TextButton.icon(
+                          onPressed: _resend,
+                          icon: const Icon(Iconsax.refresh, size: 16),
+                          label: Text('resendOTP'.tr),
+                          style: TextButton.styleFrom(
+                            foregroundColor: FColors.primaryColor,
+                            textStyle: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        );
+                      }
+                      return Text(
+                        '${'resendIn'.tr} ${remaining.toInt()}${'secondsShort'.tr}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: subtitleColor,
+                        ),
+                      );
+                    },
+                  ),
+
+                const Spacer(flex: 4),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

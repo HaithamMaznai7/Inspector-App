@@ -32,10 +32,35 @@ class ForgetPasswordController extends GetxController {
 
     mobile = mobileController.text.trim();
 
+    // 1. Register SMS listener BEFORE the API call
+    OTPDialog.startSmsListener();
+
+    // 2. Fire send-OTP API (don't await — let it run in background)
+    final sendFuture = auth().forgetPassword(mobile);
+
+    // 3. Navigate to OTP screen IMMEDIATELY so it's visible when SMS arrives
+    final result = await Get.to(() => OTPDialog(
+      phoneNumber: mobile,
+      sendOtpFuture: sendFuture,
+      onResend: () {
+        OTPDialog.startSmsListener();
+        return auth().forgetPassword(mobile);
+      },
+    ));
+
+    // User dismissed the screen
+    if (result == null) return;
+
+    final code = result['code'] as String;
+    final verifyToken = result['token'] as String?;
+
+    if (verifyToken == null) return;
+
+    // 4. Verify OTP
     toggleSignIn();
-    String? verifyToken;
+    String? token;
     try {
-      verifyToken = await auth().forgetPassword(mobile);
+      token = await auth().verifyOTP(verifyToken, code);
     } on FNetworkException catch (e) {
       e.notify();
     } catch (e) {
@@ -44,46 +69,9 @@ class ForgetPasswordController extends GetxController {
       toggleSignIn();
     }
 
-    // Don't proceed if forgetPassword() failed
-    if (verifyToken == null) return;
+    if (token == null) return;
 
-    String? token;
-    do {
-      final result = await Get.dialog(OTPDialog());
-
-      // User dismissed the dialog — abort without touching loading state
-      if (result == null) return;
-
-      // Resend action — re-request OTP and loop back to show dialog again
-      if (result['action'] == 'resent') {
-        toggleSignIn();
-        try {
-          verifyToken = await auth().forgetPassword(mobile);
-        } on FNetworkException catch (e) {
-          e.notify();
-        } catch (e) {
-          dd(e.toString());
-        } finally {
-          toggleSignIn();
-        }
-        if (verifyToken == null) return;
-        continue;
-      }
-
-      toggleSignIn();
-      try {
-        final code = result['code'] as String;
-        token = await auth().verifyOTP(verifyToken!, code);
-      } on FNetworkException catch (e) {
-        e.notify();
-      } catch (e) {
-        dd(e.toString());
-      } finally {
-        toggleSignIn();
-      }
-    } while (token == null);
-
-    // OTP verified — token is the session token, log the user in directly
+    // 5. OTP verified — log the user in
     await auth().loginAfterOTP(token);
   }
 

@@ -47,22 +47,31 @@ class CanVerification {
     String? url, code, action;
 
     try {
-      switch (type) {
-        case UserVerifiationType.mobile:
-          url = await auth().sentOTP(value);
-        default:
-          url = await auth().sentOTP(value);
-      }
+      OTPDialog.startSmsListener();
 
-      await Get.dialog(OTPDialog()).then((result) {
+      final sendFuture = auth().sentOTP(value);
+
+      final result = await Get.to(() => OTPDialog(
+        phoneNumber: value,
+        sendOtpFuture: sendFuture,
+        onResend: () {
+          OTPDialog.startSmsListener();
+          return auth().sentOTP(value);
+        },
+      ));
+
+      if (result != null) {
         try {
+          url = result['token'] ?? result['url'];
           code = result['code'];
           action = result['action'];
         } catch (_) {}
-      });
+      }
     } on FNetworkException catch (e) {
+      OTPDialog.cancelSmsListener();
       e.notify();
     } catch (_) {
+      OTPDialog.cancelSmsListener();
       FLoader.errorSnackBar(
         title: 'No Connection'.tr,
         message: 'message',

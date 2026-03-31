@@ -161,7 +161,6 @@ class AuthRepository {
 
   Future<String> forgetPassword(String mobile) async {
     try {
-      await Future.delayed(const Duration(seconds: 2));
       Network net = Network(
         endpoint: EndPoints.verifyMobile,
         requestMethod: RequestMethod.post,

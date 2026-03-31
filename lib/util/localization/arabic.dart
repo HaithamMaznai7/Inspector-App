@@ -73,7 +73,7 @@ class Arabic {
     'passwordMismatch': 'كلمتا المرور غير متطابقتين',
     LoginPage.forgetBTN: 'نسيت كلمة المرور؟',
     LoginPage.loginWithEmail: 'الدخول بأستخدام البريد الإلكتروني',
-    LoginPage.otpTitle: 'أدخل رقم التحقق',
+    LoginPage.otpTitle: 'رمز التحقق',
     LoginPage.resendBtnWithTime: 'إعادة الإرسال (بعد @s ث)',
     LoginPage.resendBtn: 'إعادة الإرسال',
     LoginPage.editPhoneNumber: 'تعدبل رقم الهاتف',
@@ -577,10 +577,14 @@ class Arabic {
     'onBoardingSubTitle3':
         'استقبل الإشعارات الفورية وتابع كل تحديث على حالة الفحص.',
 
-    /// OTP Dialog
+    /// OTP
     'enterOTP': 'أدخل رمز التحقق',
+    'otpSentTo': 'تم إرسال رمز التحقق إلى',
+    'otpSending': 'جاري إرسال رمز التحقق إلى',
     'otpSentMessage': 'أرسلنا رمز التحقق إلى رقمك. يرجى إدخاله أدناه.',
-    'resendOTP': 'إعادة الإرسال',
+    'resendOTP': 'إعادة إرسال الرمز',
+    'resendIn': 'إعادة الإرسال خلال ',
+    'secondsShort': 'ث',
 
     /// Camera
     FTexts.cameraRetake: 'إعادة التقاط',

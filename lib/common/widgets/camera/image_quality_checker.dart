@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -46,9 +45,7 @@ class ImageQualityChecker {
     final frame = await codec.getNextFrame();
     final image = frame.image;
 
-    final byteData = await image.toByteData(
-      format: ui.ImageByteFormat.rawRgba,
-    );
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
 
     if (byteData == null) return ImageQualityResult.clean;
 
