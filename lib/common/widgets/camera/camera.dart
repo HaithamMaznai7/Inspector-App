@@ -7,7 +7,6 @@ import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/device/device_utility.dart';
-import 'package:fahis_inspector/util/helpers/camera_permission.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import 'package:flutter/cupertino.dart';
@@ -21,9 +20,9 @@ class Camera extends StatefulWidget {
 
   final List<CameraDescription>? cameras;
 
-  /// Handles permissions, camera enumeration, and dialog in one call.
+  /// Enumerates cameras and opens the camera dialog.
+  /// The camera package handles permission prompts natively on iOS/Android.
   static Future<File?> open() async {
-    if (!await CameraPermissionHelper.requestCamera()) return null;
     final cameras = await availableCameras();
     if (cameras.isEmpty) return null;
     return Get.dialog<File>(Camera(cameras: cameras));
@@ -97,6 +96,7 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver {
       setState(() {});
     }).catchError((Object e) {
       AppLogger.error(_tag, 'Camera init failed', e);
+      if (mounted) Get.back<File>();
     });
   }
 

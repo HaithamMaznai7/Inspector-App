@@ -449,12 +449,8 @@ class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
 
                 const SizedBox(height: FSizes.xl),
 
-                // ── Sending indicator / Timer / Resend ──
-                if (_isSending)
-                  CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: FColors.primaryColor,
-                  )
+                if(_isSending)
+                  const SizedBox(height: FSizes.xl)
                 else
                   Countdown(
                     key: ValueKey(_timerKey),
