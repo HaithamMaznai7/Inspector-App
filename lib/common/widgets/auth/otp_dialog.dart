@@ -10,14 +10,14 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:pinput/pinput.dart';
 import 'package:smart_auth/smart_auth.dart';
-import 'package:timer_count_down/timer_count_down.dart';
+
 
 class OTPDialog extends StatefulWidget {
   const OTPDialog({
     super.key,
     this.phoneNumber,
     this.sendOtpFuture,
-    this.onResend,
+ 
   });
 
   /// The phone number to display (masked automatically).
@@ -28,10 +28,7 @@ class OTPDialog extends StatefulWidget {
   /// When null, the PIN input is immediately enabled (legacy/retry mode).
   final Future<String>? sendOtpFuture;
 
-  /// Callback to resend OTP. Should register SMS listener and fire the API.
-  /// Returns the new verify token. When null, resend falls back to returning
-  /// `{'action': 'resent'}` for the controller to handle externally.
-  final Future<String> Function()? onResend;
+  
 
   // ── Pre-send SMS listener ───────────────────────────────────────────
   static Future<SmartAuthResult<SmartAuthSms>>? _pendingSmsResult;
@@ -73,7 +70,7 @@ class OTPDialog extends StatefulWidget {
 class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
   final _pinController = TextEditingController();
   final _focusNode = FocusNode();
-  int _timerKey = 0;
+ 
 
   /// True while waiting for the send-OTP API to respond.
   bool _isSending = false;
@@ -224,40 +221,8 @@ class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
     );
   }
 
-  Future<void> _resend() async {
-    if (widget.onResend == null) {
-      // Legacy: let the controller handle resend externally.
-      AppLogger.trace('OTP', 'User tapped Resend (legacy mode)');
-      Get.back(result: {'action': 'resent'});
-      return;
-    }
-
-    AppLogger.trace('OTP', 'User tapped Resend — calling onResend callback');
-    setState(() {
-      _isSending = true;
-      _pinController.clear();
-    });
-
-    try {
-      final token = await widget.onResend!();
-      if (!mounted) return;
-      AppLogger.info('OTP', 'Resend succeeded, new token received');
-      setState(() {
-        _verifyToken = token;
-        _isSending = false;
-        _timerKey++; // Reset the countdown timer
-      });
-    } on FNetworkException catch (e) {
-      if (!mounted) return;
-      AppLogger.error('OTP', 'Resend failed (network)', e);
-      setState(() => _isSending = false);
-      e.notify();
-    } catch (e) {
-      if (!mounted) return;
-      AppLogger.error('OTP', 'Resend failed', e);
-      setState(() => _isSending = false);
-    }
-  }
+  
+   
 
   // ── UI ─────────────────────────────────────────────────────────────
 
@@ -446,37 +411,6 @@ class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
                     ),
                   ),
                 ),
-
-                const SizedBox(height: FSizes.xl),
-
-                if(_isSending)
-                  const SizedBox(height: FSizes.xl)
-                else
-                  Countdown(
-                    key: ValueKey(_timerKey),
-                    seconds: 60,
-                    build: (context, remaining) {
-                      if (remaining == 0) {
-                        return TextButton.icon(
-                          onPressed: _resend,
-                          icon: const Icon(Iconsax.refresh, size: 16),
-                          label: Text('resendOTP'.tr),
-                          style: TextButton.styleFrom(
-                            foregroundColor: FColors.primaryColor,
-                            textStyle: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        );
-                      }
-                      return Text(
-                        '${'resendIn'.tr} ${remaining.toInt()}${'secondsShort'.tr}',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: subtitleColor,
-                        ),
-                      );
-                    },
-                  ),
 
                 const Spacer(flex: 4),
               ],

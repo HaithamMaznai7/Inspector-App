@@ -54,10 +54,7 @@ class CanVerification {
       final result = await Get.to(() => OTPDialog(
         phoneNumber: value,
         sendOtpFuture: sendFuture,
-        onResend: () {
-          OTPDialog.startSmsListener();
-          return auth().sentOTP(value);
-        },
+       
       ));
 
       if (result != null) {

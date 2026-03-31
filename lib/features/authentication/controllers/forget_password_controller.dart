@@ -42,10 +42,7 @@ class ForgetPasswordController extends GetxController {
     final result = await Get.to(() => OTPDialog(
       phoneNumber: mobile,
       sendOtpFuture: sendFuture,
-      onResend: () {
-        OTPDialog.startSmsListener();
-        return auth().forgetPassword(mobile);
-      },
+     
     ));
 
     // User dismissed the screen
