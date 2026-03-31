@@ -40,12 +40,12 @@ class FValidation {
         allRules = rulesList;
       }
 
-      for(String fuelRule in allRules) {
+      for (String fuelRule in allRules) {
         String? attributeString;
         String rule = fuelRule;
-        
+
         [rule, attributeString] = fuelRule.split(':');
-        
+
         if (attributeString.isEmpty) {
           attributeString = null;
         }
@@ -258,7 +258,10 @@ class FValidation {
         return message;
       }
 
-      return "@fieldName should be minmum @min".trParams({'fieldName': fieldName, 'min': min.toString()});
+      return "@fieldName should be minmum @min".trParams({
+        'fieldName': fieldName,
+        'min': min.toString(),
+      });
     }
     return null;
   }
@@ -275,7 +278,10 @@ class FValidation {
         return message;
       }
 
-      return "@fieldName should be minmum @max".trParams({'fieldName': fieldName, 'max': max.toString()});
+      return "@fieldName should be minmum @max".trParams({
+        'fieldName': fieldName,
+        'max': max.toString(),
+      });
     }
     return null;
   }
@@ -412,9 +418,7 @@ class FValidation {
     String? message,
   }) {
     if (value == null || value.isEmpty) {
-      return "@fieldName should be a valid email".trParams({
-        'fieldName': fieldName,
-      });
+      return "@fieldName".trParams({'fieldName': fieldName});
     }
 
     return null;

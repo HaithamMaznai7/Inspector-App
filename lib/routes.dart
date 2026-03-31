@@ -28,6 +28,10 @@ import 'features/inspection_photos/controller.dart';
 import 'features/inspection_body_notes/controller.dart';
 import 'features/inspection_obd/controller.dart';
 import 'features/configuration/controller.dart';
+import 'features/access_request/controller.dart';
+import 'features/access_request/decision_view.dart';
+import 'features/access_request/request_view.dart';
+import 'features/access_request/success_view.dart';
 
 //services
 import 'services/storage/storage_service.dart';
@@ -53,6 +57,7 @@ part 'features/inspection_points/binding.dart';
 part 'features/inspection_photos/binding.dart';
 part 'features/inspection_body_notes/binding.dart';
 part 'features/inspection_obd/binding.dart';
+part 'features/access_request/binding.dart';
 
 class AppRoute {
   AppRoute._();
@@ -69,6 +74,25 @@ class AppRoute {
       binding: OnBoardingBinding(),
       page: () => const OnBoardingScreen(),
       // middlewares: [BoarderMiddleware()],
+    ),
+
+    GetPage(
+      name: RoutingUrl.join,
+      page: () => const DecisionScreen(),
+      middlewares: [GuestMiddleware()],
+    ),
+
+    GetPage(
+      name: RoutingUrl.requestAccess,
+      binding: AccessRequestBinding(),
+      page: () => const RequestAccessScreen(),
+      middlewares: [GuestMiddleware()],
+    ),
+
+    GetPage(
+      name: RoutingUrl.requestSuccess,
+      page: () => const RequestSuccessScreen(),
+      middlewares: [GuestMiddleware()],
     ),
 
     GetPage(

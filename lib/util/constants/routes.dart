@@ -16,11 +16,14 @@ class RoutingUrl {
   static const String settings = '/settings';
   static const String offline = '/offline';
   static const String onBoarding = '/onBoarding';
+  static const String join = '/join';
+  static const String requestAccess = '/request-access';
+  static const String requestSuccess = '/request-success';
   static const String selectTeam = '/select-team';
   static const String testScreen = '/test/screen';
 
   static const List<String> authPages = [home, selectTeam, notifications, search, inspections, inspectionDetails, requestInspection, settings];
-  static const List<String> guestPages = [forgetPassword, resetPassword, login, versionUpdate, offline, onBoarding];
+  static const List<String> guestPages = [forgetPassword, resetPassword, login, versionUpdate, offline, onBoarding, join, requestAccess, requestSuccess];
 }
 
 class BindingTags {
@@ -41,4 +44,5 @@ class BindingTags {
   static const String inspectionBody = 'InspectionBody';
   static const String inspectionOBD = 'InspectionOBD';
   static const String notifications = 'Notifications';
+  static const String accessRequest = 'AccessRequest';
 }

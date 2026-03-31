@@ -561,5 +561,30 @@ class English {
     FTexts.forceUpdateMessage:
         'A new version of the app is available. Please update to continue using the app.',
     FTexts.forceUpdateButton: 'Update Now',
+
+    /// Access Request
+    AccessRequestPage.welcomeTitle: 'Welcome to Fahis',
+    AccessRequestPage.welcomeSubtitle: 'Choose how you would like to continue',
+    AccessRequestPage.alreadyMember: 'Already an inspector',
+    AccessRequestPage.requestMembership: 'Apply to become an inspector',
+    AccessRequestPage.requestFormTitle: 'Inspector Application',
+    AccessRequestPage.fullName: 'Full Name',
+    AccessRequestPage.fullNameHint: 'Enter your full name',
+    AccessRequestPage.email: 'Email',
+    AccessRequestPage.emailHint: 'Enter your email address',
+    AccessRequestPage.phone: 'Phone Number',
+    AccessRequestPage.phoneHint: 'Enter your phone number',
+    AccessRequestPage.city: 'City',
+    AccessRequestPage.cityHint: 'Enter your city',
+    AccessRequestPage.note: 'Additional Information (optional)',
+    AccessRequestPage.noteHint: 'Share any relevant experience',
+    AccessRequestPage.submitRequest: 'Submit Application',
+    AccessRequestPage.requestSuccessTitle: 'Application Submitted Successfully',
+    AccessRequestPage.requestSuccessSubtitle:
+        'Your application has been received. Our team will review it and contact you soon.',
+    AccessRequestPage.doneBtn: 'Done',
+    AccessRequestPage.submissionFailed: 'Submission Failed',
+    AccessRequestPage.submissionFailedMsg:
+        'Something went wrong. Please try again.',
   };
 }

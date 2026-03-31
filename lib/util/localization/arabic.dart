@@ -606,5 +606,30 @@ class Arabic {
     FTexts.forceUpdateMessage:
         'يتوفر إصدار جديد من التطبيق. يرجى التحديث للمتابعة في استخدام التطبيق.',
     FTexts.forceUpdateButton: 'تحديث الآن',
+
+    /// Access Request
+    AccessRequestPage.welcomeTitle: 'مرحبًا بك في فاحص',
+    AccessRequestPage.welcomeSubtitle: 'اختر كيف تود المتابعة',
+    AccessRequestPage.alreadyMember: 'لديك حساب بالفعل',
+    AccessRequestPage.requestMembership: 'التقديم للعمل كفني',
+    AccessRequestPage.requestFormTitle: 'طلب الانضمام كفني',
+    AccessRequestPage.fullName: 'الاسم الكامل',
+    AccessRequestPage.fullNameHint: 'أدخل اسمك الكامل',
+    AccessRequestPage.email: 'البريد الإلكتروني',
+    AccessRequestPage.emailHint: 'أدخل بريدك الإلكتروني',
+    AccessRequestPage.phone: 'رقم الهاتف',
+    AccessRequestPage.phoneHint: 'أدخل رقم هاتفك',
+    AccessRequestPage.city: 'المدينة',
+    AccessRequestPage.cityHint: 'أدخل مدينتك',
+    AccessRequestPage.note: 'معلومات إضافية (اختياري)',
+    AccessRequestPage.noteHint: 'اذكر أي خبرة ذات صلة',
+    AccessRequestPage.submitRequest: 'إرسال الطلب',
+    AccessRequestPage.requestSuccessTitle: 'تم إرسال الطلب بنجاح',
+    AccessRequestPage.requestSuccessSubtitle:
+        'تم استلام طلبك. سيقوم فريقنا بمراجعته والتواصل معك قريبًا.',
+    AccessRequestPage.doneBtn: 'تم',
+    AccessRequestPage.submissionFailed: 'فشل الإرسال',
+    AccessRequestPage.submissionFailedMsg:
+        'حدث خطأ ما، يرجى المحاولة مرة أخرى.',
   };
 }

@@ -179,7 +179,7 @@ class AuthService extends GetxController {
           settingsBox.get('hasSeenOnboarding', defaultValue: false) as bool;
 
       if (hasSeenOnboarding) {
-        _goTo(RoutingUrl.login);
+        _goTo(RoutingUrl.join);
       } else {
         _goTo(RoutingUrl.onBoarding);
       }

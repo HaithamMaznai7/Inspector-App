@@ -9,6 +9,7 @@ part 'pages/on_boarder_page.dart';
 part 'pages/update_page.dart';
 part 'pages/login_page.dart';
 part 'pages/inspection_point_page.dart';
+part 'pages/access_request_page.dart';
 
 class FTexts {
   /// --- GLOBAL VARIABLES
@@ -60,6 +61,7 @@ class FTexts {
   static InspectionPointPage inspectionPointPage = InspectionPointPage();
   static OfflinePage offlinePage = OfflinePage();
   static UpdatePage updatePage = UpdatePage();
+  static AccessRequestPage accessRequestPage = AccessRequestPage();
 
   /// --------------------///
   /// --- End Pages Texts

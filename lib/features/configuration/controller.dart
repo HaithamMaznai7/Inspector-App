@@ -26,7 +26,7 @@ class OnBoardingController extends GetxController {
   void nextPage() async {
     if (isLastPage) {
       await _markOnboardingSeen();
-      Get.offAllNamed(RoutingUrl.login);
+      Get.offAllNamed(RoutingUrl.join);
     } else {
       pageController.animateToPage(
         currentPageIndex.value + 1,
@@ -38,7 +38,7 @@ class OnBoardingController extends GetxController {
 
   void skipPage() async {
     await _markOnboardingSeen();
-    Get.offAllNamed(RoutingUrl.login);
+    Get.offAllNamed(RoutingUrl.join);
   }
 
   Future<void> _markOnboardingSeen() async {
