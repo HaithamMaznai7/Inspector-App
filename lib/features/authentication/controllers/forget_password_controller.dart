@@ -32,17 +32,16 @@ class ForgetPasswordController extends GetxController {
 
     mobile = mobileController.text.trim();
 
-    // 1. Register SMS listener BEFORE the API call
-    OTPDialog.startSmsListener();
-
-    // 2. Fire send-OTP API (don't await — let it run in background)
+    // 1. Fire send-OTP API immediately (don't await)
     final sendFuture = auth().forgetPassword(mobile);
+
+    // 2. Register SMS listener in parallel (non-blocking)
+    OTPDialog.startSmsListener();
 
     // 3. Navigate to OTP screen IMMEDIATELY so it's visible when SMS arrives
     final result = await Get.to(() => OTPDialog(
       phoneNumber: mobile,
       sendOtpFuture: sendFuture,
-     
     ));
 
     // User dismissed the screen

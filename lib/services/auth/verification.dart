@@ -47,9 +47,9 @@ class CanVerification {
     String? url, code, action;
 
     try {
-      OTPDialog.startSmsListener();
-
       final sendFuture = auth().sentOTP(value);
+
+      OTPDialog.startSmsListener();
 
       final result = await Get.to(() => OTPDialog(
         phoneNumber: value,

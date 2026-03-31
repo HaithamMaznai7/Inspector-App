@@ -78,6 +78,9 @@ class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
   /// The verify token returned by the send-OTP API.
   String? _verifyToken;
 
+  /// Code entered before the token arrived — submitted once token is ready.
+  String? _pendingCode;
+
   @override
   void initState() {
     super.initState();
@@ -100,10 +103,12 @@ class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
       final token = await widget.sendOtpFuture!;
       if (!mounted) return;
       AppLogger.info('OTP', 'Send-OTP API succeeded, token received');
-      setState(() {
-        _verifyToken = token;
-        _isSending = false;
-      });
+      _verifyToken = token;
+      setState(() => _isSending = false);
+      // If user already typed the code while waiting, submit now
+      if (_pendingCode != null) {
+        _verify(_pendingCode!);
+      }
     } on FNetworkException catch (e) {
       if (!mounted) return;
       AppLogger.error('OTP', 'Send-OTP API failed (network)', e);
@@ -210,15 +215,21 @@ class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
   // ── Actions ────────────────────────────────────────────────────────
 
   void _verify(String code) {
-    if (_isSending) return; // Guard: API hasn't responded yet
-    AppLogger.info('OTP', 'Submitting OTP', code);
-    Get.back(
-      result: {
-        'action': 'verify',
-        'code': code,
-        if (_verifyToken != null) 'token': _verifyToken,
-      },
-    );
+    if (_verifyToken != null) {
+      // Token ready — submit immediately
+      AppLogger.info('OTP', 'Submitting OTP', code);
+      Get.back(
+        result: {
+          'action': 'verify',
+          'code': code,
+          'token': _verifyToken,
+        },
+      );
+    } else {
+      // User typed code before API responded — wait for token
+      AppLogger.info('OTP', 'OTP entered, waiting for token...');
+      _pendingCode = code;
+    }
   }
 
   
@@ -275,27 +286,6 @@ class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
           width: 1.5,
         ),
         borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-      ),
-    );
-
-    final disabledPinTheme = defaultPinTheme.copyWith(
-      textStyle: TextStyle(
-        fontSize: 24,
-        fontWeight: FontWeight.w700,
-        color: (isDark ? Colors.white : FColors.textPrimary).withValues(
-          alpha: 0.3,
-        ),
-      ),
-      decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.03)
-            : FColors.grey.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.04)
-              : FColors.borderSecondary.withValues(alpha: 0.5),
-        ),
       ),
     );
 
@@ -385,29 +375,22 @@ class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
                 const SizedBox(height: FSizes.xl + FSizes.sm),
 
                 // ── OTP Input ──
-                AnimatedOpacity(
-                  opacity: _isSending ? 0.5 : 1.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: AutofillGroup(
-                    child: Directionality(
-                      textDirection: TextDirection.ltr,
-                      child: Pinput(
-                        length: 4,
-                        controller: _pinController,
-                        focusNode: _focusNode,
-                        autofocus: true,
-                        enabled: !_isSending,
-                        autofillHints: const [AutofillHints.oneTimeCode],
-                        defaultPinTheme: _isSending
-                            ? disabledPinTheme
-                            : defaultPinTheme,
-                        focusedPinTheme: focusedPinTheme,
-                        submittedPinTheme: submittedPinTheme,
-                        keyboardType: TextInputType.number,
-                        closeKeyboardWhenCompleted: false,
-                        separatorBuilder: (_) => const SizedBox(width: 16),
-                        onCompleted: _verify,
-                      ),
+                AutofillGroup(
+                  child: Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: Pinput(
+                      length: 4,
+                      controller: _pinController,
+                      focusNode: _focusNode,
+                      autofocus: true,
+                      autofillHints: const [AutofillHints.oneTimeCode],
+                      defaultPinTheme: defaultPinTheme,
+                      focusedPinTheme: focusedPinTheme,
+                      submittedPinTheme: submittedPinTheme,
+                      keyboardType: TextInputType.number,
+                      closeKeyboardWhenCompleted: false,
+                      separatorBuilder: (_) => const SizedBox(width: 16),
+                      onCompleted: _verify,
                     ),
                   ),
                 ),
