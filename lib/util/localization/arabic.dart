@@ -597,6 +597,9 @@ class Arabic {
     FTexts.cameraQualityMayBeBlurry: 'الصورة قد تكون ضبابية — ثبّت الجهاز',
     FTexts.cameraQualityRetakeAdvice: 'يرجى إعادة التقاط الصورة',
     FTexts.cameraCaptureFailed: 'فشل التقاط الصورة، يرجى المحاولة مرة أخرى',
+    FTexts.cameraPermissionDeniedTitle: 'تم رفض الوصول إلى الكاميرا',
+    FTexts.cameraPermissionDenied:
+        'يرجى السماح بالوصول إلى الكاميرا من الإعدادات للمتابعة.',
 
     /// Force Update
     FTexts.forceUpdateTitle: 'تحديث مطلوب',

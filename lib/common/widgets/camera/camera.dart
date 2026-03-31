@@ -7,6 +7,7 @@ import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/device/device_utility.dart';
+import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import 'package:flutter/cupertino.dart';
@@ -24,7 +25,12 @@ class Camera extends StatefulWidget {
   /// The camera package handles permission prompts natively on iOS/Android.
   static Future<File?> open() async {
     final cameras = await availableCameras();
-    if (cameras.isEmpty) return null;
+    if (cameras.isEmpty) {
+      FLoader.errorSnackBar(
+          message: FTexts.cameraPermissionDenied.tr,
+        );
+      return null;
+    }
     return Get.dialog<File>(Camera(cameras: cameras));
   }
 
@@ -96,7 +102,19 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver {
       setState(() {});
     }).catchError((Object e) {
       AppLogger.error(_tag, 'Camera init failed', e);
+      final isPermissionDenied = e is CameraException &&
+          (e.code == 'CameraAccessDenied' ||
+              e.code == 'CameraAccessDeniedWithoutPrompt');
       if (mounted) Get.back<File>();
+      if (isPermissionDenied) {
+        Future.delayed(
+          const Duration(milliseconds: 300),
+          () => FLoader.errorSnackBar(
+          title: FTexts.cameraPermissionDeniedTitle.tr,
+          message: FTexts.cameraPermissionDenied.tr,
+        ),
+        );
+      }
     });
   }
 

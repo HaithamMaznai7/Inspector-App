@@ -552,6 +552,9 @@ class English {
         'Photo may be blurry — hold the device steady',
     FTexts.cameraQualityRetakeAdvice: 'Please retake the photo',
     FTexts.cameraCaptureFailed: 'Failed to capture photo, please try again',
+    FTexts.cameraPermissionDeniedTitle: 'Camera Access Denied',
+    FTexts.cameraPermissionDenied:
+        'Please allow camera access in Settings to continue.',
 
     /// Force Update
     FTexts.forceUpdateTitle: 'Update Required',

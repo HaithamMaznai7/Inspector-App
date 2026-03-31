@@ -134,6 +134,8 @@ class FTexts {
   static const String cameraQualityMayBeBlurry = 'cameraQualityMayBeBlurry';
   static const String cameraQualityRetakeAdvice = 'cameraQualityRetakeAdvice';
   static const String cameraCaptureFailed = 'cameraCaptureFailed';
+  static const String cameraPermissionDenied = 'cameraPermissionDenied';
+  static const String cameraPermissionDeniedTitle = 'cameraPermissionDeniedTitle';
 
   /// Force Update
   static const String forceUpdateTitle = 'forceUpdateTitle';
