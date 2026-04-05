@@ -18,48 +18,31 @@ class PanelListWidget extends StatelessWidget {
       tag: 'PaintGauge',
       builder: (_) => Column(
         children: CarPart.values
-            .map((part) => _PanelTile(controller: controller, part: part))
+            .asMap()
+            .entries
+            .map((e) => _PanelTile(
+                  controller: controller,
+                  part: e.value,
+                  number: e.key + 1,
+                ))
             .toList(),
       ),
     );
   }
 }
 
-class _PanelTile extends StatefulWidget {
+class _PanelTile extends StatelessWidget {
   final PaintGaugeController controller;
   final CarPart part;
+  final int number;
 
-  const _PanelTile({required this.controller, required this.part});
+  const _PanelTile({
+    required this.controller,
+    required this.part,
+    required this.number,
+  });
 
-  @override
-  State<_PanelTile> createState() => _PanelTileState();
-}
-
-class _PanelTileState extends State<_PanelTile> {
-  bool _expanded = false;
-
-  PaintGaugeController get _c => widget.controller;
-  CarPart get _part => widget.part;
-
-  PartMeasurement? get _measurement => _c.partMeasurements[_part];
-
-  Color _indicatorColor(BuildContext context) {
-    if (_c.panelIsComplete(_part)) return FColors.primaryColor;
-    if (_c.panelIsPartial(_part)) return FColors.darkGrey;
-    return Theme.of(context).dividerColor;
-  }
-
-  Color _tileBackgroundColor(BuildContext context) {
-    if (_c.panelIsSelected(_part)) {
-      return FColors.primaryColor.withValues(alpha: 0.06);
-    }
-    return Theme.of(context).cardColor;
-  }
-
-  void _onTap() {
-    _c.selectPanel(_part);
-    setState(() => _expanded = !_expanded);
-  }
+  PartMeasurement? get _measurement => controller.partMeasurements[part];
 
   Future<void> _onClear(BuildContext context) async {
     final confirmed = await showDialog<bool>(
@@ -83,13 +66,12 @@ class _PanelTileState extends State<_PanelTile> {
       ),
     );
     if (confirmed == true) {
-      await _c.clearPanel(_part);
+      await controller.clearPanel(part);
     }
   }
 
   String _panelLabel() {
-    // Map CarPart to localization key
-    switch (_part) {
+    switch (part) {
       case CarPart.frontHatch:
         return PaintGaugePage.panelHood.tr;
       case CarPart.roof:
@@ -134,294 +116,156 @@ class _PanelTileState extends State<_PanelTile> {
   @override
   Widget build(BuildContext context) {
     final m = _measurement;
-    final hasData = m?.hasMeasurement ?? false;
-    final indicatorColor = _indicatorColor(context);
-    final bgColor = _tileBackgroundColor(context);
-    final isSelected = _c.panelIsSelected(_part);
-    final isDeviceActive = _c.panelIsActiveOnDevice(_part);
+    final readingCount = m?.readings.length ?? 0;
+    final hasData = readingCount > 0;
+    final isSelected = controller.panelIsSelected(part);
+    final isDeviceActive = controller.panelIsActiveOnDevice(part);
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      margin: const EdgeInsets.symmetric(
-        horizontal: FSizes.md,
-        vertical: FSizes.xs / 2,
-      ),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-        border: Border.all(
+    return InkWell(
+      onTap: () => controller.selectPanel(part),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        margin: const EdgeInsets.symmetric(horizontal: FSizes.md, vertical: 3),
+        padding: const EdgeInsets.symmetric(
+            horizontal: FSizes.sm, vertical: FSizes.sm),
+        decoration: BoxDecoration(
           color: isSelected
-              ? FColors.primaryColor.withValues(alpha: 0.5)
-              : Theme.of(context).dividerColor,
-          width: isSelected ? 1.5 : 1.0,
+              ? FColors.primaryColor.withValues(alpha: 0.06)
+              : Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+          border: Border.all(
+            color: isSelected
+                ? FColors.primaryColor.withValues(alpha: 0.4)
+                : Theme.of(context).dividerColor,
+            width: isSelected ? 1.5 : 1.0,
+          ),
         ),
-        boxShadow: isSelected
-            ? [
-                BoxShadow(
-                  color: FColors.primaryColor.withValues(alpha: 0.08),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : null,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          InkWell(
-            onTap: _onTap,
-            borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: FSizes.md,
-                vertical: FSizes.sm,
-              ),
+        child: Row(
+          children: [
+            // Number badge
+            _NumberBadge(number: number),
+            const SizedBox(width: FSizes.sm),
+
+            // Panel name + device badge
+            Expanded(
               child: Row(
                 children: [
-                  // Color indicator
-                  Container(
-                    width: 4,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: indicatorColor,
-                      borderRadius: BorderRadius.circular(
-                        FSizes.borderRadiusSm,
+                  Flexible(
+                    child: Text(
+                      _panelLabel(),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (isDeviceActive) ...[
+                    const SizedBox(width: FSizes.xs),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: FColors.primaryColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        PaintGaugePage.here.tr,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: FColors.primaryColor,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: FSizes.sm),
-
-                  // Panel name + device indicator
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              _panelLabel(),
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    fontWeight: isSelected
-                                        ? FontWeight.w600
-                                        : FontWeight.normal,
-                                  ),
-                            ),
-                            if (isDeviceActive) ...[
-                              const SizedBox(width: FSizes.xs),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: FColors.primaryColor.withValues(
-                                    alpha: 0.12,
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  PaintGaugePage.here.tr,
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    color: FColors.primaryColor,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                        if (hasData) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            '${m!.readings.length}/6 ${PaintGaugePage.readings.tr}  •  ${PaintGaugePage.average.tr}: ${m.average?.toStringAsFixed(1) ?? '--'} μm',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: FColors.darkGrey,
-                                  fontSize: 11,
-                                ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-
-                  // Reading count badge
-                  if (hasData) ...[
-                    _ReadingBadge(count: m!.readings.length),
-                    const SizedBox(width: FSizes.xs),
                   ],
-
-                  Icon(
-                    _expanded ? Iconsax.arrow_up_2 : Iconsax.arrow_down_1,
-                    size: FSizes.iconSm,
-                    color: FColors.darkGrey,
-                  ),
                 ],
               ),
             ),
-          ),
 
-          // Expanded details
-          if (_expanded && hasData) _buildDetails(context, m!),
-        ],
-      ),
-    );
-  }
+            const SizedBox(width: FSizes.xs),
 
-  Widget _buildDetails(BuildContext context, PartMeasurement m) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(
-        FSizes.md + 4,
-        0,
-        FSizes.md,
-        FSizes.sm,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Divider(height: FSizes.sm),
+            // 6 mini column indicators
+            _MiniReadingIndicators(readingCount: readingCount),
 
-          // Individual readings row
-          Wrap(
-            spacing: FSizes.xs,
-            runSpacing: FSizes.xs,
-            children: m.readings.asMap().entries.map((e) {
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: FSizes.sm,
-                  vertical: FSizes.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
-                  border: Border.all(color: Theme.of(context).dividerColor),
-                ),
-                child: Text(
-                  '${e.value.toStringAsFixed(e.value.abs() < 99.95 ? 1 : 0)} μm',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 12,
+            // Trash icon — only when panel has data
+            if (hasData) ...[
+              const SizedBox(width: FSizes.xs),
+              GestureDetector(
+                onTap: () => _onClear(context),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(
+                    Iconsax.trash,
+                    size: 16,
+                    color: FColors.darkGrey.withValues(alpha: 0.6),
                   ),
-                ),
-              );
-            }).toList(),
-          ),
-
-          const SizedBox(height: FSizes.sm),
-
-          // Average + substrate
-          Row(
-            children: [
-              if (m.average != null) ...[
-                _InfoChip(
-                  label: PaintGaugePage.average.tr,
-                  value:
-                      '${m.average!.toStringAsFixed(m.average!.abs() < 99.95 ? 1 : 0)} μm',
-                  color: _c.panelIsComplete(_part)
-                      ? FColors.primaryColor
-                      : FColors.darkGrey,
-                ),
-                const SizedBox(width: FSizes.xs),
-              ],
-              if (m.substrate != null)
-                _InfoChip(
-                  label: PaintGaugePage.substrate.tr,
-                  value: m.substrate!.label,
-                  color: m.substrate == SubstrateType.metalPutty
-                      ? FColors.error
-                      : FColors.darkGrey,
-                ),
-              const Spacer(),
-              // Clear button
-              TextButton.icon(
-                onPressed: () => _onClear(context),
-                icon: const Icon(Iconsax.trash, size: FSizes.iconSm),
-                label: Text(PaintGaugePage.clearPanel.tr),
-                style: TextButton.styleFrom(
-                  foregroundColor: FColors.error,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: FSizes.sm,
-                    vertical: FSizes.xs,
-                  ),
-                  textStyle: const TextStyle(fontSize: 12),
                 ),
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ReadingBadge extends StatelessWidget {
-  final int count;
-  const _ReadingBadge({required this.count});
-
-  @override
-  Widget build(BuildContext context) {
-    final isComplete = count >= 6;
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: (isComplete ? FColors.primaryColor : FColors.darkGrey)
-            .withValues(alpha: 0.12),
-      ),
-      child: Center(
-        child: Text(
-          '$count',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: isComplete ? FColors.primaryColor : FColors.darkGrey,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _InfoChip extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color color;
-
-  const _InfoChip({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: FSizes.sm,
-        vertical: FSizes.xs,
-      ),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
-      ),
-      child: RichText(
-        text: TextSpan(
-          style: const TextStyle(fontSize: 11),
-          children: [
-            TextSpan(
-              text: '$label: ',
-              style: TextStyle(color: FColors.darkGrey),
-            ),
-            TextSpan(
-              text: value,
-              style: TextStyle(color: color, fontWeight: FontWeight.w600),
-            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+// ── Number badge ────────────────────────────────────────────────────────────────
+
+class _NumberBadge extends StatelessWidget {
+  final int number;
+
+  const _NumberBadge({required this.number});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 26,
+      height: 26,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: FColors.darkGrey.withValues(alpha: 0.10),
+      ),
+      child: Center(
+        child: Text(
+          '$number',
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: FColors.darkGrey,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── 6 mini column indicators ────────────────────────────────────────────────────
+
+class _MiniReadingIndicators extends StatelessWidget {
+  final int readingCount;
+
+  const _MiniReadingIndicators({required this.readingCount});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(6, (i) {
+        final filled = i < readingCount;
+        return Container(
+          width: 8,
+          height: 20,
+          margin: EdgeInsets.only(left: i == 0 ? 0 : 2),
+          decoration: BoxDecoration(
+            color: filled
+                ? FColors.primaryColor.withValues(alpha: 0.75)
+                : Theme.of(context).dividerColor,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        );
+      }),
     );
   }
 }

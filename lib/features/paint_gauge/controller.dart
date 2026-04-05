@@ -212,6 +212,8 @@ class PaintGaugeController extends GetxController {
       case BleConnectionState.connected:
         isConnected.value = true;
         isConnecting.value = false;
+        // Default to Hood on first connection so device and UI are in sync
+        selectPanel(CarPart.frontHatch);
         break;
       case BleConnectionState.disconnected:
       case BleConnectionState.error:

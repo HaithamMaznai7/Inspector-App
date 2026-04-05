@@ -16,12 +16,10 @@ class CurrentReadingPanel extends StatelessWidget {
     return GetBuilder<PaintGaugeController>(
       tag: 'PaintGauge',
       builder: (_) {
+        // Device panel takes priority; fall back to selected; default to Hood
         final activePart = controller.currentDevicePanel.value ??
-            controller.selectedPanel.value;
-
-        if (activePart == null) {
-          return _EmptyPrompt();
-        }
+            controller.selectedPanel.value ??
+            CarPart.frontHatch;
 
         final measurement = controller.partMeasurements[activePart];
         return _ReadingDisplay(
@@ -30,44 +28,6 @@ class CurrentReadingPanel extends StatelessWidget {
           controller: controller,
         );
       },
-    );
-  }
-}
-
-// ── Empty state ─────────────────────────────────────────────────────────────────
-
-class _EmptyPrompt extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(
-          horizontal: FSizes.md, vertical: FSizes.sm),
-      padding: const EdgeInsets.symmetric(
-          horizontal: FSizes.lg, vertical: FSizes.xl),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-        border: Border.all(color: Theme.of(context).dividerColor),
-      ),
-      child: Center(
-        child: Column(
-          children: [
-            Icon(
-              Icons.touch_app_outlined,
-              size: 40,
-              color: FColors.darkGrey.withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: FSizes.sm),
-            Text(
-              PaintGaugePage.tapToMoveDevice.tr,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: FColors.darkGrey,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -196,7 +156,7 @@ class _PanelHeader extends StatelessWidget {
           const SizedBox(width: FSizes.sm),
           Expanded(
             child: Text(
-              part.label,
+              '${CarPart.values.indexOf(part) + 1}) ${part.label}',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
