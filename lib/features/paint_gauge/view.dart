@@ -46,12 +46,7 @@ class _ScanShell extends StatelessWidget {
         return _ConnectingOverlay(controller: controller);
       }
 
-      return Column(
-        children: [
-          Expanded(child: PaintGaugeScanView()),
-          _SkipButton(),
-        ],
-      );
+      return Column(children: [Expanded(child: PaintGaugeScanView())]);
     });
   }
 }
@@ -79,40 +74,19 @@ class _ConnectingOverlay extends StatelessWidget {
             const SizedBox(height: FSizes.lg),
             Text(
               PaintGaugePage.connecting.tr,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: FSizes.xs),
             Text(
               PaintGaugePage.sessionReadingsOnly.tr,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: FColors.darkGrey,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: FColors.darkGrey),
               textAlign: TextAlign.center,
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SkipButton extends StatelessWidget {
-  const _SkipButton();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(FSizes.md, 0, FSizes.md, FSizes.md),
-      child: TextButton(
-        onPressed: () {
-          // The step is skippable — the inspection steps controller handles
-          // canAdvanceFromCurrentStep = true for this tab
-        },
-        child: Text(
-          PaintGaugePage.skipStep.tr,
-          style: const TextStyle(color: FColors.darkGrey),
         ),
       ),
     );

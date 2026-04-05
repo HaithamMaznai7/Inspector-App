@@ -79,8 +79,8 @@ class _PaintGaugeScanViewState extends State<PaintGaugeScanView> {
         final name = d.platformName.isNotEmpty
             ? d.platformName
             : adv.advName.isNotEmpty
-                ? adv.advName
-                : d.remoteId.str;
+            ? adv.advName
+            : d.remoteId.str;
         _seen[d.remoteId.str] = BleDevice(
           mac: d.remoteId.str,
           name: name,
@@ -141,16 +141,17 @@ class _PaintGaugeScanViewState extends State<PaintGaugeScanView> {
         children: [
           Text(
             PaintGaugePage.scanTitle.tr,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
+          //TODO: add optional
           const SizedBox(height: FSizes.xs),
           Text(
             PaintGaugePage.scanSubtitle.tr,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: FColors.darkGrey,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: FColors.darkGrey),
           ),
           const SizedBox(height: FSizes.sm),
           const Divider(),
@@ -215,8 +216,9 @@ class _PaintGaugeScanViewState extends State<PaintGaugeScanView> {
                 : PaintGaugePage.scanButton.tr,
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor:
-                _isScanning ? FColors.darkGrey : FColors.primaryColor,
+            backgroundColor: _isScanning
+                ? FColors.darkGrey
+                : FColors.primaryColor,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: FSizes.sm + 4),
             shape: RoundedRectangleBorder(
@@ -240,20 +242,26 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-          FSizes.md, FSizes.sm, FSizes.md, FSizes.xs),
+        FSizes.md,
+        FSizes.sm,
+        FSizes.md,
+        FSizes.xs,
+      ),
       child: Row(
         children: [
           Text(
             label,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: FColors.primaryColor,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: FColors.primaryColor,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(width: FSizes.xs),
           Container(
             padding: const EdgeInsets.symmetric(
-                horizontal: FSizes.sm, vertical: 2),
+              horizontal: FSizes.sm,
+              vertical: 2,
+            ),
             decoration: BoxDecoration(
               color: FColors.primaryColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
@@ -329,17 +337,17 @@ class _SignalBars extends StatelessWidget {
     final bars = rssi >= -60
         ? 4
         : rssi >= -70
-            ? 3
-            : rssi >= -80
-                ? 2
-                : 1;
+        ? 3
+        : rssi >= -80
+        ? 2
+        : 1;
     final color = rssi >= -60
         ? FColors.success
         : rssi >= -70
-            ? FColors.success
-            : rssi >= -80
-                ? FColors.warning
-                : FColors.error;
+        ? FColors.success
+        : rssi >= -80
+        ? FColors.warning
+        : FColors.error;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -401,9 +409,9 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: FSizes.xs),
             Text(
               subtitle,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: FColors.darkGrey,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: FColors.darkGrey),
               textAlign: TextAlign.center,
             ),
           ],

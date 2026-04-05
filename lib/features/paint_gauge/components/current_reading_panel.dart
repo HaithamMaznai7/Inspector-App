@@ -1,3 +1,4 @@
+import 'package:fahis_inspector/features/paint_gauge/components/panel_list.dart';
 import 'package:fahis_inspector/features/paint_gauge/controller.dart';
 import 'package:fahis_inspector/paint_gauge/protocol/models.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -5,6 +6,7 @@ import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
 
 class CurrentReadingPanel extends StatelessWidget {
   final PaintGaugeController controller;
@@ -17,7 +19,8 @@ class CurrentReadingPanel extends StatelessWidget {
       tag: 'PaintGauge',
       builder: (_) {
         // Device panel takes priority; fall back to selected; default to Hood
-        final activePart = controller.currentDevicePanel.value ??
+        final activePart =
+            controller.currentDevicePanel.value ??
             controller.selectedPanel.value ??
             CarPart.frontHatch;
 
@@ -56,7 +59,9 @@ class _ReadingDisplay extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.symmetric(
-          horizontal: FSizes.md, vertical: FSizes.sm),
+        horizontal: FSizes.md,
+        vertical: FSizes.sm,
+      ),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
@@ -84,17 +89,18 @@ class _ReadingDisplay extends StatelessWidget {
           // ── Large reading value ──
           Padding(
             padding: const EdgeInsets.fromLTRB(
-                FSizes.lg, FSizes.md, FSizes.lg, FSizes.xs),
+              FSizes.lg,
+              FSizes.md,
+              FSizes.lg,
+              FSizes.xs,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 // Main value
                 Expanded(
                   child: hasReadings && latest != null
-                      ? _LargeValue(
-                          value: latest,
-                          substrate: substrate,
-                        )
+                      ? _LargeValue(value: latest, substrate: substrate)
                       : _NoReadingYet(),
                 ),
 
@@ -112,7 +118,11 @@ class _ReadingDisplay extends StatelessWidget {
           // ── 6 reading slots ──
           Padding(
             padding: const EdgeInsets.fromLTRB(
-                FSizes.md, FSizes.sm, FSizes.md, FSizes.md),
+              FSizes.md,
+              FSizes.sm,
+              FSizes.md,
+              FSizes.md,
+            ),
             child: _ReadingSlots(readings: m?.readings ?? []),
           ),
         ],
@@ -138,28 +148,19 @@ class _PanelHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-          horizontal: FSizes.md, vertical: FSizes.sm),
+        horizontal: FSizes.md,
+        vertical: FSizes.sm,
+      ),
       child: Row(
         children: [
-          Container(
-            width: 4,
-            height: 24,
-            decoration: BoxDecoration(
-              color: readingCount >= 6
-                  ? FColors.primaryColor
-                  : readingCount > 0
-                      ? FColors.darkGrey
-                      : Theme.of(context).dividerColor,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
+          NumberBadge(number: part.index + 1),
           const SizedBox(width: FSizes.sm),
           Expanded(
             child: Text(
-              '${CarPart.values.indexOf(part) + 1}) ${part.label}',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              part.label,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
           // Reading count badge
@@ -176,8 +177,9 @@ class _PanelHeader extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color:
-                    readingCount >= 6 ? FColors.primaryColor : FColors.darkGrey,
+                color: readingCount >= 6
+                    ? FColors.primaryColor
+                    : FColors.darkGrey,
               ),
             ),
           ),
@@ -187,14 +189,11 @@ class _PanelHeader extends StatelessWidget {
             GestureDetector(
               onTap: () => _confirmClear(context),
               child: Padding(
-                padding: const EdgeInsets.all(FSizes.xs),
-                child: Text(
-                  PaintGaugePage.clearPanel.tr,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: FColors.darkGrey,
-                    fontWeight: FontWeight.w500,
-                  ),
+                padding: const EdgeInsets.all(4),
+                child: Icon(
+                  Iconsax.trash,
+                  size: 16,
+                  color: FColors.darkGrey.withValues(alpha: 0.6),
                 ),
               ),
             ),
@@ -286,9 +285,9 @@ class _NoReadingYet extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: FSizes.md),
       child: Text(
         PaintGaugePage.noMeasurementYet.tr,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: FColors.darkGrey,
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
       ),
     );
   }
@@ -388,8 +387,8 @@ class _ReadingSlots extends StatelessWidget {
             decoration: BoxDecoration(
               color: hasValue
                   ? isLatest
-                      ? FColors.primaryColor.withValues(alpha: 0.15)
-                      : FColors.darkGrey.withValues(alpha: 0.08)
+                        ? FColors.primaryColor.withValues(alpha: 0.15)
+                        : FColors.darkGrey.withValues(alpha: 0.08)
                   : Theme.of(context).scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
               border: Border.all(
@@ -409,18 +408,15 @@ class _ReadingSlots extends StatelessWidget {
                     fontWeight: hasValue ? FontWeight.w700 : FontWeight.w300,
                     color: hasValue
                         ? isLatest
-                            ? FColors.primaryColor
-                            : Theme.of(context).textTheme.bodyLarge?.color
+                              ? FColors.primaryColor
+                              : Theme.of(context).textTheme.bodyLarge?.color
                         : FColors.darkGrey.withValues(alpha: 0.4),
                   ),
                 ),
                 if (hasValue)
                   Text(
                     'μm',
-                    style: TextStyle(
-                      fontSize: 9,
-                      color: FColors.darkGrey,
-                    ),
+                    style: TextStyle(fontSize: 9, color: FColors.darkGrey),
                   )
                 else
                   const SizedBox(height: 11),

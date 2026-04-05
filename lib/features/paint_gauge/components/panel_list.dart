@@ -20,11 +20,13 @@ class PanelListWidget extends StatelessWidget {
         children: CarPart.values
             .asMap()
             .entries
-            .map((e) => _PanelTile(
-                  controller: controller,
-                  part: e.value,
-                  number: e.key + 1,
-                ))
+            .map(
+              (e) => _PanelTile(
+                controller: controller,
+                part: e.value,
+                number: e.key + 1,
+              ),
+            )
             .toList(),
       ),
     );
@@ -127,7 +129,9 @@ class _PanelTile extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         margin: const EdgeInsets.symmetric(horizontal: FSizes.md, vertical: 3),
         padding: const EdgeInsets.symmetric(
-            horizontal: FSizes.sm, vertical: FSizes.sm),
+          horizontal: FSizes.sm,
+          vertical: FSizes.sm,
+        ),
         decoration: BoxDecoration(
           color: isSelected
               ? FColors.primaryColor.withValues(alpha: 0.06)
@@ -143,7 +147,7 @@ class _PanelTile extends StatelessWidget {
         child: Row(
           children: [
             // Number badge
-            _NumberBadge(number: number),
+            NumberBadge(number: number),
             const SizedBox(width: FSizes.sm),
 
             // Panel name + device badge
@@ -154,10 +158,10 @@ class _PanelTile extends StatelessWidget {
                     child: Text(
                       _panelLabel(),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: isSelected
-                                ? FontWeight.w600
-                                : FontWeight.normal,
-                          ),
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -165,7 +169,9 @@ class _PanelTile extends StatelessWidget {
                     const SizedBox(width: FSizes.xs),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: FColors.primaryColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
@@ -213,10 +219,10 @@ class _PanelTile extends StatelessWidget {
 
 // ── Number badge ────────────────────────────────────────────────────────────────
 
-class _NumberBadge extends StatelessWidget {
+class NumberBadge extends StatelessWidget {
   final int number;
 
-  const _NumberBadge({required this.number});
+  const NumberBadge({super.key, required this.number});
 
   @override
   Widget build(BuildContext context) {
@@ -261,7 +267,7 @@ class _MiniReadingIndicators extends StatelessWidget {
           decoration: BoxDecoration(
             color: filled
                 ? FColors.primaryColor.withValues(alpha: 0.75)
-                : Theme.of(context).dividerColor,
+                : Theme.of(context).dividerColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(2),
           ),
         );
