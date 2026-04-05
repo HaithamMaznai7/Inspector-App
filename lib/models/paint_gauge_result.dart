@@ -49,10 +49,11 @@ class PaintGaugeResult {
     String? deviceName,
     String? deviceMac,
   }) {
-    final measured =
-        panels.values.where((r) => r.measurementCount > 0).length;
-    final total =
-        panels.values.fold<int>(0, (sum, r) => sum + r.measurementCount);
+    final measured = panels.values.where((r) => r.measurementCount > 0).length;
+    final total = panels.values.fold<int>(
+      0,
+      (sum, r) => sum + r.measurementCount,
+    );
 
     return PaintGaugeResult(
       inspectionSlug: inspectionSlug,
@@ -68,18 +69,17 @@ class PaintGaugeResult {
 
   /// Serializes for backend submission and Hive persistence.
   // TODO: Backend integration — POST /inspector/inspections/{slug}/paint-gauge
-  // TODO: Backend should accept this JSON structure
+
   Map<String, dynamic> toJson() => {
-        'inspectionSlug': inspectionSlug,
-        'panels':
-            panels.map((key, value) => MapEntry(key, value.toJson())),
-        'totalPanelsMeasured': totalPanelsMeasured,
-        'totalReadings': totalReadings,
-        'sessionStartedAt': sessionStartedAt.toIso8601String(),
-        'sessionEndedAt': sessionEndedAt?.toIso8601String(),
-        'deviceName': deviceName,
-        'deviceMac': deviceMac,
-      };
+    'inspectionSlug': inspectionSlug,
+    'panels': panels.map((key, value) => MapEntry(key, value.toJson())),
+    'totalPanelsMeasured': totalPanelsMeasured,
+    'totalReadings': totalReadings,
+    'sessionStartedAt': sessionStartedAt.toIso8601String(),
+    'sessionEndedAt': sessionEndedAt?.toIso8601String(),
+    'deviceName': deviceName,
+    'deviceMac': deviceMac,
+  };
 
   factory PaintGaugeResult.fromJson(Map<String, dynamic> json) {
     final panelsMap = (json['panels'] as Map).map(
