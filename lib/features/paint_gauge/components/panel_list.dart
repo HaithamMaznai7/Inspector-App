@@ -247,7 +247,7 @@ class _MiniReadingIndicators extends StatelessWidget {
         return Container(
           width: 8,
           height: 20,
-          margin: EdgeInsets.only(left: i == 0 ? 0 : 2),
+          margin: const EdgeInsets.symmetric(horizontal: 1),
           decoration: BoxDecoration(
             color: filled
                 ? FColors.primaryColor.withValues(alpha: 0.75)

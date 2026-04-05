@@ -635,7 +635,8 @@ class Arabic {
     /// Paint Gauge
     PaintGaugePage.stepTitle: 'قياس طلاء السيارة',
     PaintGaugePage.scanTitle: 'توصيل جهاز القياس',
-    PaintGaugePage.scanSubtitle: 'شغّل البلوتوث وضع جهاز Guoou بالقرب منك للبحث',
+    PaintGaugePage.scanSubtitle:
+        'شغّل البلوتوث وضع جهاز Guoou بالقرب منك للبحث',
     PaintGaugePage.scanButton: 'بحث عن الأجهزة',
     PaintGaugePage.stopScanButton: 'إيقاف البحث',
     PaintGaugePage.noDevicesFound: 'لم يتم العثور على أجهزة',
@@ -654,7 +655,8 @@ class Arabic {
     PaintGaugePage.lostConnection: 'انقطع الاتصال',
     PaintGaugePage.connectionError: 'خطأ في الاتصال',
     PaintGaugePage.goBack: 'العودة',
-    PaintGaugePage.sessionReadingsOnly: 'قراءات الجلسة فقط — لم يتم استيراد بيانات سابقة',
+    PaintGaugePage.sessionReadingsOnly:
+        'قراءات الجلسة فقط — لم يتم استيراد بيانات سابقة',
     PaintGaugePage.measuredPanels: 'تم قياسه',
     PaintGaugePage.noMeasurementYet: 'لا توجد قراءة بعد',
     PaintGaugePage.tapToMoveDevice: 'اضغط لنقل الجهاز هنا',
@@ -663,7 +665,8 @@ class Arabic {
     PaintGaugePage.substrate: 'نوع المادة',
     PaintGaugePage.here: 'هنا',
     PaintGaugePage.clearPanel: 'مسح اللوحة',
-    PaintGaugePage.clearPanelConfirm: 'سيتم مسح جميع قراءات هذه اللوحة في الجلسة الحالية.',
+    PaintGaugePage.clearPanelConfirm:
+        'سيتم مسح جميع قراءات هذه اللوحة في الجلسة الحالية.',
     PaintGaugePage.clearAll: 'مسح جميع اللوحات',
     PaintGaugePage.clearAllConfirm: 'سيتم حذف جميع القراءات من كل اللوحات.',
     PaintGaugePage.clearSuccess: 'تم المسح',
@@ -671,9 +674,9 @@ class Arabic {
     PaintGaugePage.reviewTitle: 'قياس الطلاء',
     PaintGaugePage.reviewPanelsMeasured: 'لوحة تم قياسها',
     PaintGaugePage.reviewNoData: 'لا توجد قراءات مسجلة',
-    PaintGaugePage.panelHood: 'الغطاء الأمامي',
+    PaintGaugePage.panelHood: 'الكبوت',
     PaintGaugePage.panelRoof: 'السقف',
-    PaintGaugePage.panelTrunk: 'صندوق الخلفي',
+    PaintGaugePage.panelTrunk: 'الشنطة',
     PaintGaugePage.panelLeftFrontFender: 'الرفرف الأمامي الأيسر',
     PaintGaugePage.panelLeftAPillar: 'العمود A الأيسر',
     PaintGaugePage.panelLeftFrontDoor: 'الباب الأمامي الأيسر',
