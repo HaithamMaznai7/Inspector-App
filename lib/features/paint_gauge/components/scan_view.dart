@@ -268,8 +268,7 @@ class _SectionHeader extends StatelessWidget {
             ),
             child: Text(
               '$count',
-              style: const TextStyle(
-                fontSize: 11,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: FColors.primaryColor,
                 fontWeight: FontWeight.w600,
               ),
@@ -309,7 +308,9 @@ class _DeviceTile extends StatelessWidget {
       ),
       subtitle: Text(
         device.mac,
-        style: const TextStyle(fontSize: 11, color: FColors.darkGrey),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: FColors.darkGrey,
+        ),
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -319,7 +320,9 @@ class _DeviceTile extends StatelessWidget {
           const SizedBox(width: FSizes.xs),
           Text(
             '${device.rssi} dBm',
-            style: const TextStyle(fontSize: 11, color: FColors.darkGrey),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: FColors.darkGrey,
+            ),
           ),
         ],
       ),
@@ -391,15 +394,15 @@ class _EmptyState extends StatelessWidget {
           children: [
             if (showSpinner)
               const SizedBox(
-                width: 48,
-                height: 48,
+                width: FSizes.iconCircleMd,
+                height: FSizes.iconCircleMd,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.5,
                   color: FColors.primaryColor,
                 ),
               )
             else
-              Icon(icon, size: 56, color: FColors.grey),
+              Icon(icon, size: FSizes.buttonHeightLg, color: FColors.grey),
             const SizedBox(height: FSizes.md),
             Text(
               title,

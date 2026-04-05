@@ -62,7 +62,7 @@ class ConnectionStatusCard extends StatelessWidget {
                   foregroundColor: FColors.error,
                   padding: const EdgeInsets.symmetric(
                       horizontal: FSizes.sm, vertical: FSizes.xs),
-                  textStyle: const TextStyle(fontSize: 12),
+                  textStyle: Theme.of(context).textTheme.labelSmall,
                 ),
               ),
           ],

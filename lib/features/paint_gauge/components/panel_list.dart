@@ -1,4 +1,5 @@
 import 'package:fahis_inspector/features/paint_gauge/controller.dart';
+import 'package:fahis_inspector/features/paint_gauge/utils/car_part_label.dart';
 import 'package:fahis_inspector/paint_gauge/protocol/models.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
@@ -72,49 +73,6 @@ class _PanelTile extends StatelessWidget {
     }
   }
 
-  String _panelLabel() {
-    switch (part) {
-      case CarPart.frontHatch:
-        return PaintGaugePage.panelHood.tr;
-      case CarPart.roof:
-        return PaintGaugePage.panelRoof.tr;
-      case CarPart.trunkCover:
-        return PaintGaugePage.panelTrunk.tr;
-      case CarPart.flWing:
-        return PaintGaugePage.panelLeftFrontFender.tr;
-      case CarPart.lAColumn:
-        return PaintGaugePage.panelLeftAPillar.tr;
-      case CarPart.flDoor:
-        return PaintGaugePage.panelLeftFrontDoor.tr;
-      case CarPart.lBColumn:
-        return PaintGaugePage.panelLeftBPillar.tr;
-      case CarPart.blDoor:
-        return PaintGaugePage.panelLeftRearDoor.tr;
-      case CarPart.lCColumn:
-        return PaintGaugePage.panelLeftCPillar.tr;
-      case CarPart.blWing:
-        return PaintGaugePage.panelLeftRearFender.tr;
-      case CarPart.lDColumn:
-        return PaintGaugePage.panelLeftDPillar.tr;
-      case CarPart.rDColumn:
-        return PaintGaugePage.panelRightDPillar.tr;
-      case CarPart.brWing:
-        return PaintGaugePage.panelRightRearFender.tr;
-      case CarPart.rCColumn:
-        return PaintGaugePage.panelRightCPillar.tr;
-      case CarPart.brDoor:
-        return PaintGaugePage.panelRightRearDoor.tr;
-      case CarPart.rBColumn:
-        return PaintGaugePage.panelRightBPillar.tr;
-      case CarPart.frDoor:
-        return PaintGaugePage.panelRightFrontDoor.tr;
-      case CarPart.rAColumn:
-        return PaintGaugePage.panelRightAPillar.tr;
-      case CarPart.frWing:
-        return PaintGaugePage.panelRightFrontFender.tr;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final m = _measurement;
@@ -127,7 +85,7 @@ class _PanelTile extends StatelessWidget {
       onTap: () => controller.selectPanel(part),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        margin: const EdgeInsets.symmetric(horizontal: FSizes.md, vertical: 3),
+        margin: const EdgeInsets.symmetric(horizontal: FSizes.md, vertical: FSizes.xs / 2),
         padding: const EdgeInsets.symmetric(
           horizontal: FSizes.sm,
           vertical: FSizes.sm,
@@ -152,7 +110,7 @@ class _PanelTile extends StatelessWidget {
                 children: [
                   Flexible(
                     child: Text(
-                      _panelLabel(),
+                      part.localizedLabel,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.normal,
                       ),
@@ -162,8 +120,8 @@ class _PanelTile extends StatelessWidget {
                   if (isDeviceActive) ...[
                     const SizedBox(width: FSizes.xs),
                     Container(
-                      width: 8,
-                      height: 8,
+                      width: FSizes.sm,
+                      height: FSizes.sm,
                       decoration: const BoxDecoration(
                         color: FColors.secondaryColor,
                         shape: BoxShape.circle,
@@ -185,10 +143,10 @@ class _PanelTile extends StatelessWidget {
               GestureDetector(
                 onTap: () => _onClear(context),
                 child: Padding(
-                  padding: const EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(FSizes.xs),
                   child: Icon(
                     Iconsax.trash,
-                    size: 16,
+                    size: FSizes.iconSm,
                     color: FColors.darkGrey.withValues(alpha: 0.6),
                   ),
                 ),
@@ -211,8 +169,8 @@ class NumberBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 26,
-      height: 26,
+      width: FSizes.iconMd,
+      height: FSizes.iconMd,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: FColors.darkGrey.withValues(alpha: 0.10),
@@ -220,8 +178,7 @@ class NumberBadge extends StatelessWidget {
       child: Center(
         child: Text(
           '$number',
-          style: const TextStyle(
-            fontSize: 11,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
             fontWeight: FontWeight.w700,
             color: FColors.darkGrey,
           ),
@@ -245,8 +202,8 @@ class _MiniReadingIndicators extends StatelessWidget {
       children: List.generate(6, (i) {
         final filled = i < readingCount;
         return Container(
-          width: 8,
-          height: 20,
+          width: FSizes.sm,
+          height: FSizes.iconInlineSm,
           margin: const EdgeInsets.symmetric(horizontal: 1),
           decoration: BoxDecoration(
             color: filled

@@ -1,9 +1,11 @@
 import 'package:fahis_inspector/features/paint_gauge/components/panel_list.dart';
 import 'package:fahis_inspector/features/paint_gauge/controller.dart';
+import 'package:fahis_inspector/features/paint_gauge/utils/car_part_label.dart';
 import 'package:fahis_inspector/paint_gauge/protocol/models.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
+import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -157,7 +159,7 @@ class _PanelHeader extends StatelessWidget {
           const SizedBox(width: FSizes.sm),
           Expanded(
             child: Text(
-              part.label,
+              part.localizedLabel,
               style: Theme.of(
                 context,
               ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
@@ -165,17 +167,19 @@ class _PanelHeader extends StatelessWidget {
           ),
           // Reading count badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(
+              horizontal: FSizes.sm + 2,
+              vertical: FSizes.xs,
+            ),
             decoration: BoxDecoration(
               color: readingCount >= 6
                   ? FColors.primaryColor.withValues(alpha: 0.12)
                   : FColors.darkGrey.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
             ),
             child: Text(
               '$readingCount/6',
-              style: TextStyle(
-                fontSize: 12,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: readingCount >= 6
                     ? FColors.primaryColor
@@ -189,10 +193,10 @@ class _PanelHeader extends StatelessWidget {
             GestureDetector(
               onTap: () => _confirmClear(context),
               child: Padding(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(FSizes.xs),
                 child: Icon(
                   Iconsax.trash,
-                  size: 16,
+                  size: FSizes.iconSm,
                   color: FColors.darkGrey.withValues(alpha: 0.6),
                 ),
               ),
@@ -242,6 +246,12 @@ class _LargeValue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final largeFontSize = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: 40.0,
+      tablet: 48.0,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -252,20 +262,19 @@ class _LargeValue extends StatelessWidget {
             Text(
               _format(value),
               style: TextStyle(
-                fontSize: 52,
+                fontSize: largeFontSize,
                 fontWeight: FontWeight.w800,
                 color: Theme.of(context).textTheme.bodyLarge?.color,
                 height: 1.0,
                 letterSpacing: -1,
               ),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: FSizes.xs),
             Padding(
-              padding: const EdgeInsets.only(bottom: 4),
+              padding: const EdgeInsets.only(bottom: FSizes.xs),
               child: Text(
                 'μm',
-                style: TextStyle(
-                  fontSize: 18,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w500,
                   color: FColors.darkGrey,
                 ),
@@ -317,17 +326,19 @@ class _StatsColumn extends StatelessWidget {
         // Substrate badge
         if (substrate != null)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(
+              horizontal: FSizes.sm + 2,
+              vertical: FSizes.xs,
+            ),
             decoration: BoxDecoration(
               color: substrate == SubstrateType.metalPutty
                   ? FColors.error.withValues(alpha: 0.12)
                   : FColors.primaryColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(FSizes.sm + 2),
             ),
             child: Text(
               substrate!.label,
-              style: TextStyle(
-                fontSize: 13,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: substrate == SubstrateType.metalPutty
                     ? FColors.error
@@ -340,16 +351,14 @@ class _StatsColumn extends StatelessWidget {
         if (readingCount > 1) ...[
           Text(
             '${PaintGaugePage.average.tr}:',
-            style: TextStyle(
-              fontSize: 11,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: FColors.darkGrey,
               fontWeight: FontWeight.w500,
             ),
           ),
           Text(
             '${_format(average)} μm',
-            style: TextStyle(
-              fontSize: 16,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w700,
               color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
@@ -372,6 +381,8 @@ class _ReadingSlots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const slotGap = FSizes.xs / 2;
+
     return Row(
       children: List.generate(6, (i) {
         final hasValue = i < readings.length;
@@ -380,10 +391,10 @@ class _ReadingSlots extends StatelessWidget {
         return Expanded(
           child: Container(
             margin: EdgeInsets.only(
-              left: i == 0 ? 0 : 3,
-              right: i == 5 ? 0 : 3,
+              left: i == 0 ? 0 : slotGap,
+              right: i == 5 ? 0 : slotGap,
             ),
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.symmetric(vertical: FSizes.sm + 2),
             decoration: BoxDecoration(
               color: hasValue
                   ? isLatest
@@ -401,15 +412,17 @@ class _ReadingSlots extends StatelessWidget {
             child: Text(
               textAlign: TextAlign.center,
               hasValue ? _format(readings[i]) : '—',
-              style: TextStyle(
-                fontSize: hasValue ? 14 : 16,
-                fontWeight: hasValue ? FontWeight.w700 : FontWeight.w300,
-                color: hasValue
-                    ? isLatest
+              style: hasValue
+                  ? Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: isLatest
                           ? FColors.primaryColor
-                          : Theme.of(context).textTheme.bodyLarge?.color
-                    : FColors.darkGrey.withValues(alpha: 0.4),
-              ),
+                          : Theme.of(context).textTheme.bodyLarge?.color,
+                    )
+                  : Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w300,
+                      color: FColors.darkGrey.withValues(alpha: 0.4),
+                    ),
             ),
           ),
         );
