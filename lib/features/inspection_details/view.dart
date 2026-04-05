@@ -4,6 +4,7 @@ import 'package:fahis_inspector/features/inspection_details/components/reviewer_
 import 'package:fahis_inspector/features/inspection_details/components/reviews/inspection_body_notes_review.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/inspection_info_review.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/inspection_obd_review.dart';
+import 'package:fahis_inspector/features/inspection_details/components/reviews/inspection_paint_gauge_review.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/inspection_photos_review.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/inspection_points_review.dart';
 import 'package:fahis_inspector/features/inspection_details/components/stage_selector.dart';
@@ -85,6 +86,9 @@ class InspectionDetailsScreen extends StatelessWidget {
                   const InspectionPhotosReview(),
                 if (controller.inspection.value?.hasBody ?? false)
                   const InspectionBodyNotesReview(),
+                if (controller.inspection.value?.hasBody ?? false ||
+                    (controller.inspection.value?.hasPaintBody ?? false))
+                  const InspectionPaintGaugeReview(),
                 if (controller.inspection.value?.hasObd ?? false)
                   const InspectionOBDReview(),
                 SizedBox(height: FSizes.md),
