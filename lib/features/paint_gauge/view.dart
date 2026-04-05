@@ -1,4 +1,4 @@
-import 'package:fahis_inspector/features/paint_gauge/components/car_illustration.dart';
+import 'package:fahis_inspector/features/paint_gauge/components/current_reading_panel.dart';
 import 'package:fahis_inspector/features/paint_gauge/components/panel_list.dart';
 import 'package:fahis_inspector/features/paint_gauge/components/scan_view.dart';
 import 'package:fahis_inspector/features/paint_gauge/components/status_card.dart';
@@ -132,14 +132,14 @@ class _MeasurementView extends StatelessWidget {
       children: [
         ConnectionStatusCard(controller: controller),
         const Divider(height: 1),
+        // Sticky current reading panel — stays on top as list scrolls
+        CurrentReadingPanel(controller: controller),
+        const Divider(height: 1),
         Expanded(
           child: ListView(
             children: [
-              const SizedBox(height: FSizes.sm),
-              CarIllustrationWidget(controller: controller),
-              const SizedBox(height: FSizes.md),
-              _ClearAllButton(controller: controller),
               const SizedBox(height: FSizes.xs),
+              _ClearAllButton(controller: controller),
               PanelListWidget(controller: controller),
               const SizedBox(height: FSizes.lg),
             ],

@@ -143,7 +143,9 @@ class _PanelTileState extends State<_PanelTile> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       margin: const EdgeInsets.symmetric(
-          horizontal: FSizes.md, vertical: FSizes.xs / 2),
+        horizontal: FSizes.md,
+        vertical: FSizes.xs / 2,
+      ),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
@@ -159,7 +161,7 @@ class _PanelTileState extends State<_PanelTile> {
                   color: FColors.primaryColor.withValues(alpha: 0.08),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
-                )
+                ),
               ]
             : null,
       ),
@@ -171,7 +173,9 @@ class _PanelTileState extends State<_PanelTile> {
             borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                  horizontal: FSizes.md, vertical: FSizes.sm),
+                horizontal: FSizes.md,
+                vertical: FSizes.sm,
+              ),
               child: Row(
                 children: [
                   // Color indicator
@@ -180,8 +184,9 @@ class _PanelTileState extends State<_PanelTile> {
                     height: 36,
                     decoration: BoxDecoration(
                       color: indicatorColor,
-                      borderRadius:
-                          BorderRadius.circular(FSizes.borderRadiusSm),
+                      borderRadius: BorderRadius.circular(
+                        FSizes.borderRadiusSm,
+                      ),
                     ),
                   ),
                   const SizedBox(width: FSizes.sm),
@@ -195,9 +200,7 @@ class _PanelTileState extends State<_PanelTile> {
                           children: [
                             Text(
                               _panelLabel(),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
+                              style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
                                     fontWeight: isSelected
                                         ? FontWeight.w600
@@ -208,10 +211,13 @@ class _PanelTileState extends State<_PanelTile> {
                               const SizedBox(width: FSizes.xs),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: FColors.primaryColor
-                                      .withValues(alpha: 0.12),
+                                  color: FColors.primaryColor.withValues(
+                                    alpha: 0.12,
+                                  ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
@@ -229,12 +235,12 @@ class _PanelTileState extends State<_PanelTile> {
                         if (hasData) ...[
                           const SizedBox(height: 2),
                           Text(
-                            '${m!.readings.length}/6 ${PaintGaugePage.readings.tr}  •  ${m.average?.toStringAsFixed(1) ?? '--'} μm',
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: FColors.darkGrey,
-                                      fontSize: 11,
-                                    ),
+                            '${m!.readings.length}/6 ${PaintGaugePage.readings.tr}  •  ${PaintGaugePage.average.tr}: ${m.average?.toStringAsFixed(1) ?? '--'} μm',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: FColors.darkGrey,
+                                  fontSize: 11,
+                                ),
                           ),
                         ],
                       ],
@@ -267,7 +273,11 @@ class _PanelTileState extends State<_PanelTile> {
   Widget _buildDetails(BuildContext context, PartMeasurement m) {
     return Container(
       padding: const EdgeInsets.fromLTRB(
-          FSizes.md + 4, 0, FSizes.md, FSizes.sm),
+        FSizes.md + 4,
+        0,
+        FSizes.md,
+        FSizes.sm,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -280,7 +290,9 @@ class _PanelTileState extends State<_PanelTile> {
             children: m.readings.asMap().entries.map((e) {
               return Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: FSizes.sm, vertical: FSizes.xs),
+                  horizontal: FSizes.sm,
+                  vertical: FSizes.xs,
+                ),
                 decoration: BoxDecoration(
                   color: Theme.of(context).scaffoldBackgroundColor,
                   borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
@@ -289,9 +301,9 @@ class _PanelTileState extends State<_PanelTile> {
                 child: Text(
                   '${e.value.toStringAsFixed(e.value.abs() < 99.95 ? 1 : 0)} μm',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12,
-                      ),
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
+                  ),
                 ),
               );
             }).toList(),
@@ -330,7 +342,9 @@ class _PanelTileState extends State<_PanelTile> {
                 style: TextButton.styleFrom(
                   foregroundColor: FColors.error,
                   padding: const EdgeInsets.symmetric(
-                      horizontal: FSizes.sm, vertical: FSizes.xs),
+                    horizontal: FSizes.sm,
+                    vertical: FSizes.xs,
+                  ),
                   textStyle: const TextStyle(fontSize: 12),
                 ),
               ),
@@ -385,8 +399,10 @@ class _InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: FSizes.sm, vertical: FSizes.xs),
+      padding: const EdgeInsets.symmetric(
+        horizontal: FSizes.sm,
+        vertical: FSizes.xs,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
@@ -401,8 +417,7 @@ class _InfoChip extends StatelessWidget {
             ),
             TextSpan(
               text: value,
-              style: TextStyle(
-                  color: color, fontWeight: FontWeight.w600),
+              style: TextStyle(color: color, fontWeight: FontWeight.w600),
             ),
           ],
         ),

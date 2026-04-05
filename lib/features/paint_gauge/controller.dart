@@ -1,8 +1,6 @@
 import 'dart:async';
 
-import 'package:fahis_inspector/enums/body_part.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
-import 'package:fahis_inspector/models/inspection_body_notes.dart';
 import 'package:fahis_inspector/models/paint_gauge_reading.dart';
 import 'package:fahis_inspector/models/paint_gauge_result.dart';
 import 'package:fahis_inspector/paint_gauge/protocol/models.dart';
@@ -45,7 +43,6 @@ class PaintGaugeController extends GetxController {
   final RxBool isConnecting = false.obs;
 
   final RxList<BleDevice> discoveredDevices = RxList<BleDevice>([]);
-  final RxList<CarBody> carBodies = RxList<CarBody>([]);
 
   // Connected device info (for traceability)
   String? _deviceName;
@@ -74,7 +71,6 @@ class PaintGaugeController extends GetxController {
 
     await _openHiveBox();
     _loadFromCache();
-    _fetchCarImages();
   }
 
   @override
@@ -140,46 +136,6 @@ class PaintGaugeController extends GetxController {
 
     partMeasurements.refresh();
     update();
-  }
-
-  void _fetchCarImages() {
-    // Try to reuse data already loaded by InspectionBodyController
-    try {
-      final bodyController = Get.find<dynamic>(tag: BindingTags.inspectionBody);
-      if (bodyController != null) {
-        final bodies = bodyController.bodySides as List<CarBody>;
-        final paintViews = bodies.where((b) =>
-            b.part == BodyPart.top ||
-            b.part == BodyPart.left ||
-            b.part == BodyPart.right).toList();
-        if (paintViews.isNotEmpty) {
-          carBodies.assignAll(paintViews);
-          AppLogger.info(_tag, 'Reused body images from InspectionBodyController: ${paintViews.length}');
-          update();
-          return;
-        }
-      }
-    } catch (_) {
-      // InspectionBodyController not registered — fall through
-    }
-
-    // Fallback: load from main controller's already-fetched data
-    // The body notes API already returns top/left/right — nothing extra to fetch
-    AppLogger.info(_tag, 'Car body images not available yet');
-  }
-
-  /// Called by InspectionBodyController after it loads body sides,
-  /// so the paint gauge can reuse the same images without a second API call.
-  void onBodyImagesAvailable(List<CarBody> bodies) {
-    final paintViews = bodies.where((b) =>
-        b.part == BodyPart.top ||
-        b.part == BodyPart.left ||
-        b.part == BodyPart.right).toList();
-    if (paintViews.isNotEmpty) {
-      carBodies.assignAll(paintViews);
-      AppLogger.info(_tag, 'Body images updated: ${paintViews.length} views');
-      update();
-    }
   }
 
   // ── BLE Scanning ─────────────────────────────────────────────────────────────

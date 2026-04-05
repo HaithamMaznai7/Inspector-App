@@ -87,11 +87,6 @@ class InspectionBodyController extends GetxController {
     } finally {
       isLoading.value = false;
       update();
-
-      // Notify PaintGaugeController if registered (shares body images)
-      if (PaintGaugeBinding().isRegistered) {
-        PaintGaugeBinding().instance.onBodyImagesAvailable(bodySides);
-      }
     }
   }
 
