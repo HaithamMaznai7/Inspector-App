@@ -133,14 +133,10 @@ class _PanelTile extends StatelessWidget {
           vertical: FSizes.sm,
         ),
         decoration: BoxDecoration(
-          color: isSelected
-              ? FColors.primaryColor.withValues(alpha: 0.06)
-              : Theme.of(context).cardColor,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
           border: Border.all(
-            color: isSelected
-                ? FColors.primaryColor.withValues(alpha: 0.4)
-                : Theme.of(context).dividerColor,
+            color: Theme.of(context).dividerColor,
             width: isSelected ? 1.5 : 1.0,
           ),
         ),
@@ -158,9 +154,7 @@ class _PanelTile extends StatelessWidget {
                     child: Text(
                       _panelLabel(),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.normal,
+                        fontWeight: FontWeight.normal,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -168,21 +162,11 @@ class _PanelTile extends StatelessWidget {
                   if (isDeviceActive) ...[
                     const SizedBox(width: FSizes.xs),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: FColors.primaryColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        PaintGaugePage.here.tr,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: FColors.primaryColor,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: FColors.secondaryColor,
+                        shape: BoxShape.circle,
                       ),
                     ),
                   ],
