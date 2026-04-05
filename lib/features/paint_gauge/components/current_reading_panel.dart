@@ -398,29 +398,18 @@ class _ReadingSlots extends StatelessWidget {
                 width: isLatest ? 1.5 : 1,
               ),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  hasValue ? _format(readings[i]) : '—',
-                  style: TextStyle(
-                    fontSize: hasValue ? 14 : 16,
-                    fontWeight: hasValue ? FontWeight.w700 : FontWeight.w300,
-                    color: hasValue
-                        ? isLatest
-                              ? FColors.primaryColor
-                              : Theme.of(context).textTheme.bodyLarge?.color
-                        : FColors.darkGrey.withValues(alpha: 0.4),
-                  ),
-                ),
-                if (hasValue)
-                  Text(
-                    'μm',
-                    style: TextStyle(fontSize: 9, color: FColors.darkGrey),
-                  )
-                else
-                  const SizedBox(height: 11),
-              ],
+            child: Text(
+              textAlign: TextAlign.center,
+              hasValue ? _format(readings[i]) : '—',
+              style: TextStyle(
+                fontSize: hasValue ? 14 : 16,
+                fontWeight: hasValue ? FontWeight.w700 : FontWeight.w300,
+                color: hasValue
+                    ? isLatest
+                          ? FColors.primaryColor
+                          : Theme.of(context).textTheme.bodyLarge?.color
+                    : FColors.darkGrey.withValues(alpha: 0.4),
+              ),
             ),
           ),
         );
