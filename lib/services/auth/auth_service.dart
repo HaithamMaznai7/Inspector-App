@@ -52,6 +52,11 @@ class AuthService extends GetxController {
   }
 
   Future<void> _initAuth() async {
+    // On iOS, Keychain data survives app uninstall. Detect reinstall
+    // using a Hive flag (app sandbox, always cleared on uninstall) and
+    // wipe any stale Keychain tokens before restoring.
+    await _clearStaleTokenOnReinstall();
+
     // Restore the backend token from secure storage before listening to auth changes.
     // This prevents the app from signing out a previously logged-in user.
     await _restoreTokenFromStorage();
@@ -66,6 +71,26 @@ class AuthService extends GetxController {
     }
 
     _initAuthListener();
+  }
+
+  Future<void> _clearStaleTokenOnReinstall() async {
+    try {
+      final settingsBox = await Hive.openBox('AppSettings');
+      final hasLaunchedBefore =
+          settingsBox.get('hasLaunchedBefore', defaultValue: false) as bool;
+
+      if (!hasLaunchedBefore) {
+        await SecureTokenStorage().clear();
+        await settingsBox.put('hasLaunchedBefore', true);
+        if (kDebugMode) {
+          debugPrint('[AuthService] First launch detected – cleared stale Keychain token');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[AuthService] _clearStaleTokenOnReinstall error: $e');
+      }
+    }
   }
 
   Future<void> _restoreTokenFromStorage() async {
