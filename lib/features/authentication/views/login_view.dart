@@ -157,88 +157,48 @@ class Login extends StatelessWidget {
                                                   'credential',
                                                   value,
                                                 )),
-                                      onChanged: (value) {
-                                        if (controller.isExists.value) {
-                                          controller.toggleIsExists();
-                                        }
-                                      },
                                     ),
                                   ),
                                   const SizedBox(
                                     height: FSizes.spaceBtwInputFields,
                                   ),
 
-                                  // Password field (animated)
-                                  Obx(() {
-                                    final isEmail = controller.isExists.value;
-                                    return AnimatedSize(
-                                      duration: const Duration(
-                                        milliseconds: 400,
-                                      ),
-                                      curve: Curves.easeInOut,
-                                      child: AnimatedOpacity(
-                                        opacity: isEmail ? 1.0 : 0.0,
-                                        duration: const Duration(
-                                          milliseconds: 300,
+                                  // Password field
+                                  Obx(
+                                    () => TextFormField(
+                                      controller:
+                                          controller.passwordController,
+                                      obscureText:
+                                          controller.isPasswordHidden.value,
+                                      decoration: InputDecoration(
+                                        prefixIcon: const Icon(
+                                          Iconsax.password_check,
                                         ),
-                                        child: isEmail
-                                            ? Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  TextFormField(
-                                                    controller: controller
-                                                        .passwordController,
-                                                    obscureText: controller
-                                                        .isPasswordHidden
-                                                        .value,
-                                                    decoration: InputDecoration(
-                                                      prefixIcon: const Icon(
-                                                        Iconsax.password_check,
-                                                      ),
-                                                      labelText:
-                                                          LoginPage.password.tr,
-                                                      suffixIcon: IconButton(
-                                                        icon: Icon(
-                                                          controller
-                                                                  .isPasswordHidden
-                                                                  .value
-                                                              ? Iconsax.eye
-                                                              : Iconsax
-                                                                    .eye_slash,
-                                                        ),
-                                                        onPressed: controller
-                                                            .passwordVisibleChange,
-                                                      ),
-                                                      errorText:
-                                                          controller
-                                                              .passwordSubmitted
-                                                              .value
-                                                          ? controller
-                                                                .passwordError
-                                                                .value
-                                                          : null,
-                                                    ),
-                                                    validator: (value) {
-                                                      if (value == null ||
-                                                          value
-                                                              .trim()
-                                                              .isEmpty) {
-                                                        return 'fieldRequired'
-                                                            .tr;
-                                                      }
-                                                      return null;
-                                                    },
-                                                  ),
-                                                  const SizedBox(
-                                                    height: FSizes
-                                                        .spaceBtwInputFields,
-                                                  ),
-                                                ],
-                                              )
-                                            : const SizedBox.shrink(),
+                                        labelText: LoginPage.password.tr,
+                                        suffixIcon: IconButton(
+                                          icon: Icon(
+                                            controller.isPasswordHidden.value
+                                                ? Iconsax.eye
+                                                : Iconsax.eye_slash,
+                                          ),
+                                          onPressed:
+                                              controller.passwordVisibleChange,
+                                        ),
+                                        errorText:
+                                            controller.passwordError.value,
                                       ),
-                                    );
-                                  }),
+                                      validator: (value) {
+                                        if (value == null ||
+                                            value.trim().isEmpty) {
+                                          return 'fieldRequired'.tr;
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: FSizes.spaceBtwInputFields,
+                                  ),
 
                                   // Forgot password
                                   Row(
