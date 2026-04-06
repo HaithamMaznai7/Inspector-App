@@ -509,6 +509,12 @@ class Arabic {
     FTexts.profileNameHint: 'أدخل الاسم',
     FTexts.profileEmailHint: 'أدخل البريد الإلكتروني',
     FTexts.profilePhoneHint: 'أدخل رقم الجوال',
+    FTexts.deleteAccountBtn: 'حذف الحساب',
+    FTexts.deleteAccountConfirmTitle: 'حذف الحساب',
+    FTexts.deleteAccountConfirmMessage:
+        'هل أنت متأكد من حذف حسابك بشكل نهائي؟ لا يمكن التراجع عن هذا الإجراء.',
+    FTexts.deleteAccountError: 'فشل حذف الحساب. يرجى المحاولة مرة أخرى.',
+    FTexts.deleteAccountSuccess: 'تم حذف حسابك بنجاح.',
 
     /// Inspection Stage Labels
     FTexts.stageAll: 'الكل',

@@ -111,6 +111,11 @@ class FTexts {
   static const String profileNameHint = 'profileNameHint';
   static const String profileEmailHint = 'profileEmailHint';
   static const String profilePhoneHint = 'profilePhoneHint';
+  static const String deleteAccountBtn = 'deleteAccountBtn';
+  static const String deleteAccountConfirmTitle = 'deleteAccountConfirmTitle';
+  static const String deleteAccountConfirmMessage = 'deleteAccountConfirmMessage';
+  static const String deleteAccountError = 'deleteAccountError';
+  static const String deleteAccountSuccess = 'deleteAccountSuccess';
   
   /// Inspection Stage Labels
   static const String stageAll = 'stageAll';

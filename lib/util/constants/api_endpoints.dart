@@ -30,6 +30,7 @@ class EndPoints {
   static const String logout = 'inspector/logout';
   static const String setTeam = 'set-team';
   static const String updateProfile = 'user';
+  static const String deleteAccount = 'user';
   static const String notifications = 'notifications';
 
   // request

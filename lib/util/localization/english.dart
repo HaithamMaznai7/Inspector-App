@@ -460,6 +460,14 @@ class English {
     FTexts.profileNameHint: 'Enter Name',
     FTexts.profileEmailHint: 'Enter Email',
     FTexts.profilePhoneHint: 'Enter Phone Number',
+    FTexts.deleteAccountBtn: 'Delete Account',
+    FTexts.deleteAccountConfirmTitle: 'Delete Account',
+    FTexts.deleteAccountConfirmMessage:
+        'Are you sure you want to permanently delete your account? This action cannot be undone.',
+    FTexts.deleteAccountError:
+        'Failed to delete account. Please try again.',
+    FTexts.deleteAccountSuccess:
+        'Your account has been deleted successfully.',
 
     /// Inspection Stage Labels
     FTexts.stageAll: 'All',

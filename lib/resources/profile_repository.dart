@@ -42,6 +42,15 @@ class ProfileRepository {
     }
   }
 
+  /// Deletes the current user account via DELETE /user.
+  Future<void> deleteAccount() async {
+    final net = Network(
+      endpoint: EndPoints.deleteAccount,
+      requestMethod: RequestMethod.delete,
+    );
+    await net.response(null);
+  }
+
   /// Updates the user profile via PUT /user with form-data.
   /// Accepts: name, city (id), profile_photo_path (File).
   Future<Profile> updateProfile({

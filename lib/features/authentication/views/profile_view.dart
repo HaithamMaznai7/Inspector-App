@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -32,6 +33,7 @@ class _ProfileViewState extends State<ProfileView> {
   File? _pickedPhoto;
   bool _isLoading = true;
   bool _isUpdating = false;
+  bool _isDeletingAccount = false;
 
   @override
   void initState() {
@@ -302,6 +304,37 @@ class _ProfileViewState extends State<ProfileView> {
                           : Text(FTexts.profileUpdate.tr),
                     ),
                   ),
+
+                  // Delete account — destructive zone
+                  const SizedBox(height: FSizes.xl),
+                  Divider(color: FColors.grey.withValues(alpha: 0.3)),
+                  const SizedBox(height: FSizes.md),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.red),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: FSizes.md,
+                        ),
+                      ),
+                      onPressed:
+                          _isDeletingAccount ? null : _confirmDeleteAccount,
+                      icon: _isDeletingAccount
+                          ? const SizedBox(
+                              height: FSizes.iconInlineSm,
+                              width: FSizes.iconInlineSm,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.red,
+                              ),
+                            )
+                          : const Icon(Iconsax.trash, size: FSizes.iconSm),
+                      label: Text(FTexts.deleteAccountBtn.tr),
+                    ),
+                  ),
+                  const SizedBox(height: FSizes.md),
                 ],
               ),
             ),
@@ -614,6 +647,55 @@ class _ProfileViewState extends State<ProfileView> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
     );
+  }
+
+  void _confirmDeleteAccount() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: Text(FTexts.deleteAccountConfirmTitle.tr),
+        content: Text(FTexts.deleteAccountConfirmMessage.tr),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(FTexts.cancelBtn.tr),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _deleteAccount();
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text(FTexts.deleteAccountBtn.tr),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteAccount() async {
+    setState(() => _isDeletingAccount = true);
+    try {
+      await ProfileRepository().deleteAccount();
+      await auth().clearLocalData();
+      FLoader.successSnackBar(
+        title: FTexts.deleteAccountBtn.tr,
+        message: FTexts.deleteAccountSuccess.tr,
+      );
+      Get.offAllNamed(RoutingUrl.login);
+      unawaited(auth().firebase.signOut().catchError((_) {}));
+    } catch (e) {
+      dd(e.toString());
+      if (mounted) {
+        FLoader.errorSnackBar(
+          title: FTexts.deleteAccountBtn.tr,
+          message: FTexts.deleteAccountError.tr,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isDeletingAccount = false);
+    }
   }
 
   Future<void> _updateProfile() async {
