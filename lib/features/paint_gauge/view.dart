@@ -105,14 +105,11 @@ class _MeasurementView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ConnectionStatusCard(controller: controller),
-        const Divider(height: 1),
         // Sticky current reading panel — stays on top as list scrolls
         CurrentReadingPanel(controller: controller),
-        const Divider(height: 1),
         Expanded(
           child: ListView(
             children: [
-              const SizedBox(height: FSizes.xs),
               _ClearAllButton(controller: controller),
               PanelListWidget(controller: controller),
               const SizedBox(height: FSizes.lg),
@@ -134,7 +131,7 @@ class _ClearAllButton extends StatelessWidget {
       if (controller.measuredPanelCount == 0) return const SizedBox.shrink();
 
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: FSizes.md),
+        padding: const EdgeInsets.symmetric(horizontal: FSizes.lg),
         child: Align(
           alignment: AlignmentDirectional.centerEnd,
           child: TextButton.icon(
@@ -143,7 +140,10 @@ class _ClearAllButton extends StatelessWidget {
             label: Text(PaintGaugePage.clearAll.tr),
             style: TextButton.styleFrom(
               foregroundColor: FColors.error,
-              textStyle: const TextStyle(fontSize: 13),
+              textStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),

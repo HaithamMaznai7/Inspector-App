@@ -78,24 +78,30 @@ class _PanelTile extends StatelessWidget {
     final m = _measurement;
     final readingCount = m?.readings.length ?? 0;
     final hasData = readingCount > 0;
-    final isSelected = controller.panelIsSelected(part);
     final isDeviceActive = controller.panelIsActiveOnDevice(part);
 
-    return InkWell(
+    return GestureDetector(
       onTap: () => controller.selectPanel(part),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        margin: const EdgeInsets.symmetric(horizontal: FSizes.md, vertical: FSizes.xs / 2),
+        margin: const EdgeInsets.symmetric(
+          horizontal: FSizes.lg,
+          vertical: FSizes.xs / 2,
+        ),
         padding: const EdgeInsets.symmetric(
-          horizontal: FSizes.sm,
-          vertical: FSizes.sm,
+          horizontal: FSizes.md,
+          vertical: FSizes.sm + 4,
         ),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+          color: isDeviceActive
+              ? FColors.primaryColor.withValues(alpha: 0.05)
+              : Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
           border: Border.all(
-            color: Theme.of(context).dividerColor,
-            width: isSelected ? 1.5 : 1.0,
+            color: isDeviceActive
+                ? FColors.primaryColor.withValues(alpha: 0.3)
+                : Colors.transparent,
+            width: 1.0,
           ),
         ),
         child: Row(
@@ -106,29 +112,12 @@ class _PanelTile extends StatelessWidget {
 
             // Panel name + device badge
             Expanded(
-              child: Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      part.localizedLabel,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.normal,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (isDeviceActive) ...[
-                    const SizedBox(width: FSizes.xs),
-                    Container(
-                      width: FSizes.sm,
-                      height: FSizes.sm,
-                      decoration: const BoxDecoration(
-                        color: FColors.secondaryColor,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ],
-                ],
+              child: Text(
+                part.localizedLabel,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
 
@@ -203,7 +192,7 @@ class _MiniReadingIndicators extends StatelessWidget {
         final filled = i < readingCount;
         return Container(
           width: FSizes.sm,
-          height: FSizes.iconInlineSm,
+          height: FSizes.sm,
           margin: const EdgeInsets.symmetric(horizontal: 1),
           decoration: BoxDecoration(
             color: filled

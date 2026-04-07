@@ -21,13 +21,16 @@ class ConnectionStatusCard extends StatelessWidget {
 
       return Container(
         margin: const EdgeInsets.symmetric(
-            horizontal: FSizes.md, vertical: FSizes.sm),
+          horizontal: FSizes.lg,
+          vertical: FSizes.md,
+        ),
         padding: const EdgeInsets.symmetric(
-            horizontal: FSizes.md, vertical: FSizes.sm),
+          horizontal: FSizes.md,
+          vertical: FSizes.sm,
+        ),
         decoration: BoxDecoration(
           color: _bgColor(context, state),
-          borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-          border: Border.all(color: _borderColor(state)),
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
         ),
         child: Row(
           children: [
@@ -40,15 +43,15 @@ class ConnectionStatusCard extends StatelessWidget {
                   Text(
                     _stateLabel(state),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: _textColor(state),
-                        ),
+                      fontWeight: FontWeight.w600,
+                      color: _textColor(state),
+                    ),
                   ),
                   Text(
                     '$measured/$total ${PaintGaugePage.measuredPanels.tr}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: FColors.darkGrey,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: FColors.darkGrey),
                   ),
                 ],
               ),
@@ -61,7 +64,9 @@ class ConnectionStatusCard extends StatelessWidget {
                 style: TextButton.styleFrom(
                   foregroundColor: FColors.error,
                   padding: const EdgeInsets.symmetric(
-                      horizontal: FSizes.sm, vertical: FSizes.xs),
+                    horizontal: FSizes.sm,
+                    vertical: FSizes.xs,
+                  ),
                   textStyle: Theme.of(context).textTheme.labelSmall,
                 ),
               ),
@@ -82,20 +87,6 @@ class ConnectionStatusCard extends StatelessWidget {
         return FColors.warning.withValues(alpha: 0.08);
       case BleConnectionState.disconnected:
         return Theme.of(context).cardColor;
-    }
-  }
-
-  Color _borderColor(BleConnectionState state) {
-    switch (state) {
-      case BleConnectionState.connected:
-        return FColors.success.withValues(alpha: 0.3);
-      case BleConnectionState.lostConnection:
-      case BleConnectionState.error:
-        return FColors.error.withValues(alpha: 0.3);
-      case BleConnectionState.connecting:
-        return FColors.warning.withValues(alpha: 0.3);
-      case BleConnectionState.disconnected:
-        return FColors.borderSecondary;
     }
   }
 

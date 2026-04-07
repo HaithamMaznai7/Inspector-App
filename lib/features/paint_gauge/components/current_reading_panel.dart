@@ -61,13 +61,12 @@ class _ReadingDisplay extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.symmetric(
-        horizontal: FSizes.md,
+        horizontal: FSizes.lg,
         vertical: FSizes.sm,
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-        border: Border.all(color: Theme.of(context).dividerColor),
         boxShadow: [
           BoxShadow(
             color: FColors.darkGrey.withValues(alpha: 0.06),
@@ -87,12 +86,13 @@ class _ReadingDisplay extends StatelessWidget {
           ),
 
           const Divider(height: 1),
+          const SizedBox(height: FSizes.sm),
 
           // ── Large reading value ──
           Padding(
             padding: const EdgeInsets.fromLTRB(
               FSizes.lg,
-              FSizes.md,
+              FSizes.xs,
               FSizes.lg,
               FSizes.xs,
             ),
@@ -149,37 +149,38 @@ class _PanelHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: FSizes.md,
-        vertical: FSizes.sm,
+      padding: const EdgeInsets.fromLTRB(
+        FSizes.lg,
+        FSizes.md,
+        FSizes.lg,
+        FSizes.sm,
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           NumberBadge(number: part.index + 1),
-          const SizedBox(width: FSizes.sm),
+          const SizedBox(width: FSizes.xs),
           Expanded(
             child: Text(
               part.localizedLabel,
               style: Theme.of(
                 context,
-              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
           // Reading count badge
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: FSizes.sm + 2,
+              horizontal: FSizes.sm + 4,
               vertical: FSizes.xs,
             ),
             decoration: BoxDecoration(
-              color: readingCount >= 6
-                  ? FColors.primaryColor.withValues(alpha: 0.12)
-                  : FColors.darkGrey.withValues(alpha: 0.1),
+              color: FColors.darkGrey.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
             ),
             child: Text(
               '$readingCount/6',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: readingCount >= 6
                     ? FColors.primaryColor
@@ -248,8 +249,8 @@ class _LargeValue extends StatelessWidget {
   Widget build(BuildContext context) {
     final largeFontSize = ResponsiveHelper.responsiveValue<double>(
       context,
-      mobile: 40.0,
-      tablet: 48.0,
+      mobile: 30.0,
+      tablet: 38.0,
     );
 
     return Column(
@@ -263,7 +264,7 @@ class _LargeValue extends StatelessWidget {
               _format(value),
               style: TextStyle(
                 fontSize: largeFontSize,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: Theme.of(context).textTheme.bodyLarge?.color,
                 height: 1.0,
                 letterSpacing: -1,
@@ -327,19 +328,20 @@ class _StatsColumn extends StatelessWidget {
         if (substrate != null)
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: FSizes.sm + 2,
-              vertical: FSizes.xs,
+              horizontal: FSizes.md,
+              vertical: FSizes.xs + 2,
             ),
             decoration: BoxDecoration(
               color: substrate == SubstrateType.metalPutty
-                  ? FColors.error.withValues(alpha: 0.12)
-                  : FColors.primaryColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(FSizes.sm + 2),
+                  ? FColors.error.withValues(alpha: 0.1)
+                  : FColors.primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
             ),
             child: Text(
               substrate!.label,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.5,
                 color: substrate == SubstrateType.metalPutty
                     ? FColors.error
                     : FColors.primaryColor,
@@ -350,17 +352,10 @@ class _StatsColumn extends StatelessWidget {
         // Average
         if (readingCount > 1) ...[
           Text(
-            '${PaintGaugePage.average.tr}:',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            '${PaintGaugePage.average.tr}: ${_format(average)} μm',
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
               color: FColors.darkGrey,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Text(
-            '${_format(average)} μm',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w700,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
         ],
@@ -398,16 +393,10 @@ class _ReadingSlots extends StatelessWidget {
             decoration: BoxDecoration(
               color: hasValue
                   ? isLatest
-                        ? FColors.primaryColor.withValues(alpha: 0.15)
+                        ? FColors.primaryColor
                         : FColors.darkGrey.withValues(alpha: 0.08)
                   : Theme.of(context).scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
-              border: Border.all(
-                color: isLatest
-                    ? FColors.primaryColor.withValues(alpha: 0.4)
-                    : Theme.of(context).dividerColor,
-                width: isLatest ? 1.5 : 1,
-              ),
             ),
             child: Text(
               textAlign: TextAlign.center,
@@ -416,12 +405,12 @@ class _ReadingSlots extends StatelessWidget {
                   ? Theme.of(context).textTheme.labelLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: isLatest
-                          ? FColors.primaryColor
+                          ? Colors.white
                           : Theme.of(context).textTheme.bodyLarge?.color,
                     )
                   : Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w300,
-                      color: FColors.darkGrey.withValues(alpha: 0.4),
+                      fontWeight: FontWeight.w400,
+                      color: FColors.darkGrey.withValues(alpha: 0.3),
                     ),
             ),
           ),
