@@ -110,8 +110,12 @@ class PartMeasurement {
   /// Adds [newThickness] to [readings] (evicting the oldest if already at 6).
   /// [measurementCount] reflects the session reading count, not device memory.
   void update(double newThickness, SubstrateType newSubstrate) {
-    if (readings.length >= 6) readings.removeAt(0);
-    readings.add(newThickness);
+    if (readings.length >= 6) {
+      // Keep readings 1–5 locked; only overwrite the 6th slot.
+      readings[5] = newThickness;
+    } else {
+      readings.add(newThickness);
+    }
     substrate = newSubstrate;
     measurementCount = readings.length;
   }
