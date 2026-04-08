@@ -11,8 +11,7 @@ InspectionType _$InspectionTypeFromJson(Map json) => InspectionType(
   hasBody: _toBool(json['has_body']),
   hasObd: _toBool(json['has_obd']),
   hasDetails: _toBool(json['has_details']),
-  // TODO: restore backend value → _toBool(json['has_body_points'])
-  hasPaintBody: true,
+  hasPaintBody: _toBool(json['has_body_points']),
 );
 
 Map<String, dynamic> _$InspectionTypeToJson(InspectionType instance) =>
@@ -25,5 +24,5 @@ Map<String, dynamic> _$InspectionTypeToJson(InspectionType instance) =>
       'has_body': instance.hasBody,
       'has_obd': instance.hasObd,
       'has_details': instance.hasDetails,
-      'has_paint_body': instance.hasPaintBody,
+      'has_body_points': instance.hasPaintBody,
     };
