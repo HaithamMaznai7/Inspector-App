@@ -10,8 +10,9 @@ import 'package:iconsax/iconsax.dart';
 
 class PanelListWidget extends StatelessWidget {
   final PaintGaugeController controller;
+  final Map<CarPart, GlobalKey>? panelKeys;
 
-  const PanelListWidget({super.key, required this.controller});
+  const PanelListWidget({super.key, required this.controller, this.panelKeys});
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +24,7 @@ class PanelListWidget extends StatelessWidget {
             .entries
             .map(
               (e) => _PanelTile(
+                key: panelKeys?[e.value],
                 controller: controller,
                 part: e.value,
                 number: e.key + 1,
@@ -40,6 +42,7 @@ class _PanelTile extends StatelessWidget {
   final int number;
 
   const _PanelTile({
+    super.key,
     required this.controller,
     required this.part,
     required this.number,

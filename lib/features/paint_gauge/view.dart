@@ -3,6 +3,7 @@ import 'package:fahis_inspector/features/paint_gauge/components/panel_list.dart'
 import 'package:fahis_inspector/features/paint_gauge/components/scan_view.dart';
 import 'package:fahis_inspector/features/paint_gauge/components/status_card.dart';
 import 'package:fahis_inspector/features/paint_gauge/controller.dart';
+import 'package:fahis_inspector/paint_gauge/protocol/models.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
@@ -93,25 +94,65 @@ class _ConnectingOverlay extends StatelessWidget {
   }
 }
 
-// ── Measurement view ────────────────────────────────────────────────────────────
-
-class _MeasurementView extends StatelessWidget {
+class _MeasurementView extends StatefulWidget {
   final PaintGaugeController controller;
   const _MeasurementView({required this.controller});
+
+  @override
+  State<_MeasurementView> createState() => _MeasurementViewState();
+}
+
+class _MeasurementViewState extends State<_MeasurementView> {
+  Worker? _panelWorker;
+
+  /// A key per panel tile so we can scroll to the actual widget position.
+  final Map<CarPart, GlobalKey> _panelKeys = {
+    for (final part in CarPart.values) part: GlobalKey(),
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _panelWorker = ever(widget.controller.currentDevicePanel, _scrollToPanel);
+  }
+
+  @override
+  void dispose() {
+    _panelWorker?.dispose();
+    super.dispose();
+  }
+
+  void _scrollToPanel(CarPart? part) {
+    if (part == null) return;
+
+    final key = _panelKeys[part];
+    final ctx = key?.currentContext;
+    if (ctx == null) return;
+
+    Scrollable.ensureVisible(
+      ctx,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+      alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ConnectionStatusCard(controller: controller),
+        ConnectionStatusCard(controller: widget.controller),
         // Sticky current reading panel — stays on top as list scrolls
-        CurrentReadingPanel(controller: controller),
+        CurrentReadingPanel(controller: widget.controller),
         Expanded(
           child: ListView(
             children: [
-              _ClearAllButton(controller: controller),
-              PanelListWidget(controller: controller),
+              _ClearAllButton(controller: widget.controller),
+              PanelListWidget(
+                controller: widget.controller,
+                panelKeys: _panelKeys,
+              ),
               const SizedBox(height: FSizes.lg),
             ],
           ),
