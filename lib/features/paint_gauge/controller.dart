@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
-import 'package:fahis_inspector/models/paint_gauge_reading.dart';
-import 'package:fahis_inspector/models/paint_gauge_result.dart';
+import 'package:fahis_inspector/models/paint_panel.dart';
 import 'package:fahis_inspector/paint_gauge/protocol/models.dart';
 import 'package:fahis_inspector/paint_gauge/protocol/packet_parser.dart';
 import 'package:fahis_inspector/paint_gauge/services/ble_connection_service.dart';
@@ -10,12 +10,15 @@ import 'package:fahis_inspector/paint_gauge/services/gauge_command_service.dart'
 import 'package:fahis_inspector/paint_gauge/ui/device_scan_page.dart';
 import 'package:fahis_inspector/resources/paint_gauge_repository.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
+import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class PaintGaugeController extends GetxController {
   static const _tag = 'PaintGaugeController';
+  static const _saveDebounceMs = 3000;
 
   InspectionDetailsController get mainController =>
       InspectionDetailsBinding().instance;
@@ -27,7 +30,11 @@ class PaintGaugeController extends GetxController {
   StreamSubscription<BleConnectionState>? _connectionStateSub;
   StreamSubscription<List<int>>? _dataSub;
 
-  // ── State ────────────────────────────────────────────────────────────────────
+  // ── Backend panel state (source of truth for panel list) ────────────────────
+  final RxList<PaintPanel> backendPanels = RxList<PaintPanel>([]);
+  final RxBool isPanelsLoading = true.obs;
+
+  // ── Session measurement state (ephemeral, per-connection) ──────────────────
   final RxMap<CarPart, PartMeasurement> partMeasurements =
       RxMap<CarPart, PartMeasurement>({});
 
@@ -44,9 +51,10 @@ class PaintGaugeController extends GetxController {
 
   final RxList<BleDevice> discoveredDevices = RxList<BleDevice>([]);
 
-  // Connected device info (for traceability)
-  String? _deviceName;
-  String? _deviceMac;
+  // ── Dirty tracking & save debounce ─────────────────────────────────────────
+  final Set<int> _dirtyPanelIds = {};
+  final Set<int> _postingPanelIds = {};
+  Timer? _saveDebounceTimer;
 
   // Session timing
   DateTime? _sessionStartedAt;
@@ -70,12 +78,14 @@ class PaintGaugeController extends GetxController {
     AppLogger.info(_tag, 'onReady');
 
     await _openHiveBox();
-    _loadFromCache();
+    await _fetchPanels();
   }
 
   @override
   void onClose() {
     AppLogger.info(_tag, 'onClose');
+    _saveDebounceTimer?.cancel();
+    _flushAllDirty();
     _sessionStartedAt = null;
     _disconnect();
     _connectionStateSub?.cancel();
@@ -107,35 +117,32 @@ class PaintGaugeController extends GetxController {
     }
   }
 
-  void _loadFromCache() {
-    final result = _repository?.fetchFromCache();
-    if (result == null) return;
+  // ── Backend Panel Fetching (cache-first + API refresh) ─────────────────────
 
-    AppLogger.info(_tag, 'Loaded cached result: ${result.totalPanelsMeasured} panels measured');
+  Future<void> _fetchPanels() async {
+    isPanelsLoading.value = true;
 
-    for (final entry in result.panels.entries) {
-      final part = CarPart.values.firstWhereOrNull(
-        (p) => '0x${p.value.toRadixString(16).toUpperCase()}' == entry.key ||
-               entry.key == '0x${p.value.toRadixString(16)}',
-      );
-      if (part == null) continue;
-
-      final reading = entry.value;
-      final measurement = partMeasurements[part];
-      if (measurement == null) continue;
-
-      measurement.readings.clear();
-      measurement.readings.addAll(reading.readings);
-      if (reading.substrate.isNotEmpty) {
-        measurement.substrate = SubstrateType.values.firstWhereOrNull(
-          (s) => s.label == reading.substrate,
-        );
-      }
-      measurement.measurementCount = reading.measurementCount;
+    // 1. Show cached immediately
+    final cached = _repository?.fetchPanelsFromCache() ?? [];
+    if (cached.isNotEmpty) {
+      backendPanels.assignAll(cached);
+      isPanelsLoading.value = false;
+      update();
     }
 
-    partMeasurements.refresh();
-    update();
+    // 2. Refresh from API
+    try {
+      final fresh = await _repository!.fetchPanelsFromApi();
+      backendPanels.assignAll(fresh);
+    } on FNetworkException catch (e) {
+      // If cache was empty, show error; otherwise silently use cache
+      if (backendPanels.isEmpty) e.notify();
+    } catch (e) {
+      AppLogger.error(_tag, 'Failed to fetch panels', e);
+    } finally {
+      isPanelsLoading.value = false;
+      update();
+    }
   }
 
   // ── BLE Scanning ─────────────────────────────────────────────────────────────
@@ -147,9 +154,6 @@ class PaintGaugeController extends GetxController {
     discoveredDevices.clear();
     isScanning.value = true;
     update();
-
-    // Scanning is managed by the scan_view (DeviceScanPage logic) —
-    // this controller exposes state that scan_view reacts to.
   }
 
   void stopScan() {
@@ -190,8 +194,6 @@ class PaintGaugeController extends GetxController {
     _dataSub?.cancel();
     _dataSub = _connectionService!.notifications.listen(_onData);
 
-    _deviceMac = deviceId;
-    _deviceName = deviceName;
     _sessionStartedAt ??= DateTime.now();
 
     try {
@@ -234,7 +236,7 @@ class PaintGaugeController extends GetxController {
 
   Future<void> disconnect() async {
     AppLogger.info(_tag, 'disconnect called');
-    _persistCurrentState();
+    await _flushAllDirty();
     await _disconnect();
   }
 
@@ -286,10 +288,19 @@ class PaintGaugeController extends GetxController {
     recentlyUpdatedPart.value = null; // force trigger
     recentlyUpdatedPart.value = part;
 
+    // Mark dirty
+    final bp = backendPanelFor(part);
+    if (bp != null) {
+      _dirtyPanelIds.add(bp.id);
+    } else {
+      AppLogger.info(_tag, 'No backend panel for ${part.label} — reading will not be saved');
+    }
+
+    // Reset debounce timer
+    _resetSaveDebounce(part);
+
     partMeasurements.refresh();
     update();
-
-    _persistCurrentState();
   }
 
   void _updateCurrentPanel(CarPart? part) {
@@ -299,9 +310,102 @@ class PaintGaugeController extends GetxController {
     update();
   }
 
+  // ── Save Strategy ────────────────────────────────────────────────────────────
+
+  void _resetSaveDebounce(CarPart part) {
+    _saveDebounceTimer?.cancel();
+    _saveDebounceTimer = Timer(
+      const Duration(milliseconds: _saveDebounceMs),
+      () => _saveIfReady(part),
+    );
+  }
+
+  Future<void> _saveIfReady(CarPart part) async {
+    final m = partMeasurements[part];
+    final bp = backendPanelFor(part);
+    if (m == null || bp == null) return;
+    if (m.readings.length < 2) return;
+    if (!_dirtyPanelIds.contains(bp.id)) return;
+
+    await _postPanel(bp, m);
+  }
+
+  Future<void> _postPanel(PaintPanel panel, PartMeasurement m) async {
+    if (m.readings.length < 2) return;
+    if (_postingPanelIds.contains(panel.id)) return;
+
+    _postingPanelIds.add(panel.id);
+
+    try {
+      await _repository!.updatePanel(
+        panel,
+        thickness: m.average!,
+        substrate: m.substrate?.label ?? 'Fe',
+        measurementCount: m.readings.length,
+      );
+      _dirtyPanelIds.remove(panel.id);
+
+      // Update reactive backendPanels so UI reflects saved state
+      final idx = backendPanels.indexWhere((p) => p.id == panel.id);
+      if (idx >= 0) {
+        backendPanels[idx].thickness = m.average;
+        backendPanels[idx].substrate = m.substrate?.label;
+        backendPanels[idx].measurementCount = m.readings.length;
+        backendPanels.refresh();
+      }
+    } on FNetworkException catch (e) {
+      AppLogger.error(_tag, 'POST failed for panel ${panel.name}', e);
+      FLoader.warningSnackBar(
+        title: PaintGaugePage.clearFailed.tr,
+        message: panel.name,
+      );
+    } catch (e) {
+      AppLogger.error(_tag, 'POST failed for panel ${panel.name}', e);
+    } finally {
+      _postingPanelIds.remove(panel.id);
+    }
+  }
+
+  Future<void> _flushAllDirty() async {
+    final futures = <Future>[];
+    for (final panelId in _dirtyPanelIds.toList()) {
+      final bp = backendPanels.firstWhereOrNull((p) => p.id == panelId);
+      if (bp == null) continue;
+      final carPart = bp.carPart;
+      if (carPart == null) continue;
+      final m = partMeasurements[carPart];
+      if (m == null || m.readings.length < 2) continue;
+      futures.add(_postPanel(bp, m));
+    }
+    if (futures.isNotEmpty) {
+      await Future.wait(futures);
+    }
+  }
+
   // ── Panel Actions ─────────────────────────────────────────────────────────────
 
   Future<void> selectPanel(CarPart part) async {
+    final previousPart = selectedPanel.value;
+
+    // Before switching: save outgoing dirty panel or warn about incomplete
+    if (previousPart != null && previousPart != part) {
+      _saveDebounceTimer?.cancel();
+
+      final prevM = partMeasurements[previousPart];
+      final prevBp = backendPanelFor(previousPart);
+
+      if (prevM != null && prevBp != null && _dirtyPanelIds.contains(prevBp.id)) {
+        if (prevM.readings.length >= 2) {
+          _postPanel(prevBp, prevM); // fire-and-forget
+        } else if (prevM.readings.length == 1) {
+          FLoader.infoSnackBar(
+            title: PaintGaugePage.noMeasurementYet.tr,
+            message: PaintGaugePage.sessionReadingsOnly.tr,
+          );
+        }
+      }
+    }
+
     selectedPanel.value = part;
     update();
 
@@ -327,10 +431,29 @@ class PaintGaugeController extends GetxController {
     }
 
     partMeasurements[part]?.clear();
+
+    // Clear backend state
+    final bp = backendPanelFor(part);
+    if (bp != null) {
+      _dirtyPanelIds.remove(bp.id);
+      try {
+        await _repository!.updatePanel(
+          bp,
+          thickness: 0,
+          substrate: '',
+          measurementCount: 0,
+        );
+        bp.thickness = null;
+        bp.substrate = null;
+        bp.measurementCount = 0;
+        backendPanels.refresh();
+      } catch (e) {
+        AppLogger.error(_tag, 'Failed to clear panel on backend', e);
+      }
+    }
+
     partMeasurements.refresh();
     update();
-
-    _persistCurrentState();
   }
 
   Future<void> clearAllPanels() async {
@@ -338,80 +461,82 @@ class PaintGaugeController extends GetxController {
     for (final part in CarPart.values) {
       partMeasurements[part]?.clear();
     }
+    _dirtyPanelIds.clear();
     partMeasurements.refresh();
     update();
-
-    _persistCurrentState();
   }
 
   void resetMeasurements() {
+    _dirtyPanelIds.clear();
+    _postingPanelIds.clear();
+    _saveDebounceTimer?.cancel();
     _initPartMeasurements();
-    _persistCurrentState();
+    _repository?.clearCache();
+    _fetchPanels();
   }
 
-  // ── Persistence ───────────────────────────────────────────────────────────────
+  // ── Display Helpers (merge backend + session state) ──────────────────────────
 
-  void _persistCurrentState() {
-    final repo = _repository;
-    final currentSlug = slug;
-    if (repo == null || currentSlug == null) return;
+  /// Find the backend panel matching a [CarPart] by hex code.
+  PaintPanel? backendPanelFor(CarPart part) {
+    final hex = '0x${part.value.toRadixString(16).toUpperCase()}';
+    return backendPanels.firstWhereOrNull((p) => p.partCode == hex);
+  }
 
-    try {
-      final panelsMap = <String, PaintGaugeReading>{};
-      for (final entry in partMeasurements.entries) {
-        final part = entry.key;
-        final m = entry.value;
-        if (m.readings.isEmpty) continue;
+  /// Display thickness: session average if session has readings, else backend.
+  double? displayThickness(CarPart part) {
+    final m = partMeasurements[part];
+    if (m != null && m.hasMeasurement) return m.average;
+    return backendPanelFor(part)?.thickness;
+  }
 
-        final panelCode = '0x${part.value.toRadixString(16).toUpperCase()}';
-        panelsMap[panelCode] = PaintGaugeReading.fromMeasurements(
-          panelName: part.label,
-          panelCode: panelCode,
-          substrate: m.substrate?.label ?? '',
-          readings: List<double>.from(m.readings),
-        );
+  /// Display substrate: session if available, else backend.
+  String? displaySubstrate(CarPart part) {
+    final m = partMeasurements[part];
+    if (m != null && m.substrate != null) return m.substrate!.label;
+    return backendPanelFor(part)?.substrate;
+  }
+
+  /// Display reading count: session if measuring, else backend.
+  int displayMeasurementCount(CarPart part) {
+    final m = partMeasurements[part];
+    if (m != null && m.hasMeasurement) return m.readings.length;
+    return backendPanelFor(part)?.measurementCount ?? 0;
+  }
+
+  /// Whether this panel has backend data (previously saved).
+  bool panelHasBackendData(CarPart part) {
+    final bp = backendPanelFor(part);
+    return bp != null && bp.thickness != null;
+  }
+
+  /// Whether this panel has unsaved session changes.
+  bool panelIsDirty(CarPart part) {
+    final bp = backendPanelFor(part);
+    return bp != null && _dirtyPanelIds.contains(bp.id);
+  }
+
+  // ── Existing Helpers ─────────────────────────────────────────────────────────
+
+  /// Number of panels that have data (session or backend).
+  int get measuredPanelCount {
+    int count = 0;
+    for (final part in CarPart.values) {
+      final m = partMeasurements[part];
+      if (m != null && m.hasMeasurement) {
+        count++;
+        continue;
       }
-
-      final result = PaintGaugeResult.fromReadings(
-        inspectionSlug: currentSlug,
-        panels: panelsMap,
-        sessionStartedAt: _sessionStartedAt ?? DateTime.now(),
-        deviceName: _deviceName,
-        deviceMac: _deviceMac,
-      );
-
-      repo.saveToCache(result);
-    } catch (e) {
-      AppLogger.error(_tag, 'Failed to persist paint gauge state', e);
+      if (panelHasBackendData(part)) count++;
     }
+    return count;
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────────
+  /// Total number of panels from backend (falls back to 19 if not loaded).
+  int get totalPanelCount =>
+      backendPanels.isNotEmpty ? backendPanels.length : CarPart.values.length;
 
-  /// Number of panels that have at least one reading.
-  int get measuredPanelCount =>
-      partMeasurements.values.where((m) => m.hasMeasurement).length;
-
-  /// Total number of panels (always 19).
-  int get totalPanelCount => CarPart.values.length;
-
-  /// Whether the panel has no readings (neutral state).
-  bool panelIsEmpty(CarPart part) =>
-      !(partMeasurements[part]?.hasMeasurement ?? false);
-
-  /// Whether the panel has 1–5 readings (partial).
-  bool panelIsPartial(CarPart part) {
-    final count = partMeasurements[part]?.readings.length ?? 0;
-    return count >= 1 && count < 6;
-  }
-
-  /// Whether the panel has all 6 readings (complete).
-  bool panelIsComplete(CarPart part) =>
-      (partMeasurements[part]?.readings.length ?? 0) >= 6;
-
-  /// Whether this panel is currently selected by the user.
   bool panelIsSelected(CarPart part) => selectedPanel.value == part;
 
-  /// Whether this panel is the device's active measurement panel.
   bool panelIsActiveOnDevice(CarPart part) => currentDevicePanel.value == part;
 }

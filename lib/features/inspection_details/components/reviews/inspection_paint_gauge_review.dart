@@ -1,6 +1,6 @@
 import 'package:fahis_inspector/features/inspection_details/components/reviews/info_card.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
-import 'package:fahis_inspector/models/paint_gauge_result.dart';
+import 'package:fahis_inspector/models/paint_panel.dart';
 import 'package:fahis_inspector/resources/paint_gauge_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -26,21 +26,26 @@ class InspectionPaintGaugeReview extends StatelessWidget {
         final slug = c.slug;
         if (slug == null) return const SizedBox.shrink();
 
-        // Load cached paint gauge result from Hive
+        // Load cached backend panels from Hive
         final box = Hive.isBoxOpen(PaintGaugeRepository.boxKey)
             ? Hive.box(PaintGaugeRepository.boxKey)
             : null;
 
-        PaintGaugeResult? result;
+        List<PaintPanel> panels = [];
         if (box != null) {
-          final raw = box.get(slug);
+          final raw = box.get('panels_$slug');
           if (raw != null) {
             try {
-              result = PaintGaugeResult.fromJson(
-                  Map<String, dynamic>.from(raw as Map));
+              panels = (raw as List)
+                  .map((e) =>
+                      PaintPanel.fromJson(Map<String, dynamic>.from(e as Map)))
+                  .toList();
             } catch (_) {}
           }
         }
+
+        final measuredPanels =
+            panels.where((p) => p.thickness != null).toList();
 
         return InfoCard(
           title: Text(PaintGaugePage.reviewTitle.tr),
@@ -48,7 +53,7 @@ class InspectionPaintGaugeReview extends StatelessWidget {
           icon: Iconsax.brush_1,
           iconColor: FColors.primaryColor,
           children: [
-            if (result == null || result.totalPanelsMeasured == 0)
+            if (measuredPanels.isEmpty)
               Padding(
                 padding: const EdgeInsets.all(FSizes.md),
                 child: Text(
@@ -59,7 +64,10 @@ class InspectionPaintGaugeReview extends StatelessWidget {
                 ),
               )
             else
-              _PaintGaugeSummary(result: result),
+              _PaintGaugeSummary(
+                panels: measuredPanels,
+                totalPanels: panels.length,
+              ),
           ],
         );
       },
@@ -68,16 +76,12 @@ class InspectionPaintGaugeReview extends StatelessWidget {
 }
 
 class _PaintGaugeSummary extends StatelessWidget {
-  final PaintGaugeResult result;
-  const _PaintGaugeSummary({required this.result});
+  final List<PaintPanel> panels;
+  final int totalPanels;
+  const _PaintGaugeSummary({required this.panels, required this.totalPanels});
 
   @override
   Widget build(BuildContext context) {
-    final measuredPanels = result.panels.values
-        .where((r) => r.measurementCount > 0)
-        .toList()
-      ..sort((a, b) => a.panelName.compareTo(b.panelName));
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -85,30 +89,19 @@ class _PaintGaugeSummary extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(
               FSizes.md, 0, FSizes.md, FSizes.sm),
-          child: Row(
-            children: [
-              _StatChip(
-                label: PaintGaugePage.reviewPanelsMeasured.tr,
-                value: '${result.totalPanelsMeasured}/19',
-                color: result.totalPanelsMeasured >= 19
-                    ? FColors.success
-                    : FColors.primaryColor,
-              ),
-              const SizedBox(width: FSizes.sm),
-              if (result.deviceName != null)
-                _StatChip(
-                  label: 'Device',
-                  value: result.deviceName!,
-                  color: FColors.darkGrey,
-                ),
-            ],
+          child: _StatChip(
+            label: PaintGaugePage.reviewPanelsMeasured.tr,
+            value: '${panels.length}/$totalPanels',
+            color: panels.length >= totalPanels
+                ? FColors.success
+                : FColors.primaryColor,
           ),
         ),
 
         const Divider(height: 1),
 
         // Per-panel rows
-        ...measuredPanels.map((reading) => _PanelRow(reading: reading)),
+        ...panels.map((panel) => _PanelRow(panel: panel)),
         const SizedBox(height: FSizes.sm),
       ],
     );
@@ -116,15 +109,15 @@ class _PaintGaugeSummary extends StatelessWidget {
 }
 
 class _PanelRow extends StatelessWidget {
-  final dynamic reading; // PaintGaugeReading
-  const _PanelRow({required this.reading});
+  final PaintPanel panel;
+  const _PanelRow({required this.panel});
 
   @override
   Widget build(BuildContext context) {
-    final isComplete = reading.isComplete as bool;
-    final avg = reading.averageThickness as double?;
-    final substrate = reading.substrate as String;
-    final count = reading.measurementCount as int;
+    final avg = panel.thickness;
+    final substrate = panel.substrate ?? '';
+    final count = panel.measurementCount;
+    final isComplete = count >= 6;
 
     Color substrateColor = FColors.darkGrey;
     if (substrate == 'Metal Putty') substrateColor = FColors.error;
@@ -135,8 +128,8 @@ class _PanelRow extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 4,
-            height: 32,
+            width: FSizes.xs,
+            height: FSizes.xl,
             decoration: BoxDecoration(
               color: isComplete ? FColors.primaryColor : FColors.darkGrey,
               borderRadius: BorderRadius.circular(2),
@@ -145,7 +138,7 @@ class _PanelRow extends StatelessWidget {
           const SizedBox(width: FSizes.sm),
           Expanded(
             child: Text(
-              reading.panelName as String,
+              panel.name,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
@@ -153,18 +146,16 @@ class _PanelRow extends StatelessWidget {
           ),
           Text(
             '$count/6',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: FColors.darkGrey,
-                  fontSize: 11,
                 ),
           ),
           const SizedBox(width: FSizes.sm),
           if (avg != null)
             Text(
               '${avg.toStringAsFixed(avg.abs() < 99.95 ? 1 : 0)} μm',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    fontSize: 12,
                   ),
             ),
           const SizedBox(width: FSizes.xs),
@@ -174,14 +165,14 @@ class _PanelRow extends StatelessWidget {
                   horizontal: FSizes.xs, vertical: 2),
               decoration: BoxDecoration(
                 color: substrateColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
               ),
               child: Text(
                 substrate,
-                style: TextStyle(
-                  fontSize: 10,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: substrateColor,
                   fontWeight: FontWeight.w600,
+                  fontSize: 10,
                 ),
               ),
             ),
@@ -209,7 +200,7 @@ class _StatChip extends StatelessWidget {
       ),
       child: RichText(
         text: TextSpan(
-          style: const TextStyle(fontSize: 11),
+          style: Theme.of(context).textTheme.labelSmall,
           children: [
             TextSpan(
                 text: '$label: ', style: TextStyle(color: FColors.darkGrey)),

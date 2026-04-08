@@ -10,6 +10,7 @@ import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
 
 class PaintGaugeStepView extends StatelessWidget {
   const PaintGaugeStepView({super.key});
@@ -22,90 +23,33 @@ class PaintGaugeStepView extends StatelessWidget {
       autoRemove: false,
       builder: (controller) {
         return Obx(() {
-          if (!controller.isConnected.value) {
-            return _ScanShell(controller: controller);
+          // Show loading only when no cached panels yet
+          if (controller.isPanelsLoading.value &&
+              controller.backendPanels.isEmpty) {
+            return Center(
+              child: CircularProgressIndicator(color: FColors.primaryColor),
+            );
           }
-          return _MeasurementView(controller: controller);
+          return _PaintGaugeBody(controller: controller);
         });
       },
     );
   }
 }
 
-// ── Scan shell ─────────────────────────────────────────────────────────────────
+// ── Main body — always shows panel list, BLE is additive ──────────────────────
 
-class _ScanShell extends StatelessWidget {
+class _PaintGaugeBody extends StatefulWidget {
   final PaintGaugeController controller;
-  const _ScanShell({required this.controller});
+  const _PaintGaugeBody({required this.controller});
 
   @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      final isConnecting = controller.isConnecting.value;
-
-      if (isConnecting) {
-        return _ConnectingOverlay(controller: controller);
-      }
-
-      return Column(children: [Expanded(child: PaintGaugeScanView())]);
-    });
-  }
+  State<_PaintGaugeBody> createState() => _PaintGaugeBodyState();
 }
 
-class _ConnectingOverlay extends StatelessWidget {
-  final PaintGaugeController controller;
-  const _ConnectingOverlay({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(FSizes.xl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(
-              width: 56,
-              height: 56,
-              child: CircularProgressIndicator(
-                strokeWidth: 3,
-                color: FColors.primaryColor,
-              ),
-            ),
-            const SizedBox(height: FSizes.lg),
-            Text(
-              PaintGaugePage.connecting.tr,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: FSizes.xs),
-            Text(
-              PaintGaugePage.sessionReadingsOnly.tr,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: FColors.darkGrey),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MeasurementView extends StatefulWidget {
-  final PaintGaugeController controller;
-  const _MeasurementView({required this.controller});
-
-  @override
-  State<_MeasurementView> createState() => _MeasurementViewState();
-}
-
-class _MeasurementViewState extends State<_MeasurementView> {
+class _PaintGaugeBodyState extends State<_PaintGaugeBody> {
   Worker? _panelWorker;
 
-  /// A key per panel tile so we can scroll to the actual widget position.
   final Map<CarPart, GlobalKey> _panelKeys = {
     for (final part in CarPart.values) part: GlobalKey(),
   };
@@ -124,7 +68,6 @@ class _MeasurementViewState extends State<_MeasurementView> {
 
   void _scrollToPanel(CarPart? part) {
     if (part == null) return;
-
     final key = _panelKeys[part];
     final ctx = key?.currentContext;
     if (ctx == null) return;
@@ -137,30 +80,156 @@ class _MeasurementViewState extends State<_MeasurementView> {
     );
   }
 
+  void _showScanSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(FSizes.borderRadiusLg),
+        ),
+      ),
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) {
+          return Column(
+            children: [
+              // Drag handle
+              Container(
+                width: FSizes.xl,
+                height: FSizes.xs,
+                margin: const EdgeInsets.symmetric(vertical: FSizes.sm),
+                decoration: BoxDecoration(
+                  color: FColors.darkGrey.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(FSizes.xs / 2),
+                ),
+              ),
+              const Expanded(child: PaintGaugeScanView()),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ConnectionStatusCard(controller: widget.controller),
-        // Sticky current reading panel — stays on top as list scrolls
-        CurrentReadingPanel(controller: widget.controller),
-        Expanded(
-          child: ListView(
+    return Obx(() {
+      final connected = widget.controller.isConnected.value;
+      final connecting = widget.controller.isConnecting.value;
+
+      return Stack(
+        children: [
+          // Always visible: panel list with backend data
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _ClearAllButton(controller: widget.controller),
-              PanelListWidget(
-                controller: widget.controller,
-                panelKeys: _panelKeys,
+              if (connected)
+                ConnectionStatusCard(controller: widget.controller),
+              if (connected)
+                CurrentReadingPanel(controller: widget.controller),
+              Expanded(
+                child: ListView(
+                  children: [
+                    if (connected)
+                      _ClearAllButton(controller: widget.controller),
+                    PanelListWidget(
+                      controller: widget.controller,
+                      panelKeys: _panelKeys,
+                    ),
+                    // Space for FAB
+                    const SizedBox(height: FSizes.xl * 2.5),
+                  ],
+                ),
               ),
-              const SizedBox(height: FSizes.lg),
             ],
           ),
+
+          // FAB: Connect Device (when not connected and not connecting)
+          if (!connected && !connecting)
+            Positioned(
+              bottom: FSizes.md,
+              right: FSizes.md,
+              left: FSizes.md,
+              child: SafeArea(
+                child: FloatingActionButton.extended(
+                  onPressed: _showScanSheet,
+                  backgroundColor: FColors.primaryColor,
+                  foregroundColor: FColors.white,
+                  icon: const Icon(Iconsax.bluetooth),
+                  label: Text(
+                    PaintGaugePage.scanButton.tr,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ),
+
+          // Connecting overlay (lightweight, non-blocking)
+          if (connecting)
+            _ConnectingOverlay(controller: widget.controller),
+        ],
+      );
+    });
+  }
+}
+
+// ── Connecting overlay ────────────────────────────────────────────────────────
+
+class _ConnectingOverlay extends StatelessWidget {
+  final PaintGaugeController controller;
+  const _ConnectingOverlay({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: Container(
+        color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(FSizes.xl),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(
+                  width: FSizes.buttonHeightLg,
+                  height: FSizes.buttonHeightLg,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    color: FColors.primaryColor,
+                  ),
+                ),
+                const SizedBox(height: FSizes.lg),
+                Text(
+                  PaintGaugePage.connecting.tr,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: FSizes.xs),
+                Text(
+                  PaintGaugePage.sessionReadingsOnly.tr,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: FColors.darkGrey),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
         ),
-      ],
+      ),
     );
   }
 }
+
+// ── Clear all button ──────────────────────────────────────────────────────────
 
 class _ClearAllButton extends StatelessWidget {
   final PaintGaugeController controller;
@@ -177,12 +246,11 @@ class _ClearAllButton extends StatelessWidget {
           alignment: AlignmentDirectional.centerEnd,
           child: TextButton.icon(
             onPressed: () => _confirmClearAll(context),
-            icon: const Icon(Icons.clear_all, size: 18),
+            icon: const Icon(Icons.clear_all, size: FSizes.fontSizeLg),
             label: Text(PaintGaugePage.clearAll.tr),
             style: TextButton.styleFrom(
               foregroundColor: FColors.error,
-              textStyle: const TextStyle(
-                fontSize: 13,
+              textStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),

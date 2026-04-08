@@ -1,5 +1,6 @@
 import 'package:fahis_inspector/features/paint_gauge/controller.dart';
 import 'package:fahis_inspector/features/paint_gauge/utils/car_part_label.dart';
+import 'package:fahis_inspector/models/paint_panel.dart';
 import 'package:fahis_inspector/paint_gauge/protocol/models.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
@@ -18,20 +19,49 @@ class PanelListWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<PaintGaugeController>(
       tag: 'PaintGauge',
-      builder: (_) => Column(
-        children: CarPart.values
-            .asMap()
-            .entries
-            .map(
-              (e) => _PanelTile(
-                key: panelKeys?[e.value],
-                controller: controller,
-                part: e.value,
-                number: e.key + 1,
-              ),
-            )
-            .toList(),
-      ),
+      builder: (_) {
+        final panels = controller.backendPanels;
+
+        // If backend panels loaded, iterate them; otherwise fall back to CarPart enum
+        if (panels.isNotEmpty) {
+          return Column(
+            children: panels
+                .asMap()
+                .entries
+                .map((e) {
+                  final bp = e.value;
+                  final carPart = bp.carPart;
+                  if (carPart == null) return const SizedBox.shrink();
+
+                  return _PanelTile(
+                    key: panelKeys?[carPart],
+                    controller: controller,
+                    part: carPart,
+                    backendPanel: bp,
+                    number: e.key + 1,
+                  );
+                })
+                .toList(),
+          );
+        }
+
+        // Fallback: backend panels not loaded yet
+        return Column(
+          children: CarPart.values
+              .asMap()
+              .entries
+              .map(
+                (e) => _PanelTile(
+                  key: panelKeys?[e.value],
+                  controller: controller,
+                  part: e.value,
+                  backendPanel: null,
+                  number: e.key + 1,
+                ),
+              )
+              .toList(),
+        );
+      },
     );
   }
 }
@@ -39,16 +69,16 @@ class PanelListWidget extends StatelessWidget {
 class _PanelTile extends StatelessWidget {
   final PaintGaugeController controller;
   final CarPart part;
+  final PaintPanel? backendPanel;
   final int number;
 
   const _PanelTile({
     super.key,
     required this.controller,
     required this.part,
+    required this.backendPanel,
     required this.number,
   });
-
-  PartMeasurement? get _measurement => controller.partMeasurements[part];
 
   Future<void> _onClear(BuildContext context) async {
     final confirmed = await showDialog<bool>(
@@ -78,10 +108,11 @@ class _PanelTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final m = _measurement;
-    final readingCount = m?.readings.length ?? 0;
+    // Use merged display helpers
+    final readingCount = controller.displayMeasurementCount(part);
     final hasData = readingCount > 0;
     final isDeviceActive = controller.panelIsActiveOnDevice(part);
+    final hasSessionData = controller.partMeasurements[part]?.hasMeasurement ?? false;
 
     return GestureDetector(
       onTap: () => controller.selectPanel(part),
@@ -109,17 +140,17 @@ class _PanelTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Number badge
             NumberBadge(number: number),
             const SizedBox(width: FSizes.sm),
 
-            // Panel name + device badge
+            // Panel name
             Expanded(
               child: Text(
                 part.localizedLabel,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w500),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -127,7 +158,11 @@ class _PanelTile extends StatelessWidget {
             const SizedBox(width: FSizes.xs),
 
             // 6 mini column indicators
-            _MiniReadingIndicators(readingCount: readingCount),
+            // Session data = full opacity orange; backend-only = dimmer
+            _MiniReadingIndicators(
+              readingCount: readingCount,
+              isSessionData: hasSessionData,
+            ),
 
             // Trash icon — only when panel has data
             if (hasData) ...[
@@ -184,11 +219,18 @@ class NumberBadge extends StatelessWidget {
 
 class _MiniReadingIndicators extends StatelessWidget {
   final int readingCount;
+  final bool isSessionData;
 
-  const _MiniReadingIndicators({required this.readingCount});
+  const _MiniReadingIndicators({
+    required this.readingCount,
+    this.isSessionData = true,
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Session data uses full-opacity orange; backend-only uses dimmer shade
+    final filledAlpha = isSessionData ? 0.75 : 0.4;
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(6, (i) {
@@ -199,7 +241,7 @@ class _MiniReadingIndicators extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 1),
           decoration: BoxDecoration(
             color: filled
-                ? FColors.primaryColor.withValues(alpha: 0.75)
+                ? FColors.primaryColor.withValues(alpha: filledAlpha)
                 : Theme.of(context).dividerColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(2),
           ),
