@@ -12,6 +12,18 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+/// Full-page wrapper for the scan view (navigated to when no saved device).
+class PaintGaugeScanPage extends StatelessWidget {
+  const PaintGaugeScanPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: SafeArea(child: PaintGaugeScanView()),
+    );
+  }
+}
+
 class PaintGaugeScanView extends StatefulWidget {
   const PaintGaugeScanView({super.key});
 

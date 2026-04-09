@@ -26,6 +26,8 @@ class PaintGaugePage {
   static const String disconnected = 'pgDisconnected';
   static const String lostConnection = 'pgLostConnection';
   static const String connectionError = 'pgConnectionError';
+  static const String searching = 'pgSearching';
+  static const String connectButton = 'pgConnectButton';
   static const String goBack = 'pgGoBack';
   static const String sessionReadingsOnly = 'pgSessionReadingsOnly';
 

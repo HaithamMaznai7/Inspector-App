@@ -26,10 +26,8 @@ class CurrentReadingPanel extends StatelessWidget {
             controller.selectedPanel.value ??
             CarPart.frontHatch;
 
-        final measurement = controller.partMeasurements[activePart];
         return _ReadingDisplay(
           part: activePart,
-          measurement: measurement,
           controller: controller,
         );
       },
@@ -41,23 +39,62 @@ class CurrentReadingPanel extends StatelessWidget {
 
 class _ReadingDisplay extends StatelessWidget {
   final CarPart part;
-  final PartMeasurement? measurement;
   final PaintGaugeController controller;
 
   const _ReadingDisplay({
     required this.part,
-    required this.measurement,
     required this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
-    final m = measurement;
-    final hasReadings = m != null && m.hasMeasurement;
-    final latest = m?.latestReading;
-    final avg = m?.average;
-    final substrate = m?.substrate;
-    final readingCount = m?.readings.length ?? 0;
+    // Priority: session > cached > backend > empty
+    final sessionM = controller.partMeasurements[part];
+    final cached = controller.cachedReadingsFor(part);
+    final backend = controller.backendPanelFor(part);
+    final backendThickness = backend?.thickness;
+
+    // Determine what to display
+    late final double? mainValue;
+    late final double? avgValue;
+    late final String? substrateLabel;
+    late final int readingCount;
+    late final List<double> slotReadings;
+    late final int backendOnlyCount; // >0 means colored slots without values
+
+    if (sessionM != null && sessionM.hasMeasurement) {
+      // Active BLE session data
+      mainValue = sessionM.latestReading;
+      avgValue = sessionM.average;
+      substrateLabel = sessionM.substrate?.label;
+      readingCount = sessionM.readings.length;
+      slotReadings = sessionM.readings;
+      backendOnlyCount = 0;
+    } else if (cached != null) {
+      // User's own cached readings from a previous session
+      mainValue = cached.latestReading;
+      avgValue = cached.average;
+      substrateLabel = cached.substrate;
+      readingCount = cached.readings.length;
+      slotReadings = cached.readings;
+      backendOnlyCount = 0;
+    } else if (backend != null && backendThickness != null) {
+      // Someone else's data from backend — no individual readings
+      mainValue = backendThickness;
+      avgValue = backendThickness;
+      substrateLabel = backend.substrate;
+      readingCount = backend.measurementCount;
+      slotReadings = [];
+      backendOnlyCount = backend.measurementCount;
+    } else {
+      // No data at all
+      mainValue = null;
+      avgValue = null;
+      substrateLabel = null;
+      readingCount = 0;
+      slotReadings = [];
+      backendOnlyCount = 0;
+    }
 
     return Container(
       margin: const EdgeInsets.symmetric(
@@ -101,16 +138,16 @@ class _ReadingDisplay extends StatelessWidget {
               children: [
                 // Main value
                 Expanded(
-                  child: hasReadings && latest != null
-                      ? _LargeValue(value: latest, substrate: substrate)
+                  child: mainValue != null
+                      ? _LargeValue(value: mainValue, substrateLabel: substrateLabel)
                       : _NoReadingYet(),
                 ),
 
                 // Average + substrate column
-                if (hasReadings && avg != null)
+                if (mainValue != null && avgValue != null)
                   _StatsColumn(
-                    average: avg,
-                    substrate: substrate,
+                    average: avgValue,
+                    substrateLabel: substrateLabel,
                     readingCount: readingCount,
                   ),
               ],
@@ -125,7 +162,10 @@ class _ReadingDisplay extends StatelessWidget {
               FSizes.md,
               FSizes.md,
             ),
-            child: _ReadingSlots(readings: m?.readings ?? []),
+            child: _ReadingSlots(
+              readings: slotReadings,
+              backendOnlyCount: backendOnlyCount,
+            ),
           ),
         ],
       ),
@@ -238,9 +278,9 @@ class _PanelHeader extends StatelessWidget {
 
 class _LargeValue extends StatelessWidget {
   final double value;
-  final SubstrateType? substrate;
+  final String? substrateLabel;
 
-  const _LargeValue({required this.value, this.substrate});
+  const _LargeValue({required this.value, this.substrateLabel});
 
   String _format(double v) =>
       v.abs() < 99.95 ? v.toStringAsFixed(1) : v.round().toString();
@@ -307,12 +347,12 @@ class _NoReadingYet extends StatelessWidget {
 
 class _StatsColumn extends StatelessWidget {
   final double average;
-  final SubstrateType? substrate;
+  final String? substrateLabel;
   final int readingCount;
 
   const _StatsColumn({
     required this.average,
-    this.substrate,
+    this.substrateLabel,
     required this.readingCount,
   });
 
@@ -321,30 +361,30 @@ class _StatsColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMetalPutty = substrateLabel == 'Metal Putty';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         // Substrate badge
-        if (substrate != null)
+        if (substrateLabel != null)
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: FSizes.md,
               vertical: FSizes.xs + 2,
             ),
             decoration: BoxDecoration(
-              color: substrate == SubstrateType.metalPutty
+              color: isMetalPutty
                   ? FColors.error.withValues(alpha: 0.1)
                   : FColors.primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
             ),
             child: Text(
-              substrate!.label,
+              substrateLabel!,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.5,
-                color: substrate == SubstrateType.metalPutty
-                    ? FColors.error
-                    : FColors.primaryColor,
+                color: isMetalPutty ? FColors.error : FColors.primaryColor,
               ),
             ),
           ),
@@ -369,7 +409,14 @@ class _StatsColumn extends StatelessWidget {
 class _ReadingSlots extends StatelessWidget {
   final List<double> readings;
 
-  const _ReadingSlots({required this.readings});
+  /// When >0, show this many colored slots without individual values.
+  /// Used for backend-only data where we don't have the individual readings.
+  final int backendOnlyCount;
+
+  const _ReadingSlots({
+    required this.readings,
+    this.backendOnlyCount = 0,
+  });
 
   String _format(double v) =>
       v.abs() < 99.95 ? v.toStringAsFixed(1) : v.round().toString();
@@ -380,9 +427,62 @@ class _ReadingSlots extends StatelessWidget {
 
     return Row(
       children: List.generate(6, (i) {
-        final hasValue = i < readings.length;
-        final isLatest = hasValue && i == readings.length - 1;
+        // Individual reading values available (session or cached)
+        if (i < readings.length) {
+          final isLatest = i == readings.length - 1;
+          return Expanded(
+            child: Container(
+              margin: EdgeInsets.only(
+                left: i == 0 ? 0 : slotGap,
+                right: i == 5 ? 0 : slotGap,
+              ),
+              padding: const EdgeInsets.symmetric(vertical: FSizes.sm + 2),
+              decoration: BoxDecoration(
+                color: isLatest
+                    ? FColors.primaryColor
+                    : FColors.darkGrey.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
+              ),
+              child: Text(
+                textAlign: TextAlign.center,
+                _format(readings[i]),
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: isLatest
+                      ? Colors.white
+                      : Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+              ),
+            ),
+          );
+        }
 
+        // Backend-only colored slots (no individual values)
+        if (i < backendOnlyCount) {
+          return Expanded(
+            child: Container(
+              margin: EdgeInsets.only(
+                left: i == 0 ? 0 : slotGap,
+                right: i == 5 ? 0 : slotGap,
+              ),
+              padding: const EdgeInsets.symmetric(vertical: FSizes.sm + 2),
+              decoration: BoxDecoration(
+                color: FColors.primaryColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
+              ),
+              child: Text(
+                textAlign: TextAlign.center,
+                '—',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: FColors.primaryColor.withValues(alpha: 0.5),
+                ),
+              ),
+            ),
+          );
+        }
+
+        // Empty slot
         return Expanded(
           child: Container(
             margin: EdgeInsets.only(
@@ -391,27 +491,16 @@ class _ReadingSlots extends StatelessWidget {
             ),
             padding: const EdgeInsets.symmetric(vertical: FSizes.sm + 2),
             decoration: BoxDecoration(
-              color: hasValue
-                  ? isLatest
-                        ? FColors.primaryColor
-                        : FColors.darkGrey.withValues(alpha: 0.08)
-                  : Theme.of(context).scaffoldBackgroundColor,
+              color: Theme.of(context).scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
             ),
             child: Text(
               textAlign: TextAlign.center,
-              hasValue ? _format(readings[i]) : '—',
-              style: hasValue
-                  ? Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: isLatest
-                          ? Colors.white
-                          : Theme.of(context).textTheme.bodyLarge?.color,
-                    )
-                  : Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w400,
-                      color: FColors.darkGrey.withValues(alpha: 0.3),
-                    ),
+              '—',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w400,
+                color: FColors.darkGrey.withValues(alpha: 0.3),
+              ),
             ),
           ),
         );

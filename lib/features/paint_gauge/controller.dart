@@ -13,12 +13,43 @@ import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+
+/// Cached individual readings from a previous session (user's own measurements).
+class CachedReading {
+  final List<double> readings;
+  final String? substrate;
+
+  CachedReading({required this.readings, this.substrate});
+
+  double? get average {
+    if (readings.isEmpty) return null;
+    final sum = readings.reduce((a, b) => a + b);
+    final avg = sum / readings.length;
+    return avg.abs() < 99.95
+        ? double.parse(avg.toStringAsFixed(1))
+        : avg.round().toDouble();
+  }
+
+  double? get latestReading => readings.isEmpty ? null : readings.last;
+
+  Map<String, dynamic> toJson() => {
+    'readings': readings,
+    'substrate': substrate,
+  };
+
+  factory CachedReading.fromJson(Map<String, dynamic> json) => CachedReading(
+    readings: (json['readings'] as List).cast<num>().map((e) => e.toDouble()).toList(),
+    substrate: json['substrate'] as String?,
+  );
+}
 
 class PaintGaugeController extends GetxController {
   static const _tag = 'PaintGaugeController';
   static const _saveDebounceMs = 3000;
+  static const _autoConnectTimeoutMs = 5000;
 
   InspectionDetailsController get mainController =>
       InspectionDetailsBinding().instance;
@@ -34,6 +65,9 @@ class PaintGaugeController extends GetxController {
   final RxMap<int, PaintPanel> _backendMap = RxMap<int, PaintPanel>({});
   final RxBool isPanelsLoading = true.obs;
 
+  // ── Cached readings from previous sessions (user's own measurements) ───────
+  final Map<int, CachedReading> _cachedReadings = {};
+
   // ── Session measurement state (ephemeral, per-connection) ──────────────────
   final RxMap<CarPart, PartMeasurement> partMeasurements =
       RxMap<CarPart, PartMeasurement>({});
@@ -48,6 +82,7 @@ class PaintGaugeController extends GetxController {
   final RxBool isScanning = false.obs;
   final RxBool isConnected = false.obs;
   final RxBool isConnecting = false.obs;
+  final RxBool isAutoConnecting = false.obs;
 
   final RxList<BleDevice> discoveredDevices = RxList<BleDevice>([]);
 
@@ -55,6 +90,10 @@ class PaintGaugeController extends GetxController {
   final Set<int> _dirtyPanelIds = {};
   final Set<int> _postingPanelIds = {};
   Timer? _saveDebounceTimer;
+
+  // ── Auto-connect ───────────────────────────────────────────────────────────
+  StreamSubscription? _autoConnectScanSub;
+  Timer? _autoConnectTimeout;
 
   // Session timing
   DateTime? _sessionStartedAt;
@@ -78,6 +117,7 @@ class PaintGaugeController extends GetxController {
     AppLogger.info(_tag, 'onReady');
 
     await _openHiveBox();
+    _loadCachedReadings();
     await _fetchPanels();
   }
 
@@ -85,6 +125,7 @@ class PaintGaugeController extends GetxController {
   void onClose() {
     AppLogger.info(_tag, 'onClose');
     _saveDebounceTimer?.cancel();
+    _cancelAutoConnect();
     _flushAllDirty();
     _sessionStartedAt = null;
     _disconnect();
@@ -115,6 +156,45 @@ class PaintGaugeController extends GetxController {
     } catch (e) {
       AppLogger.error(_tag, 'Failed to open Hive box', e);
     }
+  }
+
+  // ── Cached Readings (user's own individual readings) ───────────────────────
+
+  void _loadCachedReadings() {
+    if (_repository == null) return;
+    final raw = _repository!.loadReadingsCache();
+    _cachedReadings.clear();
+    for (final entry in raw.entries) {
+      try {
+        _cachedReadings[entry.key] = CachedReading.fromJson(entry.value);
+      } catch (e) {
+        AppLogger.error(_tag, 'Failed to parse cached reading for id=${entry.key}', e);
+      }
+    }
+    AppLogger.info(_tag, 'Loaded ${_cachedReadings.length} cached readings');
+  }
+
+  void _saveCachedReading(CarPart part, PartMeasurement m) {
+    if (_repository == null) return;
+    _cachedReadings[part.backendId] = CachedReading(
+      readings: List<double>.from(m.readings),
+      substrate: m.substrate?.label,
+    );
+    _repository!.saveReadingsCache(
+      _cachedReadings.map((k, v) => MapEntry(k, v.toJson())),
+    );
+  }
+
+  void _clearCachedReading(CarPart part) {
+    _cachedReadings.remove(part.backendId);
+    _repository?.clearReadingForPanel(part.backendId);
+  }
+
+  /// Public getter for UI: returns cached readings for a panel, or null.
+  CachedReading? cachedReadingsFor(CarPart part) {
+    final cached = _cachedReadings[part.backendId];
+    if (cached != null && cached.readings.isNotEmpty) return cached;
+    return null;
   }
 
   // ── Backend Panel Fetching (cache-first + API refresh) ─────────────────────
@@ -171,15 +251,94 @@ class PaintGaugeController extends GetxController {
     }
   }
 
+  // ── Auto-Connect / Start Connection ─────────────────────────────────────────
+
+  /// Called when user taps the disconnected status card.
+  /// If a saved device exists → scan + auto-connect.
+  /// Otherwise → navigate to full-page scan view.
+  Future<void> startConnection() async {
+    if (isConnected.value || isConnecting.value || isAutoConnecting.value) return;
+
+    final savedMac = _repository?.lastDeviceMac;
+    if (savedMac != null && savedMac.isNotEmpty) {
+      await _autoConnect(savedMac);
+    } else {
+      _navigateToScanPage();
+    }
+  }
+
+  Future<void> _autoConnect(String targetMac) async {
+    AppLogger.info(_tag, 'Auto-connect: scanning for $targetMac');
+    isAutoConnecting.value = true;
+    update();
+
+    _autoConnectScanSub?.cancel();
+    await FlutterBluePlus.stopScan();
+
+    _autoConnectScanSub = FlutterBluePlus.scanResults.listen((results) {
+      for (final r in results) {
+        if (r.device.remoteId.str == targetMac) {
+          _cancelAutoConnect();
+          final name = r.device.platformName.isNotEmpty
+              ? r.device.platformName
+              : r.advertisementData.advName.isNotEmpty
+                  ? r.advertisementData.advName
+                  : targetMac;
+          AppLogger.info(_tag, 'Auto-connect: found $name, connecting...');
+          connectToDevice(targetMac, deviceName: name);
+          return;
+        }
+      }
+    });
+
+    FlutterBluePlus.startScan();
+
+    // Timeout: if device not found, fall back to scan page
+    _autoConnectTimeout = Timer(
+      const Duration(milliseconds: _autoConnectTimeoutMs),
+      () {
+        if (!isConnected.value && !isConnecting.value) {
+          AppLogger.info(_tag, 'Auto-connect: timeout, showing scan page');
+          _cancelAutoConnect();
+          _navigateToScanPage();
+        }
+      },
+    );
+  }
+
+  void _cancelAutoConnect() {
+    _autoConnectScanSub?.cancel();
+    _autoConnectScanSub = null;
+    _autoConnectTimeout?.cancel();
+    _autoConnectTimeout = null;
+    FlutterBluePlus.stopScan();
+    isAutoConnecting.value = false;
+    update();
+  }
+
+  /// Callback set by the view to handle scan page navigation.
+  /// Avoids circular dependency between controller and scan_view.
+  void Function()? onNavigateToScan;
+
+  void _navigateToScanPage() {
+    onNavigateToScan?.call();
+  }
+
   // ── BLE Connection ───────────────────────────────────────────────────────────
 
   Future<void> connectToDevice(String deviceId, {String? deviceName}) async {
     if (isConnecting.value || isConnected.value) return;
     AppLogger.info(_tag, 'connectToDevice: $deviceId');
 
+    // Cancel auto-connect scan if still running
+    _cancelAutoConnect();
+
     isConnecting.value = true;
     connectionState.value = BleConnectionState.connecting;
     update();
+
+    // Save device for future auto-connect
+    _repository?.saveLastDevice(deviceId, deviceName ?? deviceId);
 
     _connectionService = BleConnectionService();
     _commandService = GaugeCommandService(
@@ -294,6 +453,9 @@ class PaintGaugeController extends GetxController {
     } else {
       AppLogger.info(_tag, 'No backend panel for ${part.label} — reading will not be saved');
     }
+
+    // Cache individual readings for this panel
+    _saveCachedReading(part, measurement);
 
     // Reset debounce timer
     _resetSaveDebounce(part);
@@ -433,6 +595,9 @@ class PaintGaugeController extends GetxController {
 
     partMeasurements[part]?.clear();
 
+    // Clear cached readings
+    _clearCachedReading(part);
+
     // Clear backend state
     final bp = backendPanelFor(part);
     if (bp != null) {
@@ -461,6 +626,7 @@ class PaintGaugeController extends GetxController {
     AppLogger.info(_tag, 'clearAllPanels');
     for (final part in CarPart.values) {
       partMeasurements[part]?.clear();
+      _clearCachedReading(part);
     }
     _dirtyPanelIds.clear();
     partMeasurements.refresh();
@@ -472,35 +638,43 @@ class PaintGaugeController extends GetxController {
     _postingPanelIds.clear();
     _saveDebounceTimer?.cancel();
     _initPartMeasurements();
+    _cachedReadings.clear();
+    _repository?.clearReadingsCache();
     _repository?.clearCache();
     _fetchPanels();
   }
 
-  // ── Display Helpers (merge backend + session state) ──────────────────────────
+  // ── Display Helpers (merge session + cached + backend) ─────────────────────
 
   /// Find the backend panel matching a [CarPart] by backend ID.
   PaintPanel? backendPanelFor(CarPart part) {
     return _backendMap[part.backendId];
   }
 
-  /// Display thickness: session average if session has readings, else backend.
+  /// Display thickness: session > cached > backend.
   double? displayThickness(CarPart part) {
     final m = partMeasurements[part];
     if (m != null && m.hasMeasurement) return m.average;
+    final cached = cachedReadingsFor(part);
+    if (cached != null) return cached.average;
     return backendPanelFor(part)?.thickness;
   }
 
-  /// Display substrate: session if available, else backend.
+  /// Display substrate: session > cached > backend.
   String? displaySubstrate(CarPart part) {
     final m = partMeasurements[part];
     if (m != null && m.substrate != null) return m.substrate!.label;
+    final cached = cachedReadingsFor(part);
+    if (cached?.substrate != null) return cached!.substrate;
     return backendPanelFor(part)?.substrate;
   }
 
-  /// Display reading count: session if measuring, else backend.
+  /// Display reading count: session > cached > backend.
   int displayMeasurementCount(CarPart part) {
     final m = partMeasurements[part];
     if (m != null && m.hasMeasurement) return m.readings.length;
+    final cached = cachedReadingsFor(part);
+    if (cached != null) return cached.readings.length;
     return backendPanelFor(part)?.measurementCount ?? 0;
   }
 
@@ -517,12 +691,16 @@ class PaintGaugeController extends GetxController {
 
   // ── Existing Helpers ─────────────────────────────────────────────────────────
 
-  /// Number of panels that have data (session or backend).
+  /// Number of panels that have data (session, cached, or backend).
   int get measuredPanelCount {
     int count = 0;
     for (final part in CarPart.values) {
       final m = partMeasurements[part];
       if (m != null && m.hasMeasurement) {
+        count++;
+        continue;
+      }
+      if (cachedReadingsFor(part) != null) {
         count++;
         continue;
       }

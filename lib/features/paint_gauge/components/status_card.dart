@@ -9,74 +9,101 @@ import 'package:iconsax/iconsax.dart';
 
 class ConnectionStatusCard extends StatelessWidget {
   final PaintGaugeController controller;
+  final VoidCallback? onConnectTap;
 
-  const ConnectionStatusCard({super.key, required this.controller});
+  const ConnectionStatusCard({
+    super.key,
+    required this.controller,
+    this.onConnectTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       final state = controller.connectionState.value;
+      final isAutoConnecting = controller.isAutoConnecting.value;
       final measured = controller.measuredPanelCount;
       final total = controller.totalPanelCount;
 
-      return Container(
-        margin: const EdgeInsets.symmetric(
-          horizontal: FSizes.lg,
-          vertical: FSizes.md,
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: FSizes.md,
-          vertical: FSizes.sm,
-        ),
-        decoration: BoxDecoration(
-          color: _bgColor(context, state),
-          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-        ),
-        child: Row(
-          children: [
-            _StatusIcon(state: state),
-            const SizedBox(width: FSizes.sm),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _stateLabel(state),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: _textColor(state),
+      // Searching = auto-connect scan in progress (before connect handshake begins)
+      final isSearching = isAutoConnecting && state == BleConnectionState.disconnected;
+      final isDisconnected = !isAutoConnecting && state == BleConnectionState.disconnected;
+
+      return GestureDetector(
+        onTap: isDisconnected ? onConnectTap : null,
+        child: Container(
+          margin: const EdgeInsets.symmetric(
+            horizontal: FSizes.lg,
+            vertical: FSizes.md,
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: FSizes.md,
+            vertical: FSizes.sm,
+          ),
+          decoration: BoxDecoration(
+            color: _bgColor(context, state, isSearching),
+            borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+          ),
+          child: Row(
+            children: [
+              _StatusIcon(state: state, isSearching: isSearching),
+              const SizedBox(width: FSizes.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _stateLabel(state, isSearching),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: _textColor(state, isSearching),
+                      ),
                     ),
-                  ),
-                  Text(
-                    '$measured/$total ${PaintGaugePage.measuredPanels.tr}',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: FColors.darkGrey),
-                  ),
-                ],
-              ),
-            ),
-            if (controller.isConnected.value)
-              TextButton.icon(
-                onPressed: controller.disconnect,
-                icon: const Icon(Iconsax.bluetooth_circle, size: FSizes.iconSm),
-                label: Text(PaintGaugePage.goBack.tr),
-                style: TextButton.styleFrom(
-                  foregroundColor: FColors.error,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: FSizes.sm,
-                    vertical: FSizes.xs,
-                  ),
-                  textStyle: Theme.of(context).textTheme.labelSmall,
+                    Text(
+                      '$measured/$total ${PaintGaugePage.measuredPanels.tr}',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: FColors.darkGrey),
+                    ),
+                  ],
                 ),
               ),
-          ],
+              if (state == BleConnectionState.connected)
+                TextButton.icon(
+                  onPressed: controller.disconnect,
+                  icon: const Icon(Iconsax.bluetooth_circle, size: FSizes.iconSm),
+                  label: Text(PaintGaugePage.goBack.tr),
+                  style: TextButton.styleFrom(
+                    foregroundColor: FColors.error,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: FSizes.sm,
+                      vertical: FSizes.xs,
+                    ),
+                    textStyle: Theme.of(context).textTheme.labelSmall,
+                  ),
+                )
+              else if (isDisconnected)
+                TextButton(
+                  onPressed: onConnectTap,
+                  style: TextButton.styleFrom(
+                    foregroundColor: FColors.primaryColor,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: FSizes.sm,
+                      vertical: FSizes.xs,
+                    ),
+                    textStyle: Theme.of(context).textTheme.labelSmall,
+                  ),
+                  child: Text(PaintGaugePage.connectButton.tr),
+                ),
+            ],
+          ),
         ),
       );
     });
   }
 
-  Color _bgColor(BuildContext context, BleConnectionState state) {
+  Color _bgColor(BuildContext context, BleConnectionState state, bool isSearching) {
+    if (isSearching) return FColors.warning.withValues(alpha: 0.08);
     switch (state) {
       case BleConnectionState.connected:
         return FColors.success.withValues(alpha: 0.08);
@@ -90,7 +117,8 @@ class ConnectionStatusCard extends StatelessWidget {
     }
   }
 
-  Color _textColor(BleConnectionState state) {
+  Color _textColor(BleConnectionState state, bool isSearching) {
+    if (isSearching) return FColors.warning;
     switch (state) {
       case BleConnectionState.connected:
         return FColors.success;
@@ -104,7 +132,8 @@ class ConnectionStatusCard extends StatelessWidget {
     }
   }
 
-  String _stateLabel(BleConnectionState state) {
+  String _stateLabel(BleConnectionState state, bool isSearching) {
+    if (isSearching) return PaintGaugePage.searching.tr;
     switch (state) {
       case BleConnectionState.connected:
         return PaintGaugePage.connected.tr;
@@ -122,11 +151,12 @@ class ConnectionStatusCard extends StatelessWidget {
 
 class _StatusIcon extends StatelessWidget {
   final BleConnectionState state;
-  const _StatusIcon({required this.state});
+  final bool isSearching;
+  const _StatusIcon({required this.state, this.isSearching = false});
 
   @override
   Widget build(BuildContext context) {
-    if (state == BleConnectionState.connecting) {
+    if (isSearching || state == BleConnectionState.connecting) {
       return const SizedBox(
         width: FSizes.iconMd,
         height: FSizes.iconMd,

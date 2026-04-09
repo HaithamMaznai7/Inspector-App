@@ -120,4 +120,58 @@ class PaintGaugeRepository {
     // Also clear legacy cache key if it exists (from old PaintGaugeResult)
     await box.delete(slug);
   }
+
+  // ── Reading slots cache (user's own individual readings) ────────────────
+
+  String get _readingsCacheKey => 'readings_$slug';
+
+  /// Save individual reading values for all panels that have been measured.
+  /// Format: {backendId: {readings: [double], substrate: String?}}
+  Future<void> saveReadingsCache(Map<int, Map<String, dynamic>> data) async {
+    await box.put(_readingsCacheKey, data);
+  }
+
+  /// Load cached individual readings. Returns empty map if nothing cached.
+  Map<int, Map<String, dynamic>> loadReadingsCache() {
+    final raw = box.get(_readingsCacheKey);
+    if (raw == null) return {};
+    try {
+      return Map<int, Map<String, dynamic>>.from(
+        (raw as Map).map(
+          (k, v) => MapEntry(
+            k is int ? k : int.parse(k.toString()),
+            Map<String, dynamic>.from(v as Map),
+          ),
+        ),
+      );
+    } catch (e) {
+      AppLogger.error(_tag, 'Failed to parse readings cache', e);
+      return {};
+    }
+  }
+
+  /// Clear cached readings for a single panel.
+  Future<void> clearReadingForPanel(int backendId) async {
+    final data = loadReadingsCache();
+    data.remove(backendId);
+    await box.put(_readingsCacheKey, data);
+  }
+
+  /// Clear all cached readings for this inspection.
+  Future<void> clearReadingsCache() async {
+    await box.delete(_readingsCacheKey);
+  }
+
+  // ── Saved BLE device (for auto-connect) ─────────────────────────────────
+
+  static const _lastDeviceMacKey = 'last_device_mac';
+  static const _lastDeviceNameKey = 'last_device_name';
+
+  Future<void> saveLastDevice(String mac, String name) async {
+    await box.put(_lastDeviceMacKey, mac);
+    await box.put(_lastDeviceNameKey, name);
+  }
+
+  String? get lastDeviceMac => box.get(_lastDeviceMacKey) as String?;
+  String? get lastDeviceName => box.get(_lastDeviceNameKey) as String?;
 }
