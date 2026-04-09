@@ -7,7 +7,6 @@ import 'package:fahis_inspector/paint_gauge/protocol/models.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
-import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -93,7 +92,9 @@ class _PaintGaugeBodyState extends State<_PaintGaugeBody> {
         height: MediaQuery.of(context).size.height * 0.65,
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(FSizes.borderRadiusLg)),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(FSizes.borderRadiusLg),
+          ),
         ),
         child: const PaintGaugeScanView(),
       ),
@@ -118,7 +119,9 @@ class _PaintGaugeBodyState extends State<_PaintGaugeBody> {
         Expanded(
           child: ListView(
             children: [
-              _ClearAllButton(controller: widget.controller),
+              // _ClearAllButton(controller: widget.controller),
+              //TODO: Clearall button
+              SizedBox(height: FSizes.md),
               PanelListWidget(
                 controller: widget.controller,
                 panelKeys: _panelKeys,
@@ -133,58 +136,58 @@ class _PaintGaugeBodyState extends State<_PaintGaugeBody> {
 
 // ── Clear all button ──────────────────────────────────────────────────────────
 
-class _ClearAllButton extends StatelessWidget {
-  final PaintGaugeController controller;
-  const _ClearAllButton({required this.controller});
+// class _ClearAllButton extends StatelessWidget {
+//   final PaintGaugeController controller;
+//   const _ClearAllButton({required this.controller});
 
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      if (controller.measuredPanelCount == 0) return const SizedBox.shrink();
+//   @override
+//   Widget build(BuildContext context) {
+//     return Obx(() {
+//       if (controller.measuredPanelCount == 0) return const SizedBox.shrink();
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: FSizes.lg),
-        child: Align(
-          alignment: AlignmentDirectional.centerEnd,
-          child: TextButton.icon(
-            onPressed: () => _confirmClearAll(context),
-            icon: const Icon(Icons.clear_all, size: FSizes.fontSizeLg),
-            label: Text(PaintGaugePage.clearAll.tr),
-            style: TextButton.styleFrom(
-              foregroundColor: FColors.error,
-              textStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ),
-      );
-    });
-  }
+//       return Padding(
+//         padding: const EdgeInsets.symmetric(horizontal: FSizes.lg),
+//         child: Align(
+//           alignment: AlignmentDirectional.centerEnd,
+//           child: TextButton.icon(
+//             onPressed: () => _confirmClearAll(context),
+//             icon: const Icon(Icons.clear_all, size: FSizes.fontSizeLg),
+//             label: Text(PaintGaugePage.clearAll.tr),
+//             style: TextButton.styleFrom(
+//               foregroundColor: FColors.error,
+//               textStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
+//                 fontWeight: FontWeight.w600,
+//               ),
+//             ),
+//           ),
+//         ),
+//       );
+//     });
+//   }
 
-  Future<void> _confirmClearAll(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text(PaintGaugePage.clearAll.tr),
-        content: Text(PaintGaugePage.clearAllConfirm.tr),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(FTexts.cancelBtn.tr),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              FTexts.deleteBtn.tr,
-              style: const TextStyle(color: FColors.error),
-            ),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) {
-      await controller.clearAllPanels();
-    }
-  }
-}
+//   Future<void> _confirmClearAll(BuildContext context) async {
+//     final confirmed = await showDialog<bool>(
+//       context: context,
+//       builder: (_) => AlertDialog(
+//         title: Text(PaintGaugePage.clearAll.tr),
+//         content: Text(PaintGaugePage.clearAllConfirm.tr),
+//         actions: [
+//           TextButton(
+//             onPressed: () => Navigator.pop(context, false),
+//             child: Text(FTexts.cancelBtn.tr),
+//           ),
+//           TextButton(
+//             onPressed: () => Navigator.pop(context, true),
+//             child: Text(
+//               FTexts.deleteBtn.tr,
+//               style: const TextStyle(color: FColors.error),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//     if (confirmed == true) {
+//       await controller.clearAllPanels();
+//     }
+//   }
+// }
