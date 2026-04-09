@@ -79,7 +79,6 @@ class _PaintGaugeBodyState extends State<_PaintGaugeBody> {
       ctx,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOutCubic,
-      alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
     );
   }
 

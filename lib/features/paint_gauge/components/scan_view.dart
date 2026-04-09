@@ -163,7 +163,6 @@ class _PaintGaugeScanViewState extends State<PaintGaugeScanView> {
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
-          //TODO: add optional
           const SizedBox(height: FSizes.xs),
           Text(
             PaintGaugePage.scanSubtitle.tr,
