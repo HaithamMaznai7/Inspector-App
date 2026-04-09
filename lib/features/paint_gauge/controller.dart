@@ -30,8 +30,8 @@ class PaintGaugeController extends GetxController {
   StreamSubscription<BleConnectionState>? _connectionStateSub;
   StreamSubscription<List<int>>? _dataSub;
 
-  // ── Backend panel state (source of truth for panel list) ────────────────────
-  final RxList<PaintPanel> backendPanels = RxList<PaintPanel>([]);
+  // ── Backend panel values (keyed by backend id = CarPart.backendId) ──────────
+  final RxMap<int, PaintPanel> _backendMap = RxMap<int, PaintPanel>({});
   final RxBool isPanelsLoading = true.obs;
 
   // ── Session measurement state (ephemeral, per-connection) ──────────────────
@@ -125,7 +125,7 @@ class PaintGaugeController extends GetxController {
     // 1. Show cached immediately
     final cached = _repository?.fetchPanelsFromCache() ?? [];
     if (cached.isNotEmpty) {
-      backendPanels.assignAll(cached);
+      _backendMap.assignAll({for (final row in cached) row.id: row});
       isPanelsLoading.value = false;
       update();
     }
@@ -133,10 +133,9 @@ class PaintGaugeController extends GetxController {
     // 2. Refresh from API
     try {
       final fresh = await _repository!.fetchPanelsFromApi();
-      backendPanels.assignAll(fresh);
+      _backendMap.assignAll({for (final row in fresh) row.id: row});
     } on FNetworkException catch (e) {
-      // If cache was empty, show error; otherwise silently use cache
-      if (backendPanels.isEmpty) e.notify();
+      if (_backendMap.isEmpty) e.notify();
     } catch (e) {
       AppLogger.error(_tag, 'Failed to fetch panels', e);
     } finally {
@@ -345,13 +344,13 @@ class PaintGaugeController extends GetxController {
       );
       _dirtyPanelIds.remove(panel.id);
 
-      // Update reactive backendPanels so UI reflects saved state
-      final idx = backendPanels.indexWhere((p) => p.id == panel.id);
-      if (idx >= 0) {
-        backendPanels[idx].thickness = m.average;
-        backendPanels[idx].substrate = m.substrate?.label;
-        backendPanels[idx].measurementCount = m.readings.length;
-        backendPanels.refresh();
+      // Update reactive map so UI reflects saved state
+      final existing = _backendMap[panel.id];
+      if (existing != null) {
+        existing.thickness = m.average;
+        existing.substrate = m.substrate?.label;
+        existing.measurementCount = m.readings.length;
+        _backendMap.refresh();
       }
     } on FNetworkException catch (e) {
       AppLogger.error(_tag, 'POST failed for panel ${panel.name}', e);
@@ -369,9 +368,11 @@ class PaintGaugeController extends GetxController {
   Future<void> _flushAllDirty() async {
     final futures = <Future>[];
     for (final panelId in _dirtyPanelIds.toList()) {
-      final bp = backendPanels.firstWhereOrNull((p) => p.id == panelId);
+      final bp = _backendMap[panelId];
       if (bp == null) continue;
-      final carPart = bp.carPart;
+      final carPart = CarPart.values.firstWhereOrNull(
+        (p) => p.backendId == panelId,
+      );
       if (carPart == null) continue;
       final m = partMeasurements[carPart];
       if (m == null || m.readings.length < 2) continue;
@@ -446,7 +447,7 @@ class PaintGaugeController extends GetxController {
         bp.thickness = null;
         bp.substrate = null;
         bp.measurementCount = 0;
-        backendPanels.refresh();
+        _backendMap.refresh();
       } catch (e) {
         AppLogger.error(_tag, 'Failed to clear panel on backend', e);
       }
@@ -477,12 +478,9 @@ class PaintGaugeController extends GetxController {
 
   // ── Display Helpers (merge backend + session state) ──────────────────────────
 
-  /// Find the backend panel matching a [CarPart] by enum equality.
-  ///
-  /// Relies on [PaintPanel.carPart] for hex parsing — avoids fragile
-  /// string formatting that mismatches leading zeros (e.g. "0x10" vs "0x0010").
+  /// Find the backend panel matching a [CarPart] by backend ID.
   PaintPanel? backendPanelFor(CarPart part) {
-    return backendPanels.firstWhereOrNull((p) => p.carPart == part);
+    return _backendMap[part.backendId];
   }
 
   /// Display thickness: session average if session has readings, else backend.
@@ -514,8 +512,7 @@ class PaintGaugeController extends GetxController {
 
   /// Whether this panel has unsaved session changes.
   bool panelIsDirty(CarPart part) {
-    final bp = backendPanelFor(part);
-    return bp != null && _dirtyPanelIds.contains(bp.id);
+    return _dirtyPanelIds.contains(part.backendId);
   }
 
   // ── Existing Helpers ─────────────────────────────────────────────────────────
@@ -534,9 +531,11 @@ class PaintGaugeController extends GetxController {
     return count;
   }
 
-  /// Total number of panels from backend (falls back to 19 if not loaded).
-  int get totalPanelCount =>
-      backendPanels.isNotEmpty ? backendPanels.length : CarPart.values.length;
+  /// Whether backend data has been loaded.
+  bool get isPanelsEmpty => _backendMap.isEmpty;
+
+  /// Total number of panels (always matches CarPart enum).
+  int get totalPanelCount => CarPart.values.length;
 
   bool panelIsSelected(CarPart part) => selectedPanel.value == part;
 

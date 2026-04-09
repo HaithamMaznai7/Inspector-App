@@ -1,6 +1,5 @@
 import 'package:fahis_inspector/features/paint_gauge/controller.dart';
 import 'package:fahis_inspector/features/paint_gauge/utils/car_part_label.dart';
-import 'package:fahis_inspector/models/paint_panel.dart';
 import 'package:fahis_inspector/paint_gauge/protocol/models.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
@@ -20,32 +19,6 @@ class PanelListWidget extends StatelessWidget {
     return GetBuilder<PaintGaugeController>(
       tag: 'PaintGauge',
       builder: (_) {
-        final panels = controller.backendPanels;
-
-        // If backend panels loaded, iterate them; otherwise fall back to CarPart enum
-        if (panels.isNotEmpty) {
-          return Column(
-            children: panels
-                .asMap()
-                .entries
-                .map((e) {
-                  final bp = e.value;
-                  final carPart = bp.carPart;
-                  if (carPart == null) return const SizedBox.shrink();
-
-                  return _PanelTile(
-                    key: panelKeys?[carPart],
-                    controller: controller,
-                    part: carPart,
-                    backendPanel: bp,
-                    number: e.key + 1,
-                  );
-                })
-                .toList(),
-          );
-        }
-
-        // Fallback: backend panels not loaded yet
         return Column(
           children: CarPart.values
               .asMap()
@@ -55,7 +28,6 @@ class PanelListWidget extends StatelessWidget {
                   key: panelKeys?[e.value],
                   controller: controller,
                   part: e.value,
-                  backendPanel: null,
                   number: e.key + 1,
                 ),
               )
@@ -69,14 +41,12 @@ class PanelListWidget extends StatelessWidget {
 class _PanelTile extends StatelessWidget {
   final PaintGaugeController controller;
   final CarPart part;
-  final PaintPanel? backendPanel;
   final int number;
 
   const _PanelTile({
     super.key,
     required this.controller,
     required this.part,
-    required this.backendPanel,
     required this.number,
   });
 

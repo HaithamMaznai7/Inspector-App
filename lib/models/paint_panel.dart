@@ -1,14 +1,22 @@
-import 'package:fahis_inspector/paint_gauge/protocol/models.dart';
+/// Parses a thickness value from the backend, which may arrive as
+/// a [num], a [String], or `null` depending on backend state.
+double? parseThickness(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value);
+  return null;
+}
 
 /// Backend entity for a paint gauge panel row.
 ///
-/// Represents the server-side state of a single panel. The backend
-/// is the source of truth for the panel list and saved measurements.
+/// Holds only the server-side saved values for a panel.
+/// Panel identity, order, labels, and BLE mapping come from the
+/// app-side `CarPart` enum — matched via `CarPart.backendId == id`.
 class PaintPanel {
   final int id;
   final String name;
-  final String partCode; // hex string, e.g. "0x8F10"
-  double? thickness; // average thickness from backend
+  final String partCode;
+  double? thickness;
   String? substrate;
   int measurementCount;
 
@@ -25,7 +33,7 @@ class PaintPanel {
     id: json['id'] as int,
     name: json['name'] as String,
     partCode: json['part_code'] as String,
-    thickness: (json['thickness'] as num?)?.toDouble(),
+    thickness: parseThickness(json['thickness']),
     substrate: json['substrate'] as String?,
     measurementCount: json['measurementCount'] as int? ?? 0,
   );
@@ -38,17 +46,4 @@ class PaintPanel {
     'substrate': substrate,
     'measurementCount': measurementCount,
   };
-
-  /// Match this backend panel to a [CarPart] enum by hex code.
-  ///
-  /// Uses [int.parse] instead of [int.tryParse] because Dart's tryParse
-  /// does not handle hex-prefixed strings like "0x0010".
-  CarPart? get carPart {
-    try {
-      final intValue = int.parse(partCode);
-      return CarPart.fromValue(intValue);
-    } catch (_) {
-      return null;
-    }
-  }
 }

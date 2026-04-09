@@ -1,6 +1,8 @@
 import 'package:fahis_inspector/features/inspection_details/components/reviews/info_card.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
+import 'package:fahis_inspector/features/paint_gauge/utils/car_part_label.dart';
 import 'package:fahis_inspector/models/paint_panel.dart';
+import 'package:fahis_inspector/paint_gauge/protocol/models.dart';
 import 'package:fahis_inspector/resources/paint_gauge_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -26,26 +28,30 @@ class InspectionPaintGaugeReview extends StatelessWidget {
         final slug = c.slug;
         if (slug == null) return const SizedBox.shrink();
 
-        // Load cached backend panels from Hive
+        // Build map from cached backend panels keyed by id
+        final Map<int, PaintPanel> panelMap = {};
         final box = Hive.isBoxOpen(PaintGaugeRepository.boxKey)
             ? Hive.box(PaintGaugeRepository.boxKey)
             : null;
 
-        List<PaintPanel> panels = [];
         if (box != null) {
           final raw = box.get('panels_$slug');
           if (raw != null) {
             try {
-              panels = (raw as List)
-                  .map((e) =>
-                      PaintPanel.fromJson(Map<String, dynamic>.from(e as Map)))
-                  .toList();
+              for (final e in raw as List) {
+                final panel = PaintPanel.fromJson(
+                  Map<String, dynamic>.from(e as Map),
+                );
+                panelMap[panel.id] = panel;
+              }
             } catch (_) {}
           }
         }
 
-        final measuredPanels =
-            panels.where((p) => p.thickness != null).toList();
+        // Filter to CarParts that have saved thickness
+        final measuredParts = CarPart.values
+            .where((part) => panelMap[part.backendId]?.thickness != null)
+            .toList();
 
         return InfoCard(
           title: Text(PaintGaugePage.reviewTitle.tr),
@@ -53,7 +59,7 @@ class InspectionPaintGaugeReview extends StatelessWidget {
           icon: Iconsax.brush_1,
           iconColor: FColors.primaryColor,
           children: [
-            if (measuredPanels.isEmpty)
+            if (measuredParts.isEmpty)
               Padding(
                 padding: const EdgeInsets.all(FSizes.md),
                 child: Text(
@@ -65,8 +71,9 @@ class InspectionPaintGaugeReview extends StatelessWidget {
               )
             else
               _PaintGaugeSummary(
-                panels: measuredPanels,
-                totalPanels: panels.length,
+                measuredParts: measuredParts,
+                panelMap: panelMap,
+                totalPanels: CarPart.values.length,
               ),
           ],
         );
@@ -76,9 +83,15 @@ class InspectionPaintGaugeReview extends StatelessWidget {
 }
 
 class _PaintGaugeSummary extends StatelessWidget {
-  final List<PaintPanel> panels;
+  final List<CarPart> measuredParts;
+  final Map<int, PaintPanel> panelMap;
   final int totalPanels;
-  const _PaintGaugeSummary({required this.panels, required this.totalPanels});
+
+  const _PaintGaugeSummary({
+    required this.measuredParts,
+    required this.panelMap,
+    required this.totalPanels,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -91,8 +104,8 @@ class _PaintGaugeSummary extends StatelessWidget {
               FSizes.md, 0, FSizes.md, FSizes.sm),
           child: _StatChip(
             label: PaintGaugePage.reviewPanelsMeasured.tr,
-            value: '${panels.length}/$totalPanels',
-            color: panels.length >= totalPanels
+            value: '${measuredParts.length}/$totalPanels',
+            color: measuredParts.length >= totalPanels
                 ? FColors.success
                 : FColors.primaryColor,
           ),
@@ -101,7 +114,10 @@ class _PaintGaugeSummary extends StatelessWidget {
         const Divider(height: 1),
 
         // Per-panel rows
-        ...panels.map((panel) => _PanelRow(panel: panel)),
+        ...measuredParts.map((part) => _PanelRow(
+              part: part,
+              panel: panelMap[part.backendId]!,
+            )),
         const SizedBox(height: FSizes.sm),
       ],
     );
@@ -109,8 +125,10 @@ class _PaintGaugeSummary extends StatelessWidget {
 }
 
 class _PanelRow extends StatelessWidget {
+  final CarPart part;
   final PaintPanel panel;
-  const _PanelRow({required this.panel});
+
+  const _PanelRow({required this.part, required this.panel});
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +156,7 @@ class _PanelRow extends StatelessWidget {
           const SizedBox(width: FSizes.sm),
           Expanded(
             child: Text(
-              panel.name,
+              part.localizedLabel,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),

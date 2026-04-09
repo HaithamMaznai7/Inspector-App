@@ -25,7 +25,7 @@ class PaintGaugeStepView extends StatelessWidget {
         return Obx(() {
           // Show loading only when no cached panels yet
           if (controller.isPanelsLoading.value &&
-              controller.backendPanels.isEmpty) {
+              controller.isPanelsEmpty) {
             return Center(
               child: CircularProgressIndicator(color: FColors.primaryColor),
             );
