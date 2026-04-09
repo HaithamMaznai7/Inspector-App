@@ -189,15 +189,6 @@ class _PaintGaugeScanViewState extends State<PaintGaugeScanView> {
             (d) => _DeviceTile(device: d, onTap: () => _connectToDevice(d)),
           ),
         ],
-        if (unnamed.isNotEmpty) ...[
-          _SectionHeader(
-            label: PaintGaugePage.unnamedDevices.tr,
-            count: unnamed.length,
-          ),
-          ...unnamed.map(
-            (d) => _DeviceTile(device: d, onTap: () => _connectToDevice(d)),
-          ),
-        ],
       ],
     );
   }
@@ -308,9 +299,9 @@ class _DeviceTile extends StatelessWidget {
       ),
       subtitle: Text(
         device.mac,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: FColors.darkGrey,
-        ),
+        style: Theme.of(
+          context,
+        ).textTheme.labelSmall?.copyWith(color: FColors.darkGrey),
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -320,9 +311,9 @@ class _DeviceTile extends StatelessWidget {
           const SizedBox(width: FSizes.xs),
           Text(
             '${device.rssi} dBm',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: FColors.darkGrey,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: FColors.darkGrey),
           ),
         ],
       ),
