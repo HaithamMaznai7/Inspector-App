@@ -50,7 +50,11 @@ class InspectionPaintGaugeReview extends StatelessWidget {
 
         // Filter to CarParts that have saved thickness
         final measuredParts = CarPart.values
-            .where((part) => panelMap[part.backendId]?.thickness != null)
+            .where(
+              (part) =>
+                  panelMap[part.backendId]?.thickness != null &&
+                  panelMap[part.backendId]?.measurementCount != 0,
+            )
             .toList();
 
         return InfoCard(

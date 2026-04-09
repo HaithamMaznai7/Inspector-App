@@ -26,10 +26,7 @@ class CurrentReadingPanel extends StatelessWidget {
             controller.selectedPanel.value ??
             CarPart.frontHatch;
 
-        return _ReadingDisplay(
-          part: activePart,
-          controller: controller,
-        );
+        return _ReadingDisplay(part: activePart, controller: controller);
       },
     );
   }
@@ -41,10 +38,7 @@ class _ReadingDisplay extends StatelessWidget {
   final CarPart part;
   final PaintGaugeController controller;
 
-  const _ReadingDisplay({
-    required this.part,
-    required this.controller,
-  });
+  const _ReadingDisplay({required this.part, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -138,8 +132,11 @@ class _ReadingDisplay extends StatelessWidget {
               children: [
                 // Main value
                 Expanded(
-                  child: mainValue != null
-                      ? _LargeValue(value: mainValue, substrateLabel: substrateLabel)
+                  child: mainValue != null && readingCount > 0
+                      ? _LargeValue(
+                          value: mainValue,
+                          substrateLabel: substrateLabel,
+                        )
                       : _NoReadingYet(),
                 ),
 
@@ -413,10 +410,7 @@ class _ReadingSlots extends StatelessWidget {
   /// Used for backend-only data where we don't have the individual readings.
   final int backendOnlyCount;
 
-  const _ReadingSlots({
-    required this.readings,
-    this.backendOnlyCount = 0,
-  });
+  const _ReadingSlots({required this.readings, this.backendOnlyCount = 0});
 
   String _format(double v) =>
       v.abs() < 99.95 ? v.toStringAsFixed(1) : v.round().toString();
