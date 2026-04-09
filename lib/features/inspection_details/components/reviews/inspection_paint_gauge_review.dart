@@ -57,16 +57,15 @@ class InspectionPaintGaugeReview extends StatelessWidget {
           title: Text(PaintGaugePage.reviewTitle.tr),
           tilePadding: FSizes.md,
           icon: Iconsax.brush_1,
-          iconColor: FColors.primaryColor,
           children: [
             if (measuredParts.isEmpty)
               Padding(
                 padding: const EdgeInsets.all(FSizes.md),
                 child: Text(
                   PaintGaugePage.reviewNoData.tr,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: FColors.darkGrey,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
                 ),
               )
             else
@@ -101,7 +100,11 @@ class _PaintGaugeSummary extends StatelessWidget {
         // Summary header
         Padding(
           padding: const EdgeInsets.fromLTRB(
-              FSizes.md, 0, FSizes.md, FSizes.sm),
+            FSizes.md,
+            0,
+            FSizes.md,
+            FSizes.sm,
+          ),
           child: _StatChip(
             label: PaintGaugePage.reviewPanelsMeasured.tr,
             value: '${measuredParts.length}/$totalPanels',
@@ -114,10 +117,9 @@ class _PaintGaugeSummary extends StatelessWidget {
         const Divider(height: 1),
 
         // Per-panel rows
-        ...measuredParts.map((part) => _PanelRow(
-              part: part,
-              panel: panelMap[part.backendId]!,
-            )),
+        ...measuredParts.map(
+          (part) => _PanelRow(part: part, panel: panelMap[part.backendId]!),
+        ),
         const SizedBox(height: FSizes.sm),
       ],
     );
@@ -142,7 +144,9 @@ class _PanelRow extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-          horizontal: FSizes.md, vertical: FSizes.xs),
+        horizontal: FSizes.md,
+        vertical: FSizes.xs,
+      ),
       child: Row(
         children: [
           Container(
@@ -157,30 +161,32 @@ class _PanelRow extends StatelessWidget {
           Expanded(
             child: Text(
               part.localizedLabel,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
             ),
           ),
           Text(
             '$count/6',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: FColors.darkGrey,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: FColors.darkGrey),
           ),
           const SizedBox(width: FSizes.sm),
           if (avg != null)
             Text(
               '${avg.toStringAsFixed(avg.abs() < 99.95 ? 1 : 0)} μm',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
             ),
           const SizedBox(width: FSizes.xs),
           if (substrate.isNotEmpty)
             Container(
               padding: const EdgeInsets.symmetric(
-                  horizontal: FSizes.xs, vertical: 2),
+                horizontal: FSizes.xs,
+                vertical: 2,
+              ),
               decoration: BoxDecoration(
                 color: substrateColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
@@ -204,14 +210,19 @@ class _StatChip extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
-  const _StatChip(
-      {required this.label, required this.value, required this.color});
+  const _StatChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: FSizes.sm, vertical: FSizes.xs),
+      padding: const EdgeInsets.symmetric(
+        horizontal: FSizes.sm,
+        vertical: FSizes.xs,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
@@ -221,10 +232,13 @@ class _StatChip extends StatelessWidget {
           style: Theme.of(context).textTheme.labelSmall,
           children: [
             TextSpan(
-                text: '$label: ', style: TextStyle(color: FColors.darkGrey)),
+              text: '$label: ',
+              style: TextStyle(color: FColors.darkGrey),
+            ),
             TextSpan(
-                text: value,
-                style: TextStyle(color: color, fontWeight: FontWeight.w700)),
+              text: value,
+              style: TextStyle(color: color, fontWeight: FontWeight.w700),
+            ),
           ],
         ),
       ),
