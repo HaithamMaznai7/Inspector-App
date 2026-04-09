@@ -407,6 +407,7 @@ class PaintGaugeController extends GetxController {
   Future<void> disconnect() async {
     AppLogger.info(_tag, 'disconnect called');
     await _flushAllDirty();
+    await _repository?.saveLastDevice('', ''); // ← clear saved device
     await _disconnect();
   }
 
