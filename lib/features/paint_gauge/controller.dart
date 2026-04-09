@@ -41,7 +41,10 @@ class CachedReading {
   };
 
   factory CachedReading.fromJson(Map<String, dynamic> json) => CachedReading(
-    readings: (json['readings'] as List).cast<num>().map((e) => e.toDouble()).toList(),
+    readings: (json['readings'] as List)
+        .cast<num>()
+        .map((e) => e.toDouble())
+        .toList(),
     substrate: json['substrate'] as String?,
   );
 }
@@ -49,7 +52,7 @@ class CachedReading {
 class PaintGaugeController extends GetxController {
   static const _tag = 'PaintGaugeController';
   static const _saveDebounceMs = 3000;
-  static const _autoConnectTimeoutMs = 5000;
+  static const _autoConnectTimeoutMs = 3000;
 
   InspectionDetailsController get mainController =>
       InspectionDetailsBinding().instance;
@@ -76,8 +79,9 @@ class PaintGaugeController extends GetxController {
   final Rxn<CarPart> currentDevicePanel = Rxn<CarPart>();
   final Rxn<CarPart> recentlyUpdatedPart = Rxn<CarPart>();
 
-  final Rx<BleConnectionState> connectionState =
-      Rx<BleConnectionState>(BleConnectionState.disconnected);
+  final Rx<BleConnectionState> connectionState = Rx<BleConnectionState>(
+    BleConnectionState.disconnected,
+  );
 
   final RxBool isScanning = false.obs;
   final RxBool isConnected = false.obs;
@@ -168,7 +172,11 @@ class PaintGaugeController extends GetxController {
       try {
         _cachedReadings[entry.key] = CachedReading.fromJson(entry.value);
       } catch (e) {
-        AppLogger.error(_tag, 'Failed to parse cached reading for id=${entry.key}', e);
+        AppLogger.error(
+          _tag,
+          'Failed to parse cached reading for id=${entry.key}',
+          e,
+        );
       }
     }
     AppLogger.info(_tag, 'Loaded ${_cachedReadings.length} cached readings');
@@ -257,7 +265,9 @@ class PaintGaugeController extends GetxController {
   /// If a saved device exists → scan + auto-connect.
   /// Otherwise → navigate to full-page scan view.
   Future<void> startConnection() async {
-    if (isConnected.value || isConnecting.value || isAutoConnecting.value) return;
+    if (isConnected.value || isConnecting.value || isAutoConnecting.value) {
+      return;
+    }
 
     final savedMac = _repository?.lastDeviceMac;
     if (savedMac != null && savedMac.isNotEmpty) {
@@ -282,8 +292,8 @@ class PaintGaugeController extends GetxController {
           final name = r.device.platformName.isNotEmpty
               ? r.device.platformName
               : r.advertisementData.advName.isNotEmpty
-                  ? r.advertisementData.advName
-                  : targetMac;
+              ? r.advertisementData.advName
+              : targetMac;
           AppLogger.info(_tag, 'Auto-connect: found $name, connecting...');
           connectToDevice(targetMac, deviceName: name);
           return;
@@ -347,7 +357,9 @@ class PaintGaugeController extends GetxController {
     );
 
     _connectionStateSub?.cancel();
-    _connectionStateSub = _connectionService!.connectionState.listen(_onConnectionStateChanged);
+    _connectionStateSub = _connectionService!.connectionState.listen(
+      _onConnectionStateChanged,
+    );
 
     _dataSub?.cancel();
     _dataSub = _connectionService!.notifications.listen(_onData);
@@ -433,15 +445,24 @@ class PaintGaugeController extends GetxController {
   void _handleMeasurement(MeasurementPacket packet) {
     final part = packet.carPart;
     if (part == null) {
-      AppLogger.info(_tag, 'Received measurement for unknown part id: 0x${packet.partId.toRadixString(16)}');
+      AppLogger.info(
+        _tag,
+        'Received measurement for unknown part id: 0x${packet.partId.toRadixString(16)}',
+      );
       return;
     }
 
     final measurement = partMeasurements[part];
     if (measurement == null) return;
 
-    measurement.update(packet.measurement.thickness, packet.measurement.substrate);
-    AppLogger.info(_tag, 'Measurement for ${part.label}: ${packet.measurement.thickness} μm (${packet.measurement.substrate.label})');
+    measurement.update(
+      packet.measurement.thickness,
+      packet.measurement.substrate,
+    );
+    AppLogger.info(
+      _tag,
+      'Measurement for ${part.label}: ${packet.measurement.thickness} μm (${packet.measurement.substrate.label})',
+    );
 
     recentlyUpdatedPart.value = null; // force trigger
     recentlyUpdatedPart.value = part;
@@ -451,7 +472,10 @@ class PaintGaugeController extends GetxController {
     if (bp != null) {
       _dirtyPanelIds.add(bp.id);
     } else {
-      AppLogger.info(_tag, 'No backend panel for ${part.label} — reading will not be saved');
+      AppLogger.info(
+        _tag,
+        'No backend panel for ${part.label} — reading will not be saved',
+      );
     }
 
     // Cache individual readings for this panel
@@ -557,7 +581,9 @@ class PaintGaugeController extends GetxController {
       final prevM = partMeasurements[previousPart];
       final prevBp = backendPanelFor(previousPart);
 
-      if (prevM != null && prevBp != null && _dirtyPanelIds.contains(prevBp.id)) {
+      if (prevM != null &&
+          prevBp != null &&
+          _dirtyPanelIds.contains(prevBp.id)) {
         if (prevM.readings.length >= 2) {
           _postPanel(prevBp, prevM); // fire-and-forget
         } else if (prevM.readings.length == 1) {

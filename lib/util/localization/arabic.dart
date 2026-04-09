@@ -654,7 +654,8 @@ class Arabic {
     PaintGaugePage.disconnected: 'غير متصل',
     PaintGaugePage.lostConnection: 'انقطع الاتصال',
     PaintGaugePage.connectionError: 'خطأ في الاتصال',
-    PaintGaugePage.goBack: 'العودة',
+    PaintGaugePage.goBack: 'إلغاء الاتصال',
+    PaintGaugePage.connectButton: 'الاتصال بالجهاز',
     PaintGaugePage.sessionReadingsOnly:
         'قراءات الجلسة فقط — لم يتم استيراد بيانات سابقة',
     PaintGaugePage.measuredPanels: 'تم قياسه',

@@ -85,7 +85,19 @@ class _PaintGaugeBodyState extends State<_PaintGaugeBody> {
   }
 
   void _navigateToScan() {
-    Get.to(() => const PaintGaugeScanPage());
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.65,
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(FSizes.borderRadiusLg)),
+        ),
+        child: const PaintGaugeScanView(),
+      ),
+    );
   }
 
   @override

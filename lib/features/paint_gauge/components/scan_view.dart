@@ -12,18 +12,6 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-/// Full-page wrapper for the scan view (navigated to when no saved device).
-class PaintGaugeScanPage extends StatelessWidget {
-  const PaintGaugeScanPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: SafeArea(child: PaintGaugeScanView()),
-    );
-  }
-}
-
 class PaintGaugeScanView extends StatefulWidget {
   const PaintGaugeScanView({super.key});
 
@@ -38,6 +26,13 @@ class _PaintGaugeScanViewState extends State<PaintGaugeScanView> {
 
   PaintGaugeController get _controller =>
       Get.find<PaintGaugeController>(tag: 'PaintGauge');
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-start scanning when bottom sheet opens
+    Future.microtask(() => _startScan());
+  }
 
   @override
   void dispose() {
@@ -115,6 +110,7 @@ class _PaintGaugeScanViewState extends State<PaintGaugeScanView> {
 
   Future<void> _connectToDevice(BleDevice device) async {
     if (_isScanning) await _stopScan();
+    if (mounted) Navigator.of(context).pop();
     await _controller.connectToDevice(device.mac, deviceName: device.name);
   }
 
@@ -138,9 +134,19 @@ class _PaintGaugeScanViewState extends State<PaintGaugeScanView> {
 
     return Column(
       children: [
+        // const SizedBox(height: FSizes.sm),
+        // Center(
+        //   child: Container(
+        //     width: 40,
+        //     height: 4,
+        //     decoration: BoxDecoration(
+        //       color: FColors.darkGrey.withValues(alpha: 0.3),
+        //       borderRadius: BorderRadius.circular(2),
+        //     ),
+        //   ),
+        // ),
         _buildHeader(),
         Expanded(child: _buildBody(named, unnamed)),
-        _buildScanButton(),
       ],
     );
   }
@@ -202,34 +208,6 @@ class _PaintGaugeScanViewState extends State<PaintGaugeScanView> {
           ),
         ],
       ],
-    );
-  }
-
-  Widget _buildScanButton() {
-    return Padding(
-      padding: const EdgeInsets.all(FSizes.md),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton.icon(
-          onPressed: _isScanning ? _stopScan : _startScan,
-          icon: Icon(_isScanning ? Iconsax.stop : Iconsax.search_normal),
-          label: Text(
-            _isScanning
-                ? PaintGaugePage.stopScanButton.tr
-                : PaintGaugePage.scanButton.tr,
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: _isScanning
-                ? FColors.darkGrey
-                : FColors.primaryColor,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: FSizes.sm + 4),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

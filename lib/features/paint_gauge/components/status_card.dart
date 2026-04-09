@@ -26,8 +26,14 @@ class ConnectionStatusCard extends StatelessWidget {
       final total = controller.totalPanelCount;
 
       // Searching = auto-connect scan in progress (before connect handshake begins)
-      final isSearching = isAutoConnecting && state == BleConnectionState.disconnected;
-      final isDisconnected = !isAutoConnecting && state == BleConnectionState.disconnected;
+      final isSearching =
+          isAutoConnecting && state == BleConnectionState.disconnected;
+      // Tappable whenever we're not connected/connecting and not already auto-scanning
+      final canConnect =
+          !isAutoConnecting &&
+          state != BleConnectionState.connected &&
+          state != BleConnectionState.connecting;
+      final isDisconnected = canConnect;
 
       return GestureDetector(
         onTap: isDisconnected ? onConnectTap : null,
@@ -71,7 +77,10 @@ class ConnectionStatusCard extends StatelessWidget {
               if (state == BleConnectionState.connected)
                 TextButton.icon(
                   onPressed: controller.disconnect,
-                  icon: const Icon(Iconsax.bluetooth_circle, size: FSizes.iconSm),
+                  icon: const Icon(
+                    Iconsax.bluetooth_circle,
+                    size: FSizes.iconSm,
+                  ),
                   label: Text(PaintGaugePage.goBack.tr),
                   style: TextButton.styleFrom(
                     foregroundColor: FColors.error,
@@ -86,7 +95,8 @@ class ConnectionStatusCard extends StatelessWidget {
                 TextButton(
                   onPressed: onConnectTap,
                   style: TextButton.styleFrom(
-                    foregroundColor: FColors.primaryColor,
+                    foregroundColor: Color.fromARGB(255, 0, 185, 12),
+
                     padding: const EdgeInsets.symmetric(
                       horizontal: FSizes.sm,
                       vertical: FSizes.xs,
@@ -102,7 +112,11 @@ class ConnectionStatusCard extends StatelessWidget {
     });
   }
 
-  Color _bgColor(BuildContext context, BleConnectionState state, bool isSearching) {
+  Color _bgColor(
+    BuildContext context,
+    BleConnectionState state,
+    bool isSearching,
+  ) {
     if (isSearching) return FColors.warning.withValues(alpha: 0.08);
     switch (state) {
       case BleConnectionState.connected:
@@ -133,7 +147,7 @@ class ConnectionStatusCard extends StatelessWidget {
   }
 
   String _stateLabel(BleConnectionState state, bool isSearching) {
-    if (isSearching) return PaintGaugePage.searching.tr;
+    if (isSearching) return PaintGaugePage.scanning.tr;
     switch (state) {
       case BleConnectionState.connected:
         return PaintGaugePage.connected.tr;

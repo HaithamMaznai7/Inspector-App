@@ -590,7 +590,8 @@ class English {
     /// Paint Gauge
     PaintGaugePage.stepTitle: 'Paint Gauge',
     PaintGaugePage.scanTitle: 'Connect Paint Gauge',
-    PaintGaugePage.scanSubtitle: 'Turn on Bluetooth and place the Guoou device nearby to scan',
+    PaintGaugePage.scanSubtitle:
+        'Turn on Bluetooth and place the Guoou device nearby to scan',
     PaintGaugePage.scanButton: 'Scan Devices',
     PaintGaugePage.stopScanButton: 'Stop Scan',
     PaintGaugePage.noDevicesFound: 'No devices found',
@@ -608,8 +609,10 @@ class English {
     PaintGaugePage.disconnected: 'Disconnected',
     PaintGaugePage.lostConnection: 'Connection lost',
     PaintGaugePage.connectionError: 'Connection error',
-    PaintGaugePage.goBack: 'Go Back',
-    PaintGaugePage.sessionReadingsOnly: 'Session readings only — no historical data imported',
+    PaintGaugePage.goBack: 'Disconnect',
+    PaintGaugePage.connectButton: 'Connect Device',
+    PaintGaugePage.sessionReadingsOnly:
+        'Session readings only — no historical data imported',
     PaintGaugePage.measuredPanels: 'Measured',
     PaintGaugePage.noMeasurementYet: 'No measurement yet',
     PaintGaugePage.tapToMoveDevice: 'Tap to move device here',
@@ -618,9 +621,11 @@ class English {
     PaintGaugePage.substrate: 'Substrate',
     PaintGaugePage.here: 'HERE',
     PaintGaugePage.clearPanel: 'Clear Panel',
-    PaintGaugePage.clearPanelConfirm: 'This will clear all session readings for this panel.',
+    PaintGaugePage.clearPanelConfirm:
+        'This will clear all session readings for this panel.',
     PaintGaugePage.clearAll: 'Clear All Panels',
-    PaintGaugePage.clearAllConfirm: 'This will remove all session readings from every panel.',
+    PaintGaugePage.clearAllConfirm:
+        'This will remove all session readings from every panel.',
     PaintGaugePage.clearSuccess: 'Panel Cleared',
     PaintGaugePage.clearFailed: 'Failed to clear panel',
     PaintGaugePage.reviewTitle: 'Paint Gauge',
