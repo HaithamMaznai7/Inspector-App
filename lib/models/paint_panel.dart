@@ -40,8 +40,15 @@ class PaintPanel {
   };
 
   /// Match this backend panel to a [CarPart] enum by hex code.
+  ///
+  /// Uses [int.parse] instead of [int.tryParse] because Dart's tryParse
+  /// does not handle hex-prefixed strings like "0x0010".
   CarPart? get carPart {
-    final intValue = int.tryParse(partCode);
-    return intValue != null ? CarPart.fromValue(intValue) : null;
+    try {
+      final intValue = int.parse(partCode);
+      return CarPart.fromValue(intValue);
+    } catch (_) {
+      return null;
+    }
   }
 }

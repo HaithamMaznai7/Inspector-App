@@ -13,6 +13,7 @@ import 'package:fahis_inspector/resources/vehicle_details_repository.dart';
 import 'package:fahis_inspector/resources/inspection_photos_repository.dart';
 import 'package:fahis_inspector/resources/inspection_body_repository.dart';
 import 'package:fahis_inspector/resources/inspection_obd_repository.dart';
+import 'package:fahis_inspector/resources/paint_gauge_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
@@ -130,6 +131,9 @@ class InspectionDetailsController extends GetxController
     if (inspection.value?.hasObd ?? false) {
       loadInspectionOBD();
     }
+    if (inspection.value?.hasPaintBody ?? false) {
+      loadPaintPanels();
+    }
   }
 
   Rxn<VehicleDetails> vehicleDetails = Rxn<VehicleDetails>(null);
@@ -196,6 +200,18 @@ class InspectionDetailsController extends GetxController
       update();
     } catch (e) {
       dd('Error loading body notes: $e');
+    }
+  }
+
+  Future<void> loadPaintPanels() async {
+    if (slug == null) return;
+    try {
+      final paintBox = await Hive.openBox(PaintGaugeRepository.boxKey);
+      final repo = PaintGaugeRepository(box: paintBox, slug: slug!);
+      await repo.fetchPanelsFromApi();
+      update();
+    } catch (e) {
+      dd('Error loading paint panels: $e');
     }
   }
 

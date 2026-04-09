@@ -477,10 +477,12 @@ class PaintGaugeController extends GetxController {
 
   // ── Display Helpers (merge backend + session state) ──────────────────────────
 
-  /// Find the backend panel matching a [CarPart] by hex code.
+  /// Find the backend panel matching a [CarPart] by enum equality.
+  ///
+  /// Relies on [PaintPanel.carPart] for hex parsing — avoids fragile
+  /// string formatting that mismatches leading zeros (e.g. "0x10" vs "0x0010").
   PaintPanel? backendPanelFor(CarPart part) {
-    final hex = '0x${part.value.toRadixString(16).toUpperCase()}';
-    return backendPanels.firstWhereOrNull((p) => p.partCode == hex);
+    return backendPanels.firstWhereOrNull((p) => p.carPart == part);
   }
 
   /// Display thickness: session average if session has readings, else backend.

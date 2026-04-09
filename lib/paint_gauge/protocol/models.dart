@@ -1,26 +1,27 @@
 /// Vehicle body parts enumeration from protocol document (Section 4.19/4.20).
 enum CarPart {
-  frontHatch(0x8010, 'Hood'),
-  flWing(0x0010, 'Left Front Fender'),
-  lAColumn(0x0031, 'Left A-pillar'),
-  flDoor(0x0020, 'Left Front Door'),
-  lBColumn(0x0832, 'Left B-pillar'),
-  blDoor(0x0F20, 'Left Rear Door'),
-  lCColumn(0x0F33, 'Left C-pillar'),
-  blWing(0x0F10, 'Left Rear Fender'),
-  lDColumn(0x0F34, 'Left D-pillar'),
-  trunkCover(0x8F10, 'Trunk Cover'),
-  rDColumn(0xFF34, 'Right D-pillar'),
-  brWing(0xFF10, 'Right Rear Fender'),
-  rCColumn(0xFF33, 'Right C-pillar'),
-  brDoor(0xFF20, 'Right Rear Door'),
-  rBColumn(0xF832, 'Right B-pillar'),
-  frDoor(0xF020, 'Right Front Door'),
-  rAColumn(0xF031, 'Right A-pillar'),
-  frWing(0xF010, 'Right Front Fender'),
-  roof(0x8810, 'Roof');
+  frontHatch(1, 0x8010, 'Hood'),
+  flWing(2, 0x0010, 'Left Front Fender'),
+  lAColumn(3, 0x0031, 'Left A-pillar'),
+  flDoor(4, 0x0020, 'Left Front Door'),
+  lBColumn(5, 0x0832, 'Left B-pillar'),
+  blDoor(6, 0x0F20, 'Left Rear Door'),
+  lCColumn(7, 0x0F33, 'Left C-pillar'),
+  blWing(8, 0x0F10, 'Left Rear Fender'),
+  lDColumn(9, 0x0F34, 'Left D-pillar'),
+  trunkCover(10, 0x8F10, 'Trunk Cover'),
+  rDColumn(11, 0xFF34, 'Right D-pillar'),
+  brWing(12, 0xFF10, 'Right Rear Fender'),
+  rCColumn(13, 0xFF33, 'Right C-pillar'),
+  brDoor(14, 0xFF20, 'Right Rear Door'),
+  rBColumn(15, 0xF832, 'Right B-pillar'),
+  frDoor(16, 0xF020, 'Right Front Door'),
+  rAColumn(17, 0xF031, 'Right A-pillar'),
+  frWing(18, 0xF010, 'Right Front Fender'),
+  roof(19, 0x8810, 'Roof');
 
-  const CarPart(this.value, this.label);
+  const CarPart(this.backendId, this.value, this.label);
+  final int backendId;
   final int value;
   final String label;
 

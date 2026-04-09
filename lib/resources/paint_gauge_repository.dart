@@ -24,14 +24,16 @@ class PaintGaugeRepository {
   // ── GET panels from API ──────────────────────────────────────────────────
 
   Future<List<PaintPanel>> fetchPanelsFromApi() async {
-    final n = Network(
-      endpoint: '${EndPoints.inspections}/$slug/paints',
-    );
+    final n = Network(endpoint: '${EndPoints.inspections}/$slug/paints');
     final r = await n.response(RoutingUrl.home);
 
+    // Backend wraps the panel list in {"data": {"data": [...]}}
+    // r.data is the outer "data" Map, so r.data['data'] is the actual List.
+    final rawList = (r.data is Map) ? r.data['data'] : r.data;
+
     final List<PaintPanel> panels = [];
-    if (r.data is List && (r.data as List).isNotEmpty) {
-      for (final item in r.data as List) {
+    if (rawList is List && rawList.isNotEmpty) {
+      for (final item in rawList) {
         try {
           panels.add(
             PaintPanel.fromJson(Map<String, dynamic>.from(item as Map)),
@@ -56,7 +58,7 @@ class PaintGaugeRepository {
     required int measurementCount,
   }) async {
     final n = Network(
-      endpoint: '${EndPoints.paints}/${panel.id}',
+      endpoint: '${EndPoints.inspections}/$slug/paints/${panel.id}',
       requestMethod: RequestMethod.post,
     );
     n.setBody = {
@@ -92,9 +94,7 @@ class PaintGaugeRepository {
     final List<PaintPanel> result = [];
     for (final item in raw as List) {
       try {
-        result.add(
-          PaintPanel.fromJson(Map<String, dynamic>.from(item as Map)),
-        );
+        result.add(PaintPanel.fromJson(Map<String, dynamic>.from(item as Map)));
       } catch (e) {
         AppLogger.error(_tag, 'Failed to parse cached panel', e);
       }
