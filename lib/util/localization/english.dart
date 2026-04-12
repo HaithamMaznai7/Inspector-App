@@ -626,7 +626,7 @@ class English {
     PaintGaugePage.clearAll: 'Clear All Panels',
     PaintGaugePage.clearAllConfirm:
         'This will remove all session readings from every panel.',
-    PaintGaugePage.clearSuccess: 'Panel Cleared',
+    PaintGaugePage.clearSuccess: 'Panel Cleared Successfully',
     PaintGaugePage.clearFailed: 'Failed to clear panel',
     PaintGaugePage.reviewTitle: 'Paint Gauge',
     PaintGaugePage.reviewPanelsMeasured: 'panels measured',

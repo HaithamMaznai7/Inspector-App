@@ -635,6 +635,7 @@ class PaintGaugeController extends GetxController {
         bp.substrate = null;
         bp.measurementCount = 0;
         _backendMap.refresh();
+        FLoader.successSnackBar(title: PaintGaugePage.clearSuccess.tr);
       } catch (e) {
         AppLogger.error(_tag, 'Failed to clear panel on backend', e);
       }

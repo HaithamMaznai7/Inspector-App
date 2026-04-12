@@ -670,7 +670,7 @@ class Arabic {
         'سيتم مسح جميع قراءات هذه اللوحة في الجلسة الحالية.',
     PaintGaugePage.clearAll: 'مسح جميع اللوحات',
     PaintGaugePage.clearAllConfirm: 'سيتم حذف جميع القراءات من كل اللوحات.',
-    PaintGaugePage.clearSuccess: 'تم المسح',
+    PaintGaugePage.clearSuccess: 'تم الحذف بنجاح',
     PaintGaugePage.clearFailed: 'فشل مسح اللوحة',
     PaintGaugePage.reviewTitle: 'قياس الطلاء',
     PaintGaugePage.reviewPanelsMeasured: 'لوحة تم قياسها',
