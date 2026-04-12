@@ -656,6 +656,7 @@ class Arabic {
     PaintGaugePage.connectionError: 'خطأ في الاتصال',
     PaintGaugePage.goBack: 'إلغاء الاتصال',
     PaintGaugePage.connectButton: 'الاتصال بالجهاز',
+    PaintGaugePage.connectHint: 'اضغط للاتصال بالجهاز',
     PaintGaugePage.sessionReadingsOnly:
         'قراءات الجلسة فقط — لم يتم استيراد بيانات سابقة',
     PaintGaugePage.measuredPanels: 'تم قياسه',

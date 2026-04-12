@@ -611,6 +611,7 @@ class English {
     PaintGaugePage.connectionError: 'Connection error',
     PaintGaugePage.goBack: 'Disconnect',
     PaintGaugePage.connectButton: 'Connect Device',
+    PaintGaugePage.connectHint: 'Tap to connect',
     PaintGaugePage.sessionReadingsOnly:
         'Session readings only — no historical data imported',
     PaintGaugePage.measuredPanels: 'Measured',

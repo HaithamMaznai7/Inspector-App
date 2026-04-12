@@ -66,10 +66,14 @@ class ConnectionStatusCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '$measured/$total ${PaintGaugePage.measuredPanels.tr}',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: FColors.darkGrey),
+                      isDisconnected
+                          ? PaintGaugePage.connectHint.tr
+                          : '$measured/$total ${PaintGaugePage.measuredPanels.tr}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: isDisconnected
+                            ? FColors.primaryColor.withValues(alpha: 0.7)
+                            : FColors.darkGrey,
+                      ),
                     ),
                   ],
                 ),
@@ -95,8 +99,7 @@ class ConnectionStatusCard extends StatelessWidget {
                 TextButton(
                   onPressed: onConnectTap,
                   style: TextButton.styleFrom(
-                    foregroundColor: Color.fromARGB(255, 0, 185, 12),
-
+                    foregroundColor: FColors.primaryColor,
                     padding: const EdgeInsets.symmetric(
                       horizontal: FSizes.sm,
                       vertical: FSizes.xs,
@@ -127,7 +130,7 @@ class ConnectionStatusCard extends StatelessWidget {
       case BleConnectionState.connecting:
         return FColors.warning.withValues(alpha: 0.08);
       case BleConnectionState.disconnected:
-        return Theme.of(context).cardColor;
+        return FColors.primaryColor.withValues(alpha: 0.08);
     }
   }
 
@@ -142,7 +145,7 @@ class ConnectionStatusCard extends StatelessWidget {
       case BleConnectionState.connecting:
         return FColors.warning;
       case BleConnectionState.disconnected:
-        return FColors.darkGrey;
+        return FColors.primaryColor;
     }
   }
 
@@ -195,9 +198,9 @@ class _StatusIcon extends StatelessWidget {
         break;
       default:
         icon = Iconsax.bluetooth;
-        color = FColors.darkGrey;
+        color = FColors.primaryColor;
     }
 
-    return Icon(icon, size: FSizes.iconMd, color: color);
+    return Icon(icon, size: FSizes.iconInlineSm, color: color);
   }
 }
