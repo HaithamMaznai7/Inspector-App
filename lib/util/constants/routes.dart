@@ -45,4 +45,5 @@ class BindingTags {
   static const String inspectionOBD = 'InspectionOBD';
   static const String notifications = 'Notifications';
   static const String accessRequest = 'AccessRequest';
+  static const String paintGauge = 'PaintGauge';
 }

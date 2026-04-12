@@ -41,6 +41,7 @@ class EndPoints {
   static const String points = 'inspector/points';
   static const String photos = 'inspector/photos';
   static const String notes = 'inspector/notes';
+  static const String paints = 'paints';
   static const String obdCodes = 'inspector/obd-codes';
   static const String vinSearch = 'inspector/search/vin';
   // inspectio

@@ -27,6 +27,7 @@ import 'features/inspection_points/controller.dart';
 import 'features/inspection_photos/controller.dart';
 import 'features/inspection_body_notes/controller.dart';
 import 'features/inspection_obd/controller.dart';
+import 'features/paint_gauge/controller.dart';
 import 'features/configuration/controller.dart';
 import 'features/access_request/controller.dart';
 import 'features/access_request/decision_view.dart';
@@ -57,6 +58,7 @@ part 'features/inspection_points/binding.dart';
 part 'features/inspection_photos/binding.dart';
 part 'features/inspection_body_notes/binding.dart';
 part 'features/inspection_obd/binding.dart';
+part 'features/paint_gauge/binding.dart';
 part 'features/access_request/binding.dart';
 
 class AppRoute {

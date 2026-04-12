@@ -3,6 +3,7 @@ import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/enums/point_status.dart';
 import 'package:fahis_inspector/features/inspection_body_notes/view.dart';
 import 'package:fahis_inspector/features/inspection_obd/view.dart';
+import 'package:fahis_inspector/features/paint_gauge/view.dart';
 import 'package:fahis_inspector/features/inspection_photos/view_section.dart';
 import 'package:fahis_inspector/features/inspection_points/view.dart';
 import 'package:fahis_inspector/features/vehicle_details/view.dart';
@@ -46,8 +47,17 @@ class InspectionStepsController extends GetxController {
     int id,
     IconData icon,
     InspectionStage stage,
-    Widget screen,
-  ) => {'id': id, 'icon': icon, 'stage': stage, 'screen': screen};
+    Widget screen, {
+    bool skippable = false,
+    String? label,
+  }) => {
+    'id': id,
+    'icon': icon,
+    'stage': stage,
+    'screen': screen,
+    'skippable': skippable,
+    'label': label ?? stage.getLabel,
+  };
 
   /// Finds the list index of a tab by its stage.
   /// Returns -1 if no tab exists for that stage.
@@ -157,6 +167,19 @@ class InspectionStepsController extends GetxController {
       );
     }
 
+    if (inspection.hasPaintBody) {
+      tabs.add(
+        _tab(
+          counter++,
+          Iconsax.brush_1,
+          InspectionStage.body,
+          const PaintGaugeStepView(),
+          skippable: true,
+          label: PaintGaugePage.stepTitle.tr,
+        ),
+      );
+    }
+
     if (inspection.hasObd) {
       tabs.add(
         _tab(counter++, Iconsax.code, InspectionStage.obd, const OBDCodesView()),
@@ -193,6 +216,12 @@ class InspectionStepsController extends GetxController {
             inspection.value.hasDetails) &&
         inspection.value.hasObd) {
       InspectionObdBinding().dependencies();
+    }
+
+    if (!(['pending', 'accepted'].contains(inspection.value.stage.value) &&
+            inspection.value.hasDetails) &&
+        inspection.value.hasPaintBody) {
+      PaintGaugeBinding().dependencies();
     }
   }
 
@@ -248,6 +277,11 @@ class InspectionStepsController extends GetxController {
       obdCtrl.report.value = null;
       futures.add(obdCtrl.loadBySlug().then((_) =>
           _log('resetAfterVehicleInfoUpdate – OBD reloaded')));
+    }
+
+    if (PaintGaugeBinding().isRegistered) {
+      PaintGaugeBinding().instance.resetMeasurements();
+      _log('resetAfterVehicleInfoUpdate – paint gauge reset');
     }
 
     // Also reload main inspection data in parallel
@@ -437,12 +471,25 @@ class InspectionStepsController extends GetxController {
       InspectionStage.accepted;
 
   void toNext() {
-    // Use the current tab's stage to find the next stage
-    // instead of fromIndex(index) which assumes hardcoded ordering
+    if (isOnLastTab) {
+      setSatge(InspectionStage.finished);
+      return;
+    }
+
     final currentStage = tabs[index]['stage'] as InspectionStage;
-    final nextStage = currentStage.next;
-    if (nextStage != null) {
-      setSatge(nextStage);
+    final nextTabIndex = index + 1;
+    final nextStage = tabs[nextTabIndex]['stage'] as InspectionStage;
+
+    // If consecutive tabs share the same stage (e.g. body notes → paint gauge),
+    // just navigate to the next tab without a backend stage update.
+    if (nextStage == currentStage) {
+      goToTab(nextTabIndex);
+      return;
+    }
+
+    final nextApiStage = currentStage.next;
+    if (nextApiStage != null) {
+      setSatge(nextApiStage);
     } else {
       Get.back();
     }
@@ -460,6 +507,10 @@ class InspectionStepsController extends GetxController {
   /// can be enabled. This is called by the StepSelector widget.
   bool get canAdvanceFromCurrentStep {
     if (tabs.isEmpty || index >= tabs.length) return false;
+
+    // Skippable tabs (e.g. paint gauge) are always advanceable
+    if (tabs[index]['skippable'] == true) return true;
+
     final stage = tabs[index]['stage'] as InspectionStage;
 
     switch (stage) {

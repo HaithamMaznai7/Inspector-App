@@ -68,21 +68,12 @@ class InspectionList extends StatelessWidget {
 class _SegmentToggle extends StatelessWidget {
   final InspectionsController controller;
   const _SegmentToggle({required this.controller});
-
   @override
   Widget build(BuildContext context) {
-    final isDark = FHelper.isDarkMode(context);
-
     return Obx(() {
       final selected = controller.selectedSegment.value;
       return Container(
         padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: isDark
-              ? FColors.darkGrey.withValues(alpha: 0.5)
-              : FColors.grey.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-        ),
         child: Row(
           children: [
             // Individuals tab
@@ -189,10 +180,14 @@ class _CompanyList extends StatelessWidget {
                 // Shimmer skeleton while fetching more
                 Obx(() {
                   final loading =
-                      controller.ordersRepositoryB2B?.isFetchingMore.value ?? false;
+                      controller.ordersRepositoryB2B?.isFetchingMore.value ??
+                      false;
                   if (loading) {
                     return Column(
-                      children: List.generate(2, (_) => const _CompanyCardSkeleton()),
+                      children: List.generate(
+                        2,
+                        (_) => const _CompanyCardSkeleton(),
+                      ),
                     );
                   }
                   return SizedBox();
@@ -257,9 +252,10 @@ class _IndividualList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isOrdersMode = controller.selectedStage.value == InspectionStage.all && 
-                         !controller.isSearchActive.value;
-    
+    final isOrdersMode =
+        controller.selectedStage.value == InspectionStage.all &&
+        !controller.isSearchActive.value;
+
     if (isOrdersMode) {
       return _buildOrdersList(context);
     } else {
@@ -290,24 +286,30 @@ class _IndividualList extends StatelessWidget {
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Column(
                   children: orders.expand((order) {
-                    return order.items.map((item) => InspectionCard(
-                      slug: item.slug,
-                      customerName: order.customer.name,
-                      vehicle: item.vehicle,
-                      stage: StageMapper.mapOrderItemStage(item.stage),
-                      rejectedNote: null,
-                      inspectionTypeTitle: item.inspectionType?.title,
-                      onTap: () => controller.openOrderItem(order, item),
-                    ));
+                    return order.items.map(
+                      (item) => InspectionCard(
+                        slug: item.slug,
+                        customerName: order.customer.name,
+                        vehicle: item.vehicle,
+                        stage: StageMapper.mapOrderItemStage(item.stage),
+                        rejectedNote: null,
+                        inspectionTypeTitle: item.inspectionType?.title,
+                        onTap: () => controller.openOrderItem(order, item),
+                      ),
+                    );
                   }).toList(),
                 ),
               ),
               // Shimmer skeleton while fetching more
               Obx(() {
-                final load = controller.ordersRepository?.isFetchingMore.value ?? false;
+                final load =
+                    controller.ordersRepository?.isFetchingMore.value ?? false;
                 if (load) {
                   return Column(
-                    children: List.generate(2, (_) => const PlaceHolderRequestCard()),
+                    children: List.generate(
+                      2,
+                      (_) => const PlaceHolderRequestCard(),
+                    ),
                   );
                 }
                 return SizedBox();
@@ -342,15 +344,17 @@ class _IndividualList extends StatelessWidget {
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Column(
                   children: list
-                      .map((item) => InspectionCard(
-                            slug: item.slug,
-                            customerName: item.customer?.name,
-                            vehicle: item.vehicle,
-                            stage: item.stage,
-                            rejectedNote: item.rejectedNote,
-                            inspectionTypeTitle: item.inspectionType?.title,
-                            onTap: () => controller.openInspection(item),
-                          ))
+                      .map(
+                        (item) => InspectionCard(
+                          slug: item.slug,
+                          customerName: item.customer?.name,
+                          vehicle: item.vehicle,
+                          stage: item.stage,
+                          rejectedNote: item.rejectedNote,
+                          inspectionTypeTitle: item.inspectionType?.title,
+                          onTap: () => controller.openInspection(item),
+                        ),
+                      )
                       .toList(),
                 ),
               ),
@@ -360,7 +364,10 @@ class _IndividualList extends StatelessWidget {
                     controller.repository?.isFetchingMore.value ?? false;
                 if (load) {
                   return Column(
-                    children: List.generate(2, (_) => const PlaceHolderRequestCard()),
+                    children: List.generate(
+                      2,
+                      (_) => const PlaceHolderRequestCard(),
+                    ),
                   );
                 }
                 return SizedBox();
@@ -392,7 +399,9 @@ class _EmptyOrdersState extends StatelessWidget {
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: FSizes.defaultSpace),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: FSizes.defaultSpace,
+                  ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -405,10 +414,11 @@ class _EmptyOrdersState extends StatelessWidget {
                       Text(
                         message,
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: FColors.darkGrey,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: FColors.darkGrey,
+                              fontWeight: FontWeight.w500,
+                            ),
                       ),
                       const SizedBox(height: FSizes.xs),
                       Text(
@@ -460,9 +470,17 @@ class _CompanyCardSkeleton extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Skeleton(width: 70, height: 10, color: Colors.green.withValues(alpha: 0.3)),
+                      Skeleton(
+                        width: 70,
+                        height: 10,
+                        color: Colors.green.withValues(alpha: 0.3),
+                      ),
                       const SizedBox(width: 6),
-                      Skeleton(width: 80, height: 10, color: Colors.orange.withValues(alpha: 0.3)),
+                      Skeleton(
+                        width: 80,
+                        height: 10,
+                        color: Colors.orange.withValues(alpha: 0.3),
+                      ),
                     ],
                   ),
                 ],
