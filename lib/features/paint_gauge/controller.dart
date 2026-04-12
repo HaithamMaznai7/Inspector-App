@@ -510,14 +510,14 @@ class PaintGaugeController extends GetxController {
     final m = partMeasurements[part];
     final bp = backendPanelFor(part);
     if (m == null || bp == null) return;
-    if (m.readings.length < 2) return;
+    if (m.readings.isEmpty) return;
     if (!_dirtyPanelIds.contains(bp.id)) return;
 
     await _postPanel(bp, m);
   }
 
   Future<void> _postPanel(PaintPanel panel, PartMeasurement m) async {
-    if (m.readings.length < 2) return;
+    if (m.readings.isEmpty) return;
     if (_postingPanelIds.contains(panel.id)) return;
 
     _postingPanelIds.add(panel.id);
@@ -562,7 +562,7 @@ class PaintGaugeController extends GetxController {
       );
       if (carPart == null) continue;
       final m = partMeasurements[carPart];
-      if (m == null || m.readings.length < 2) continue;
+      if (m == null || m.readings.isEmpty) continue;
       futures.add(_postPanel(bp, m));
     }
     if (futures.isNotEmpty) {
@@ -585,13 +585,8 @@ class PaintGaugeController extends GetxController {
       if (prevM != null &&
           prevBp != null &&
           _dirtyPanelIds.contains(prevBp.id)) {
-        if (prevM.readings.length >= 2) {
+        if (prevM.readings.isNotEmpty) {
           _postPanel(prevBp, prevM); // fire-and-forget
-        } else if (prevM.readings.length == 1) {
-          FLoader.infoSnackBar(
-            title: PaintGaugePage.noMeasurementYet.tr,
-            message: PaintGaugePage.sessionReadingsOnly.tr,
-          );
         }
       }
     }
