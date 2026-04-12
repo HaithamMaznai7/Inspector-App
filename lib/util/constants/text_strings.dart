@@ -115,10 +115,11 @@ class FTexts {
   static const String profilePhoneHint = 'profilePhoneHint';
   static const String deleteAccountBtn = 'deleteAccountBtn';
   static const String deleteAccountConfirmTitle = 'deleteAccountConfirmTitle';
-  static const String deleteAccountConfirmMessage = 'deleteAccountConfirmMessage';
+  static const String deleteAccountConfirmMessage =
+      'deleteAccountConfirmMessage';
   static const String deleteAccountError = 'deleteAccountError';
   static const String deleteAccountSuccess = 'deleteAccountSuccess';
-  
+
   /// Inspection Stage Labels
   static const String stageAll = 'stageAll';
   static const String stagePending = 'stagePending';
@@ -137,14 +138,14 @@ class FTexts {
   static const String cameraUsePhoto = 'cameraUsePhoto';
   static const String cameraRetry = 'cameraRetry';
   static const String cameraOk = 'cameraOk';
-  static const String cameraCheckingQuality = 'cameraCheckingQuality';
-  static const String cameraQualityTooDark = 'cameraQualityTooDark';
-  static const String cameraQualityTooBright = 'cameraQualityTooBright';
-  static const String cameraQualityMayBeBlurry = 'cameraQualityMayBeBlurry';
-  static const String cameraQualityRetakeAdvice = 'cameraQualityRetakeAdvice';
   static const String cameraCaptureFailed = 'cameraCaptureFailed';
   static const String cameraPermissionDenied = 'cameraPermissionDenied';
-  static const String cameraPermissionDeniedTitle = 'cameraPermissionDeniedTitle';
+  static const String cameraPermissionDeniedTitle =
+      'cameraPermissionDeniedTitle';
+
+  /// Image source picker
+  static const String imageSourceCamera = 'imageSourceCamera';
+  static const String imageSourceGallery = 'imageSourceGallery';
 
   /// Force Update
   static const String forceUpdateTitle = 'forceUpdateTitle';

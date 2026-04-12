@@ -464,10 +464,8 @@ class English {
     FTexts.deleteAccountConfirmTitle: 'Delete Account',
     FTexts.deleteAccountConfirmMessage:
         'Are you sure you want to permanently delete your account? This action cannot be undone.',
-    FTexts.deleteAccountError:
-        'Failed to delete account. Please try again.',
-    FTexts.deleteAccountSuccess:
-        'Your account has been deleted successfully.',
+    FTexts.deleteAccountError: 'Failed to delete account. Please try again.',
+    FTexts.deleteAccountSuccess: 'Your account has been deleted successfully.',
 
     /// Inspection Stage Labels
     FTexts.stageAll: 'All',
@@ -552,13 +550,8 @@ class English {
     FTexts.cameraUsePhoto: 'Use Photo',
     FTexts.cameraRetry: 'Retry',
     FTexts.cameraOk: 'OK',
-    FTexts.cameraCheckingQuality: 'Checking image quality',
-    FTexts.cameraQualityTooDark: 'Photo is too dark — try better lighting',
-    FTexts.cameraQualityTooBright:
-        'Photo is overexposed — reduce light or flash',
-    FTexts.cameraQualityMayBeBlurry:
-        'Photo may be blurry — hold the device steady',
-    FTexts.cameraQualityRetakeAdvice: 'Please retake the photo',
+    FTexts.imageSourceCamera: 'Camera',
+    FTexts.imageSourceGallery: 'Album',
     FTexts.cameraCaptureFailed: 'Failed to capture photo, please try again',
     FTexts.cameraPermissionDeniedTitle: 'Camera Access Denied',
     FTexts.cameraPermissionDenied:

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:fahis_inspector/common/widgets/camera/camera.dart';
+import 'package:fahis_inspector/common/widgets/camera/image_source_picker.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/models/photo.dart';
 import 'package:fahis_inspector/resources/inspection_photos_repository.dart';
@@ -199,7 +199,7 @@ class InspectionPhotosController extends GetxController {
 
     if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
       _log('picking — opening camera');
-      photo.file = await Camera.open();
+      photo.file = await ImageSourcePicker.pick();
       _log('picking — camera closed | file=${photo.file != null ? "selected" : "cancelled"} | category.value=${category.value}');
     }
 

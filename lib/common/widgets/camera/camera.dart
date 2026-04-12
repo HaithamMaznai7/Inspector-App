@@ -1,8 +1,6 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
-import 'package:fahis_inspector/common/widgets/camera/image_quality_checker.dart';
-import 'package:fahis_inspector/common/widgets/camera/image_quality_result.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
@@ -48,11 +46,6 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver {
   bool _isTapped = false;
   bool _isCapturing = false;
   FlashMode _flashMode = FlashMode.auto;
-
-  // Processing state (quality + compression run in parallel)
-  bool _isProcessing = false;
-  ImageQualityResult? _qualityResult;
-  File? _compressedFile;
 
   bool get _isIOS => Theme.of(context).platform == TargetPlatform.iOS;
 
@@ -138,7 +131,6 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver {
       final file = File(xfile.path);
       AppLogger.info(_tag, 'Photo captured', file.path);
       setState(() => _pictureFile = file);
-      _processImage(file);
     } catch (e) {
       AppLogger.error(_tag, 'takePicture failed', e);
       if (mounted) {
@@ -154,71 +146,16 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver {
     }
   }
 
-  // ── Processing (quality check + compression in parallel) ──────────────────
-
-  Future<void> _processImage(File file) async {
-    setState(() {
-      _isProcessing = true;
-      _qualityResult = null;
-      _compressedFile = null;
-    });
-
-    try {
-      // Run quality analysis and compression concurrently
-      final results = await Future.wait([
-        ImageQualityChecker.analyze(file),
-        ImageQualityChecker.compress(file),
-      ]);
-
-      final quality = results[0] as ImageQualityResult;
-      final compressed = results[1] as File;
-
-      AppLogger.info(_tag, 'Processing complete', {
-        'brightness': quality.brightnessScore.toStringAsFixed(1),
-        'blur': quality.blurScore.toStringAsFixed(1),
-        'isDark': quality.isDark,
-        'isBright': quality.isBright,
-        'isBlurry': quality.isBlurry,
-        'originalKB': (file.lengthSync() / 1024).toStringAsFixed(0),
-        'compressedKB': (compressed.lengthSync() / 1024).toStringAsFixed(0),
-      });
-
-      if (!mounted) return;
-
-      setState(() {
-        _isProcessing = false;
-        _qualityResult = quality;
-        _compressedFile = compressed;
-      });
-    } catch (e) {
-      AppLogger.error(_tag, 'Processing failed — allowing confirm', e);
-      if (mounted) {
-        setState(() {
-          _isProcessing = false;
-          _qualityResult = ImageQualityResult.clean;
-          _compressedFile = file;
-        });
-      }
-    }
-  }
-
   // ── Actions ────────────────────────────────────────────────────────────────
 
   void _retake() {
-    setState(() {
-      _pictureFile = null;
-      _qualityResult = null;
-      _compressedFile = null;
-      _isProcessing = false;
-    });
+    setState(() => _pictureFile = null);
     AppLogger.trace(_tag, 'Retake');
   }
 
   void _confirmPhoto() {
-    AppLogger.info(_tag, 'Photo confirmed', {
-      'compressed': _compressedFile != null,
-    });
-    Get.back(result: _compressedFile ?? _pictureFile);
+    AppLogger.info(_tag, 'Photo confirmed');
+    Get.back(result: _pictureFile);
   }
 
   void _changeCamera() {
@@ -236,17 +173,6 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver {
     setState(() => _flashMode = next);
     _controller.setFlashMode(next);
   }
-
-  // ── Confirm button state ──────────────────────────────────────────────────
-
-  bool get _canConfirm {
-    if (_isProcessing) return false;
-    if (_qualityResult == null) return false;
-    if (_qualityResult!.hasIssues) return false;
-    return true;
-  }
-
-  bool get _hasIssues => _qualityResult?.hasIssues == true;
 
   // ── Flash icon ─────────────────────────────────────────────────────────────
 
@@ -482,15 +408,6 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver {
           ),
         ),
 
-        // Quality warning banner
-        if (_hasIssues && !_isProcessing)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: _buildWarningBanner(),
-          ),
-
         // Bottom action bar
         Positioned(
           bottom: 0,
@@ -516,186 +433,12 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver {
                   _isTablet ? 48 : FSizes.lg,
                   _isTablet ? FSizes.lg : FSizes.md,
                 ),
-                child: _isProcessing
-                    ? _buildProcessingIndicator()
-                    : _hasIssues
-                        ? _buildRetakeOnlyActions()
-                        : _buildPreviewActions(),
+                child: _buildPreviewActions(),
               ),
             ),
           ),
         ),
       ],
-    );
-  }
-
-  // ── Warning banner ─────────────────────────────────────────────────────────
-
-  Widget _buildWarningBanner() {
-    final bgColor = FColors.error.withValues(alpha: 0.92);
-    final message = _qualityResult?.warningKey.tr ?? '';
-
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [bgColor, bgColor.withValues(alpha: 0.0)],
-          stops: const [0.7, 1.0],
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            FSizes.lg,
-            _isTablet ? FSizes.md : FSizes.sm,
-            FSizes.lg,
-            _isTablet ? FSizes.xl : FSizes.lg,
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.error_rounded,
-                color: Colors.white,
-                size: _isTablet ? 28 : 24,
-              ),
-              const SizedBox(width: FSizes.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      message,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: _isTablet ? 16 : 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      FTexts.cameraQualityRetakeAdvice.tr,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.85),
-                        fontSize: _isTablet ? 13 : 12,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ── Processing indicator (while quality check + compression run) ─────────
-
-  Widget _buildProcessingIndicator() {
-    return Container(
-      height: _isTablet ? 60 : 52,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: _isTablet ? 20 : 18,
-            height: _isTablet ? 20 : 18,
-            child: const CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Colors.white70,
-            ),
-          ),
-          const SizedBox(width: FSizes.sm),
-          Text(
-            FTexts.cameraCheckingQuality.tr,
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: _isTablet ? 16 : 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Retake-only actions (when quality fails) ──────────────────────────────
-
-  Widget _buildRetakeOnlyActions() {
-    if (_isIOS) {
-      return CupertinoButton(
-        padding: EdgeInsets.zero,
-        onPressed: _retake,
-        child: Container(
-          height: _isTablet ? 60 : 52,
-          decoration: BoxDecoration(
-            color: FColors.primaryColor,
-            borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-            boxShadow: [
-              BoxShadow(
-                color: FColors.primaryColor.withValues(alpha: 0.4),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                CupertinoIcons.arrow_counterclockwise,
-                color: Colors.white,
-                size: _isTablet ? 20 : 18,
-              ),
-              const SizedBox(width: FSizes.xs),
-              Text(
-                FTexts.cameraRetake.tr,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: _isTablet ? 17 : 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: FColors.primaryColor,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          padding: EdgeInsets.symmetric(vertical: _isTablet ? 18 : 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-          ),
-        ),
-        onPressed: _retake,
-        icon: Icon(Icons.refresh_rounded, size: _isTablet ? 22 : 20),
-        label: Text(
-          FTexts.cameraRetake.tr,
-          style: TextStyle(
-            fontSize: _isTablet ? 16 : 15,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
     );
   }
 
@@ -757,7 +500,7 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver {
   Widget _buildIOSConfirmButton() {
     return CupertinoButton(
       padding: EdgeInsets.zero,
-      onPressed: _canConfirm ? _confirmPhoto : null,
+      onPressed: _confirmPhoto,
       child: Container(
         height: _isTablet ? 60 : 52,
         decoration: BoxDecoration(
@@ -831,7 +574,7 @@ class _CameraState extends State<Camera> with WidgetsBindingObserver {
           borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
         ),
       ),
-      onPressed: _canConfirm ? _confirmPhoto : null,
+      onPressed: _confirmPhoto,
       icon: Icon(Icons.check_rounded, size: _isTablet ? 22 : 20),
       label: Text(
         FTexts.cameraOk.tr,

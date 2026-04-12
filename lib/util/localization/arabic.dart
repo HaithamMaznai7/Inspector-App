@@ -597,11 +597,8 @@ class Arabic {
     FTexts.cameraUsePhoto: 'استخدام الصورة',
     FTexts.cameraRetry: 'إعادة المحاولة',
     FTexts.cameraOk: 'موافق',
-    FTexts.cameraCheckingQuality: 'جاري فحص جودة الصورة',
-    FTexts.cameraQualityTooDark: 'الصورة مظلمة جداً — حاول في إضاءة أفضل',
-    FTexts.cameraQualityTooBright: 'الصورة ساطعة جداً — قلل الإضاءة أو الفلاش',
-    FTexts.cameraQualityMayBeBlurry: 'الصورة قد تكون ضبابية — ثبّت الجهاز',
-    FTexts.cameraQualityRetakeAdvice: 'يرجى إعادة التقاط الصورة',
+    FTexts.imageSourceCamera: 'الكاميرا',
+    FTexts.imageSourceGallery: 'البوم الصور',
     FTexts.cameraCaptureFailed: 'فشل التقاط الصورة، يرجى المحاولة مرة أخرى',
     FTexts.cameraPermissionDeniedTitle: 'تم رفض الوصول إلى الكاميرا',
     FTexts.cameraPermissionDenied:
