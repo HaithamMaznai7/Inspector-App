@@ -7,6 +7,7 @@ import 'package:fahis_inspector/resources/inspection_repository.dart';
 import 'package:fahis_inspector/resources/orders_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/device/device_utility.dart';
+import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:fahis_inspector/util/constants/enums.dart';
 import 'package:fahis_inspector/util/helpers/stage_mapper.dart';
@@ -431,8 +432,18 @@ class InspectionsController extends GetxController
   }) async {
     if (ordersRepositoryB2B == null) return;
 
+    AppLogger.trace(
+      'InspectionsController',
+      'loadOrdersB2B — reset=$reset cache=$cache status=$status',
+    );
+
     if (cache) {
-      ordersB2B.assignAll(ordersRepositoryB2B!.fetchFromCache(status: status));
+      final cached = ordersRepositoryB2B!.fetchFromCache(status: status);
+      AppLogger.info(
+        'InspectionsController',
+        'B2B cache hit — ${cached.length} orders loaded from Hive',
+      );
+      ordersB2B.assignAll(cached);
       update();
       if (load) {
         isLoadingB2B.value = ordersB2B.isEmpty;
@@ -445,9 +456,22 @@ class InspectionsController extends GetxController
         await Future.delayed(Duration(seconds: 3));
       }
 
-      ordersB2B.assignAll(
-        await ordersRepositoryB2B!.fetchFromApi(query: query, status: status, reset: reset),
+      final fresh = await ordersRepositoryB2B!.fetchFromApi(
+        query: query,
+        status: status,
+        reset: reset,
       );
+      AppLogger.info(
+        'InspectionsController',
+        'B2B API fetch complete — ${fresh.length} orders in list',
+        {
+          for (final o in fresh)
+            '${o.customer.name} (#${o.id})':
+                'total=${o.meta.total} finished=${o.meta.finishedCount} '
+                'processing=${o.meta.processedCount} rejected=${o.meta.rejectedCount}',
+        },
+      );
+      ordersB2B.assignAll(fresh);
       _autoLoadMoreIfNeeded();
     } finally {
       if (load) {

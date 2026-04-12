@@ -5,6 +5,7 @@ import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
+import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -57,6 +58,12 @@ class OrdersRepository extends ListRepository<Order> {
       if (query != null) 'q': query,
     };
 
+    AppLogger.trace(
+      'OrdersRepository[$type]',
+      'Fetching page $_currentPage — reset=$reset',
+      {'endpoint': endpoint, 'status': status, 'query': query},
+    );
+
     try {
       final r = await n.response(RoutingUrl.home);
       final orders = r.data.isNotEmpty && r.data['orders'] != null
@@ -77,6 +84,38 @@ class OrdersRepository extends ListRepository<Order> {
 
       _lastPage = r.data['meta']['last_page'] ?? _lastPage;
 
+      AppLogger.info(
+        'OrdersRepository[$type]',
+        'API response — ${orders.length} orders | page $_currentPage/$_lastPage | total=${_total.value}',
+        {
+          'all': _counts['all_total'],
+          'pending': _counts['pending_total'],
+          'processing': _counts['processing_total'],
+          'completed': _counts['completed_total'],
+          'rejected': _counts['rejected_total'],
+        },
+      );
+
+      // Log per-order inspection breakdown for B2B (company cards)
+      if (type == 'b2b') {
+        for (final order in orders) {
+          AppLogger.trace(
+            'OrdersRepository[b2b]',
+            'Order #${order.id} — ${order.customer.name}',
+            {
+              'slug': order.slug,
+              'status': order.status,
+              'total_vehicles': order.meta.total,
+              'items_in_payload': order.items.length,
+              // These map to the 3 CompanyCard status chips:
+              'finished_count (Completed chip)': order.meta.finishedCount,
+              'processed_count (In Progress chip)': order.meta.processedCount,
+              'rejected_count (Rejected chip)': order.meta.rejectedCount,
+            },
+          );
+        }
+      }
+
       if (reset) {
         _data.assignAll(orders);
       } else {
@@ -89,8 +128,10 @@ class OrdersRepository extends ListRepository<Order> {
 
       await saveToCache();
     } on FNetworkException catch (e) {
+      AppLogger.error('OrdersRepository[$type]', 'Network error on fetch', e);
       e.notify();
     } catch (e) {
+      AppLogger.error('OrdersRepository[$type]', 'Unexpected error on fetch', e);
       dd('Error fetching orders: $e');
     }
 
