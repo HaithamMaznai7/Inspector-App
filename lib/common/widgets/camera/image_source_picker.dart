@@ -6,6 +6,7 @@ import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
+import 'package:fahis_inspector/util/responsive/responsive_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -58,37 +59,45 @@ class ImageSourcePicker {
   static Future<_ImageSource?> _showIOSPicker() async {
     return showCupertinoModalPopup<_ImageSource>(
       context: Get.context!,
-      builder: (context) => CupertinoActionSheet(
-        actions: [
-          CupertinoActionSheetAction(
-            onPressed: () => Navigator.pop(context, _ImageSource.camera),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(CupertinoIcons.camera, size: 22),
-                const SizedBox(width: FSizes.sm),
-                Text(FTexts.imageSourceCamera.tr),
-              ],
+      builder: (context) {
+        final iconSize = ResponsiveHelper.responsiveValue<double>(
+          context,
+          mobile: FSizes.iconMd,
+          tablet: FSizes.iconLg,
+          desktop: FSizes.iconLg,
+        );
+        return CupertinoActionSheet(
+          actions: [
+            CupertinoActionSheetAction(
+              onPressed: () => Navigator.pop(context, _ImageSource.camera),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(CupertinoIcons.camera, size: iconSize),
+                  const SizedBox(width: FSizes.sm),
+                  Text(FTexts.imageSourceCamera.tr),
+                ],
+              ),
             ),
-          ),
-          CupertinoActionSheetAction(
-            onPressed: () => Navigator.pop(context, _ImageSource.gallery),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(CupertinoIcons.photo, size: 22),
-                const SizedBox(width: FSizes.sm),
-                Text(FTexts.imageSourceGallery.tr),
-              ],
+            CupertinoActionSheetAction(
+              onPressed: () => Navigator.pop(context, _ImageSource.gallery),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(CupertinoIcons.photo, size: iconSize),
+                  const SizedBox(width: FSizes.sm),
+                  Text(FTexts.imageSourceGallery.tr),
+                ],
+              ),
             ),
+          ],
+          cancelButton: CupertinoActionSheetAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.pop(context),
+            child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
           ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          isDefaultAction: true,
-          onPressed: () => Navigator.pop(context),
-          child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -101,19 +110,27 @@ class ImageSourcePicker {
       builder: (context) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         final bgColor = isDark ? FColors.dark : Colors.white;
+        final horizontalPad = ResponsiveHelper.responsiveValue<double>(
+          context,
+          mobile: FSizes.lg,
+          tablet: FSizes.xl,
+          desktop: FSizes.xl,
+        );
 
         return Container(
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(FSizes.cardRadiusLg),
+            ),
           ),
           child: SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                FSizes.lg,
+              padding: EdgeInsets.fromLTRB(
+                horizontalPad,
                 FSizes.sm,
-                FSizes.lg,
+                horizontalPad,
                 FSizes.md,
               ),
               child: Column(
@@ -159,12 +176,24 @@ class _SourceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final circleSize = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: FSizes.iconCircleSm,
+      tablet: FSizes.iconCircleMd,
+      desktop: FSizes.iconCircleMd,
+    );
+    final iconSize = ResponsiveHelper.responsiveValue<double>(
+      context,
+      mobile: FSizes.iconMd,
+      tablet: FSizes.iconLg,
+      desktop: FSizes.iconLg,
+    );
+
     return Material(
       color: FColors.primaryColor.withValues(alpha: 0.06),
       borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-      child: InkWell(
+      child: GestureDetector(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: FSizes.md,
@@ -173,13 +202,13 @@ class _SourceTile extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: circleSize,
+                height: circleSize,
                 decoration: BoxDecoration(
                   color: FColors.primaryColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: FColors.primaryColor, size: 22),
+                child: Icon(icon, color: FColors.primaryColor, size: iconSize),
               ),
               const SizedBox(width: FSizes.md),
               Text(
@@ -191,7 +220,7 @@ class _SourceTile extends StatelessWidget {
               const Spacer(),
               Icon(
                 Icons.arrow_forward_ios_rounded,
-                size: 16,
+                size: FSizes.iconSm,
                 color: FColors.darkGrey.withValues(alpha: 0.5),
               ),
             ],
