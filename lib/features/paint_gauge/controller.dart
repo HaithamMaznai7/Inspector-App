@@ -52,7 +52,7 @@ class CachedReading {
 class PaintGaugeController extends GetxController {
   static const _tag = 'PaintGaugeController';
   static const _saveDebounceMs = 3000;
-  static const _autoConnectTimeoutMs = 3000;
+  static const _autoConnectTimeoutMs = 2000;
 
   InspectionDetailsController get mainController =>
       InspectionDetailsBinding().instance;
@@ -269,6 +269,18 @@ class PaintGaugeController extends GetxController {
       return;
     }
 
+    // If we're in an error/lostConnection state, clear the bad MAC and
+    // go straight to the scan page so the user can pick a different device.
+    final currentState = connectionState.value;
+    if (currentState == BleConnectionState.error ||
+        currentState == BleConnectionState.lostConnection) {
+      _repository?.saveLastDevice('', '');
+      connectionState.value = BleConnectionState.disconnected;
+      update();
+      _navigateToScanPage();
+      return;
+    }
+
     final savedMac = _repository?.lastDeviceMac;
     if (savedMac != null && savedMac.isNotEmpty) {
       await _autoConnect(savedMac);
@@ -388,13 +400,15 @@ class PaintGaugeController extends GetxController {
         selectPanel(CarPart.frontHatch);
         break;
       case BleConnectionState.disconnected:
-      case BleConnectionState.error:
         isConnected.value = false;
         isConnecting.value = false;
         break;
+      case BleConnectionState.error:
       case BleConnectionState.lostConnection:
         isConnected.value = false;
         isConnecting.value = false;
+        // Clear saved MAC so we don't auto-connect to a bad device next time
+        _repository?.saveLastDevice('', '');
         break;
       case BleConnectionState.connecting:
         isConnecting.value = true;
