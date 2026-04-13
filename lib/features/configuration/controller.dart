@@ -12,9 +12,9 @@ class OnBoardingController extends GetxController {
 
   bool get isLastPage => currentPageIndex.value == totalPages - 1;
 
-  void updatePageIndicator(index) => currentPageIndex.value = index;
+  void updatePageIndicator(int index) => currentPageIndex.value = index;
 
-  void dotNavigatorClick(index) {
+  void dotNavigatorClick(int index) {
     currentPageIndex.value = index;
     pageController.animateToPage(
       index,

@@ -31,7 +31,7 @@ class SearchResultSheet extends StatelessWidget {
           Expanded(
             child: ValueListenableBuilder(
               valueListenable: controller,
-              builder: (_, __, ___) {
+              builder: (_, _, _) {
                 final query = controller.text.trim();
 
                 if (query.isEmpty) {

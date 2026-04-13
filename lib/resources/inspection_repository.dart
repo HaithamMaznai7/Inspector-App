@@ -55,7 +55,7 @@ class InspectionsRepository extends ListRepository<Inspection> {
     n.setQuery = {
       'page': _currentPage.toString(),
       'stage': stage?.value ?? this.stage.value,
-      if (query != null) 'q': query,
+      'q': ?query,
     };
 
     try {
@@ -165,5 +165,4 @@ class InspectionsRepository extends ListRepository<Inspection> {
       isFetchingMore.value = false;
     }
   }
-
 }

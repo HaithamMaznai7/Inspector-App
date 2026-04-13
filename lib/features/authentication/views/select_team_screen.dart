@@ -127,7 +127,7 @@ class _SelectTeamToContinueScreenState
                           horizontal: FSizes.sm,
                         ),
                         itemCount: _selectableTeams.length,
-                        separatorBuilder: (_, __) =>
+                        separatorBuilder: (_, _) =>
                             const Divider(height: FSizes.dividerHeight, indent: 72),
                         itemBuilder: (context, index) {
                           final team = _selectableTeams[index];
@@ -188,7 +188,7 @@ class _SelectTeamToContinueScreenState
       return CircleAvatar(
         backgroundImage: CachedNetworkImageProvider(logo),
         backgroundColor: FColors.grey.withValues(alpha: 0.2),
-        onBackgroundImageError: (_, __) {},
+        onBackgroundImageError: (_, _) {},
       );
     }
 

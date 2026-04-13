@@ -149,8 +149,10 @@ class InspectionPhotosReview extends StatelessWidget {
                                         ? CachedNetworkImage(
                                             imageUrl: photo.image!,
                                             fit: BoxFit.cover,
-                                            placeholder: (_, __) => _pendingPlaceholder(),
-                                            errorWidget: (_, __, ___) => _pendingPlaceholder(),
+                                            placeholder: (_, _) =>
+                                                _pendingPlaceholder(),
+                                            errorWidget: (_, _, _) =>
+                                                _pendingPlaceholder(),
                                           )
                                         : _pendingPlaceholder(),
                                   ),

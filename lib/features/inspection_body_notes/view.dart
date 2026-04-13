@@ -25,7 +25,7 @@ class InspectionBodyTypeResults extends StatelessWidget {
             vertical: FSizes.sm,
           ),
           itemCount: controller.bodySides.length,
-          separatorBuilder: (_, __) => const SizedBox(height: FSizes.xs),
+          separatorBuilder: (_, _) => const SizedBox(height: FSizes.xs),
           itemBuilder: (context, index) {
             final body = controller.bodySides[index];
             final noteCount = body.notes.length;
@@ -68,7 +68,7 @@ class InspectionBodyTypeResults extends StatelessWidget {
                             width: FSizes.iconCircleLg,
                             height: FSizes.iconCircleSm,
                             fit: BoxFit.cover,
-                            placeholder: (_, __) => Shimmer.fromColors(
+                            placeholder: (_, _) => Shimmer.fromColors(
                               baseColor: Colors.grey[300]!,
                               highlightColor: Colors.grey[100]!,
                               child: Container(
@@ -77,7 +77,7 @@ class InspectionBodyTypeResults extends StatelessWidget {
                                 color: Colors.white,
                               ),
                             ),
-                            errorWidget: (_, __, ___) => Container(
+                            errorWidget: (_, _, _) => Container(
                               width: FSizes.iconCircleLg,
                               height: FSizes.iconCircleSm,
                               color: FColors.grey.withValues(alpha: 0.1),

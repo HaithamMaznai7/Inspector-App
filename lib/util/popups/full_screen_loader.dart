@@ -31,7 +31,7 @@ class FFullScreenLoader {
     );
   }
 
-  static stopLoading() {
+  static void stopLoading() {
     try {
       Get.back();
     } catch (_) {}

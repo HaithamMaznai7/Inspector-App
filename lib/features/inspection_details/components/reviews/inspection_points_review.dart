@@ -109,8 +109,11 @@ class InspectionPointsReview extends StatelessWidget {
                                             child: CachedNetworkImage(
                                               imageUrl: point.image!,
                                               fit: BoxFit.contain,
-                                              placeholder: (_, __) => const SizedBox.shrink(),
-                                              errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                                              placeholder: (_, _) =>
+                                                  const SizedBox.shrink(),
+
+                                              errorWidget: (_, _, _) =>
+                                                  const SizedBox.shrink(),
                                             ),
                                           ),
                                         ),
@@ -120,8 +123,12 @@ class InspectionPointsReview extends StatelessWidget {
                                       imageUrl: point.image!,
                                       height: FSizes.imagePreviewSm,
                                       fit: BoxFit.cover,
-                                      placeholder: (_, __) => SizedBox(height: FSizes.imagePreviewSm),
-                                      errorWidget: (_, __, ___) => SizedBox(height: FSizes.imagePreviewSm),
+                                      placeholder: (_, _) => SizedBox(
+                                        height: FSizes.imagePreviewSm,
+                                      ),
+                                      errorWidget: (_, _, _) => SizedBox(
+                                        height: FSizes.imagePreviewSm,
+                                      ),
                                     ),
                                   ),
                                 ),

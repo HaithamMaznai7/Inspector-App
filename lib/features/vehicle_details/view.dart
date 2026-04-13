@@ -33,14 +33,21 @@ class VehicleDetailsView extends StatelessWidget {
         children: [
           _buildVehicleHeader(context, controller, isTablet, hPad),
           Padding(
-            padding: EdgeInsets.fromLTRB(hPad, 0, hPad, FSizes.spaceBtwSections + FSizes.md),
+            padding: EdgeInsets.fromLTRB(
+              hPad,
+              0,
+              hPad,
+              FSizes.spaceBtwSections + FSizes.md,
+            ),
             child: GetBuilder<VehicleDetailsController>(
               init: VehicleDetailsBinding().instance,
               autoRemove: false,
               builder: (controller) {
                 if (controller.isLoading.value) {
                   return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: FSizes.spaceBtwSections + FSizes.lg),
+                    padding: EdgeInsets.symmetric(
+                      vertical: FSizes.spaceBtwSections + FSizes.lg,
+                    ),
                     child: Center(
                       child: CircularProgressIndicator(
                         color: FColors.primaryColor,
@@ -368,8 +375,12 @@ class VehicleDetailsView extends StatelessWidget {
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final vehicle = controller.mainController.inspection.value.vehicle;
-    final logoSize = isTablet ? FSizes.iconCircleLg + FSizes.xs : FSizes.iconCircleMd;
-    final iconSize = isTablet ? FSizes.iconMd + FSizes.xxs : FSizes.iconMd - FSizes.xxs;
+    final logoSize = isTablet
+        ? FSizes.iconCircleLg + FSizes.xs
+        : FSizes.iconCircleMd;
+    final iconSize = isTablet
+        ? FSizes.iconMd + FSizes.xxs
+        : FSizes.iconMd - FSizes.xxs;
 
     return Container(
       margin: EdgeInsets.fromLTRB(hPad, FSizes.md, hPad, FSizes.spaceBtwItems),
@@ -406,12 +417,12 @@ class VehicleDetailsView extends StatelessWidget {
                     child: CachedNetworkImage(
                       imageUrl: vehicle!.make!.avatar!,
                       fit: BoxFit.contain,
-                      placeholder: (_, __) => Icon(
+                      placeholder: (_, _) => Icon(
                         Iconsax.car,
                         size: iconSize,
                         color: FColors.primaryColor,
                       ),
-                      errorWidget: (_, __, ___) => Icon(
+                      errorWidget: (_, _, _) => Icon(
                         Iconsax.car,
                         size: iconSize,
                         color: FColors.primaryColor,
@@ -453,7 +464,10 @@ class VehicleDetailsView extends StatelessWidget {
           ),
           if (vehicle?.year != null && vehicle!.year!.isNotEmpty)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: FSizes.sm, vertical: FSizes.xs),
+              padding: const EdgeInsets.symmetric(
+                horizontal: FSizes.sm,
+                vertical: FSizes.xs,
+              ),
               decoration: BoxDecoration(
                 color: FColors.primaryColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
@@ -610,7 +624,9 @@ class VehicleDetailsView extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: FColors.primaryColor,
-                            borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                            borderRadius: BorderRadius.circular(
+                              FSizes.borderRadiusMd,
+                            ),
                           ),
                           child: isSearching
                               ? const SizedBox(

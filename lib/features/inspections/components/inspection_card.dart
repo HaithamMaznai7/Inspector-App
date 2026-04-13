@@ -131,12 +131,16 @@ class InspectionCard extends StatelessWidget {
                                         vertical: FSizes.xs - 1,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: FColors.info.withValues(alpha: 0.12),
+                                        color: FColors.info.withValues(
+                                          alpha: 0.12,
+                                        ),
                                         borderRadius: BorderRadius.circular(
                                           FSizes.borderRadiusSm,
                                         ),
                                         border: Border.all(
-                                          color: FColors.info.withValues(alpha: 0.3),
+                                          color: FColors.info.withValues(
+                                            alpha: 0.3,
+                                          ),
                                         ),
                                       ),
                                       child: Text(
@@ -219,11 +223,11 @@ class InspectionCard extends StatelessWidget {
                                             width: logoSize,
                                             height: logoSize,
                                             fit: BoxFit.contain,
-                                            placeholder: (_, __) => SizedBox(
+                                            placeholder: (_, _) => SizedBox(
                                               width: logoSize,
                                               height: logoSize,
                                             ),
-                                            errorWidget: (_, __, ___) => Icon(
+                                            errorWidget: (_, _, _) => Icon(
                                               Iconsax.car,
                                               size: FSizes.iconSm,
                                               color: FColors.darkGrey,

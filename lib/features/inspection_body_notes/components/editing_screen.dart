@@ -142,7 +142,7 @@ class _InspectionBodyTypeScreenState extends State<InspectionBodyTypeScreen> {
                                     fit: BoxFit.fill,
                                     width: double.infinity,
                                     height: double.infinity,
-                                    placeholder: (_, __) => Container(
+                                    placeholder: (_, _) => Container(
                                       decoration: BoxDecoration(
                                         color: FColors.grey
                                             .withValues(alpha: 0.08),
@@ -156,7 +156,7 @@ class _InspectionBodyTypeScreenState extends State<InspectionBodyTypeScreen> {
                                         ),
                                       ),
                                     ),
-                                    errorWidget: (_, __, ___) => Container(
+                                    errorWidget: (_, _, _) => Container(
                                       color:
                                           FColors.grey.withValues(alpha: 0.08),
                                       child: const Center(

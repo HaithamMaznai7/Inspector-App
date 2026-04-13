@@ -28,9 +28,9 @@ class Network extends GetConnect {
     }
   }
 
-  get getBody => _body;
+  dynamic get getBody => _body;
 
-  get getQuery => _query;
+  Map<String, dynamic>? get getQuery => _query;
 
   set setHeaders(Map<String, String> value) {
     _header = value;
@@ -144,10 +144,18 @@ class Network extends GetConnect {
       final preview = isError
           ? bodyStr
           : (bodyStr.length > 300 ? '${bodyStr.substring(0, 300)}…' : bodyStr);
-      print('┌─── API RESPONSE ──────────────────────────');
-      print('│ Status: ${response.statusCode}');
-      print('│ Body: $preview');
-      print('└───────────────────────────────────────────');
+      if (kDebugMode) {
+        print('┌─── API RESPONSE ──────────────────────────');
+      }
+      if (kDebugMode) {
+        print('│ Status: ${response.statusCode}');
+      }
+      if (kDebugMode) {
+        print('│ Body: $preview');
+      }
+      if (kDebugMode) {
+        print('└───────────────────────────────────────────');
+      }
     }
 
     if (response == null || response.statusCode == null) {
@@ -155,10 +163,7 @@ class Network extends GetConnect {
       // cancelled (e.g. user navigated away). This is not a real network
       // failure — throw silently so callers can handle it without showing
       // a misleading "No Connection" snackbar to the user.
-      throw FNetworkException(
-        '',
-        statusCode: -1,
-      );
+      throw FNetworkException('', statusCode: -1);
     }
 
     return CustomResponse.set(response);

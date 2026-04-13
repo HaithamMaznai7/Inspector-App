@@ -229,14 +229,14 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                           width: FSizes.imagePreviewMd,
                                           height: FSizes.imagePreviewMd,
                                           fit: BoxFit.cover,
-                                          placeholder: (_, __) => Container(
+                                          placeholder: (_, _) => Container(
                                             width: FSizes.imagePreviewMd,
                                             height: FSizes.imagePreviewMd,
                                             color: FColors.grey.withValues(
                                               alpha: 0.1,
                                             ),
                                           ),
-                                          errorWidget: (_, __, ___) =>
+                                          errorWidget: (_, _, _) =>
                                               Container(
                                                 width: FSizes.imagePreviewMd,
                                                 height: FSizes.imagePreviewMd,

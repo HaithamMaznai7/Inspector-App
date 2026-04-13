@@ -221,7 +221,7 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
       return CircleAvatar(
         backgroundImage: CachedNetworkImageProvider(logo),
         backgroundColor: FColors.grey.withValues(alpha: 0.2),
-        onBackgroundImageError: (_, __) {},
+        onBackgroundImageError: (_, _) {},
       );
     }
 

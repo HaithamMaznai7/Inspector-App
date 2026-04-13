@@ -298,7 +298,11 @@ class _CodesCard extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Iconsax.add, size: FSizes.iconXs, color: Colors.white),
+                    const Icon(
+                      Iconsax.add,
+                      size: FSizes.iconXs,
+                      color: Colors.white,
+                    ),
                   ],
                 ),
               ),
@@ -441,7 +445,7 @@ class _CardTitle extends StatelessWidget {
             ),
           ),
         ),
-        if (trailing != null) trailing!,
+        ?trailing,
       ],
     );
   }

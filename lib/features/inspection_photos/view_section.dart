@@ -63,19 +63,14 @@ class AlbumPhotos extends StatelessWidget {
 
               // ── Photo grid ──
               Expanded(
-                child: _PhotoGrid(
-                  controller: controller,
-                  photos: catPhotos,
-                ),
+                child: _PhotoGrid(controller: controller, photos: catPhotos),
               ),
-
             ],
           );
         });
       },
     );
   }
-
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -124,16 +119,19 @@ class _CategoryTabs extends StatelessWidget {
                 color: FColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Iconsax.trash, color: FColors.error, size: FSizes.fontSizeLg),
+              child: const Icon(
+                Iconsax.trash,
+                color: FColors.error,
+                size: FSizes.fontSizeLg,
+              ),
             ),
             const SizedBox(width: FSizes.sm),
             Expanded(
               child: Text(
                 InspectionPage.deleteAllPhotos.tr,
-                style: Theme.of(ctx)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700),
+                style: Theme.of(
+                  ctx,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
               ),
             ),
           ],
@@ -205,10 +203,12 @@ class _CategoryTabs extends StatelessWidget {
               child: Row(
                 children: categories.map((cat) {
                   final isSelected = cat == currentCategory;
-                  final catPhotos =
-                      controller.photos.where((p) => p.type == cat).toList();
-                  final uploaded =
-                      catPhotos.where((p) => p.image != null).length;
+                  final catPhotos = controller.photos
+                      .where((p) => p.type == cat)
+                      .toList();
+                  final uploaded = catPhotos
+                      .where((p) => p.image != null)
+                      .length;
                   final total = catPhotos.length;
 
                   return Padding(
@@ -227,8 +227,12 @@ class _CategoryTabs extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? Colors.white.withValues(alpha: 0.3)
-                                  : FColors.primaryColor.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                                  : FColors.primaryColor.withValues(
+                                      alpha: 0.15,
+                                    ),
+                              borderRadius: BorderRadius.circular(
+                                FSizes.borderRadiusMd,
+                              ),
                             ),
                             child: Text(
                               '$uploaded/$total',
@@ -244,27 +248,30 @@ class _CategoryTabs extends StatelessWidget {
                         ],
                       ),
                       labelStyle: TextStyle(
-                        color:
-                            isSelected ? Colors.white : FColors.primaryColor,
+                        color: isSelected ? Colors.white : FColors.primaryColor,
                         fontWeight: FontWeight.w500,
                         fontSize: FSizes.fontSizeSm,
                       ),
                       selected: isSelected,
                       showCheckmark: false,
                       selectedColor: FColors.primaryColor,
-                      backgroundColor:
-                          FColors.primaryColor.withValues(alpha: 0.08),
+                      backgroundColor: FColors.primaryColor.withValues(
+                        alpha: 0.08,
+                      ),
                       side: BorderSide(
                         color: isSelected
                             ? FColors.primaryColor
                             : FColors.primaryColor.withValues(alpha: 0.3),
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(FSizes.borderRadiusLg),
+                        borderRadius: BorderRadius.circular(
+                          FSizes.borderRadiusLg,
+                        ),
                       ),
                       onSelected: (_) {
-                        _log('chip tapped → $cat (was: ${controller.category.value})');
+                        _log(
+                          'chip tapped → $cat (was: ${controller.category.value})',
+                        );
                         controller.category.value = cat;
                         controller.update();
                       },
@@ -295,17 +302,20 @@ class _CategoryTabs extends StatelessWidget {
                       message: InspectionPage.deleteAllPhotos.tr,
                       child: InkWell(
                         onTap: () => _confirmDeleteAll(context),
-                        borderRadius:
-                            BorderRadius.circular(FSizes.borderRadiusLg),
+                        borderRadius: BorderRadius.circular(
+                          FSizes.borderRadiusLg,
+                        ),
                         child: Container(
                           padding: const EdgeInsets.all(FSizes.sm),
                           decoration: BoxDecoration(
                             color: FColors.error.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(
-                                FSizes.borderRadiusLg),
+                              FSizes.borderRadiusLg,
+                            ),
                             border: Border.all(
-                              color: FColors.error
-                                  .withValues(alpha: isDark ? 0.25 : 0.2),
+                              color: FColors.error.withValues(
+                                alpha: isDark ? 0.25 : 0.2,
+                              ),
                             ),
                           ),
                           child: const Icon(
@@ -349,10 +359,9 @@ class _PhotoGrid extends StatelessWidget {
             const SizedBox(height: FSizes.sm),
             Text(
               InspectionPage.noPhotosYet.tr,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.apply(color: FColors.grey),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.apply(color: FColors.grey),
             ),
           ],
         ),
@@ -377,8 +386,8 @@ class _PhotoGrid extends StatelessWidget {
           onTap: isUploading
               ? null
               : photo.image != null
-                  ? () => _showFullImage(context, photo)
-                  : () => controller.picking(photo),
+              ? () => _showFullImage(context, photo)
+              : () => controller.picking(photo),
           onDelete: photo.image != null
               ? () => _confirmDelete(context, controller, photo)
               : null,
@@ -459,10 +468,9 @@ class _PhotoGridCell extends StatelessWidget {
         const SizedBox(height: FSizes.xs),
         Text(
           photo.title,
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(fontWeight: FontWeight.w500),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
@@ -501,7 +509,7 @@ class _PhotoGridCell extends StatelessWidget {
                       imageUrl: photo.image!,
                       fit: BoxFit.cover,
                       placeholder: (ctx, _) => _shimmerPlaceholder(ctx),
-                      errorWidget: (_, __, ___) => _placeholder(),
+                      errorWidget: (_, _, _) => _placeholder(),
                     ),
             ),
             // Delete badge — top-start
@@ -574,9 +582,7 @@ class _PhotoGridCell extends StatelessWidget {
     return Shimmer.fromColors(
       baseColor: isDark ? Colors.grey[700]! : Colors.grey[300]!,
       highlightColor: isDark ? Colors.grey[600]! : Colors.grey[100]!,
-      child: Container(
-        color: isDark ? Colors.grey[800] : Colors.white,
-      ),
+      child: Container(color: isDark ? Colors.grey[800] : Colors.white),
     );
   }
 
@@ -634,8 +640,9 @@ class _PhotoGridShimmer extends StatelessWidget {
                     height: FSizes.xl,
                     decoration: BoxDecoration(
                       color: baseColor,
-                      borderRadius:
-                          BorderRadius.circular(FSizes.borderRadiusLg),
+                      borderRadius: BorderRadius.circular(
+                        FSizes.borderRadiusLg,
+                      ),
                     ),
                   ),
                 ),
@@ -662,8 +669,7 @@ class _PhotoGridShimmer extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: baseColor,
-                  borderRadius:
-                      BorderRadius.circular(FSizes.borderRadiusLg),
+                  borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
                 ),
               ),
             ),
@@ -697,10 +703,9 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: FSizes.sm),
           Text(
             InspectionPage.noPhotosYet.tr,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.apply(color: FColors.grey),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.apply(color: FColors.grey),
           ),
         ],
       ),

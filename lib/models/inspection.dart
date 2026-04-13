@@ -83,8 +83,7 @@ class Inspection {
   }
 
   // Serialization
-  factory Inspection.fromJson(Map json) =>
-      _$InspectionFromJson(json);
+  factory Inspection.fromJson(Map json) => _$InspectionFromJson(json);
 
   Map<String, dynamic> toJson() => _$InspectionToJson(this);
 
@@ -94,7 +93,7 @@ class Inspection {
   // factory Inspection.get(Box box, Inspection inspection) =>
   //     inspe.de(box.get('Inspection-$slug'));
 
-  saveDetails(Box box) {
+  void saveDetails(Box box) {
     box.put('Inspection-$slug', toJson);
   }
 

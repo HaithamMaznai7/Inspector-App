@@ -7,54 +7,70 @@ import 'package:get/get_rx/src/rx_typedefs/rx_typedefs.dart';
 class FHelper {
   FHelper._();
 
-  static Color? getColor(String value){
+  static Color? getColor(String value) {
     /// Define your product specific colors here and it will match the attribute colors and show specific \u001b[32mThis is green\u001b[0m
-    switch(value.toLowerCase()){
-      case 'green': return Colors.green;
-      case 'yellow': return Colors.amberAccent;
-      case 'grey': return Colors.grey;
-      case 'black': return Colors.black26;
-      default: return Colors.black;
+    switch (value.toLowerCase()) {
+      case 'green':
+        return Colors.green;
+      case 'yellow':
+        return Colors.amberAccent;
+      case 'grey':
+        return Colors.grey;
+      case 'black':
+        return Colors.black26;
+      default:
+        return Colors.black;
     }
   }
-  
+
   static void showSnackBar(String message) {
-    ScaffoldMessenger.of(Get.context!).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      Get.context!,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  static getSnackBar({required String message,required Color color,IconData? icon, int duration = 15 }){
+  static void getSnackBar({
+    required String message,
+    required Color color,
+    IconData? icon,
+    int duration = 15,
+  }) {
     Get.rawSnackbar(
       messageText: Text(
-          message,
-          style: TextStyle(
-              color: Colors.white,
-              fontSize: Theme.of(Get.context!).textTheme.titleMedium?.fontSize,
-              fontWeight: FontWeight.w600,
-              fontFamily: 'Tajawal'
-          )
+        message,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: Theme.of(Get.context!).textTheme.titleMedium?.fontSize,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Tajawal',
+        ),
       ),
       duration: Duration(seconds: duration),
       backgroundColor: color,
-      icon: Icon(icon,color: Colors.white,size: 35,),
+      icon: Icon(icon, color: Colors.white, size: 35),
       margin: EdgeInsets.zero,
       snackStyle: SnackStyle.FLOATING,
     );
   }
 
-  static getSnackBarWithBtn({required String message,required Color color,IconData? icon,required String btnTitle,required Callback callback}){
+  static void getSnackBarWithBtn({
+    required String message,
+    required Color color,
+    IconData? icon,
+    required String btnTitle,
+    required Callback callback,
+  }) {
     Get.rawSnackbar(
       messageText: Text(
-          message,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: Theme.of(Get.context!).textTheme.bodyLarge?.fontSize,
-          )
+        message,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: Theme.of(Get.context!).textTheme.bodyLarge?.fontSize,
+        ),
       ),
       duration: const Duration(days: 1),
       backgroundColor: color,
-      icon: Icon(icon,color: Colors.white,size: 35,),
+      icon: Icon(icon, color: Colors.white, size: 35),
       margin: EdgeInsets.zero,
       snackStyle: SnackStyle.GROUNDED,
       mainButton: Container(
@@ -63,64 +79,64 @@ class FHelper {
       ),
     );
   }
-  
-  static void showAlert(String title, String message){
+
+  static void showAlert(String title, String message) {
     showDialog(
-        context: Get.context!,
-        builder: (BuildContext context){
-          return AlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('OK'),
-              )
-            ],
-          );
-        }
+      context: Get.context!,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
-  
-  static void navigateToScreen(BuildContext context, Widget screen){
-    Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => screen),
-    );
+
+  static void navigateToScreen(BuildContext context, Widget screen) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
   }
-  
-  static String truncateText(String text,int maxLength){
-    if(text.length <= maxLength){
+
+  static String truncateText(String text, int maxLength) {
+    if (text.length <= maxLength) {
       return text;
-    }else{
+    } else {
       return '${text.substring(0, maxLength)}...';
     }
   }
-  
-  static isDarkMode(BuildContext? context){
+
+  static bool isDarkMode(BuildContext? context) {
     return Theme.of(context ?? Get.context!).brightness == Brightness.dark;
   }
-  
-  static Size screenSize(){
-    return MediaQuery.of(Get.context!).size ;
+
+  static Size screenSize() {
+    return MediaQuery.of(Get.context!).size;
   }
 
-  static double screenHeight(){
-    return MediaQuery.of(Get.context!).size.height ;
+  static double screenHeight() {
+    return MediaQuery.of(Get.context!).size.height;
   }
 
-  static double screenWidth(){
-    return MediaQuery.of(Get.context!).size.width ;
+  static double screenWidth() {
+    return MediaQuery.of(Get.context!).size.width;
   }
 
-  static List<T> removeDuplicates<T>(List<T> list){
+  static List<T> removeDuplicates<T>(List<T> list) {
     return list.toSet().toList();
   }
-  
-  static List<Widget> wrapWidgets(List<Widget> widgets, int rowSize){
+
+  static List<Widget> wrapWidgets(List<Widget> widgets, int rowSize) {
     final wrappedList = <Widget>[];
-    for(var i = 0; i < widgets.length; i+= rowSize){
-      final rowChildren = widgets.sublist(i, i + rowSize > widgets.length ? widgets.length : i + rowSize);
+    for (var i = 0; i < widgets.length; i += rowSize) {
+      final rowChildren = widgets.sublist(
+        i,
+        i + rowSize > widgets.length ? widgets.length : i + rowSize,
+      );
       wrappedList.add(Row(children: rowChildren));
     }
     return wrappedList;
@@ -128,10 +144,11 @@ class FHelper {
 
   static String generateRandomString(int length) {
     final random = Random();
-    const availableChars =
-        '1234567890';
-    final randomString = List.generate(length,
-            (index) => availableChars[random.nextInt(availableChars.length)]).join();
+    const availableChars = '1234567890';
+    final randomString = List.generate(
+      length,
+      (index) => availableChars[random.nextInt(availableChars.length)],
+    ).join();
 
     return randomString;
   }

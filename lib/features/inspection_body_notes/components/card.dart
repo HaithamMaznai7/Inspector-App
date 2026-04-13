@@ -187,7 +187,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                         height: FSizes.imagePreviewMd,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        placeholder: (_, __) => Container(
+                        placeholder: (_, _) => Container(
                           height: FSizes.imagePreviewMd,
                           color: FColors.grey.withValues(alpha: 0.1),
                           child: const Center(
@@ -197,7 +197,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                             ),
                           ),
                         ),
-                        errorWidget: (_, __, ___) => Container(
+                        errorWidget: (_, _, _) => Container(
                           height: FSizes.imagePreviewMd,
                           color: FColors.grey.withValues(alpha: 0.1),
                           child: const Center(
@@ -386,7 +386,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                   shrinkWrap: true,
                   padding: EdgeInsets.zero,
                   itemCount: types.length,
-                  separatorBuilder: (_, __) => Divider(
+                  separatorBuilder: (_, _) => Divider(
                     height: 1,
                     indent: FSizes.md,
                     endIndent: FSizes.md,

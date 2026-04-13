@@ -55,7 +55,7 @@ class OrdersRepository extends ListRepository<Order> {
     n.setQuery = {
       'page': _currentPage.toString(),
       if (status != null && status != 'all') 'status': status,
-      if (query != null) 'q': query,
+      'q': ?query,
     };
 
     AppLogger.trace(
@@ -68,8 +68,8 @@ class OrdersRepository extends ListRepository<Order> {
       final r = await n.response(RoutingUrl.home);
       final orders = r.data.isNotEmpty && r.data['orders'] != null
           ? (r.data['orders'] as List)
-              .map((json) => Order.fromJson(json))
-              .toList()
+                .map((json) => Order.fromJson(json))
+                .toList()
           : <Order>[];
 
       _total.value = r.data['meta']['total'] ?? _total.value;
@@ -131,7 +131,11 @@ class OrdersRepository extends ListRepository<Order> {
       AppLogger.error('OrdersRepository[$type]', 'Network error on fetch', e);
       e.notify();
     } catch (e) {
-      AppLogger.error('OrdersRepository[$type]', 'Unexpected error on fetch', e);
+      AppLogger.error(
+        'OrdersRepository[$type]',
+        'Unexpected error on fetch',
+        e,
+      );
       dd('Error fetching orders: $e');
     }
 

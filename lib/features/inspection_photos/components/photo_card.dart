@@ -67,9 +67,12 @@ class PhotoCard extends StatelessWidget {
                           _hasImage
                               ? InspectionPage.photoUploaded.tr
                               : InspectionPage.addPhoto.tr,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: _hasImage ? FColors.success : FColors.grey,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: _hasImage
+                                    ? FColors.success
+                                    : FColors.grey,
+                              ),
                         ),
                       ],
                     ),
@@ -79,14 +82,16 @@ class PhotoCard extends StatelessWidget {
               // Action buttons
               if (_hasImage)
                 IconButton(
-                  onPressed: () => InspectionPhotosBinding().instance.delete(photo),
+                  onPressed: () =>
+                      InspectionPhotosBinding().instance.delete(photo),
                   icon: const Icon(Iconsax.trash, size: FSizes.iconInlineSm),
                   color: FColors.error,
                   tooltip: InspectionPage.deletePhoto.tr,
                 )
               else
                 IconButton(
-                  onPressed: () => InspectionPhotosBinding().instance.picking(photo),
+                  onPressed: () =>
+                      InspectionPhotosBinding().instance.picking(photo),
                   icon: const Icon(Iconsax.camera, size: FSizes.iconInlineSm),
                   color: FColors.primaryColor,
                   tooltip: InspectionPage.takePhoto.tr,
@@ -114,17 +119,17 @@ class PhotoCard extends StatelessWidget {
         height: FSizes.imageThumbSize,
         child: _hasImage
             ? (photo.file != null
-                ? Image.file(photo.file!, fit: BoxFit.cover)
-                : CachedNetworkImage(
-                    imageUrl: photo.image!,
-                    fit: BoxFit.cover,
-                    placeholder: (_, __) => PhotoUploadShimmer(
-                      width: FSizes.imageThumbSize,
-                      height: FSizes.imageThumbSize,
-                      borderRadius: FSizes.borderRadiusMd,
-                    ),
-                    errorWidget: (_, __, ___) => _placeholder(),
-                  ))
+                  ? Image.file(photo.file!, fit: BoxFit.cover)
+                  : CachedNetworkImage(
+                      imageUrl: photo.image!,
+                      fit: BoxFit.cover,
+                      placeholder: (_, _) => PhotoUploadShimmer(
+                        width: FSizes.imageThumbSize,
+                        height: FSizes.imageThumbSize,
+                        borderRadius: FSizes.borderRadiusMd,
+                      ),
+                      errorWidget: (_, _, _) => _placeholder(),
+                    ))
             : _placeholder(),
       ),
     );

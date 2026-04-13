@@ -162,5 +162,5 @@ class AppRoute {
 
   static const initial = RoutingUrl.init;
 
-  static get route => _routes;
+  static List<GetPage<dynamic>> get route => _routes;
 }

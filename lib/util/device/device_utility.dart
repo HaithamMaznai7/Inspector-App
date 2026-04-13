@@ -120,21 +120,6 @@ class FDeviceUtils {
     return !kIsWeb && Platform.isAndroid;
   }
 
-  static Future<double> getPackageInfo() async {
-    // PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    // String appVersion = packageInfo.version;
-    // try {
-    //   return double.parse(appVersion.substring(0,3));
-    // } catch (e) {
-    //   // Handle the exception if the string cannot be parsed as a float
-    //   if (kDebugMode) {
-    //     dd('An Error happened in convert app version to double or in set sharePref');
-    //     dd('Error: $e');
-    //   }
-    // }
-    return 1.0;
-  }
-
   static void launchUrl(String url) async {
     if (await canLaunchUrlString(url)) {
       await launchUrlString(url);

@@ -11,7 +11,7 @@ import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
 class FLoader {
-  static successSnackBar({String? title, String? message, duration = 3}) {
+  static void successSnackBar({String? title, String? message, duration = 3}) {
     SnackbarQueue.show(() {
       _snackBar(
         title: title,
@@ -23,7 +23,7 @@ class FLoader {
     }, duration: 1);
   }
 
-  static warningSnackBar({String? title, String? message, duration = 3}) {
+  static void warningSnackBar({String? title, String? message, duration = 3}) {
     // SnackbarQueue.show(() {
     _snackBar(
       title: title,
@@ -35,7 +35,7 @@ class FLoader {
     // }, duration: 1);
   }
 
-  static errorSnackBar({String? title, String? message, duration = 3}) {
+  static void errorSnackBar({String? title, String? message, duration = 3}) {
     SnackbarQueue.show(() {
       _snackBar(
         title: title,
@@ -47,7 +47,7 @@ class FLoader {
     }, duration: 1);
   }
 
-  static infoSnackBar({String? title, String? message, duration = 3}) {
+  static void infoSnackBar({String? title, String? message, duration = 3}) {
     SnackbarQueue.show(() {
       _snackBar(
         title: title,
@@ -59,7 +59,7 @@ class FLoader {
     }, duration: 1);
   }
 
-  static notification({
+  static void notification({
     String? title,
     String? message,
     duration = 3,
@@ -88,7 +88,7 @@ class FLoader {
     );
   }
 
-  static _snackBar({
+  static void _snackBar({
     String? title,
     String? message,
     duration = 3,
@@ -120,8 +120,8 @@ class FLoader {
                   width: FSizes.iconCircleSm,
                   height: FSizes.iconCircleSm,
                   fit: BoxFit.cover,
-                  placeholder: (_, __) => const SizedBox.shrink(),
-                  errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                  placeholder: (_, _) => const SizedBox.shrink(),
+                  errorWidget: (_, _, _) => const SizedBox.shrink(),
                 )
               : icon,
           snackStyle: SnackStyle.FLOATING,
@@ -151,8 +151,9 @@ class _LogoutLoadingDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    final subtitleColor =
-        isDark ? FColors.grey.withValues(alpha: 0.7) : FColors.darkGrey;
+    final subtitleColor = isDark
+        ? FColors.grey.withValues(alpha: 0.7)
+        : FColors.darkGrey;
 
     // Responsive card width: compact on phones, slightly wider on tablets.
     final cardWidth = ResponsiveHelper.responsiveValue<double>(
@@ -185,7 +186,10 @@ class _LogoutLoadingDialog extends StatelessWidget {
       elevation: 0,
       child: Container(
         width: cardWidth,
-        padding: const EdgeInsets.symmetric(horizontal: FSizes.xl, vertical: FSizes.spaceBtwSections),
+        padding: const EdgeInsets.symmetric(
+          horizontal: FSizes.xl,
+          vertical: FSizes.spaceBtwSections,
+        ),
         decoration: BoxDecoration(
           color: bg,
           borderRadius: BorderRadius.circular(FSizes.cardRadiusLg),
@@ -206,8 +210,7 @@ class _LogoutLoadingDialog extends StatelessWidget {
               height: spinnerSize,
               child: CircularProgressIndicator(
                 strokeWidth: 3.5,
-                valueColor:
-                    const AlwaysStoppedAnimation(FColors.primaryColor),
+                valueColor: const AlwaysStoppedAnimation(FColors.primaryColor),
                 backgroundColor: FColors.primaryColor.withValues(alpha: 0.15),
               ),
             ),

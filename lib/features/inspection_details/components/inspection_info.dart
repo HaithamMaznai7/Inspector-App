@@ -68,8 +68,8 @@ class InspectionInfo extends StatelessWidget {
                                   fit: BoxFit.contain,
                                   width: FSizes.iconInlineMd,
                                   height: FSizes.iconInlineMd,
-                                  placeholder: (_, __) => SizedBox(width: FSizes.iconInlineMd, height: FSizes.iconInlineMd),
-                                  errorWidget: (_, __, ___) => SizedBox(width: FSizes.iconInlineMd, height: FSizes.iconInlineMd),
+                                  placeholder: (_, _) => SizedBox(width: FSizes.iconInlineMd, height: FSizes.iconInlineMd),
+                                  errorWidget: (_, _, _) => SizedBox(width: FSizes.iconInlineMd, height: FSizes.iconInlineMd),
                                 )
                               : SizedBox(),
                           const SizedBox(width: FSizes.sm),

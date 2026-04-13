@@ -25,8 +25,8 @@ class FUserAvatar extends StatelessWidget {
               ? CachedNetworkImage(
                   imageUrl: FirebaseAuth.instance.currentUser!.photoURL!,
                   fit: BoxFit.cover,
-                  placeholder: (_, __) => const SizedBox.shrink(),
-                  errorWidget: (_, __, ___) => const Icon(Icons.person, size: 30.0),
+                  placeholder: (_, _) => const SizedBox.shrink(),
+                  errorWidget: (_, _, _) => const Icon(Icons.person, size: 30.0),
                 )
               : Icon(
                 Icons.person,

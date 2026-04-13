@@ -223,7 +223,7 @@ class _ProfileViewState extends State<ProfileView> {
                                       _profile?.name,
                                     ),
                                   ),
-                            onBackgroundImageError: (_, __) {},
+                            onBackgroundImageError: (_, _) {},
                           ),
                         ),
                         // Edit button — bottom-right of avatar

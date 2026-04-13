@@ -236,7 +236,7 @@ class _ColorSheet extends StatelessWidget {
                 controller: scrollController,
                 padding: const EdgeInsets.only(top: FSizes.xs, bottom: FSizes.md),
                 itemCount: colors.length,
-                separatorBuilder: (_, __) => Divider(
+                separatorBuilder: (_, _) => Divider(
                   height: 1,
                   indent: 20,
                   endIndent: 20,

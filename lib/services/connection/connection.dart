@@ -54,7 +54,7 @@ class ConnectionService extends GetxController {
     }
   }
 
-  reload() async {
+  Future<void> reload() async {
     isLoading = true.obs;
     update();
     if (await isConnected()) {
@@ -75,7 +75,7 @@ class ConnectionService extends GetxController {
   //   // }
   // }
 
-  restartApp() {
+  void restartApp() {
     // Process.runSync('flutter', ['run']);
     // if (Process.runSync('flutter', ['doctor']).exitCode == 0) {
     //   // Restart the app

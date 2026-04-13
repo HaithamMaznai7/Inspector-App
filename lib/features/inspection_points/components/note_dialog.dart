@@ -73,9 +73,12 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
                       color: isDark
                           ? FColors.darkGrey.withValues(alpha: .2)
                           : FColors.grey.withValues(alpha: .15),
-                      borderRadius:
-                          BorderRadius.circular(FSizes.borderRadiusLg),
-                      border: Border.all(color: FColors.grey.withValues(alpha: .4)),
+                      borderRadius: BorderRadius.circular(
+                        FSizes.borderRadiusLg,
+                      ),
+                      border: Border.all(
+                        color: FColors.grey.withValues(alpha: .4),
+                      ),
                     ),
                     child: TextFormField(
                       controller: _textEditingController,
@@ -123,8 +126,9 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
                         backgroundColor: FColors.primaryColor,
                         foregroundColor: FColors.white,
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(FSizes.borderRadiusLg),
+                          borderRadius: BorderRadius.circular(
+                            FSizes.borderRadiusLg,
+                          ),
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
@@ -141,8 +145,9 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
                           foregroundColor: FColors.error,
                           side: const BorderSide(color: FColors.error),
                           shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(FSizes.borderRadiusLg),
+                            borderRadius: BorderRadius.circular(
+                              FSizes.borderRadiusLg,
+                            ),
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
@@ -193,14 +198,17 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Iconsax.camera, size: FSizes.iconSm, color: FColors.white),
+                      const Icon(
+                        Iconsax.camera,
+                        size: FSizes.iconSm,
+                        color: FColors.white,
+                      ),
                       const SizedBox(width: FSizes.xs),
                       Text(
                         FTexts.markerChangePhoto.tr,
-                        style: Theme.of(context)
-                            .textTheme
-                            .labelSmall
-                            ?.apply(color: FColors.white),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.labelSmall?.apply(color: FColors.white),
                       ),
                     ],
                   ),
@@ -239,8 +247,8 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
             Text(
               FTexts.markerAddPhoto.tr,
               style: Theme.of(context).textTheme.bodyMedium?.apply(
-                    color: FColors.primaryColor.withValues(alpha: .7),
-                  ),
+                color: FColors.primaryColor.withValues(alpha: .7),
+              ),
             ),
           ],
         ),
@@ -300,7 +308,7 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
         setState(() => _point.file = file);
       }
     } else {
-      final result = await FilePicker.platform.pickFiles(type: FileType.any);
+      final result = await FilePicker.pickFiles(type: FileType.any);
       if (result != null && result.files.single.path != null) {
         setState(() => _point.file = File(result.files.single.path!));
       }

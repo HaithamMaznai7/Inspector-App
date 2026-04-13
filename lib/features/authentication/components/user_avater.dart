@@ -35,8 +35,8 @@ class FUserAvatar extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: avatarUrl!,
                       fit: BoxFit.cover,
-                      placeholder: (_, __) => _defaultIcon(),
-                      errorWidget: (_, __, ___) => _defaultIcon(),
+                      placeholder: (_, _) => _defaultIcon(),
+                      errorWidget: (_, _, _) => _defaultIcon(),
                     )
                   : _defaultIcon(),
             ),
