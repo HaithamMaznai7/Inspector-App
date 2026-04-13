@@ -250,10 +250,10 @@ class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
 
     // ── Pin Themes ──────────────────────────────────────
     final defaultPinTheme = PinTheme(
-      width: 64,
-      height: 64,
+      width: FSizes.iconXl,
+      height: FSizes.iconXl,
       textStyle: TextStyle(
-        fontSize: 24,
+        fontSize: FSizes.defaultSpace,
         fontWeight: FontWeight.w700,
         color: isDark ? Colors.white : FColors.textPrimary,
       ),
@@ -300,7 +300,7 @@ class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: isTablet ? 120 : FSizes.lg,
+              horizontal: isTablet ? FSizes.buttonWidth : FSizes.lg,
             ),
             child: Column(
               children: [
@@ -311,13 +311,13 @@ class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
                   alignment: AlignmentDirectional.centerEnd,
                   child: IconButton(
                     onPressed: () => Get.back(),
-                    icon: const Icon(Icons.close, size: 20),
+                    icon: const Icon(Icons.close, size: FSizes.iconInlineSm),
                     style: IconButton.styleFrom(
                       backgroundColor: isDark
                           ? Colors.white.withValues(alpha: 0.08)
                           : FColors.softGrey,
                       shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(FSizes.sm),
                     ),
                   ),
                 ),
@@ -326,15 +326,15 @@ class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
 
                 // ── Lock icon ──
                 Container(
-                  width: 72,
-                  height: 72,
+                  width: FSizes.iconXl + FSizes.sm,
+                  height: FSizes.iconXl + FSizes.sm,
                   decoration: BoxDecoration(
                     color: FColors.primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Iconsax.lock_1,
-                    size: 32,
+                    size: FSizes.iconLg,
                     color: FColors.primaryColor,
                   ),
                 ),
@@ -389,7 +389,7 @@ class _OTPDialogState extends State<OTPDialog> with WidgetsBindingObserver {
                       submittedPinTheme: submittedPinTheme,
                       keyboardType: TextInputType.number,
                       closeKeyboardWhenCompleted: false,
-                      separatorBuilder: (_) => const SizedBox(width: 16),
+                      separatorBuilder: (_) => const SizedBox(width: FSizes.md),
                       onCompleted: _verify,
                     ),
                   ),

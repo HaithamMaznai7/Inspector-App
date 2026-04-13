@@ -49,7 +49,7 @@ class FUserAvatar extends StatelessWidget {
   Widget _defaultIcon() => Center(
         child: Icon(
           Icons.person,
-          size: 22,
+          size: FSizes.iconInlineSm,
           color: FColors.primaryColor,
         ),
       );

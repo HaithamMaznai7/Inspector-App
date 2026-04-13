@@ -1,4 +1,5 @@
 import 'package:fahis_inspector/common/widgets/skeletons/skeleton.dart';
+import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -26,11 +27,11 @@ class PlaceHolderRequestCard extends StatelessWidget {
     return InkWell(
       child: SizedBox(
         width: MediaQuery.of(context).size.width,
-        height: 140.0,
+        height: FSizes.imagePreviewSm + FSizes.iconInlineSm,
         child: Card(
           color: isDark ? FColors.black : Colors.white,
           child: const Padding(
-            padding: EdgeInsets.fromLTRB(25, 15, 25, 15),
+            padding: EdgeInsets.fromLTRB(FSizes.defaultSpace, FSizes.borderRadiusLg, FSizes.defaultSpace, FSizes.borderRadiusLg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

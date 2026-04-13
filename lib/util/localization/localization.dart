@@ -28,7 +28,7 @@ class FLocalization extends Translations {
         icon: const Icon(
           Icons.translate,
           color: FColors.primaryColor,
-          size: 20,
+          size: FSizes.iconInlineSm,
         ),
         onPressed: () => changeLocale(),
         tooltip: 'change Language',

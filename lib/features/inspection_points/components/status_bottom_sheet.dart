@@ -86,7 +86,7 @@ class _StatusButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 22),
+            Icon(icon, size: FSizes.iconMd),
             const SizedBox(width: FSizes.sm),
             Text(
               label,

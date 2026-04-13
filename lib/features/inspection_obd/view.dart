@@ -98,7 +98,7 @@ class _ReportEmpty extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 28),
+          padding: const EdgeInsets.symmetric(vertical: FSizes.lg),
           decoration: BoxDecoration(
             color: isDark
                 ? FColors.darkGrey.withValues(alpha: 0.2)
@@ -113,8 +113,8 @@ class _ReportEmpty extends StatelessWidget {
             children: [
               isUploading
                   ? const SizedBox(
-                      width: 32,
-                      height: 32,
+                      width: FSizes.xl,
+                      height: FSizes.xl,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.5,
                         color: FColors.primaryColor,
@@ -128,7 +128,7 @@ class _ReportEmpty extends StatelessWidget {
                       ),
                       child: const Icon(
                         Iconsax.document_upload,
-                        size: 26,
+                        size: FSizes.iconMd,
                         color: FColors.primaryColor,
                       ),
                     ),
@@ -136,7 +136,7 @@ class _ReportEmpty extends StatelessWidget {
               Text(
                 InspectionPage.uploadObdReport.tr,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: FSizes.fontSizeSm,
                   fontWeight: FontWeight.w600,
                   color: FColors.primaryColor,
                 ),
@@ -174,7 +174,7 @@ class _ReportUploaded extends StatelessWidget {
           InspectionPage.obdDeleteReportConfirm.tr,
           style: TextStyle(
             color: isDark ? FColors.grey : FColors.darkGrey,
-            fontSize: 14,
+            fontSize: FSizes.fontSizeSm,
           ),
         ),
         actions: [
@@ -215,7 +215,7 @@ class _ReportUploaded extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(FSizes.sm),
             decoration: BoxDecoration(
               color: FColors.success.withValues(alpha: 0.12),
               shape: BoxShape.circle,
@@ -223,7 +223,7 @@ class _ReportUploaded extends StatelessWidget {
             child: const Icon(
               Icons.check_circle_rounded,
               color: FColors.success,
-              size: 20,
+              size: FSizes.iconInlineSm,
             ),
           ),
           const SizedBox(width: FSizes.sm),
@@ -298,7 +298,7 @@ class _CodesCard extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Iconsax.add, size: 15, color: Colors.white),
+                    const Icon(Iconsax.add, size: FSizes.iconXs, color: Colors.white),
                   ],
                 ),
               ),
@@ -336,7 +336,7 @@ class _CodesEmpty extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: FSizes.lg),
       child: Column(
         children: [
-          Icon(Iconsax.cpu, size: 36, color: FColors.darkGrey),
+          Icon(Iconsax.cpu, size: FSizes.xl, color: FColors.darkGrey),
           const SizedBox(height: FSizes.sm),
           Text(
             InspectionPage.obdNoCodesYet.tr,
@@ -366,7 +366,7 @@ class _SkeletonList extends StatelessWidget {
       children: List.generate(2, (i) {
         return Container(
           margin: const EdgeInsets.only(bottom: FSizes.xs),
-          height: 46,
+          height: FSizes.buttonHeightSm,
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
@@ -424,12 +424,12 @@ class _CardTitle extends StatelessWidget {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(7),
+          padding: const EdgeInsets.all(FSizes.xs),
           decoration: BoxDecoration(
             color: FColors.primaryColor.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, size: 15, color: FColors.primaryColor),
+          child: Icon(icon, size: FSizes.iconXs, color: FColors.primaryColor),
         ),
         const SizedBox(width: FSizes.sm),
         Expanded(
@@ -465,9 +465,9 @@ class _IconBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(7),
+        padding: const EdgeInsets.all(FSizes.xs),
         decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-        child: Icon(icon, size: 16, color: color),
+        child: Icon(icon, size: FSizes.iconSm, color: color),
       ),
     );
   }

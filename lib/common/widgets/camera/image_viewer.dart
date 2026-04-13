@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:fahis_inspector/util/constants/image_strings.dart';
+import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 
@@ -18,7 +19,7 @@ class ImageViewer extends StatelessWidget {
   final double width;
   final Widget? placeHolder;
   final Widget defaultPlaceHolder =
-    const Icon(Icons.camera_alt, size: 50, color: Colors.grey);
+    const Icon(Icons.camera_alt, size: FSizes.iconCircleMd, color: Colors.grey);
   @override
   Widget build(BuildContext context) {
     if(image == null){

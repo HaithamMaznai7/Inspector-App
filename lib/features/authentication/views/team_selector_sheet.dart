@@ -188,10 +188,10 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
       ),
       trailing: isCurrent
           ? Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: FSizes.sm, vertical: FSizes.xs),
               decoration: BoxDecoration(
                 color: FColors.primaryColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
               ),
               child: Text(
                 'Current'.tr,
@@ -201,7 +201,7 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
                 ),
               ),
             )
-          : Icon(Iconsax.arrow_right_3, size: 18, color: FColors.darkGrey),
+          : Icon(Iconsax.arrow_right_3, size: FSizes.iconSm, color: FColors.darkGrey),
     );
   }
 
@@ -213,7 +213,7 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
     if (team.isSystem) {
       return CircleAvatar(
         backgroundColor: FColors.primaryColor.withValues(alpha: 0.1),
-        child: Icon(Iconsax.shield_tick, color: FColors.primaryColor, size: 20),
+        child: Icon(Iconsax.shield_tick, color: FColors.primaryColor, size: FSizes.iconInlineSm),
       );
     }
 

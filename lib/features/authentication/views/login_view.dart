@@ -46,8 +46,8 @@ class Login extends StatelessWidget {
                     ),
                     child: Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: isTablet ? 0 : 24,
-                        vertical: 16,
+                        horizontal: isTablet ? 0 : FSizes.lg,
+                        vertical: FSizes.md,
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -65,7 +65,7 @@ class Login extends StatelessWidget {
                                     ?.copyWith(fontWeight: FontWeight.w800),
                                 textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: FSizes.xs),
                               Text(
                                 LoginPage.loginSubTitle.tr,
                                 style: Theme.of(context).textTheme.bodyMedium
@@ -81,13 +81,13 @@ class Login extends StatelessWidget {
 
                           // ── Form card ─────────────────────────────────
                           Container(
-                            margin: const EdgeInsets.only(top: 40),
-                            padding: const EdgeInsets.all(24),
+                            margin: const EdgeInsets.only(top: FSizes.iconCircleSm),
+                            padding: const EdgeInsets.all(FSizes.lg),
                             decoration: BoxDecoration(
                               color: isDark
                                   ? Colors.white.withValues(alpha: 0.025)
                                   : Colors.black.withValues(alpha: 0.025),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(FSizes.iconInlineSm),
                               border: Border.all(
                                 color: isDark
                                     ? Colors.white.withValues(alpha: 0.07)
@@ -105,15 +105,15 @@ class Login extends StatelessWidget {
                                     children: [
                                       Container(
                                         width: 3,
-                                        height: 16,
+                                        height: FSizes.md,
                                         decoration: BoxDecoration(
                                           color: FColors.primaryColor,
                                           borderRadius: BorderRadius.circular(
-                                            2,
+                                            FSizes.xxs,
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(width: 8),
+                                      const SizedBox(width: FSizes.sm),
                                       Text(
                                         LoginPage.signIn.tr,
                                         style: Theme.of(context)
@@ -125,7 +125,7 @@ class Login extends StatelessWidget {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 20),
+                                  const SizedBox(height: FSizes.iconInlineSm),
 
                                   // Credential field
                                   Obx(

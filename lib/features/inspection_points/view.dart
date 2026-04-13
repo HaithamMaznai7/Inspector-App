@@ -18,7 +18,7 @@ class InspectionPointResults extends StatelessWidget {
   // ── compact tinted badge ────────────────────────────────────────────────────
   Widget _badge(String value, Color color) => Container(
     constraints: const BoxConstraints(minWidth: 32),
-    padding: const EdgeInsets.symmetric(horizontal: FSizes.xs, vertical: 2),
+    padding: const EdgeInsets.symmetric(horizontal: FSizes.xs, vertical: FSizes.xxs),
     decoration: BoxDecoration(
       color: color.withValues(alpha: 0.12),
       borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
@@ -29,7 +29,7 @@ class InspectionPointResults extends StatelessWidget {
       value,
       style: TextStyle(
         color: color,
-        fontSize: FSizes.fontSizeSm - 2,
+        fontSize: FSizes.fontSizeXs,
         fontWeight: FontWeight.w700,
       ),
     ),
@@ -38,7 +38,7 @@ class InspectionPointResults extends StatelessWidget {
   // ── category icon ───────────────────────────────────────────────────────────
   Widget _catIcon(String iconUrl) {
     if (iconUrl.isEmpty) {
-      return Icon(Iconsax.category, size: 20, color: FColors.primaryColor);
+      return Icon(Iconsax.category, size: FSizes.iconInlineSm, color: FColors.primaryColor);
     }
     return _SvgNetworkIcon(url: iconUrl);
   }
@@ -64,8 +64,8 @@ class InspectionPointResults extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 18),
-          const SizedBox(height: 4),
+          Icon(icon, color: color, size: FSizes.fontSizeLg),
+          const SizedBox(height: FSizes.xs),
           Text(
             '$count',
             style: TextStyle(
@@ -306,7 +306,7 @@ class InspectionPointResults extends StatelessWidget {
                                               ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
-                                        const SizedBox(height: 2),
+                                        const SizedBox(height: FSizes.xxs),
                                         Text(
                                           '$catAnswered / $catTotal',
                                           style: theme.textTheme.labelSmall
@@ -459,7 +459,7 @@ class _SvgNetworkIconState extends State<_SvgNetworkIcon> {
   @override
   Widget build(BuildContext context) {
     if (_hasError) {
-      return Icon(Iconsax.category, size: 24, color: FColors.primaryColor);
+      return Icon(Iconsax.category, size: FSizes.iconMd, color: FColors.primaryColor);
     }
 
     if (_svgString == null) {
@@ -468,8 +468,8 @@ class _SvgNetworkIconState extends State<_SvgNetworkIcon> {
 
     return SvgPicture.string(
       _svgString!,
-      width: 24,
-      height: 24,
+      width: FSizes.iconMd,
+      height: FSizes.iconMd,
       fit: BoxFit.contain,
       colorFilter: const ColorFilter.mode(
         FColors.primaryColor,

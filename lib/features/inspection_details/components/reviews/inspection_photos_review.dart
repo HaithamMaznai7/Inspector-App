@@ -156,10 +156,10 @@ class InspectionPhotosReview extends StatelessWidget {
                                   ),
                                   // Status badge — top-right corner
                                   Positioned(
-                                    top: 6,
-                                    right: 6,
+                                    top: FSizes.xs,
+                                    right: FSizes.xs,
                                     child: Container(
-                                      padding: const EdgeInsets.all(4),
+                                      padding: const EdgeInsets.all(FSizes.xs),
                                       decoration: BoxDecoration(
                                         color: hasImage
                                             ? FColors.success
@@ -169,7 +169,7 @@ class InspectionPhotosReview extends StatelessWidget {
                                       child: Icon(
                                         hasImage ? Icons.check : Iconsax.camera,
                                         color: Colors.white,
-                                        size: 14,
+                                        size: FSizes.fontSizeSm,
                                       ),
                                     ),
                                   ),
@@ -217,7 +217,7 @@ class InspectionPhotosReview extends StatelessWidget {
         borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
       ),
       child: const Center(
-        child: Icon(Iconsax.camera, color: FColors.grey, size: 36),
+        child: Icon(Iconsax.camera, color: FColors.grey, size: FSizes.iconLg),
       ),
     );
   }

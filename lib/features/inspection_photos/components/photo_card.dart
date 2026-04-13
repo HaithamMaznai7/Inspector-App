@@ -59,7 +59,7 @@ class PhotoCard extends StatelessWidget {
                       children: [
                         Icon(
                           _hasImage ? Iconsax.tick_circle : Iconsax.camera,
-                          size: 14,
+                          size: FSizes.iconXs,
                           color: _hasImage ? FColors.success : FColors.grey,
                         ),
                         const SizedBox(width: FSizes.xs),
@@ -80,14 +80,14 @@ class PhotoCard extends StatelessWidget {
               if (_hasImage)
                 IconButton(
                   onPressed: () => InspectionPhotosBinding().instance.delete(photo),
-                  icon: const Icon(Iconsax.trash, size: 20),
+                  icon: const Icon(Iconsax.trash, size: FSizes.iconInlineSm),
                   color: FColors.error,
                   tooltip: InspectionPage.deletePhoto.tr,
                 )
               else
                 IconButton(
                   onPressed: () => InspectionPhotosBinding().instance.picking(photo),
-                  icon: const Icon(Iconsax.camera, size: 20),
+                  icon: const Icon(Iconsax.camera, size: FSizes.iconInlineSm),
                   color: FColors.primaryColor,
                   tooltip: InspectionPage.takePhoto.tr,
                 ),
@@ -135,7 +135,7 @@ class PhotoCard extends StatelessWidget {
     return Container(
       color: FColors.grey.withValues(alpha: 0.15),
       child: const Center(
-        child: Icon(Iconsax.camera, color: FColors.grey, size: 28),
+        child: Icon(Iconsax.camera, color: FColors.grey, size: FSizes.iconMd),
       ),
     );
   }

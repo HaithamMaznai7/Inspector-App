@@ -34,8 +34,8 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(
-            horizontal: isTablet ? 0 : 24,
-            vertical: 16,
+            horizontal: isTablet ? 0 : FSizes.lg,
+            vertical: FSizes.md,
           ),
           child: Center(
             child: ConstrainedBox(
@@ -44,8 +44,8 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // ── Branding ──────────────────────────────────
-                  const Center(child: Logo(height: 64)),
-                  const SizedBox(height: 20),
+                  const Center(child: Logo(height: FSizes.logoHeightMd)),
+                  const SizedBox(height: FSizes.spaceBtwItems),
                   Center(
                     child: Text(
                       'resetPassword'.tr,
@@ -54,7 +54,7 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
                           ),
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: FSizes.xs),
                   Center(
                     child: Text(
                       'resetPasswordSubtitle'.tr,
@@ -64,11 +64,11 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: FSizes.defaultSpace),
 
                   // ── Form card ────────────────────────────────
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(FSizes.spaceBtwItems),
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
                       borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
@@ -89,13 +89,13 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
                             children: [
                               Container(
                                 width: 3,
-                                height: 16,
+                                height: FSizes.md,
                                 decoration: BoxDecoration(
                                   color: FColors.primaryColor,
-                                  borderRadius: BorderRadius.circular(2),
+                                  borderRadius: BorderRadius.circular(FSizes.xxs),
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: FSizes.sm),
                               Text(
                                 'resetPassword'.tr,
                                 style: Theme.of(context)
@@ -105,7 +105,7 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: FSizes.spaceBtwItems),
 
                           // New password field
                           Obx(
@@ -121,7 +121,7 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
                                     controller.showPassword.value
                                         ? Iconsax.eye
                                         : Iconsax.eye_slash,
-                                    size: 20,
+                                    size: FSizes.iconInlineSm,
                                   ),
                                   onPressed: () => controller.showPassword
                                       .value = !controller.showPassword.value,
@@ -151,7 +151,7 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
                                     controller.showPasswordConfirmation.value
                                         ? Iconsax.eye
                                         : Iconsax.eye_slash,
-                                    size: 20,
+                                    size: FSizes.iconInlineSm,
                                   ),
                                   onPressed: () => controller
                                       .showPasswordConfirmation.value =
@@ -177,7 +177,7 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
                             final loading = controller.isLoading.value;
                             return SizedBox(
                               width: double.infinity,
-                              height: 50,
+                              height: FSizes.buttonHeightMd,
                               child: ElevatedButton(
                                 onPressed:
                                     loading ? null : controller.resetPassword,
@@ -191,8 +191,8 @@ class ResetPasswordView extends GetView<ResetPasswordController> {
                                 ),
                                 child: loading
                                     ? const SizedBox(
-                                        height: 22,
-                                        width: 22,
+                                        height: FSizes.iconMd,
+                                        width: FSizes.iconMd,
                                         child: CircularProgressIndicator(
                                           color: FColors.white,
                                           strokeWidth: 2.5,

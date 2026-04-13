@@ -58,7 +58,7 @@ class _NoteInputDialogState extends State<NoteInputDialog> {
               child: Icon(
                 _isFinished ? Iconsax.send_1 : Iconsax.close_circle,
                 color: _isFinished ? FColors.primaryColor : FColors.error,
-                size: 24,
+                size: FSizes.iconMd,
               ),
             ),
             const SizedBox(height: FSizes.md),
@@ -162,7 +162,7 @@ class _NoteInputDialogState extends State<NoteInputDialog> {
                           FSizes.borderRadiusMd,
                         ),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: FSizes.iconXs),
                     ),
                     child: Text(InspectionPage.cancelBtn.tr),
                   ),
@@ -172,7 +172,7 @@ class _NoteInputDialogState extends State<NoteInputDialog> {
                   child: ElevatedButton(
                     onPressed: () => Get.back(result: _controller.text.trim()),
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: FSizes.iconXs),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(
                           FSizes.borderRadiusMd,

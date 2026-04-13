@@ -178,11 +178,11 @@ class _DotIndicators extends StatelessWidget {
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: isActive ? 28 : 8,
-                height: 8,
+                margin: const EdgeInsets.symmetric(horizontal: FSizes.xs),
+                width: isActive ? FSizes.xl : FSizes.sm,
+                height: FSizes.sm,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
                   color: isActive
                       ? FColors.primaryColor
                       : FColors.primaryColor.withValues(alpha: 0.2),
@@ -249,7 +249,7 @@ class _NextButton extends StatelessWidget {
                           ? Iconsax.arrow_left_2
                           : Iconsax.arrow_right_3,
                       color: Colors.white,
-                      size: 20,
+                      size: FSizes.iconInlineSm,
                     ),
                   ],
                 ],

@@ -65,33 +65,33 @@ class InspectionBodyTypeResults extends StatelessWidget {
                           ),
                           child: CachedNetworkImage(
                             imageUrl: body.image,
-                            width: 52,
-                            height: 42,
+                            width: FSizes.iconCircleLg,
+                            height: FSizes.iconCircleSm,
                             fit: BoxFit.cover,
                             placeholder: (_, __) => Shimmer.fromColors(
                               baseColor: Colors.grey[300]!,
                               highlightColor: Colors.grey[100]!,
                               child: Container(
-                                width: 52,
-                                height: 42,
+                                width: FSizes.iconCircleLg,
+                                height: FSizes.iconCircleSm,
                                 color: Colors.white,
                               ),
                             ),
                             errorWidget: (_, __, ___) => Container(
-                              width: 52,
-                              height: 42,
+                              width: FSizes.iconCircleLg,
+                              height: FSizes.iconCircleSm,
                               color: FColors.grey.withValues(alpha: 0.1),
                               child: const Icon(
                                 Iconsax.car,
                                 color: FColors.grey,
-                                size: 20,
+                                size: FSizes.iconInlineSm,
                               ),
                             ),
                           ),
                         ),
                         // "Add" overlay badge
                         Container(
-                          padding: const EdgeInsets.all(2),
+                          padding: const EdgeInsets.all(FSizes.xxs),
                           decoration: const BoxDecoration(
                             color: FColors.primaryColor,
                             shape: BoxShape.circle,
@@ -99,7 +99,7 @@ class InspectionBodyTypeResults extends StatelessWidget {
                           child: const Icon(
                             Icons.add,
                             color: Colors.white,
-                            size: 10,
+                            size: FSizes.iconXs,
                           ),
                         ),
                       ],
@@ -124,7 +124,7 @@ class InspectionBodyTypeResults extends StatelessWidget {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Iconsax.arrow_down_1, size: 18, color: FColors.grey),
+                      Icon(Iconsax.arrow_down_1, size: FSizes.fontSizeLg, color: FColors.grey),
                     ],
                   ),
                   showTrailingIcon: false,
@@ -201,7 +201,7 @@ class _NoteItem extends StatelessWidget {
           InspectionPage.deleteBodyNoteConfirm.tr,
           style: TextStyle(
             color: isDark ? FColors.grey : FColors.darkGrey,
-            fontSize: 14,
+            fontSize: FSizes.fontSizeSm,
           ),
         ),
         actions: [
@@ -257,7 +257,7 @@ class _NoteItem extends StatelessWidget {
             // Note image indicator
             if (note.image != null) ...[
               const SizedBox(width: FSizes.xs),
-              const Icon(Iconsax.image, size: 16, color: FColors.grey),
+              const Icon(Iconsax.image, size: FSizes.iconSm, color: FColors.grey),
             ],
             const SizedBox(width: FSizes.xs),
             // Edit
@@ -265,8 +265,8 @@ class _NoteItem extends StatelessWidget {
               onTap: onEdit,
               borderRadius: BorderRadius.circular(FSizes.sm),
               child: const Padding(
-                padding: EdgeInsets.all(4),
-                child: Icon(Iconsax.edit_2, size: 16, color: FColors.warning),
+                padding: EdgeInsets.all(FSizes.xs),
+                child: Icon(Iconsax.edit_2, size: FSizes.iconSm, color: FColors.warning),
               ),
             ),
             // Delete
@@ -274,8 +274,8 @@ class _NoteItem extends StatelessWidget {
               onTap: () => _confirmDelete(context),
               borderRadius: BorderRadius.circular(FSizes.sm),
               child: const Padding(
-                padding: EdgeInsets.all(4),
-                child: Icon(Iconsax.trash, size: 16, color: FColors.error),
+                padding: EdgeInsets.all(FSizes.xs),
+                child: Icon(Iconsax.trash, size: FSizes.iconSm, color: FColors.error),
               ),
             ),
           ],

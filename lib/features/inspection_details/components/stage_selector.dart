@@ -88,7 +88,7 @@ class StageSelector extends StatelessWidget {
 
                       label: Text(InspectionPage.startInspection.tr),
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(vertical: FSizes.md),
                       ),
                     ),
                   )
@@ -98,7 +98,7 @@ class StageSelector extends StatelessWidget {
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: controller.openEditing,
-                      icon: const Icon(Iconsax.edit_2, size: 18),
+                      icon: const Icon(Iconsax.edit_2, size: FSizes.iconSm),
                       label: Text(FTexts.editBtn.tr),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: FColors.primaryColor,
@@ -108,7 +108,7 @@ class StageSelector extends StatelessWidget {
                             FSizes.borderRadiusMd,
                           ),
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(vertical: FSizes.md),
                       ),
                     ),
                   )
@@ -118,7 +118,7 @@ class StageSelector extends StatelessWidget {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: controller.openEditing,
-                          icon: const Icon(Iconsax.edit_2, size: 18),
+                          icon: const Icon(Iconsax.edit_2, size: FSizes.iconSm),
                           label: Text(FTexts.editBtn.tr),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: FColors.primaryColor,
@@ -128,7 +128,7 @@ class StageSelector extends StatelessWidget {
                                 FSizes.borderRadiusMd,
                               ),
                             ),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            padding: const EdgeInsets.symmetric(vertical: FSizes.md),
                           ),
                         ),
                       ),
@@ -137,10 +137,10 @@ class StageSelector extends StatelessWidget {
                         child: ElevatedButton.icon(
                           onPressed: () =>
                               controller.setSatge(InspectionStage.finished),
-                          icon: const Icon(Iconsax.tick_circle, size: 18),
+                          icon: const Icon(Iconsax.tick_circle, size: FSizes.iconSm),
                           label: Text(FTexts.submitBtn.tr),
                           style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            padding: const EdgeInsets.symmetric(vertical: FSizes.md),
                           ),
                         ),
                       ),

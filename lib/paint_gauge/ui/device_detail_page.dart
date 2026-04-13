@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/paint_gauge/protocol/models.dart';
 import 'package:fahis_inspector/paint_gauge/protocol/packet_parser.dart';
 import 'package:fahis_inspector/paint_gauge/services/ble_connection_service.dart';
@@ -101,14 +102,14 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
         leading: const Icon(
           Icons.bluetooth_disabled,
           color: Colors.white,
-          size: 28,
+          size: FSizes.iconMd,
         ),
         content: const Text(
           'Connection lost — Try again',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,
-            fontSize: 14,
+            fontSize: FSizes.fontSizeSm,
           ),
         ),
         actions: [
@@ -119,7 +120,7 @@ class _DeviceDetailPageState extends State<DeviceDetailPage> {
             },
             child: const Text(
               'GO BACK',
-              style: TextStyle(color: Colors.white, fontSize: 13),
+              style: TextStyle(color: Colors.white, fontSize: FSizes.fontSizeSm),
             ),
           ),
         ],
@@ -417,34 +418,34 @@ class _StatusCard extends StatelessWidget {
         : Colors.orange;
 
     return Card(
-      margin: const EdgeInsets.all(8),
+      margin: const EdgeInsets.all(FSizes.sm),
       color: color,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(FSizes.borderRadiusLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(iconData, color: iconColor, size: 20),
-                const SizedBox(width: 8),
+                Icon(iconData, color: iconColor, size: FSizes.iconInlineSm),
+                const SizedBox(width: FSizes.sm),
                 Expanded(
                   child: Text(
                     status,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 13,
+                      fontSize: FSizes.fontSizeSm,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: FSizes.xs),
             Text(
               'Measured: $measuredCount / $totalCount parts',
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+              style: TextStyle(fontSize: FSizes.fontSizeXs, color: Colors.grey.shade700),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: FSizes.xxs),
           ],
         ),
       ),
@@ -506,16 +507,16 @@ class _PartTile extends StatelessWidget {
                 ? _thicknessColor(measurement.average!)
                 : Colors.grey.shade300,
             child: measurement.hasMeasurement
-                ? const Icon(Icons.check, color: Colors.white, size: 20)
-                : Text('${index + 1}', style: const TextStyle(fontSize: 12)),
+                ? const Icon(Icons.check, color: Colors.white, size: FSizes.iconInlineSm)
+                : Text('${index + 1}', style: const TextStyle(fontSize: FSizes.fontSizeXs)),
           ),
           if (isCurrentDevicePanel)
             Positioned(
-              right: -2,
-              top: -2,
+              right: -FSizes.xxs,
+              top: -FSizes.xxs,
               child: Container(
-                width: 12,
-                height: 12,
+                width: FSizes.borderRadiusLg,
+                height: FSizes.borderRadiusLg,
                 decoration: BoxDecoration(
                   color: Colors.blue,
                   shape: BoxShape.circle,
@@ -534,7 +535,7 @@ class _PartTile extends StatelessWidget {
                 fontWeight: measurement.hasMeasurement
                     ? FontWeight.bold
                     : FontWeight.normal,
-                fontSize: 14,
+                fontSize: FSizes.fontSizeSm,
               ),
             ),
           ),
@@ -545,13 +546,13 @@ class _PartTile extends StatelessWidget {
           ? Text(
               'Average: ${_formatValue(measurement.average)} μm  ·  '
               '${measurement.readings.length}/6 readings',
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+              style: TextStyle(fontSize: FSizes.fontSizeXs, color: Colors.grey.shade700),
             )
           : Text(
               canWrite ? 'Tap to move device here' : 'No measurement yet',
               style: TextStyle(
                 fontStyle: FontStyle.italic,
-                fontSize: 12,
+                fontSize: FSizes.fontSizeXs,
                 color: canWrite && isCurrentDevicePanel
                     ? Colors.blue.shade700
                     : Colors.grey.shade600,
@@ -563,17 +564,17 @@ class _PartTile extends StatelessWidget {
               children: [
                 if (isRecentlyUpdated)
                   const Padding(
-                    padding: EdgeInsets.only(right: 4),
+                    padding: EdgeInsets.only(right: FSizes.xs),
                     child: Icon(
                       Icons.fiber_manual_record,
                       color: Colors.red,
-                      size: 10,
+                      size: FSizes.iconXs,
                     ),
                   ),
                 IconButton(
                   icon: Icon(
                     Icons.delete_outline,
-                    size: 20,
+                    size: FSizes.iconInlineSm,
                     color: Colors.grey.shade500,
                   ),
                   onPressed: onDelete,
@@ -583,22 +584,22 @@ class _PartTile extends StatelessWidget {
                 ),
               ],
             )
-          : Icon(Icons.circle_outlined, color: Colors.grey.shade400, size: 20),
+          : Icon(Icons.circle_outlined, color: Colors.grey.shade400, size: FSizes.iconInlineSm),
     );
   }
 
   Widget _buildExpandedBody() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      padding: const EdgeInsets.fromLTRB(FSizes.md, 0, FSizes.md, FSizes.borderRadiusLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (measurement.substrate != null)
             Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: FSizes.sm),
               child: Text(
                 'Substrate: ${measurement.substrate!.label}',
-                style: const TextStyle(fontSize: 11, color: Colors.black54),
+                style: const TextStyle(fontSize: FSizes.fontSizeXs, color: Colors.black54),
               ),
             ),
           Row(children: List.generate(6, _readingBox)),
@@ -615,15 +616,15 @@ class _PartTile extends StatelessWidget {
 
     return Expanded(
       child: Container(
-        margin: const EdgeInsets.only(right: 4),
-        height: 40,
+        margin: const EdgeInsets.only(right: FSizes.xs),
+        height: FSizes.iconCircleSm,
         decoration: BoxDecoration(
           color: isLatest
               ? Colors.blue.shade100
               : hasValue
               ? Colors.grey.shade100
               : Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
           border: Border.all(
             color: isLatest ? Colors.blue : Colors.grey.shade300,
             width: isLatest ? 1.5 : 1,
@@ -633,7 +634,7 @@ class _PartTile extends StatelessWidget {
           child: Text(
             value != null ? _formatValue(value) : '—',
             style: TextStyle(
-              fontSize: 11,
+              fontSize: FSizes.fontSizeXs,
               fontWeight: isLatest ? FontWeight.bold : FontWeight.normal,
               color: isLatest
                   ? Colors.blue.shade800
@@ -649,8 +650,8 @@ class _PartTile extends StatelessWidget {
 
   Widget _hereChip() {
     return Container(
-      width: 12,
-      height: 12,
+      width: FSizes.borderRadiusLg,
+      height: FSizes.borderRadiusLg,
       decoration: BoxDecoration(
         color: Colors.blue,
         shape: BoxShape.circle,

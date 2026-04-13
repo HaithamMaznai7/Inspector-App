@@ -21,13 +21,13 @@ class GradientIconCircle extends StatelessWidget {
         shape: BoxShape.circle,
         color: FColors.primaryColor.withValues(alpha: 0.08),
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(FSizes.md),
       child: Container(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: FColors.primaryColor.withValues(alpha: 0.12),
         ),
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(FSizes.borderRadiusLg),
         child: Container(
           decoration: BoxDecoration(
             shape: BoxShape.circle,

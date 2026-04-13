@@ -52,7 +52,7 @@ class CompanyCard extends StatelessWidget {
                 child: Icon(
                   Iconsax.building_3,
                   color: FColors.primaryColor,
-                  size: 24,
+                  size: FSizes.iconMd,
                 ),
               ),
               const SizedBox(width: FSizes.md),
@@ -71,14 +71,14 @@ class CompanyCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: FSizes.xs),
                     Text(
                       '$totalVehicles ${'Vehicles'.tr}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: FColors.textSecondary,
                           ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: FSizes.xs),
                     _buildStatusRow(context),
                   ],
                 ),
@@ -87,7 +87,7 @@ class CompanyCard extends StatelessWidget {
               // Arrow icon
               Icon(
                 Iconsax.arrow_right_3,
-                size: 18,
+                size: FSizes.fontSizeLg,
                 color: FColors.darkGrey,
               ),
             ],

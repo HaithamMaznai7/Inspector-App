@@ -40,7 +40,7 @@ class _OBDCodeCardState extends State<OBDCodeCard> {
           InspectionPage.deleteObdCodeConfirm.tr,
           style: TextStyle(
             color: isDark ? FColors.grey : FColors.darkGrey,
-            fontSize: 14,
+            fontSize: FSizes.fontSizeSm,
           ),
         ),
         actions: [
@@ -104,7 +104,7 @@ class _OBDCodeCardState extends State<OBDCodeCard> {
           children: [
             // Code badge
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: FSizes.sm, vertical: FSizes.borderRadiusSm),
               decoration: BoxDecoration(
                 color: FColors.primaryColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
@@ -115,7 +115,7 @@ class _OBDCodeCardState extends State<OBDCodeCard> {
               child: Text(
                 widget.code.code,
                 style: const TextStyle(
-                  fontSize: 12,
+                  fontSize: FSizes.fontSizeXs,
                   fontWeight: FontWeight.w700,
                   color: FColors.primaryColor,
                   letterSpacing: 0.5,
@@ -140,14 +140,14 @@ class _OBDCodeCardState extends State<OBDCodeCard> {
             GestureDetector(
               onTap: () => _confirmDelete(context, isDark),
               child: Container(
-                padding: const EdgeInsets.all(7),
+                padding: const EdgeInsets.all(FSizes.xs),
                 decoration: BoxDecoration(
                   color: FColors.error.withValues(alpha: 0.08),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Iconsax.trash,
-                  size: 15,
+                  size: FSizes.iconXs,
                   color: FColors.error,
                 ),
               ),

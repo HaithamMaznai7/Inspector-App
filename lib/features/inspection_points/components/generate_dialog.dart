@@ -21,8 +21,8 @@ class GenerateDialog extends StatelessWidget {
           children: [
             // Warning icon
             Container(
-              width: 64,
-              height: 64,
+              width: FSizes.iconXl,
+              height: FSizes.iconXl,
               decoration: BoxDecoration(
                 color: FColors.warning.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
@@ -30,7 +30,7 @@ class GenerateDialog extends StatelessWidget {
               child: const Icon(
                 Iconsax.warning_2,
                 color: FColors.warning,
-                size: 32,
+                size: FSizes.iconLg,
               ),
             ),
             const SizedBox(height: FSizes.md),

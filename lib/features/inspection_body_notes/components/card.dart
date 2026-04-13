@@ -51,7 +51,9 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? FColors.dark : FColors.light,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(FSizes.lg), // lg = 24
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -92,15 +94,20 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
 
   Widget _buildHeader(BuildContext context, bool isDark) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(FSizes.md, 12, FSizes.md, FSizes.sm),
+      padding: const EdgeInsets.fromLTRB(
+        FSizes.md,
+        FSizes.borderRadiusLg, // 12
+        FSizes.md,
+        FSizes.sm,
+      ),
       child: Column(
         children: [
-          const SizedBox(height: 14),
+          const SizedBox(height: FSizes.fontSizeSm), // 14
           Row(
             children: [
               // Icon badge
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(FSizes.sm),
                 decoration: BoxDecoration(
                   color: FColors.primaryColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
@@ -108,7 +115,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                 child: const Icon(
                   Iconsax.warning_2,
                   color: FColors.primaryColor,
-                  size: 16,
+                  size: FSizes.iconSm,
                 ),
               ),
               const SizedBox(width: FSizes.sm),
@@ -125,9 +132,9 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                     if (_isEditing)
                       Text(
                         FTexts.editBtn.tr,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.copyWith(color: FColors.grey),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: FColors.grey,
+                        ),
                       ),
                   ],
                 ),
@@ -171,17 +178,17 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                 child: _marker.file != null
                     ? Image.file(
                         _marker.file!,
-                        height: 160,
+                        height: FSizes.imagePreviewMd,
                         width: double.infinity,
                         fit: BoxFit.cover,
                       )
                     : CachedNetworkImage(
                         imageUrl: _marker.image!,
-                        height: 160,
+                        height: FSizes.imagePreviewMd,
                         width: double.infinity,
                         fit: BoxFit.cover,
                         placeholder: (_, __) => Container(
-                          height: 160,
+                          height: FSizes.imagePreviewMd,
                           color: FColors.grey.withValues(alpha: 0.1),
                           child: const Center(
                             child: CircularProgressIndicator(
@@ -191,7 +198,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                           ),
                         ),
                         errorWidget: (_, __, ___) => Container(
-                          height: 160,
+                          height: FSizes.imagePreviewMd,
                           color: FColors.grey.withValues(alpha: 0.1),
                           child: const Center(
                             child: Icon(Iconsax.image, color: FColors.grey),
@@ -207,29 +214,27 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                   onTap: _pickImage,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
+                      horizontal: FSizes.sm,
+                      vertical: FSizes.xs,
                     ),
                     decoration: BoxDecoration(
                       color: FColors.dark.withValues(alpha: 0.65),
-                      borderRadius: BorderRadius.circular(
-                        FSizes.borderRadiusLg,
-                      ),
+                      borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(
                           Iconsax.camera,
-                          size: 13,
+                          size: FSizes.iconXs,
                           color: Colors.white,
                         ),
-                        const SizedBox(width: 5),
+                        const SizedBox(width: FSizes.xs),
                         Text(
                           FTexts.markerChangePhoto.tr,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 12,
+                            fontSize: FSizes.fontSizeSm,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -245,7 +250,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
           GestureDetector(
             onTap: _pickImage,
             child: Container(
-              height: 100,
+              height: FSizes.imagePreviewSm,
               decoration: BoxDecoration(
                 color: isDark
                     ? FColors.darkGrey.withValues(alpha: 0.2)
@@ -260,14 +265,14 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(FSizes.sm),
                     decoration: BoxDecoration(
                       color: FColors.primaryColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Iconsax.camera,
-                      size: 20,
+                      size: FSizes.iconInlineSm,
                       color: FColors.primaryColor,
                     ),
                   ),
@@ -275,7 +280,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                   Text(
                     FTexts.markerAddPhoto.tr,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: FSizes.fontSizeSm,
                       fontWeight: FontWeight.w500,
                       color: FColors.primaryColor.withValues(alpha: 0.8),
                     ),
@@ -312,7 +317,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
               color: isDark
                   ? FColors.grey.withValues(alpha: 0.45)
                   : FColors.darkGrey,
-              fontSize: 13,
+              fontSize: FSizes.fontSizeSm,
             ),
             filled: true,
             fillColor: isDark
@@ -403,7 +408,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                             : FColors.grey.withValues(alpha: 0.4),
                         padding: const EdgeInsets.symmetric(
                           horizontal: FSizes.md,
-                          vertical: 14,
+                          vertical: FSizes.fontSizeSm, // 14
                         ),
                         child: Row(
                           children: [
@@ -411,7 +416,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                               child: Text(
                                 t.label,
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: FSizes.fontSizeSm,
                                   height: 1.3,
                                   fontWeight: isSelected
                                       ? FontWeight.w600
@@ -434,7 +439,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                                       Icons.check_circle_rounded,
                                       key: ValueKey(true),
                                       color: FColors.primaryColor,
-                                      size: 20,
+                                      size: FSizes.iconInlineSm,
                                     )
                                   : Icon(
                                       Icons.radio_button_unchecked,
@@ -442,7 +447,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                                       color: FColors.grey.withValues(
                                         alpha: isDark ? 0.35 : 0.9,
                                       ),
-                                      size: 20,
+                                      size: FSizes.iconInlineSm,
                                     ),
                             ),
                           ],
@@ -468,10 +473,13 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
         // Save button — full width, prominent
         ElevatedButton.icon(
           onPressed: _submit,
-          icon: const Icon(Iconsax.tick_circle, size: 18),
+          icon: const Icon(Iconsax.tick_circle, size: FSizes.fontSizeLg), // 18
           label: Text(
             FTexts.submitBtn.tr,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              fontSize: FSizes.fontSizeMd,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: FColors.primaryColor,
@@ -480,7 +488,9 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: const EdgeInsets.symmetric(
+              vertical: FSizes.fontSizeSm, // 14
+            ),
           ),
         ),
         const SizedBox(height: FSizes.sm),
@@ -489,11 +499,14 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
           onPressed: _cancel,
           style: TextButton.styleFrom(
             foregroundColor: isDark ? FColors.grey : FColors.darkGrey,
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.symmetric(vertical: FSizes.sm),
           ),
           child: Text(
             FTexts.cancelBtn.tr,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              fontSize: FSizes.fontSizeSm,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ],
@@ -546,7 +559,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
           InspectionPage.deleteBodyNoteConfirm.tr,
           style: TextStyle(
             color: isDark ? FColors.grey : FColors.darkGrey,
-            fontSize: 14,
+            fontSize: FSizes.fontSizeSm,
           ),
         ),
         actions: [
@@ -594,8 +607,8 @@ class _SectionLabel extends StatelessWidget {
     final color = isDark ? FColors.grey : FColors.dark;
     return Row(
       children: [
-        Icon(icon, size: 14, color: color),
-        const SizedBox(width: 6),
+        Icon(icon, size: FSizes.iconXs, color: color),
+        const SizedBox(width: FSizes.xs),
         Text(
           label,
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
@@ -627,9 +640,9 @@ class _ActionIcon extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(FSizes.sm),
         decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-        child: Icon(icon, size: 16, color: color),
+        child: Icon(icon, size: FSizes.iconSm, color: color),
       ),
     );
   }

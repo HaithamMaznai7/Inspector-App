@@ -66,18 +66,18 @@ class _InspectionBodyTypeScreenState extends State<InspectionBodyTypeScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: FSizes.md,
-                  vertical: 7,
+                  vertical: FSizes.sm,
                 ),
                 color: FColors.primaryColor.withValues(alpha: 0.06),
                 child: Wrap(
                   alignment: WrapAlignment.center,
                   crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 4,
-                  runSpacing: 4,
+                  spacing: FSizes.xs,
+                  runSpacing: FSizes.xs,
                   children: [
                     const Icon(
                       Icons.touch_app_rounded,
-                      size: 14,
+                      size: FSizes.fontSizeSm,
                       color: FColors.primaryColor,
                     ),
                     Text(
@@ -89,7 +89,7 @@ class _InspectionBodyTypeScreenState extends State<InspectionBodyTypeScreen> {
                     const SizedBox(width: FSizes.xs),
                     const Icon(
                       Icons.open_with_rounded,
-                      size: 14,
+                      size: FSizes.fontSizeSm,
                       color: FColors.primaryColor,
                     ),
                     Text(
@@ -199,8 +199,8 @@ class _InspectionBodyTypeScreenState extends State<InspectionBodyTypeScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(Iconsax.note_1,
-                          size: 14, color: FColors.primaryColor),
-                      const SizedBox(width: 4),
+                          size: FSizes.fontSizeSm, color: FColors.primaryColor),
+                      const SizedBox(width: FSizes.xs),
                       Text(
                         '${body.notes.length} ${FTexts.markerTitle.tr}',
                         style: Theme.of(context).textTheme.bodySmall?.apply(
@@ -223,8 +223,8 @@ class _InspectionBodyTypeScreenState extends State<InspectionBodyTypeScreen> {
     Marker note,
   ) {
     final isDragging = _draggingId == note.id;
-    // Pin is 28px icon + 8px padding = 36px total; center offset = 18
-    const pinRadius = 18.0;
+    // Pin is icon + padding total; center offset matches fontSizeLg
+    const pinRadius = FSizes.fontSizeLg;
 
     return Positioned(
       left: (_imgW * note.dx / 100 - pinRadius).clamp(
@@ -255,7 +255,7 @@ class _InspectionBodyTypeScreenState extends State<InspectionBodyTypeScreen> {
           duration: const Duration(milliseconds: 150),
           curve: Curves.easeOut,
           child: Container(
-            padding: const EdgeInsets.all(4),
+            padding: const EdgeInsets.all(FSizes.xs),
             decoration: BoxDecoration(
               color: isDragging
                   ? FColors.primaryColor.withValues(alpha: 0.28)
@@ -279,7 +279,7 @@ class _InspectionBodyTypeScreenState extends State<InspectionBodyTypeScreen> {
             child: Icon(
               Iconsax.warning_2,
               color: FColors.primaryColor,
-              size: isDragging ? 24 : 20,
+              size: isDragging ? FSizes.iconMd : FSizes.iconInlineSm,
             ),
           ),
         ),

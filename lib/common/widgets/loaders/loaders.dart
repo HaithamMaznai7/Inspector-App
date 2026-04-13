@@ -117,8 +117,8 @@ class FLoader {
           icon: image != null
               ? CachedNetworkImage(
                   imageUrl: image,
-                  width: 40,
-                  height: 40,
+                  width: FSizes.iconCircleSm,
+                  height: FSizes.iconCircleSm,
                   fit: BoxFit.cover,
                   placeholder: (_, __) => const SizedBox.shrink(),
                   errorWidget: (_, __, ___) => const SizedBox.shrink(),
@@ -163,20 +163,20 @@ class _LogoutLoadingDialog extends StatelessWidget {
     );
     final spinnerSize = ResponsiveHelper.responsiveValue<double>(
       context,
-      mobile: 52,
-      tablet: 60,
-      desktop: 64,
+      mobile: FSizes.iconCircleLg,
+      tablet: FSizes.iconCircleLg + FSizes.sm,
+      desktop: FSizes.iconXl,
     );
     final titleSize = ResponsiveHelper.responsiveValue<double>(
       context,
-      mobile: 16,
-      tablet: 18,
+      mobile: FSizes.fontSizeMd,
+      tablet: FSizes.fontSizeLg,
       desktop: 19,
     );
     final subtitleSize = ResponsiveHelper.responsiveValue<double>(
       context,
       mobile: 13,
-      tablet: 14,
+      tablet: FSizes.fontSizeSm,
       desktop: 15,
     );
 
@@ -185,10 +185,10 @@ class _LogoutLoadingDialog extends StatelessWidget {
       elevation: 0,
       child: Container(
         width: cardWidth,
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 36),
+        padding: const EdgeInsets.symmetric(horizontal: FSizes.xl, vertical: FSizes.spaceBtwSections),
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(FSizes.cardRadiusLg),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
@@ -211,7 +211,7 @@ class _LogoutLoadingDialog extends StatelessWidget {
                 backgroundColor: FColors.primaryColor.withValues(alpha: 0.15),
               ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: FSizes.defaultSpace),
 
             // Title
             Text(
@@ -224,7 +224,7 @@ class _LogoutLoadingDialog extends StatelessWidget {
                 height: 1.2,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: FSizes.sm),
 
             // Subtitle
             Text(

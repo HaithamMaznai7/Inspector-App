@@ -162,10 +162,10 @@ class _PointCardState extends State<PointCard> {
                   children: [
                     Icon(
                       Icons.edit_outlined,
-                      size: 12,
+                      size: FSizes.iconXs,
                       color: FColors.warning.withValues(alpha: 0.7),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: FSizes.xs),
                     Expanded(
                       child: Text(
                         _point.note?.isNotEmpty == true ? _point.note! : '...',
@@ -261,7 +261,7 @@ class _RadioChip extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(status.icon(), size: iconSize, color: contentColor),
-              const SizedBox(width: 3),
+              const SizedBox(width: FSizes.xxs),
               Text(
                 status.toString(),
                 style: TextStyle(

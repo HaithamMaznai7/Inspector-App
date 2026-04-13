@@ -118,7 +118,7 @@ class _CategoryTabStrip extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: theme.shadowColor.withValues(alpha: 0.08),
-                blurRadius: 4,
+                blurRadius: FSizes.xs,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -147,19 +147,19 @@ class _CategoryTabStrip extends StatelessWidget {
                         const SizedBox(width: FSizes.xs),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 1,
+                            horizontal: FSizes.xs,
+                            vertical: FSizes.xxs,
                           ),
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? Colors.white.withValues(alpha: 0.25)
                                 : statusColor.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
                           ),
                           child: Text(
                             '$answered/$total',
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: FSizes.fontSizeXs,
                               fontWeight: FontWeight.w700,
                               color: isSelected
                                   ? Colors.white
@@ -179,7 +179,7 @@ class _CategoryTabStrip extends StatelessWidget {
                           ? Colors.white
                           : FColors.primaryColor,
                       fontWeight: FontWeight.w500,
-                      fontSize: 13,
+                      fontSize: FSizes.fontSizeSm,
                     ),
                     side: BorderSide(
                       color: isSelected
@@ -288,7 +288,7 @@ class _PointsList extends StatelessWidget {
               children: [
                 Icon(
                   Iconsax.clipboard_text,
-                  size: 48,
+                  size: FSizes.iconCircleMd,
                   color: Theme.of(context)
                       .colorScheme
                       .onSurface
@@ -361,7 +361,7 @@ class _CategoryNavBar extends StatelessWidget {
               BoxShadow(
                 color: (isDark ? Colors.black : FColors.grey)
                     .withValues(alpha: 0.3),
-                blurRadius: 8,
+                blurRadius: FSizes.sm,
                 offset: const Offset(0, -2),
               ),
             ],
@@ -380,7 +380,7 @@ class _CategoryNavBar extends StatelessWidget {
                     OutlinedButton(
                       onPressed: controller.toPreviousCategory,
                       style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(48, 48),
+                        minimumSize: const Size(FSizes.iconCircleMd, FSizes.iconCircleMd),
                         padding: EdgeInsets.zero,
                         side: BorderSide(
                           color: FColors.grey.withValues(alpha: 0.35),
@@ -392,7 +392,7 @@ class _CategoryNavBar extends StatelessWidget {
                       ),
                       child: const Icon(
                         Icons.arrow_back_ios_rounded,
-                        size: 18,
+                        size: FSizes.iconSm,
                       ),
                     ),
                     const SizedBox(width: FSizes.sm),

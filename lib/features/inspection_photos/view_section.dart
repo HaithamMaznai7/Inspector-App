@@ -119,12 +119,12 @@ class _CategoryTabs extends StatelessWidget {
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(FSizes.sm),
               decoration: BoxDecoration(
                 color: FColors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Iconsax.trash, color: FColors.error, size: 18),
+              child: const Icon(Iconsax.trash, color: FColors.error, size: FSizes.fontSizeLg),
             ),
             const SizedBox(width: FSizes.sm),
             Expanded(
@@ -221,19 +221,19 @@ class _CategoryTabs extends StatelessWidget {
                           const SizedBox(width: FSizes.xs),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 1,
+                              horizontal: FSizes.xs,
+                              vertical: FSizes.dividerHeight,
                             ),
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? Colors.white.withValues(alpha: 0.3)
                                   : FColors.primaryColor.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
                             ),
                             child: Text(
                               '$uploaded/$total',
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: FSizes.fontSizeXs,
                                 fontWeight: FontWeight.w600,
                                 color: isSelected
                                     ? Colors.white
@@ -247,7 +247,7 @@ class _CategoryTabs extends StatelessWidget {
                         color:
                             isSelected ? Colors.white : FColors.primaryColor,
                         fontWeight: FontWeight.w500,
-                        fontSize: 13,
+                        fontSize: FSizes.fontSizeSm,
                       ),
                       selected: isSelected,
                       showCheckmark: false,
@@ -281,10 +281,10 @@ class _CategoryTabs extends StatelessWidget {
             Obx(
               () => controller.isResetting.value
                   ? const SizedBox(
-                      width: 36,
-                      height: 36,
+                      width: FSizes.xl,
+                      height: FSizes.xl,
                       child: Padding(
-                        padding: EdgeInsets.all(8),
+                        padding: EdgeInsets.all(FSizes.sm),
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           color: FColors.error,
@@ -298,7 +298,7 @@ class _CategoryTabs extends StatelessWidget {
                         borderRadius:
                             BorderRadius.circular(FSizes.borderRadiusLg),
                         child: Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(FSizes.sm),
                           decoration: BoxDecoration(
                             color: FColors.error.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(
@@ -311,7 +311,7 @@ class _CategoryTabs extends StatelessWidget {
                           child: const Icon(
                             Iconsax.trash,
                             color: FColors.error,
-                            size: 16,
+                            size: FSizes.iconSm,
                           ),
                         ),
                       ),
@@ -343,7 +343,7 @@ class _PhotoGrid extends StatelessWidget {
           children: [
             Icon(
               Iconsax.camera,
-              size: 48,
+              size: FSizes.iconCircleMd,
               color: FColors.grey.withValues(alpha: 0.35),
             ),
             const SizedBox(height: FSizes.sm),
@@ -364,8 +364,8 @@ class _PhotoGrid extends StatelessWidget {
       itemCount: photos.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
+        crossAxisSpacing: FSizes.sm,
+        mainAxisSpacing: FSizes.sm,
         childAspectRatio: 1,
       ),
       itemBuilder: (context, index) {
@@ -506,12 +506,12 @@ class _PhotoGridCell extends StatelessWidget {
             ),
             // Delete badge — top-start
             PositionedDirectional(
-              top: 4,
-              start: 4,
+              top: FSizes.xs,
+              start: FSizes.xs,
               child: GestureDetector(
                 onTap: onDelete,
                 child: Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(FSizes.xs),
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
@@ -519,17 +519,17 @@ class _PhotoGridCell extends StatelessWidget {
                   child: const Icon(
                     Iconsax.trash,
                     color: FColors.error,
-                    size: 14,
+                    size: FSizes.fontSizeSm,
                   ),
                 ),
               ),
             ),
             // Checkmark badge — bottom-end
             PositionedDirectional(
-              bottom: 4,
-              end: 4,
+              bottom: FSizes.xs,
+              end: FSizes.xs,
               child: Container(
-                padding: const EdgeInsets.all(3),
+                padding: const EdgeInsets.all(FSizes.xs),
                 decoration: const BoxDecoration(
                   color: FColors.success,
                   shape: BoxShape.circle,
@@ -537,7 +537,7 @@ class _PhotoGridCell extends StatelessWidget {
                 child: const Icon(
                   Icons.check,
                   color: Colors.white,
-                  size: 10,
+                  size: FSizes.iconXs,
                 ),
               ),
             ),
@@ -562,7 +562,7 @@ class _PhotoGridCell extends StatelessWidget {
           child: Icon(
             Iconsax.camera,
             color: FColors.primaryColor,
-            size: 28,
+            size: FSizes.iconMd,
           ),
         ),
       ),
@@ -584,7 +584,7 @@ class _PhotoGridCell extends StatelessWidget {
     return Container(
       color: FColors.grey.withValues(alpha: 0.15),
       child: const Center(
-        child: Icon(Iconsax.image, color: FColors.grey, size: 28),
+        child: Icon(Iconsax.image, color: FColors.grey, size: FSizes.iconMd),
       ),
     );
   }
@@ -630,8 +630,8 @@ class _PhotoGridShimmer extends StatelessWidget {
                   baseColor: baseColor,
                   highlightColor: highlightColor,
                   child: Container(
-                    width: 90,
-                    height: 32,
+                    width: FSizes.buttonWidth,
+                    height: FSizes.xl,
                     decoration: BoxDecoration(
                       color: baseColor,
                       borderRadius:
@@ -652,8 +652,8 @@ class _PhotoGridShimmer extends StatelessWidget {
             itemCount: 9,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
+              crossAxisSpacing: FSizes.sm,
+              mainAxisSpacing: FSizes.sm,
               childAspectRatio: 1,
             ),
             itemBuilder: (context, _) => Shimmer.fromColors(
@@ -691,7 +691,7 @@ class _EmptyState extends StatelessWidget {
         children: [
           Icon(
             Iconsax.camera,
-            size: 48,
+            size: FSizes.iconCircleMd,
             color: FColors.grey.withValues(alpha: 0.35),
           ),
           const SizedBox(height: FSizes.sm),

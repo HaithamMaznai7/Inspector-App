@@ -1,6 +1,7 @@
 class FSizes{
 
   // Padding and Margin Sizes
+  static const double xxs = 2.0 ;
   static const double xs = 4.0 ;
   static const double sm = 8.0 ;
   static const double md = 16.0 ;
@@ -12,8 +13,10 @@ class FSizes{
   static const double iconSm = 16.0 ;
   static const double iconMd = 24.0 ;
   static const double iconLg = 32.0 ;
+  static const double iconXl = 64.0 ;
 
   // Font Sizes
+  static const double fontSizeXs = 12.0 ;
   static const double fontSizeSm = 14.0 ;
   static const double fontSizeMd = 16.0 ;
   static const double fontSizeLg = 18.0 ;
@@ -87,6 +90,9 @@ class FSizes{
   static const double imagePreviewSm = 120.0;
   static const double imagePreviewMd = 150.0;
   static const double imagePreviewLg = 200.0;
+
+  // Avatar Sizes (radius)
+  static const double avatarRadiusMd = 50.0;
 
   // Small icon display (for inline icons like brand logos)
   static const double iconInlineSm = 20.0;

@@ -89,7 +89,7 @@ class _ColorPickerFieldState extends State<ColorPickerField> {
           behavior: HitTestBehavior.opaque,
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: FSizes.borderRadiusLg, vertical: FSizes.borderRadiusLg),
             decoration: BoxDecoration(
               color: isDark
                   ? FColors.darkGrey.withValues(alpha: 0.15)
@@ -107,8 +107,8 @@ class _ColorPickerFieldState extends State<ColorPickerField> {
               children: [
                 // Color swatch circle
                 if (swatch != null) ...[
-                  _Swatch(color: swatch, size: 22),
-                  const SizedBox(width: 10),
+                  _Swatch(color: swatch, size: FSizes.iconMd),
+                  const SizedBox(width: FSizes.sm),
                 ],
 
                 // Display value or hint
@@ -123,7 +123,7 @@ class _ColorPickerFieldState extends State<ColorPickerField> {
                   ),
                 ),
 
-                Icon(Iconsax.arrow_down_1, size: 16, color: FColors.darkGrey),
+                Icon(Iconsax.arrow_down_1, size: FSizes.iconSm, color: FColors.darkGrey),
               ],
             ),
           ),
@@ -131,7 +131,7 @@ class _ColorPickerFieldState extends State<ColorPickerField> {
 
         // ── Error text ────────────────────────────────────────────────────
         if (hasError) ...[
-          const SizedBox(height: 4),
+          const SizedBox(height: FSizes.xs),
           Padding(
             padding: const EdgeInsets.only(left: FSizes.xs),
             child: Text(
@@ -204,7 +204,7 @@ class _ColorSheet extends StatelessWidget {
       builder: (_, scrollController) => Container(
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(FSizes.cardRadiusLg)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,14 +212,14 @@ class _ColorSheet extends StatelessWidget {
             // ── Handle ──────────────────────────────────────────────────
             Center(
               child: Padding(
-                padding: const EdgeInsets.only(top: 12, bottom: 16),
-                child: SizedBox(width: 36, height: 4),
+                padding: const EdgeInsets.only(top: FSizes.borderRadiusLg, bottom: FSizes.md),
+                child: SizedBox(width: FSizes.xl, height: FSizes.xs),
               ),
             ),
 
             // ── Title ────────────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              padding: const EdgeInsets.fromLTRB(FSizes.spaceBtwItems, 0, FSizes.spaceBtwItems, FSizes.borderRadiusLg),
               child: Text(
                 title,
                 style: Theme.of(
@@ -234,7 +234,7 @@ class _ColorSheet extends StatelessWidget {
             Expanded(
               child: ListView.separated(
                 controller: scrollController,
-                padding: const EdgeInsets.only(top: 6, bottom: 16),
+                padding: const EdgeInsets.only(top: FSizes.xs, bottom: FSizes.md),
                 itemCount: colors.length,
                 separatorBuilder: (_, __) => Divider(
                   height: 1,
@@ -254,17 +254,17 @@ class _ColorSheet extends StatelessWidget {
                     },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 14,
+                        horizontal: FSizes.spaceBtwItems,
+                        vertical: FSizes.borderRadiusLg,
                       ),
                       child: Row(
                         children: [
                           _Swatch(
                             color: swatch ?? Colors.transparent,
-                            size: 30,
+                            size: FSizes.iconInlineMd,
                             showBorder: true,
                           ),
-                          const SizedBox(width: 14),
+                          const SizedBox(width: FSizes.borderRadiusLg),
                           Expanded(
                             child: Text(
                               c.localizedName,
@@ -283,7 +283,7 @@ class _ColorSheet extends StatelessWidget {
                             const Icon(
                               Icons.check_rounded,
                               color: FColors.primaryColor,
-                              size: 20,
+                              size: FSizes.iconInlineSm,
                             ),
                         ],
                       ),

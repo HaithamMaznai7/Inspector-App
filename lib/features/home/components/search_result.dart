@@ -11,20 +11,19 @@ class SearchResultSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: Get.height * 0.7,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(FSizes.md),
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(FSizes.iconInlineSm)),
       ),
       child: Column(
         children: [
           Container(
-            width: 40,
-            height: 4,
-            // Note: drag handle — small fixed size is acceptable
+            width: FSizes.iconCircleSm,
+            height: FSizes.xs,
             decoration: BoxDecoration(
               color: Colors.grey,
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(FSizes.xxs),
             ),
           ),
           const SizedBox(height: FSizes.md),

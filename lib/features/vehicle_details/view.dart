@@ -25,7 +25,7 @@ class VehicleDetailsView extends StatelessWidget {
     final isTablet =
         ResponsiveHelper.isTablet(context) ||
         ResponsiveHelper.isDesktop(context);
-    final hPad = isTablet ? 32.0 : 20.0;
+    final hPad = isTablet ? FSizes.xl : FSizes.spaceBtwItems;
 
     return SingleChildScrollView(
       child: Column(
@@ -33,14 +33,14 @@ class VehicleDetailsView extends StatelessWidget {
         children: [
           _buildVehicleHeader(context, controller, isTablet, hPad),
           Padding(
-            padding: EdgeInsets.fromLTRB(hPad, 0, hPad, 48),
+            padding: EdgeInsets.fromLTRB(hPad, 0, hPad, FSizes.spaceBtwSections + FSizes.md),
             child: GetBuilder<VehicleDetailsController>(
               init: VehicleDetailsBinding().instance,
               autoRemove: false,
               builder: (controller) {
                 if (controller.isLoading.value) {
                   return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 60),
+                    padding: EdgeInsets.symmetric(vertical: FSizes.spaceBtwSections + FSizes.lg),
                     child: Center(
                       child: CircularProgressIndicator(
                         color: FColors.primaryColor,
@@ -368,20 +368,20 @@ class VehicleDetailsView extends StatelessWidget {
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final vehicle = controller.mainController.inspection.value.vehicle;
-    final logoSize = isTablet ? 56.0 : 48.0;
-    final iconSize = isTablet ? 26.0 : 22.0;
+    final logoSize = isTablet ? FSizes.iconCircleLg + FSizes.xs : FSizes.iconCircleMd;
+    final iconSize = isTablet ? FSizes.iconMd + FSizes.xxs : FSizes.iconMd - FSizes.xxs;
 
     return Container(
-      margin: EdgeInsets.fromLTRB(hPad, 16, hPad, 20),
+      margin: EdgeInsets.fromLTRB(hPad, FSizes.md, hPad, FSizes.spaceBtwItems),
       padding: EdgeInsets.symmetric(
-        horizontal: isTablet ? 20 : 16,
-        vertical: isTablet ? 18 : 14,
+        horizontal: isTablet ? FSizes.spaceBtwItems : FSizes.md,
+        vertical: isTablet ? FSizes.fontSizeLg : FSizes.borderRadiusLg,
       ),
       decoration: BoxDecoration(
         color: isDark
             ? FColors.primaryColor.withValues(alpha: 0.07)
             : FColors.primaryColor.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(FSizes.cardRadiusLg),
         border: Border.all(color: FColors.primaryColor.withValues(alpha: 0.2)),
       ),
       child: Row(
@@ -393,7 +393,7 @@ class VehicleDetailsView extends StatelessWidget {
               color: isDark
                   ? Colors.white.withValues(alpha: 0.06)
                   : Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
               border: Border.all(
                 color: isDark
                     ? Colors.white.withValues(alpha: 0.1)
@@ -402,7 +402,7 @@ class VehicleDetailsView extends StatelessWidget {
             ),
             child: vehicle?.make?.avatar != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(11),
+                    borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
                     child: CachedNetworkImage(
                       imageUrl: vehicle!.make!.avatar!,
                       fit: BoxFit.contain,
@@ -424,7 +424,7 @@ class VehicleDetailsView extends StatelessWidget {
                     color: FColors.primaryColor,
                   ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: FSizes.borderRadiusLg),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -439,7 +439,7 @@ class VehicleDetailsView extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (vehicle?.year != null && vehicle!.year!.isNotEmpty) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: FSizes.xs),
                   Text(
                     vehicle.year!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -453,10 +453,10 @@ class VehicleDetailsView extends StatelessWidget {
           ),
           if (vehicle?.year != null && vehicle!.year!.isNotEmpty)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: FSizes.sm, vertical: FSizes.xs),
               decoration: BoxDecoration(
                 color: FColors.primaryColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
               ),
               child: Text(
                 vehicle.year!,
@@ -483,18 +483,18 @@ class VehicleDetailsView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.only(bottom: FSizes.borderRadiusLg),
           child: Row(
             children: [
               Container(
                 width: 3,
-                height: 16,
+                height: FSizes.md,
                 decoration: BoxDecoration(
                   color: FColors.primaryColor,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(FSizes.xxs),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: FSizes.sm),
               Text(
                 title,
                 style: Theme.of(
@@ -506,12 +506,12 @@ class VehicleDetailsView extends StatelessWidget {
         ),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(FSizes.md),
           decoration: BoxDecoration(
             color: isDark
                 ? Colors.white.withValues(alpha: 0.025)
                 : Colors.black.withValues(alpha: 0.025),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(FSizes.cardRadiusLg),
             border: Border.all(
               color: isDark
                   ? Colors.white.withValues(alpha: 0.07)
@@ -605,17 +605,17 @@ class VehicleDetailsView extends StatelessWidget {
                             : null,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
+                            horizontal: FSizes.borderRadiusLg,
+                            vertical: FSizes.sm,
                           ),
                           decoration: BoxDecoration(
                             color: FColors.primaryColor,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
                           ),
                           child: isSearching
                               ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
+                                  width: FSizes.iconInlineSm,
+                                  height: FSizes.iconInlineSm,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     color: Colors.white,
@@ -626,10 +626,10 @@ class VehicleDetailsView extends StatelessWidget {
                                   children: [
                                     const Icon(
                                       Iconsax.search_normal_1,
-                                      size: 16,
+                                      size: FSizes.iconSm,
                                       color: Colors.white,
                                     ),
-                                    const SizedBox(width: 4),
+                                    const SizedBox(width: FSizes.xs),
                                     Text(
                                       DetailsPage.vinSearchBtn.tr,
                                       style: Theme.of(context)

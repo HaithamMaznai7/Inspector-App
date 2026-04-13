@@ -286,8 +286,8 @@ class _StageIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 32,
-      height: 32,
+      width: FSizes.iconLg,
+      height: FSizes.iconLg,
       decoration: BoxDecoration(
         color: isSelected
             ? Colors.white.withValues(alpha: 0.2)
@@ -296,7 +296,7 @@ class _StageIcon extends StatelessWidget {
       ),
       child: Icon(
         icon,
-        size: 15,
+        size: FSizes.iconSm,
         color: isSelected ? Colors.white : color,
       ),
     );
@@ -314,13 +314,13 @@ class _ActionIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 32,
-      height: 32,
+      width: FSizes.iconLg,
+      height: FSizes.iconLg,
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
-      child: Icon(icon, size: 15, color: color),
+      child: Icon(icon, size: FSizes.iconSm, color: color),
     );
   }
 }
@@ -341,8 +341,8 @@ class _CountBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minWidth: 24),
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      constraints: const BoxConstraints(minWidth: FSizes.defaultSpace),
+      padding: const EdgeInsets.symmetric(horizontal: FSizes.sm, vertical: FSizes.xs),
       decoration: BoxDecoration(
         color: isSelected
             ? Colors.white.withValues(alpha: 0.25)
@@ -356,7 +356,7 @@ class _CountBadge extends StatelessWidget {
         count.toString(),
         textAlign: TextAlign.center,
         style: TextStyle(
-          fontSize: 11,
+          fontSize: FSizes.iconXs,
           fontWeight: FontWeight.w700,
           color: isSelected ? Colors.white : color,
         ),
@@ -423,7 +423,7 @@ class _ExpandedHeader extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: FSizes.xxs),
                     Text(
                       profile?.currentTeam?.name ??
                           FTexts.systemInspector.tr,
@@ -460,14 +460,14 @@ class _ExpandedHeader extends StatelessWidget {
                 if (confirmed == true) await auth().logOut();
               },
               child: Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(FSizes.xs),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Iconsax.logout,
-                  size: 16,
+                  size: FSizes.iconSm,
                   color: Colors.white,
                 ),
               ),

@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_rx/src/rx_typedefs/rx_typedefs.dart';
@@ -57,7 +58,7 @@ class FHelper {
       margin: EdgeInsets.zero,
       snackStyle: SnackStyle.GROUNDED,
       mainButton: Container(
-        margin: const EdgeInsets.all(10),
+        margin: const EdgeInsets.all(FSizes.sm),
         child: ElevatedButton(onPressed: () => callback, child: Text(btnTitle)),
       ),
     );

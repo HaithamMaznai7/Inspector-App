@@ -147,12 +147,12 @@ class _ProfileViewState extends State<ProfileView> {
 
               // Close button — top-right
               Positioned(
-                top: MediaQuery.of(context).padding.top + 8,
-                right: 16,
+                top: MediaQuery.of(context).padding.top + FSizes.sm,
+                right: FSizes.md,
                 child: GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(FSizes.sm),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.18),
                       shape: BoxShape.circle,
@@ -160,7 +160,7 @@ class _ProfileViewState extends State<ProfileView> {
                     child: const Icon(
                       Icons.close_rounded,
                       color: Colors.white,
-                      size: 20,
+                      size: FSizes.iconInlineSm,
                     ),
                   ),
                 ),
@@ -211,7 +211,7 @@ class _ProfileViewState extends State<ProfileView> {
                         GestureDetector(
                           onTap: _viewFullScreen,
                           child: CircleAvatar(
-                            radius: 50,
+                            radius: FSizes.avatarRadiusMd,
                             backgroundColor: FColors.grey.withValues(
                               alpha: 0.2,
                             ),
@@ -233,7 +233,7 @@ class _ProfileViewState extends State<ProfileView> {
                           child: GestureDetector(
                             onTap: _pickImageFromGallery,
                             child: Container(
-                              padding: const EdgeInsets.all(6),
+                              padding: const EdgeInsets.all(FSizes.xs),
                               decoration: BoxDecoration(
                                 color: FColors.primaryColor,
                                 shape: BoxShape.circle,
@@ -246,7 +246,7 @@ class _ProfileViewState extends State<ProfileView> {
                               ),
                               child: const Icon(
                                 Iconsax.camera,
-                                size: 16,
+                                size: FSizes.iconSm,
                                 color: FColors.white,
                               ),
                             ),
@@ -365,7 +365,7 @@ class _ProfileViewState extends State<ProfileView> {
   }) {
     return ListTile(
       dense: true,
-      leading: Icon(icon, color: FColors.primaryColor, size: 22),
+      leading: Icon(icon, color: FColors.primaryColor, size: FSizes.iconInlineSm),
       title: Text(
         label,
         style: Theme.of(
@@ -393,7 +393,7 @@ class _ProfileViewState extends State<ProfileView> {
           child: Container(
             padding: const EdgeInsets.symmetric(
               horizontal: FSizes.md,
-              vertical: FSizes.sm + 4,
+              vertical: FSizes.borderRadiusLg,
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).scaffoldBackgroundColor,
@@ -450,7 +450,7 @@ class _ProfileViewState extends State<ProfileView> {
             decoration: BoxDecoration(
               color: Theme.of(context).scaffoldBackgroundColor,
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(FSizes.borderRadiusLg * 2),
+                top: Radius.circular(FSizes.lg),
               ),
             ),
             child: Column(
@@ -557,7 +557,7 @@ class _ProfileViewState extends State<ProfileView> {
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: FSizes.sm,
-                                  vertical: 6,
+                                  vertical: FSizes.xs,
                                 ),
                                 decoration: BoxDecoration(
                                   color: isSelected
@@ -583,7 +583,7 @@ class _ProfileViewState extends State<ProfileView> {
                                   children: [
                                     // Leading Icon (Location Pin)
                                     Container(
-                                      padding: const EdgeInsets.all(6),
+                                      padding: const EdgeInsets.all(FSizes.xs),
                                       decoration: BoxDecoration(
                                         color: isSelected
                                             ? FColors.primaryColor
@@ -594,7 +594,7 @@ class _ProfileViewState extends State<ProfileView> {
                                       ),
                                       child: Icon(
                                         Iconsax.location,
-                                        size: FSizes.iconXs + 2,
+                                        size: FSizes.fontSizeSm,
                                         color: isSelected
                                             ? FColors.white
                                             : FColors.darkerGrey,
@@ -627,11 +627,11 @@ class _ProfileViewState extends State<ProfileView> {
                                         child: Icon(
                                           Iconsax.tick_circle,
                                           color: FColors.primaryColor,
-                                          size: 18,
+                                          size: FSizes.fontSizeLg,
                                         ),
                                       )
                                     else
-                                      const SizedBox(width: 18 + FSizes.xs),
+                                      const SizedBox(width: FSizes.fontSizeLg + FSizes.xs),
                                   ],
                                 ),
                               ),

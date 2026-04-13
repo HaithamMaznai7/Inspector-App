@@ -193,8 +193,8 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Iconsax.camera, size: 16, color: FColors.white),
-                      const SizedBox(width: 4),
+                      const Icon(Iconsax.camera, size: FSizes.iconSm, color: FColors.white),
+                      const SizedBox(width: FSizes.xs),
                       Text(
                         FTexts.markerChangePhoto.tr,
                         style: Theme.of(context)
@@ -232,7 +232,7 @@ class _InspectionNotesDialogState extends State<InspectionNotesDialog> {
           children: [
             Icon(
               Iconsax.camera,
-              size: 40,
+              size: FSizes.iconCircleSm,
               color: FColors.primaryColor.withValues(alpha: .7),
             ),
             const SizedBox(height: FSizes.xs),

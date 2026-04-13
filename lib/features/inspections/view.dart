@@ -73,7 +73,7 @@ class _SegmentToggle extends StatelessWidget {
     return Obx(() {
       final selected = controller.selectedSegment.value;
       return Container(
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.all(FSizes.xs),
         child: Row(
           children: [
             // Individuals tab
@@ -107,10 +107,10 @@ class _SegmentToggle extends StatelessWidget {
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: FSizes.sm + 2),
+          padding: const EdgeInsets.symmetric(vertical: FSizes.sm + FSizes.xxs),
           decoration: BoxDecoration(
             color: isSelected ? FColors.primaryColor : Colors.transparent,
-            borderRadius: BorderRadius.circular(FSizes.borderRadiusLg - 2),
+            borderRadius: BorderRadius.circular(FSizes.borderRadiusLg - FSizes.xxs),
           ),
           child: Center(
             child: Text(
@@ -407,7 +407,7 @@ class _EmptyOrdersState extends StatelessWidget {
                     children: [
                       Icon(
                         Iconsax.document,
-                        size: 64,
+                        size: FSizes.iconXl,
                         color: FColors.darkGrey.withValues(alpha: 0.4),
                       ),
                       const SizedBox(height: FSizes.md),
@@ -458,27 +458,27 @@ class _CompanyCardSkeleton extends StatelessWidget {
         child: Row(
           children: [
             // Circle avatar placeholder
-            CircleSkeleton(size: 48),
+            CircleSkeleton(size: FSizes.iconCircleMd),
             const SizedBox(width: FSizes.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Skeleton(width: 140, height: 14, color: FColors.grey),
-                  const SizedBox(height: 8),
-                  Skeleton(width: 90, height: 12, color: FColors.grey),
-                  const SizedBox(height: 8),
+                  Skeleton(width: 140, height: FSizes.fontSizeSm, color: FColors.grey),
+                  const SizedBox(height: FSizes.sm),
+                  Skeleton(width: 90, height: FSizes.fontSizeXs, color: FColors.grey),
+                  const SizedBox(height: FSizes.sm),
                   Row(
                     children: [
                       Skeleton(
                         width: 70,
-                        height: 10,
+                        height: FSizes.sm,
                         color: Colors.green.withValues(alpha: 0.3),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: FSizes.xs),
                       Skeleton(
-                        width: 80,
-                        height: 10,
+                        width: FSizes.imageThumbSize,
+                        height: FSizes.sm,
                         color: Colors.orange.withValues(alpha: 0.3),
                       ),
                     ],

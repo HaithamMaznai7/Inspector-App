@@ -69,12 +69,12 @@ class _SelectTeamToContinueScreenState
 
               // Header icon
               CircleAvatar(
-                radius: 36,
+                radius: FSizes.xl,
                 backgroundColor: FColors.primaryColor.withValues(alpha: 0.1),
                 child: Icon(
                   Iconsax.people,
                   color: FColors.primaryColor,
-                  size: 36,
+                  size: FSizes.xl,
                 ),
               ),
               const SizedBox(height: FSizes.md),
@@ -128,7 +128,7 @@ class _SelectTeamToContinueScreenState
                         ),
                         itemCount: _selectableTeams.length,
                         separatorBuilder: (_, __) =>
-                            const Divider(height: 1, indent: 72),
+                            const Divider(height: FSizes.dividerHeight, indent: 72),
                         itemBuilder: (context, index) {
                           final team = _selectableTeams[index];
                           return _buildTeamTile(context, team, isDark);
@@ -162,7 +162,7 @@ class _SelectTeamToContinueScreenState
       ),
       trailing: Icon(
         Iconsax.arrow_right_3,
-        size: 18,
+        size: FSizes.iconSm,
         color: FColors.darkGrey,
       ),
     );
@@ -179,7 +179,7 @@ class _SelectTeamToContinueScreenState
         child: Icon(
           Iconsax.shield_tick,
           color: FColors.primaryColor,
-          size: 20,
+          size: FSizes.iconInlineSm,
         ),
       );
     }

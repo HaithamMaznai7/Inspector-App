@@ -118,11 +118,11 @@ class _AddingObdCodeState extends State<AddingObdCode> {
       padding: const EdgeInsets.fromLTRB(FSizes.md, 12, FSizes.md, FSizes.sm),
       child: Column(
         children: [
-          const SizedBox(height: 14),
+          const SizedBox(height: FSizes.fontSizeSm),
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(FSizes.sm),
                 decoration: BoxDecoration(
                   color: FColors.primaryColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
@@ -130,7 +130,7 @@ class _AddingObdCodeState extends State<AddingObdCode> {
                 child: const Icon(
                   Iconsax.cpu,
                   color: FColors.primaryColor,
-                  size: 16,
+                  size: FSizes.iconSm,
                 ),
               ),
               const SizedBox(width: FSizes.sm),
@@ -160,14 +160,14 @@ class _AddingObdCodeState extends State<AddingObdCode> {
               GestureDetector(
                 onTap: _cancel,
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(FSizes.sm),
                   decoration: BoxDecoration(
                     color: FColors.grey.withValues(alpha: isDark ? 0.1 : 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.close_rounded,
-                    size: 16,
+                    size: FSizes.iconSm,
                     color: isDark ? FColors.grey : FColors.dark,
                   ),
                 ),
@@ -199,8 +199,8 @@ class _AddingObdCodeState extends State<AddingObdCode> {
       children: [
         Row(
           children: [
-            Icon(icon, size: 14, color: labelColor),
-            const SizedBox(width: 6),
+            Icon(icon, size: FSizes.iconSm, color: labelColor),
+            const SizedBox(width: FSizes.xs),
             Text(
               label,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
@@ -224,7 +224,7 @@ class _AddingObdCodeState extends State<AddingObdCode> {
               color: isDark
                   ? FColors.grey.withValues(alpha: 0.45)
                   : FColors.darkGrey.withValues(alpha: 0.9),
-              fontSize: 13,
+              fontSize: FSizes.fontSizeSm,
             ),
             filled: true,
             fillColor: isDark
@@ -258,10 +258,10 @@ class _AddingObdCodeState extends State<AddingObdCode> {
       children: [
         ElevatedButton.icon(
           onPressed: _submit,
-          icon: const Icon(Iconsax.tick_circle, size: 18),
+          icon: const Icon(Iconsax.tick_circle, size: FSizes.fontSizeLg),
           label: Text(
             FTexts.submitBtn.tr,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            style: const TextStyle(fontSize: FSizes.fontSizeMd, fontWeight: FontWeight.w600),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: FColors.primaryColor,
@@ -270,7 +270,7 @@ class _AddingObdCodeState extends State<AddingObdCode> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: const EdgeInsets.symmetric(vertical: FSizes.fontSizeSm),
           ),
         ),
         const SizedBox(height: FSizes.sm),
@@ -278,11 +278,11 @@ class _AddingObdCodeState extends State<AddingObdCode> {
           onPressed: _cancel,
           style: TextButton.styleFrom(
             foregroundColor: isDark ? FColors.grey : FColors.darkGrey,
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.symmetric(vertical: FSizes.sm),
           ),
           child: Text(
             FTexts.cancelBtn.tr,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: FSizes.fontSizeSm, fontWeight: FontWeight.w500),
           ),
         ),
       ],

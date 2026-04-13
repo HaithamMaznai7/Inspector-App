@@ -17,7 +17,7 @@ class UserWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       key: _iconKey,
-      icon: Icon(Iconsax.arrow_down_1, size: 25, color: FColors.white),
+      icon: Icon(Iconsax.arrow_down_1, size: FSizes.defaultSpace, color: FColors.white),
       onPressed: () async {
         final RenderBox button =
             _iconKey.currentContext!.findRenderObject() as RenderBox;
@@ -40,7 +40,7 @@ class UserWidget extends StatelessWidget {
             PopupMenuItem(
               child: Row(
                 children: [
-                  Icon(Iconsax.user, size: 18, color: FColors.primaryColor),
+                  Icon(Iconsax.user, size: FSizes.fontSizeLg, color: FColors.primaryColor),
                   const SizedBox(width: FSizes.sm),
                   Text(FTexts.profileTitle.tr),
                 ],
@@ -50,7 +50,7 @@ class UserWidget extends StatelessWidget {
             PopupMenuItem(
               child: Row(
                 children: [
-                  Icon(Iconsax.people, size: 18, color: FColors.primaryColor),
+                  Icon(Iconsax.people, size: FSizes.fontSizeLg, color: FColors.primaryColor),
                   const SizedBox(width: FSizes.sm),
                   Text('Switch Team'.tr),
                 ],
@@ -60,7 +60,7 @@ class UserWidget extends StatelessWidget {
             PopupMenuItem(
               child: Row(
                 children: [
-                  Icon(Iconsax.logout, size: 18, color: Colors.red),
+                  Icon(Iconsax.logout, size: FSizes.fontSizeLg, color: Colors.red),
                   const SizedBox(width: FSizes.sm),
                   Text(
                     FTexts.logoutBtn.tr,

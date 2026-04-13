@@ -158,7 +158,7 @@ class _PanelRow extends StatelessWidget {
             height: FSizes.xl,
             decoration: BoxDecoration(
               color: isComplete ? FColors.primaryColor : FColors.darkGrey,
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(FSizes.xxs),
             ),
           ),
           const SizedBox(width: FSizes.sm),
@@ -189,7 +189,7 @@ class _PanelRow extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: FSizes.xs,
-                vertical: 2,
+                vertical: FSizes.xxs,
               ),
               decoration: BoxDecoration(
                 color: substrateColor.withValues(alpha: 0.1),
@@ -200,7 +200,7 @@ class _PanelRow extends StatelessWidget {
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: substrateColor,
                   fontWeight: FontWeight.w600,
-                  fontSize: 10,
+                  fontSize: FSizes.fontSizeXs,
                 ),
               ),
             ),

@@ -160,9 +160,9 @@ class _CompactStepBarState extends State<_CompactStepBar> {
         final isCompleted = (i - 1) < controller.highestReachedIndex;
         widgets.add(
           Container(
-            width: 12,
-            height: 2,
-            margin: const EdgeInsets.symmetric(horizontal: 2),
+            width: FSizes.iconXs,
+            height: FSizes.xxs,
+            margin: const EdgeInsets.symmetric(horizontal: FSizes.xxs),
             color: isCompleted
                 ? FColors.white
                 : FColors.white.withValues(alpha: 0.3),
@@ -203,7 +203,7 @@ class _ActivePill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: FSizes.loadingIndicatorSize,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: FSizes.iconXs),
       decoration: BoxDecoration(
         color: FColors.white,
         borderRadius: BorderRadius.circular(FSizes.loadingIndicatorSize / 2),
@@ -213,15 +213,15 @@ class _ActivePill extends StatelessWidget {
         children: [
           Icon(
             tab['icon'] as IconData,
-            size: 16,
+            size: FSizes.iconSm,
             color: FColors.primaryColor,
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: FSizes.xs),
           Text(
             tab['label'] as String,
-            style: TextStyle(
+            style: const TextStyle(
               color: FColors.primaryColor,
-              fontSize: 12,
+              fontSize: FSizes.fontSizeXs,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -261,10 +261,10 @@ class _InactivePill extends StatelessWidget {
       ),
       child: Center(
         child: isCompleted
-            ? const Icon(Icons.check, size: 16, color: FColors.primaryColor)
+            ? const Icon(Icons.check, size: FSizes.iconSm, color: FColors.primaryColor)
             : Icon(
                 tab['icon'] as IconData,
-                size: 16,
+                size: FSizes.iconSm,
                 color: isReachable
                     ? FColors.white
                     : FColors.white.withValues(alpha: 0.3),

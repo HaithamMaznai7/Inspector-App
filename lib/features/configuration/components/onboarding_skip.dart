@@ -39,7 +39,7 @@ class OnBoardingSkip extends StatelessWidget {
                 color: FHelper.isDarkMode(context)
                     ? FColors.white
                     : FColors.black,
-                size: 15,
+                size: FSizes.iconSm,
               ),
               Text(
                 FTexts.skip.tr,

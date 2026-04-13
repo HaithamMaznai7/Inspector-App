@@ -1,4 +1,5 @@
 import 'package:fahis_inspector/util/constants/colors.dart';
+import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/localization/localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -28,7 +29,7 @@ class BackPageButton extends StatelessWidget {
       icon: Icon(
         FLocalization.isArabic ? Iconsax.arrow_right_3 : Iconsax.arrow_left_2,
         color: color ?? FColors.primaryColor,
-        size: 20,
+        size: FSizes.iconInlineSm,
       ),
     );
   }

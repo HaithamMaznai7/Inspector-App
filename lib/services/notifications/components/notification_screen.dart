@@ -85,7 +85,7 @@ class NotificationScreen extends StatelessWidget {
           children: [
             Icon(
               Iconsax.notification_status,
-              size: 64,
+              size: FSizes.iconXl,
               color: isDark ? FColors.grey : FColors.darkGrey,
             ),
             const SizedBox(height: FSizes.md),
@@ -215,7 +215,7 @@ class _NotificationTile extends StatelessWidget {
                 const SizedBox(width: FSizes.sm),
                 Icon(
                   Iconsax.arrow_right_3,
-                  size: 16,
+                  size: FSizes.iconSm,
                   color: FColors.darkGrey,
                 ),
               ],
@@ -238,7 +238,7 @@ class _NotificationTile extends StatelessWidget {
       ),
       child: Icon(
         notification.icon,
-        size: 20,
+        size: FSizes.iconInlineSm,
         color: isUnread ? FColors.primaryColor : FColors.darkGrey,
       ),
     );

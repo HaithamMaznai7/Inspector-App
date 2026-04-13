@@ -40,8 +40,8 @@ class ForgetPassword extends StatelessWidget {
                     ),
                     child: Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: isTablet ? 0 : 24,
-                        vertical: 16,
+                        horizontal: isTablet ? 0 : FSizes.lg,
+                        vertical: FSizes.md,
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -59,7 +59,7 @@ class ForgetPassword extends StatelessWidget {
                                     ?.copyWith(fontWeight: FontWeight.w800),
                                 textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: FSizes.xs),
                               Text(
                                 ForgetPage.forgetSubTitle.tr,
                                 style: Theme.of(context)
@@ -77,13 +77,13 @@ class ForgetPassword extends StatelessWidget {
 
                           // ── Form card ─────────────────────────────────
                           Container(
-                            margin: const EdgeInsets.only(top: 40),
-                            padding: const EdgeInsets.all(24),
+                            margin: const EdgeInsets.only(top: FSizes.xl),
+                            padding: const EdgeInsets.all(FSizes.lg),
                             decoration: BoxDecoration(
                               color: isDark
                                   ? Colors.white.withValues(alpha: 0.025)
                                   : Colors.black.withValues(alpha: 0.015),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(FSizes.cardRadiusLg),
                               border: Border.all(
                                 color: isDark
                                     ? Colors.white.withValues(alpha: 0.07)
@@ -102,14 +102,14 @@ class ForgetPassword extends StatelessWidget {
                                     children: [
                                       Container(
                                         width: 3,
-                                        height: 16,
+                                        height: FSizes.md,
                                         decoration: BoxDecoration(
                                           color: FColors.primaryColor,
                                           borderRadius:
-                                              BorderRadius.circular(2),
+                                              BorderRadius.circular(FSizes.xxs),
                                         ),
                                       ),
-                                      const SizedBox(width: 8),
+                                      const SizedBox(width: FSizes.sm),
                                       Text(
                                         LoginPage.verifyOTP.tr,
                                         style: Theme.of(context)
@@ -120,7 +120,7 @@ class ForgetPassword extends StatelessWidget {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 20),
+                                  const SizedBox(height: FSizes.spaceBtwItems),
 
                                   // Phone field
                                   Obx(

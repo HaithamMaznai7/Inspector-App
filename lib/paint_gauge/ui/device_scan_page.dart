@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:fahis_inspector/paint_gauge/ui/device_detail_page.dart';
+import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -143,10 +144,10 @@ class _DeviceScanPageState extends State<DeviceScanPage> {
         actions: [
           if (_isScanning)
             const Padding(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(FSizes.md),
               child: SizedBox(
-                width: 20,
-                height: 20,
+                width: FSizes.iconInlineSm,
+                height: FSizes.iconInlineSm,
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
             ),
@@ -178,7 +179,7 @@ class _DeviceScanPageState extends State<DeviceScanPage> {
     }
 
     return ListView(
-      padding: const EdgeInsets.only(bottom: 80),
+      padding: const EdgeInsets.only(bottom: FSizes.imageThumbSize),
       children: [
         if (named.isNotEmpty) ...[
           _SectionHeader(label: 'Named Devices', count: named.length),
@@ -207,7 +208,7 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.fromLTRB(FSizes.md, FSizes.borderRadiusLg, FSizes.md, FSizes.xs),
       child: Row(
         children: [
           Text(
@@ -216,17 +217,17 @@ class _SectionHeader extends StatelessWidget {
               color: Theme.of(context).colorScheme.primary,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: FSizes.sm),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: FSizes.sm, vertical: FSizes.xxs),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
             ),
             child: Text(
               '$count',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: FSizes.fontSizeXs,
                 color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
             ),
@@ -256,16 +257,16 @@ class _DeviceTile extends StatelessWidget {
           fontWeight: isNamed ? FontWeight.w600 : FontWeight.normal,
         ),
       ),
-      subtitle: Text(device.mac, style: const TextStyle(fontSize: 11)),
+      subtitle: Text(device.mac, style: const TextStyle(fontSize: FSizes.fontSizeXs)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _SignalBars(rssi: device.rssi),
-          const SizedBox(width: 6),
+          const SizedBox(width: FSizes.sm),
           Text(
             '${device.rssi} dBm',
-            style: const TextStyle(fontSize: 11, color: Colors.grey),
+            style: const TextStyle(fontSize: FSizes.fontSizeXs, color: Colors.grey),
           ),
         ],
       ),
@@ -301,12 +302,12 @@ class _SignalBars extends StatelessWidget {
       children: List.generate(
         4,
         (i) => Container(
-          width: 4,
-          height: 4.0 + (i * 4),
-          margin: const EdgeInsets.symmetric(horizontal: 1),
+          width: FSizes.xs,
+          height: FSizes.xs + (i * FSizes.xs),
+          margin: const EdgeInsets.symmetric(horizontal: FSizes.dividerHeight),
           decoration: BoxDecoration(
             color: i < bars ? color : Colors.grey.shade300,
-            borderRadius: BorderRadius.circular(1),
+            borderRadius: BorderRadius.circular(FSizes.dividerHeight),
           ),
         ),
       ),
@@ -330,16 +331,16 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 64, color: Colors.grey.shade400),
-          const SizedBox(height: 16),
+          Icon(icon, size: FSizes.iconXl, color: Colors.grey.shade400),
+          const SizedBox(height: FSizes.md),
           Text(
             title,
-            style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+            style: TextStyle(fontSize: FSizes.fontSizeMd, color: Colors.grey.shade600),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: FSizes.sm),
           Text(
             subtitle,
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+            style: TextStyle(fontSize: FSizes.fontSizeSm, color: Colors.grey.shade500),
           ),
         ],
       ),
