@@ -77,9 +77,10 @@ class _ColorPickerFieldState extends State<ColorPickerField> {
         // ── Label ─────────────────────────────────────────────────────────
         Text(
           widget.label,
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0,
+          ),
         ),
         const SizedBox(height: FSizes.xs),
 
@@ -89,11 +90,12 @@ class _ColorPickerFieldState extends State<ColorPickerField> {
           behavior: HitTestBehavior.opaque,
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: FSizes.borderRadiusLg, vertical: FSizes.borderRadiusLg),
+            padding: const EdgeInsets.symmetric(
+              horizontal: FSizes.borderRadiusLg,
+              vertical: FSizes.borderRadiusLg,
+            ),
             decoration: BoxDecoration(
-              color: isDark
-                  ? FColors.darkGrey.withValues(alpha: 0.15)
-                  : Colors.transparent,
+              color: isDark ? FColors.darkerGrey : FColors.white,
               borderRadius: BorderRadius.circular(FSizes.inputFieldRadius),
               border: Border.all(
                 color: hasError
@@ -123,7 +125,11 @@ class _ColorPickerFieldState extends State<ColorPickerField> {
                   ),
                 ),
 
-                Icon(Iconsax.arrow_down_1, size: FSizes.iconSm, color: FColors.darkGrey),
+                Icon(
+                  Iconsax.arrow_down_1,
+                  size: FSizes.iconSm,
+                  color: FColors.primaryColor,
+                ),
               ],
             ),
           ),
@@ -204,7 +210,9 @@ class _ColorSheet extends StatelessWidget {
       builder: (_, scrollController) => Container(
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(FSizes.cardRadiusLg)),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(FSizes.cardRadiusLg),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,14 +220,22 @@ class _ColorSheet extends StatelessWidget {
             // ── Handle ──────────────────────────────────────────────────
             Center(
               child: Padding(
-                padding: const EdgeInsets.only(top: FSizes.borderRadiusLg, bottom: FSizes.md),
+                padding: const EdgeInsets.only(
+                  top: FSizes.borderRadiusLg,
+                  bottom: FSizes.md,
+                ),
                 child: SizedBox(width: FSizes.xl, height: FSizes.xs),
               ),
             ),
 
             // ── Title ────────────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(FSizes.spaceBtwItems, 0, FSizes.spaceBtwItems, FSizes.borderRadiusLg),
+              padding: const EdgeInsets.fromLTRB(
+                FSizes.spaceBtwItems,
+                0,
+                FSizes.spaceBtwItems,
+                FSizes.borderRadiusLg,
+              ),
               child: Text(
                 title,
                 style: Theme.of(
@@ -234,7 +250,10 @@ class _ColorSheet extends StatelessWidget {
             Expanded(
               child: ListView.separated(
                 controller: scrollController,
-                padding: const EdgeInsets.only(top: FSizes.xs, bottom: FSizes.md),
+                padding: const EdgeInsets.only(
+                  top: FSizes.xs,
+                  bottom: FSizes.md,
+                ),
                 itemCount: colors.length,
                 separatorBuilder: (_, _) => Divider(
                   height: 1,

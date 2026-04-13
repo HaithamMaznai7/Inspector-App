@@ -72,7 +72,7 @@ class _CustomSelector extends State<CustomSelector> {
       children: [
         Text(
           widget.title ?? 'Select Field',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.w600,
             letterSpacing: 0,
           ),
