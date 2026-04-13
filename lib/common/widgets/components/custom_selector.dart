@@ -63,40 +63,71 @@ class _CustomSelector extends State<CustomSelector> {
   @override
   Widget build(BuildContext context) {
     final isDark = FHelper.isDarkMode(context);
+    final hasError = widget.error != null && widget.error!.isNotEmpty;
+    final hasValue =
+        _value != null && _value!.value != null && _value!.value!.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           widget.title ?? 'Select Field',
-          style: Theme.of(context).textTheme.titleLarge,
-          textAlign: TextAlign.right,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0,
+          ),
         ),
+        const SizedBox(height: 4),
         GestureDetector(
           onTap: _openMenuToggle,
           child: Container(
             decoration: BoxDecoration(
-              color: isDark
-                  ? FColors.darkGrey.withValues(alpha: .2)
-                  : FColors.grey.withValues(alpha: .8),
-              borderRadius: widget.borderRadius,
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(width: 1, color: FColors.grey),
-                borderRadius: widget.borderRadius ?? BorderRadius.circular(10),
-                color: isDark ? FColors.darkerGrey : FColors.white,
+              color: isDark ? FColors.darkerGrey : FColors.white,
+              borderRadius: widget.borderRadius ?? BorderRadius.circular(10),
+              border: Border.all(
+                width: hasError ? 1.5 : 1,
+                color: hasError
+                    ? FColors.error
+                    : isDark
+                    ? FColors.grey.withValues(alpha: 0.3)
+                    : FColors.grey,
               ),
-              child: ListTile(
-                title: Text(_value?.label ?? (widget.title ?? '')),
-                trailing: Icon(
-                  Iconsax.arrow_down_1,
-                  color: FColors.primaryColor,
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 0,
+              ),
+              title: Text(
+                _value?.label ?? (widget.title ?? ''),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: hasValue ? FontWeight.w500 : FontWeight.normal,
+                  color: hasValue
+                      ? null
+                      : (isDark ? FColors.darkGrey : FColors.darkGrey),
                 ),
+              ),
+              trailing: Icon(
+                Iconsax.arrow_down_1,
+                size: 18,
+                color: FColors.primaryColor,
               ),
             ),
           ),
         ),
+        if (hasError) ...[
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.only(right: 12, left: 12),
+            child: Text(
+              widget.error!,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: FColors.error,
+                fontStyle: FontStyle.normal,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }

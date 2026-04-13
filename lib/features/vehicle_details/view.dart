@@ -523,14 +523,23 @@ class VehicleDetailsView extends StatelessWidget {
           padding: const EdgeInsets.all(FSizes.md),
           decoration: BoxDecoration(
             color: isDark
-                ? Colors.white.withValues(alpha: 0.025)
-                : Colors.black.withValues(alpha: 0.025),
+                ? Colors.white.withValues(alpha: 0.03)
+                : Colors.white.withValues(alpha: 0.75),
             borderRadius: BorderRadius.circular(FSizes.cardRadiusLg),
             border: Border.all(
               color: isDark
-                  ? Colors.white.withValues(alpha: 0.07)
-                  : Colors.black.withValues(alpha: 0.06),
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.07),
             ),
+            boxShadow: isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 16,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -572,9 +581,10 @@ class VehicleDetailsView extends StatelessWidget {
       children: [
         Text(
           label,
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0,
+          ),
         ),
         const SizedBox(height: FSizes.xs),
         field,
@@ -588,6 +598,7 @@ class VehicleDetailsView extends StatelessWidget {
     BuildContext context,
     VehicleDetailsController controller,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Obx(() {
       final isSearching = controller.isSearchingVin.value;
       final vinLength = controller.vinController.text.trim().length;
@@ -601,10 +612,23 @@ class VehicleDetailsView extends StatelessWidget {
           controller: controller.vinController,
           textCapitalization: TextCapitalization.characters,
           maxLength: 17,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+            letterSpacing: 1.2,
+          ),
           decoration: InputDecoration(
+            filled: true,
+            fillColor: isDark ? FColors.darkerGrey : FColors.white,
             hintText: DetailsPage.vinHint.tr,
             counterText: '',
             errorText: controller.formErrors['vin'],
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+              borderSide: const BorderSide(
+                color: FColors.primaryColor,
+                width: 1.5,
+              ),
+            ),
             suffixIcon: AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               switchInCurve: Curves.easeOut,
@@ -689,29 +713,40 @@ class VehicleDetailsView extends StatelessWidget {
   }) {
     textController ??= TextEditingController(text: value);
     final controller = VehicleDetailsBinding().instance;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return _labeled(
       context,
       label,
       TextFormField(
         controller: textController,
+        style: Theme.of(
+          context,
+        ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
         decoration: InputDecoration(
-          border: const OutlineInputBorder(),
+          filled: true,
+          fillColor: isDark ? FColors.darkerGrey : FColors.white,
           hintText: label,
           hintStyle: Theme.of(
             context,
           ).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
           errorText: VehicleDetailsBinding().instance.formErrors[key],
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+            borderSide: const BorderSide(
+              color: FColors.primaryColor,
+              width: 1.5,
+            ),
+          ),
         ),
-        onSaved: (value) {
+        onSaved: (v) {
           final updated = controller.editableDetails.value;
-          controller.editableDetails.value = updated.copyWith(vin: value);
+          controller.editableDetails.value = updated.copyWith(vin: v);
         },
-        onChanged: (value) {
-          textController?.addListener(() {
-            if (controller.formErrors.containsKey(key)) {
-              controller.formErrors.remove(key);
-            }
-          });
+        onChanged: (_) {
+          if (controller.formErrors.containsKey(key)) {
+            controller.formErrors.remove(key);
+            controller.update();
+          }
         },
         validator: validator ?? (value) => FValidation.defaultValidator(value!),
       ),
