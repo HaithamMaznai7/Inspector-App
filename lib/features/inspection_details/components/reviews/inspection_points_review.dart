@@ -69,7 +69,6 @@ class InspectionPointsReview extends StatelessWidget {
                           children: [
                             ListTile(
                               title: Text(point.title),
-                              subtitle: Text(point.description),
                               trailing: Container(
                                 padding: EdgeInsets.symmetric(
                                   horizontal: FSizes.sm,
@@ -82,7 +81,7 @@ class InspectionPointsReview extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  point.status.name,
+                                  point.status.toString(),
                                   style: Theme.of(context).textTheme.bodyLarge
                                       ?.apply(color: point.status.color()),
                                 ),
