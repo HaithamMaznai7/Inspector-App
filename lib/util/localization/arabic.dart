@@ -636,7 +636,7 @@ class Arabic {
         'حدث خطأ ما، يرجى المحاولة مرة أخرى.',
 
     /// Paint Gauge
-    PaintGaugePage.stepTitle: 'قياس طلاء السيارة',
+    PaintGaugePage.stepTitle: 'قياس البوية',
     PaintGaugePage.scanTitle: 'توصيل جهاز القياس',
     PaintGaugePage.scanSubtitle:
         'شغّل البلوتوث وضع جهاز Guoou بالقرب منك للبحث',
@@ -676,7 +676,7 @@ class Arabic {
     PaintGaugePage.clearAllConfirm: 'سيتم حذف جميع القراءات من كل اللوحات.',
     PaintGaugePage.clearSuccess: 'تم الحذف بنجاح',
     PaintGaugePage.clearFailed: 'فشل مسح اللوحة',
-    PaintGaugePage.reviewTitle: 'قياس الطلاء',
+    PaintGaugePage.reviewTitle: 'قياس البوية',
     PaintGaugePage.reviewPanelsMeasured: 'لوحة تم قياسها',
     PaintGaugePage.reviewNoData: 'لا توجد قراءات مسجلة',
     PaintGaugePage.panelHood: 'الكبوت',

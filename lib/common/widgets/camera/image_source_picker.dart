@@ -139,17 +139,21 @@ class ImageSourcePicker {
                   const SizedBox(height: FSizes.sm),
 
                   // Camera option
-                  _SourceTile(
-                    icon: Icons.camera_alt_outlined,
-                    label: FTexts.imageSourceCamera.tr,
+                  GestureDetector(
+                    child: _SourceTile(
+                      icon: Icons.camera_alt_outlined,
+                      label: FTexts.imageSourceCamera.tr,
+                    ),
                     onTap: () => Navigator.pop(context, _ImageSource.camera),
                   ),
                   const SizedBox(height: FSizes.sm),
 
                   // Gallery option
-                  _SourceTile(
-                    icon: Icons.photo_library_outlined,
-                    label: FTexts.imageSourceGallery.tr,
+                  GestureDetector(
+                    child: _SourceTile(
+                      icon: Icons.photo_library_outlined,
+                      label: FTexts.imageSourceGallery.tr,
+                    ),
                     onTap: () => Navigator.pop(context, _ImageSource.gallery),
                   ),
                 ],
@@ -166,13 +170,8 @@ class ImageSourcePicker {
 class _SourceTile extends StatelessWidget {
   final IconData icon;
   final String label;
-  final VoidCallback onTap;
 
-  const _SourceTile({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
+  const _SourceTile({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -192,39 +191,36 @@ class _SourceTile extends StatelessWidget {
     return Material(
       color: FColors.primaryColor.withValues(alpha: 0.06),
       borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: FSizes.md,
-            vertical: FSizes.md,
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: circleSize,
-                height: circleSize,
-                decoration: BoxDecoration(
-                  color: FColors.primaryColor.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: FColors.primaryColor, size: iconSize),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: FSizes.md,
+          vertical: FSizes.md,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: circleSize,
+              height: circleSize,
+              decoration: BoxDecoration(
+                color: FColors.primaryColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(width: FSizes.md),
-              Text(
-                label,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
-              ),
-              const Spacer(),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: FSizes.iconSm,
-                color: FColors.darkGrey.withValues(alpha: 0.5),
-              ),
-            ],
-          ),
+              child: Icon(icon, color: FColors.primaryColor, size: iconSize),
+            ),
+            const SizedBox(width: FSizes.md),
+            Text(
+              label,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+            ),
+            const Spacer(),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: FSizes.iconSm,
+              color: FColors.darkGrey.withValues(alpha: 0.5),
+            ),
+          ],
         ),
       ),
     );

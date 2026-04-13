@@ -589,7 +589,7 @@ class English {
         'Something went wrong. Please try again.',
 
     /// Paint Gauge
-    PaintGaugePage.stepTitle: 'Paint Gauge',
+    PaintGaugePage.stepTitle: 'Paint Thickness',
     PaintGaugePage.scanTitle: 'Connect Paint Gauge',
     PaintGaugePage.scanSubtitle:
         'Turn on Bluetooth and place the Guoou device nearby to scan',
@@ -630,7 +630,7 @@ class English {
         'This will remove all session readings from every panel.',
     PaintGaugePage.clearSuccess: 'Panel Cleared Successfully',
     PaintGaugePage.clearFailed: 'Failed to clear panel',
-    PaintGaugePage.reviewTitle: 'Paint Gauge',
+    PaintGaugePage.reviewTitle: 'Paint Thickness',
     PaintGaugePage.reviewPanelsMeasured: 'panels measured',
     PaintGaugePage.reviewNoData: 'No measurements recorded',
     PaintGaugePage.panelHood: 'Hood',
