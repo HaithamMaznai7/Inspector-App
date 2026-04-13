@@ -3,6 +3,7 @@ import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
+import 'package:fahis_inspector/util/formatters/formatter.dart';
 import 'package:fahis_inspector/util/helpers/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -22,23 +23,6 @@ class InspectionInfoReview extends StatelessWidget {
         if (inspection == null || isLoading) {
           return SizedBox();
         }
-
-        // if (!hasDetails) {
-        //   return Card(
-        //     margin: EdgeInsets.symmetric(horizontal: FSizes.md, vertical: FSizes.sm),
-        //     color: FColors.grey,
-        //     child: Padding(
-        //       padding: EdgeInsets.symmetric(
-        //         horizontal: FSizes.md,
-        //         vertical: FSizes.lg,
-        //       ),
-        //       child: Center(
-        //         child: Text('This Inspection Is Not Contain Vehicle Details'),
-        //       ),
-        //     )
-        //   );
-        // }
-
         return InfoCard.fromMap(
           title: Text(InspectionPage.generalInfo.tr),
           tilePadding: FSizes.md,
@@ -78,17 +62,20 @@ class InspectionInfoReview extends StatelessWidget {
             InspectionPage.city.tr:
                 inspection.center?.city?.label ?? InspectionPage.notYet.tr,
             InspectionPage.bookingDate.tr:
-                inspection.center?.datetime.toString() ??
+                EFormatter.formattedWithTime(inspection.center?.datetime) ??
                 InspectionPage.notYet.tr,
             InspectionPage.assignedTo.tr:
                 inspection.assignedTo?.label ?? InspectionPage.anyInspector.tr,
             InspectionPage.inspector.tr:
                 inspection.inspector?.label ?? InspectionPage.notYet.tr,
             InspectionPage.inspectedAt.tr:
-                inspection.inspectedAt?.toString() ?? InspectionPage.notYet.tr,
+                EFormatter.formattedWithTime(inspection.inspectedAt) ??
+                InspectionPage.notYet.tr,
             InspectionPage.reviewedAt.tr:
-                inspection.reviewedAt?.toString() ?? InspectionPage.notYet.tr,
-            InspectionPage.createdAt.tr: inspection.createdDate.toString(),
+                EFormatter.formattedWithTime(inspection.reviewedAt) ??
+                InspectionPage.notYet.tr,
+            InspectionPage.createdAt.tr:
+                EFormatter.formattedWithTime(inspection.createdDate) ?? '',
           },
         );
       },

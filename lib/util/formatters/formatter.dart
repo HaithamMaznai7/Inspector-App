@@ -13,7 +13,7 @@ class EFormatter {
       date != null ? DateFormat("yyyy-MM-dd HH:mm:ss").format(date) : null;
 
   static String? formattedWithTime(DateTime? date) =>
-      date != null ? DateFormat("(HH:mm a) yyyy MMM,d").format(date) : null;
+      date != null ? DateFormat("yyyy-MM-dd  -  hh:mm a").format(date) : null;
 
   static String? formatted(DateTime? date) =>
       date != null ? DateFormat.yMMMMEEEEd().format(date) : null;
@@ -168,16 +168,6 @@ class EFormatter {
       newValue += value;
       newValue += ' ';
     }
-    // if (value.isEmpty) {
-    //   return '';
-    // }GetUtils.isNumericOnly(value)
-
-    // String letterString = value.length > 4 ? value.substring(4) : '';
-    // String numberString = value.length > 3 ? value.substring(0,4) : '';
-
-    // if (valueCount > 3 && RegExp(r'^[^a-zA-Z]').hasMatch(letterString)) {
-    //   return 'The First 3 charts in Car Plate must be letters'.tr;
-    // }
 
     return newValue;
   }
