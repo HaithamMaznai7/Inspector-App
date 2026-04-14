@@ -47,6 +47,8 @@ class InspectionInfoReview extends StatelessWidget {
             ),
             child: Text(
               inspection.stage.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: Theme.of(
                 context,
               ).textTheme.bodyLarge?.apply(color: inspection.stage.color),

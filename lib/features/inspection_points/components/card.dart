@@ -262,13 +262,17 @@ class _RadioChip extends StatelessWidget {
             children: [
               Icon(status.icon(), size: iconSize, color: contentColor),
               const SizedBox(width: FSizes.xxs),
-              Text(
-                status.toString(),
-                style: TextStyle(
-                  fontSize: fontSize,
-                  fontWeight: _isActive ? FontWeight.w700 : FontWeight.w400,
-                  color: contentColor,
-                  height: 1,
+              Flexible(
+                child: Text(
+                  status.toString(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: _isActive ? FontWeight.w700 : FontWeight.w400,
+                    color: contentColor,
+                    height: 1,
+                  ),
                 ),
               ),
             ],

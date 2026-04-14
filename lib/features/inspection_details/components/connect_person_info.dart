@@ -35,6 +35,8 @@ class ConnectPersonInfo extends StatelessWidget {
                     onPressed: () => Helpers.copy(inspection.customer!.phone!),
                     child: Text(
                       inspection.customer!.phone!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.labelMedium,
                       locale: Get.locale,
                       textAlign: TextAlign.start,

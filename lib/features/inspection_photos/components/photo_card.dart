@@ -63,16 +63,20 @@ class PhotoCard extends StatelessWidget {
                           color: _hasImage ? FColors.success : FColors.grey,
                         ),
                         const SizedBox(width: FSizes.xs),
-                        Text(
-                          _hasImage
-                              ? InspectionPage.photoUploaded.tr
-                              : InspectionPage.addPhoto.tr,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: _hasImage
-                                    ? FColors.success
-                                    : FColors.grey,
-                              ),
+                        Flexible(
+                          child: Text(
+                            _hasImage
+                                ? InspectionPage.photoUploaded.tr
+                                : InspectionPage.addPhoto.tr,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: _hasImage
+                                      ? FColors.success
+                                      : FColors.grey,
+                                ),
+                          ),
                         ),
                       ],
                     ),

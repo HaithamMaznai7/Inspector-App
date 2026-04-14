@@ -368,11 +368,12 @@ class _PhotoGrid extends StatelessWidget {
       );
     }
 
+    final isTablet = MediaQuery.sizeOf(context).width >= 600;
     return GridView.builder(
       padding: const EdgeInsets.all(FSizes.md),
       itemCount: photos.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isTablet ? 5 : 3,
         crossAxisSpacing: FSizes.sm,
         mainAxisSpacing: FSizes.sm,
         childAspectRatio: 1,
@@ -657,8 +658,9 @@ class _PhotoGridShimmer extends StatelessWidget {
             padding: const EdgeInsets.all(FSizes.md),
             physics: const NeverScrollableScrollPhysics(),
             itemCount: 9,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount:
+                  MediaQuery.sizeOf(context).width >= 600 ? 5 : 3,
               crossAxisSpacing: FSizes.sm,
               mainAxisSpacing: FSizes.sm,
               childAspectRatio: 1,

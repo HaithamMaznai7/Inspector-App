@@ -68,7 +68,11 @@ class InspectionPointsReview extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ListTile(
-                              title: Text(point.title),
+                              title: Text(
+                                point.title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                               trailing: Container(
                                 padding: EdgeInsets.symmetric(
                                   horizontal: FSizes.sm,
@@ -82,6 +86,8 @@ class InspectionPointsReview extends StatelessWidget {
                                 ),
                                 child: Text(
                                   point.status.toString(),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: Theme.of(context).textTheme.bodyLarge
                                       ?.apply(color: point.status.color()),
                                 ),

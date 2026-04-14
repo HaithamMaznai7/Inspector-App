@@ -173,16 +173,20 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                     ),
                                     if (marker.type != null &&
                                         marker.type!.isNotEmpty)
-                                      Padding(
-                                        padding: EdgeInsets.only(
-                                          left: FSizes.xs,
-                                        ),
-                                        child: Text(
-                                          '• ${marker.type}',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.apply(color: FColors.grey),
+                                      Flexible(
+                                        child: Padding(
+                                          padding: EdgeInsets.only(
+                                            left: FSizes.xs,
+                                          ),
+                                          child: Text(
+                                            '• ${marker.type}',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.apply(color: FColors.grey),
+                                          ),
                                         ),
                                       ),
                                     Spacer(),

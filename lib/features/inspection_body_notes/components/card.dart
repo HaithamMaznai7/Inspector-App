@@ -609,12 +609,16 @@ class _SectionLabel extends StatelessWidget {
       children: [
         Icon(icon, size: FSizes.iconXs, color: color),
         const SizedBox(width: FSizes.xs),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            color: color,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.3,
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.3,
+            ),
           ),
         ),
       ],

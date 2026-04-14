@@ -42,7 +42,13 @@ class UserWidget extends StatelessWidget {
                 children: [
                   Icon(Iconsax.user, size: FSizes.fontSizeLg, color: FColors.primaryColor),
                   const SizedBox(width: FSizes.sm),
-                  Text(FTexts.profileTitle.tr),
+                  Flexible(
+                    child: Text(
+                      FTexts.profileTitle.tr,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
               onTap: () => Get.to(() => const ProfileView()),
@@ -52,7 +58,13 @@ class UserWidget extends StatelessWidget {
                 children: [
                   Icon(Iconsax.people, size: FSizes.fontSizeLg, color: FColors.primaryColor),
                   const SizedBox(width: FSizes.sm),
-                  Text('Switch Team'.tr),
+                  Flexible(
+                    child: Text(
+                      'Switch Team'.tr,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
               onTap: () => TeamSelectorSheet.show(),
@@ -62,9 +74,13 @@ class UserWidget extends StatelessWidget {
                 children: [
                   Icon(Iconsax.logout, size: FSizes.fontSizeLg, color: Colors.red),
                   const SizedBox(width: FSizes.sm),
-                  Text(
-                    FTexts.logoutBtn.tr,
-                    style: const TextStyle(color: Colors.red),
+                  Flexible(
+                    child: Text(
+                      FTexts.logoutBtn.tr,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.red),
+                    ),
                   ),
                 ],
               ),

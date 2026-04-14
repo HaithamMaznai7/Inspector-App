@@ -33,16 +33,25 @@ class Boot extends StatelessWidget {
       initialRoute: AppRoute.initial,
       getPages: AppRoute.route,
       builder: (context, child) {
-        return Overlay(
-          initialEntries: [
-            OverlayEntry(
-              builder: (context) => GestureDetector(
-                onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-                behavior: HitTestBehavior.opaque,
-                child: child ?? const SizedBox(),
-              ),
+        final mq = MediaQuery.of(context);
+        return MediaQuery(
+          data: mq.copyWith(
+            textScaler: mq.textScaler.clamp(
+              minScaleFactor: 0.85,
+              maxScaleFactor: 1.3,
             ),
-          ],
+          ),
+          child: Overlay(
+            initialEntries: [
+              OverlayEntry(
+                builder: (context) => GestureDetector(
+                  onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                  behavior: HitTestBehavior.opaque,
+                  child: child ?? const SizedBox(),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );

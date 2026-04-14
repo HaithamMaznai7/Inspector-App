@@ -196,11 +196,13 @@ class _ProfileViewState extends State<ProfileView> {
           ? const Center(
               child: CircularProgressIndicator(color: FColors.primaryColor),
             )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: FSizes.lg,
-                vertical: FSizes.lg,
-              ),
+          : SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: FSizes.lg,
+                  vertical: FSizes.lg,
+                ),
               child: Column(
                 children: [
                   // Avatar with edit button
@@ -336,6 +338,7 @@ class _ProfileViewState extends State<ProfileView> {
                   ),
                   const SizedBox(height: FSizes.md),
                 ],
+              ),
               ),
             ),
     );

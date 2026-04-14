@@ -48,6 +48,8 @@ class InspectionInfo extends StatelessWidget {
                       ),
                       child: Text(
                         c.inspection.value?.stage.label ?? 'Undefined',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyLarge?.apply(
                           color: c.inspection.value?.stage.color,
                         ),
@@ -96,6 +98,8 @@ class InspectionInfo extends StatelessWidget {
                           const SizedBox(width: FSizes.sm),
                           Expanded(
                             child: Text.rich(
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                               TextSpan(
                                 text:
                                     '${c.inspection.value?.inspectionType?.title} ',
@@ -126,14 +130,17 @@ class InspectionInfo extends StatelessWidget {
                         children: [
                           const Icon(Iconsax.note),
                           const SizedBox(width: FSizes.sm),
-                          Text(
-                            c.inspection.value != null
-                                ? EFormatter.getDateFormat.format(
-                                    c.inspection.value!.createdDate,
-                                  )
-                                : '',
-                            style: Theme.of(context).textTheme.bodyLarge,
-                            overflow: TextOverflow.ellipsis,
+                          Expanded(
+                            child: Text(
+                              c.inspection.value != null
+                                  ? EFormatter.getDateFormat.format(
+                                      c.inspection.value!.createdDate,
+                                    )
+                                  : '',
+                              maxLines: 1,
+                              style: Theme.of(context).textTheme.bodyLarge,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ],
                       ),

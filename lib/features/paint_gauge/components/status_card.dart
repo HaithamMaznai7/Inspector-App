@@ -60,6 +60,8 @@ class ConnectionStatusCard extends StatelessWidget {
                   children: [
                     Text(
                       _stateLabel(state, isSearching),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: _textColor(state, isSearching),
@@ -69,6 +71,8 @@ class ConnectionStatusCard extends StatelessWidget {
                       isDisconnected
                           ? PaintGaugePage.connectHint.tr
                           : '$measured/$total ${PaintGaugePage.measuredPanels.tr}',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: isDisconnected
                             ? FColors.primaryColor.withValues(alpha: 0.7)

@@ -145,6 +145,8 @@ class InspectionCard extends StatelessWidget {
                                       ),
                                       child: Text(
                                         inspectionTypeTitle!,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
                                           fontSize: labelSize,
                                           fontWeight: FontWeight.w700,
@@ -385,52 +387,6 @@ class InspectionCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class VehicleRow extends StatelessWidget {
-  const VehicleRow({super.key, required this.vehicle});
-
-  final Vehicle vehicle;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = FHelper.isDarkMode(context);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: <Widget>[
-        // FImage(
-        //   image: vehicle.make?.image,
-        //   placeHolder: Image.asset(FImages.appIcon) ,
-        //   height: 30,
-        //   width: 30,
-        // ),
-        Text(
-          vehicle.make?.label ?? '',
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.titleLarge?.apply(
-            color: isDark ? FColors.white.withValues(alpha: .8) : FColors.dark,
-          ),
-        ),
-
-        // Text(
-        //   vehicle.model?.label ?? '',
-        //   overflow: TextOverflow.ellipsis,
-        //   style: Theme.of(context).textTheme.titleLarge?.apply(
-        //       color: isDark ? FColors.white.withValues(alpha: .8) : FColors.dark
-        //   ),
-        // ),
-
-        // Text(
-        //  vehicle.year ?? '',
-        //   overflow: TextOverflow.ellipsis,
-        //   style: Theme.of(context).textTheme.titleLarge?.apply(
-        //       color: isDark ? FColors.white.withValues(alpha: .8) : FColors.dark
-        //   ),
-        // ),
-      ],
     );
   }
 }

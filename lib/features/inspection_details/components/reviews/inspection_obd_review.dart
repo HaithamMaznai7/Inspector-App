@@ -65,8 +65,16 @@ class InspectionOBDReview extends StatelessWidget {
               ...obdCodes.map((code) {
                 return ListTile(
                   leading: Icon(Iconsax.code, color: FColors.primaryColor),
-                  title: Text(code.code),
-                  subtitle: Text(code.description),
+                  title: Text(
+                    code.code,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Text(
+                    code.description,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 );
               }),
           ],

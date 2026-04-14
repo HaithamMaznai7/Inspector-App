@@ -87,17 +87,25 @@ class _NoteInputDialogState extends State<NoteInputDialog> {
               alignment: AlignmentDirectional.centerStart,
               child: Row(
                 children: [
-                  Text(
-                    InspectionPage.addNoteLabel.tr,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                  Flexible(
+                    child: Text(
+                      InspectionPage.addNoteLabel.tr,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   const SizedBox(width: FSizes.xs),
-                  Text(
-                    '(${InspectionPage.optionalTag.tr})',
-                    style: theme.textTheme.bodySmall?.apply(
-                      color: FColors.darkGrey,
+                  Flexible(
+                    child: Text(
+                      '(${InspectionPage.optionalTag.tr})',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.apply(
+                        color: FColors.darkGrey,
+                      ),
                     ),
                   ),
                 ],

@@ -5,7 +5,6 @@ import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/helper_functions.dart';
-import 'package:fahis_inspector/util/localization/localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -29,24 +28,26 @@ class OnBoardingScreen extends StatelessWidget {
               ),
               child: Align(
                 alignment: AlignmentDirectional.centerEnd,
-                child: Obx(() => AnimatedOpacity(
-                      opacity: controller.isLastPage ? 0.0 : 1.0,
-                      duration: const Duration(milliseconds: 250),
-                      child: TextButton(
-                        onPressed:
-                            controller.isLastPage ? null : controller.skipPage,
-                        style: TextButton.styleFrom(
-                          foregroundColor: FColors.textSecondary,
-                        ),
-                        child: Text(
-                          FTexts.skip.tr,
-                          style:
-                              Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    color: FColors.textSecondary,
-                                  ),
+                child: Obx(
+                  () => AnimatedOpacity(
+                    opacity: controller.isLastPage ? 0.0 : 1.0,
+                    duration: const Duration(milliseconds: 250),
+                    child: TextButton(
+                      onPressed: controller.isLastPage
+                          ? null
+                          : controller.skipPage,
+                      style: TextButton.styleFrom(
+                        foregroundColor: FColors.textSecondary,
+                      ),
+                      child: Text(
+                        FTexts.skip.tr,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: FColors.textSecondary,
                         ),
                       ),
-                    )),
+                    ),
+                  ),
+                ),
               ),
             ),
 
@@ -130,9 +131,9 @@ class _OnBoardingContent extends StatelessWidget {
           Text(
             title.tr,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white : FColors.textPrimary,
-                ),
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : FColors.textPrimary,
+            ),
             textAlign: TextAlign.center,
           ),
 
@@ -144,9 +145,9 @@ class _OnBoardingContent extends StatelessWidget {
             child: Text(
               subTitle.tr,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: isDark ? FColors.darkGrey : FColors.textSecondary,
-                    height: 1.6,
-                  ),
+                color: isDark ? FColors.darkGrey : FColors.textSecondary,
+                height: 1.6,
+              ),
               textAlign: TextAlign.center,
             ),
           ),
@@ -169,28 +170,27 @@ class _DotIndicators extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            OnBoardingController.totalPages,
-            (i) {
-              final isActive = controller.currentPageIndex.value == i;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                margin: const EdgeInsets.symmetric(horizontal: FSizes.xs),
-                width: isActive ? FSizes.xl : FSizes.sm,
-                height: FSizes.sm,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
-                  color: isActive
-                      ? FColors.primaryColor
-                      : FColors.primaryColor.withValues(alpha: 0.2),
-                ),
-              );
-            },
-          ),
-        ));
+    return Obx(
+      () => Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(OnBoardingController.totalPages, (i) {
+          final isActive = controller.currentPageIndex.value == i;
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            margin: const EdgeInsets.symmetric(horizontal: FSizes.xs),
+            width: isActive ? FSizes.xl : FSizes.sm,
+            height: FSizes.sm,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
+              color: isActive
+                  ? FColors.primaryColor
+                  : FColors.primaryColor.withValues(alpha: 0.2),
+            ),
+          );
+        }),
+      ),
+    );
   }
 }
 
@@ -229,30 +229,13 @@ class _NextButton extends StatelessWidget {
                 borderRadius: BorderRadius.circular(FSizes.buttonRadius),
               ),
             ),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              child: Row(
-                key: ValueKey(isLast),
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    isLast ? 'getStarted'.tr : FTexts.nextBtn.tr,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  if (!isLast) ...[
-                    const SizedBox(width: FSizes.sm),
-                    Icon(
-                      FLocalization.isArabic
-                          ? Iconsax.arrow_left_2
-                          : Iconsax.arrow_right_3,
-                      color: Colors.white,
-                      size: FSizes.iconInlineSm,
-                    ),
-                  ],
-                ],
+            child: Text(
+              isLast ? 'getStarted'.tr : FTexts.nextBtn.tr,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

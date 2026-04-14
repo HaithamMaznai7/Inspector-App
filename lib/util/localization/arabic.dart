@@ -7,7 +7,7 @@ class Arabic {
     /// Global Texts
     FTexts.appName: 'فاحص',
     FTexts.cancelBtn: 'إلغاء',
-    FTexts.skip: 'تخطى',
+    FTexts.skip: 'تخطي',
     FTexts.refresh: 'جرب مره ثانيه',
     FTexts.submitBtn: 'إرسال',
     FTexts.nextBtn: 'التالي',

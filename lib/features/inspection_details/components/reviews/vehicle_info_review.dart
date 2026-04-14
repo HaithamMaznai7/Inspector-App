@@ -52,6 +52,8 @@ class VehicleInfoReview extends StatelessWidget {
             ),
             child: Text(
               vehicle.plate!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodyLarge?.apply(
                 color: FColors.success,
               ),
