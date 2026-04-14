@@ -359,8 +359,12 @@ class PaintGaugeController extends GetxController {
     connectionState.value = BleConnectionState.connecting;
     update();
 
-    // Save device for future auto-connect
-    _repository?.saveLastDevice(deviceId, deviceName ?? deviceId);
+    // Only save for auto-connect if the device looks like a paint gauge (name starts with "GO").
+    // Other devices (TV, speakers, etc.) connect normally but won't be remembered.
+    final name = deviceName ?? deviceId;
+    if (name.toUpperCase().startsWith('GO')) {
+      _repository?.saveLastDevice(deviceId, name);
+    }
 
     _connectionService = BleConnectionService();
     _commandService = GaugeCommandService(
