@@ -72,10 +72,11 @@ class ImageSourcePicker {
               onPressed: () => Navigator.pop(context, _ImageSource.camera),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Icon(CupertinoIcons.camera, size: iconSize),
+                  Icon(CupertinoIcons.camera, size: iconSize, color: FColors.primaryColor),
                   const SizedBox(width: FSizes.sm),
-                  Text(FTexts.imageSourceCamera.tr),
+                  Text(FTexts.imageSourceCamera.tr, style: TextStyle(color: FColors.primaryColor)),
                 ],
               ),
             ),
@@ -83,10 +84,11 @@ class ImageSourcePicker {
               onPressed: () => Navigator.pop(context, _ImageSource.gallery),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Icon(CupertinoIcons.photo, size: iconSize),
+                  Icon(CupertinoIcons.photo, size: iconSize, color: FColors.primaryColor),
                   const SizedBox(width: FSizes.sm),
-                  Text(FTexts.imageSourceGallery.tr),
+                  Text(FTexts.imageSourceGallery.tr, style: TextStyle(color: FColors.primaryColor)),
                 ],
               ),
             ),
@@ -94,7 +96,7 @@ class ImageSourcePicker {
           cancelButton: CupertinoActionSheetAction(
             isDefaultAction: true,
             onPressed: () => Navigator.pop(context),
-            child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
+            child: Text(MaterialLocalizations.of(context).cancelButtonLabel, style: TextStyle(color: FColors.primaryColor)),
           ),
         );
       },
