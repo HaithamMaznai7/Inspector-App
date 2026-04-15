@@ -512,8 +512,24 @@ class InspectionsController extends GetxController
         },
       );
       ordersB2B.assignAll(fresh);
+
+      // Show page 1 immediately — don't make user wait for page 2
+      if (load) {
+        isLoadingB2B.value = false;
+        update();
+      }
+
+      // Eagerly fetch page 2 on initial load so the list feels fuller.
+      // fetchNextPage() is a no-op if only 1 page exists.
+      if (reset) {
+        final page2 = await ordersRepositoryB2B!.fetchNextPage();
+        ordersB2B.assignAll(page2);
+      }
+
       _autoLoadMoreIfNeeded();
-    } finally {
+    } catch (_) {
+      // Ensure spinner is hidden on error (fetchFromApi suppresses its own
+      // exceptions, but guard here in case future code throws).
       if (load) {
         isLoadingB2B.value = false;
         update();

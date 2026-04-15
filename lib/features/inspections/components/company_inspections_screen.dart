@@ -64,12 +64,22 @@ class _CompanyInspectionsScreenState extends State<CompanyInspectionsScreen> {
         'Item[$i] id=${item.id} stage=${item.stage}',
         {
           'slug': item.slug ?? '(null — not started)',
-          'vehicle': '${item.vehicle.make?.label} ${item.vehicle.model?.label} ${item.vehicle.year}',
+          'vehicle':
+              '${item.vehicle.make?.label} ${item.vehicle.model?.label} ${item.vehicle.year}',
           'inspection_type': item.inspectionType?.title ?? '(none)',
           'enable': item.enable,
           'report': item.report ?? '(none)',
         },
       );
+    }
+  }
+
+  void _syncOrder() {
+    final updated = _controller.ordersB2B.firstWhereOrNull(
+      (o) => o.id == widget.order.id,
+    );
+    if (updated != null) {
+      setState(() => _order = updated);
     }
   }
 
@@ -81,8 +91,9 @@ class _CompanyInspectionsScreenState extends State<CompanyInspectionsScreen> {
     );
     await _controller.loadOrdersB2B(reset: true, cache: false);
     // Find the updated order by ID
-    final updated = _controller.ordersB2B
-        .firstWhereOrNull((o) => o.id == widget.order.id);
+    final updated = _controller.ordersB2B.firstWhereOrNull(
+      (o) => o.id == widget.order.id,
+    );
     if (updated != null && mounted) {
       setState(() => _order = updated);
       AppLogger.info(
@@ -117,16 +128,16 @@ class _CompanyInspectionsScreenState extends State<CompanyInspectionsScreen> {
             // Company name
             Text(
               widget.companyName,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             // Vehicle count subtitle
             Text(
               '${_order.meta.total} ${'Vehicles'.tr}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: isDark ? FColors.grey : FColors.textSecondary,
-                  ),
+                color: isDark ? FColors.grey : FColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -153,7 +164,7 @@ class _CompanyInspectionsScreenState extends State<CompanyInspectionsScreen> {
               inspectionTypeTitle: item.inspectionType?.title,
               onTap: () async {
                 await _controller.openB2BOrderItem(_order, item);
-                if (mounted) _refresh();
+                if (mounted) _syncOrder();
               },
             );
           },
