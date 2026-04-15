@@ -72,6 +72,12 @@ class FNetworkException extends HttpException {
         message: msg,
         duration: 4,
       );
+    } else if (statusCode == 413) {
+      FLoader.warningSnackBar(
+        title: 'File Too Large'.tr,
+        message: 'The image is too large. Please use a smaller image.'.tr,
+        duration: 5,
+      );
     } else if (statusCode >= 500) {
       FLoader.errorSnackBar(
         title: 'Server Error'.tr,
@@ -139,11 +145,15 @@ class FNetworkException extends HttpException {
       return FNetworkException('', statusCode: -1);
     }
 
+    // Guard: body may be raw HTML/text (e.g. nginx 413) instead of a JSON Map.
+    final body = response.body;
+    final isMap = body is Map;
+
     return FNetworkException(
-      response.body['error'] ?? '',
+      isMap ? (body['error'] ?? '') : '',
       statusCode: response.statusCode!,
-      title: response.body['status'] ?? 'Error',
-      errors: response.body['errors'],
+      title: isMap ? (body['status'] ?? 'Error') : 'Error',
+      errors: isMap ? (body['errors'] as Map<String, dynamic>?) : null,
     );
   }
 }

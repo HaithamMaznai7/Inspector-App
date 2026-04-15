@@ -1,23 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-/// Debug-only logger with tagged, timestamped output.
-///
-/// All methods are strict no-ops when [kDebugMode] is false — no console
-/// output, no string interpolation, no bundle impact in release builds.
-///
-/// Usage:
-/// ```dart
-/// import 'package:fahis_inspector/util/helpers/logger.dart';
-///
-/// AppLogger.trace('Notifications', 'FCM message received', message.data);
-/// AppLogger.info('Auth', 'token refreshed');
-/// AppLogger.warn('Network', 'retrying after timeout');
-/// AppLogger.error('Repository', 'fetch failed', e);
-/// AppLogger.log('Service', 'arbitrary message');
-/// ```
-///
-/// Output format:  [12:45:03] [TRACE] [Notifications] FCM message received
-///                   ↳ {key: value}   ← only printed when [data] is non-null
 class AppLogger {
   AppLogger._(); // pure static — not instantiable
 

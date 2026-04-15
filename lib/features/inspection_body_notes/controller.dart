@@ -32,7 +32,7 @@ class InspectionBodyController extends GetxController {
 
     assets = await Hive.openBox('Assets');
     assetsRepository = AssetsRepository(assets);
-    
+
     bodySides.listen((data) {
       // mainController.updateInspection(bodySides: data);
     });
@@ -83,7 +83,6 @@ class InspectionBodyController extends GetxController {
     } on FNetworkException catch (_) {
       // e.notify();
     } catch (_) {
-
     } finally {
       isLoading.value = false;
       update();
@@ -119,6 +118,8 @@ class InspectionBodyController extends GetxController {
         title: FTexts.markerSavedSuccess.tr,
         message: FTexts.markerSavedSuccessMsg.tr,
       );
+    } on FNetworkException {
+      // no second snackbar needed.
     } catch (_) {
       FLoader.errorSnackBar(
         title: FTexts.markerErrorTitle.tr,
@@ -137,6 +138,8 @@ class InspectionBodyController extends GetxController {
         title: FTexts.markerMovedSuccess.tr,
         message: FTexts.markerMovedSuccessMsg.tr,
       );
+    } on FNetworkException {
+      // Repository already called e.notify() — no second snackbar needed.
     } catch (_) {
       FLoader.errorSnackBar(
         title: FTexts.markerErrorTitle.tr,
@@ -152,6 +155,8 @@ class InspectionBodyController extends GetxController {
         title: FTexts.markerDeletedSuccess.tr,
         message: FTexts.markerDeletedSuccessMsg.tr,
       );
+    } on FNetworkException {
+      // Repository already called e.notify() — no second snackbar needed.
     } catch (_) {
       FLoader.errorSnackBar(
         title: FTexts.markerErrorTitle.tr,

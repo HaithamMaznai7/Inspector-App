@@ -1,3 +1,4 @@
+import 'package:fahis_inspector/common/widgets/camera/image_quality_checker.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/inspection_body_notes.dart';
 import 'package:fahis_inspector/models/marker.dart';
@@ -73,16 +74,20 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
       requestMethod: RequestMethod.post,
     );
 
+    final imageFile = note.file != null
+        ? await ImageCompressor.compress(note.file!)
+        : null;
+
     n.setBody = FormData({
       'dx': note.dx,
       'dy': note.dy,
       'type': note.type,
       'note': note.note,
-      if (note.file != null)
+      if (imageFile != null)
         'image': MultipartFile(
-          note.file!,
-          filename: note.file!.path.split('/').last,
-          contentType: 'image/jpeg', // optional
+          imageFile,
+          filename: imageFile.path.split('/').last,
+          contentType: 'image/jpeg',
         ),
     });
 
@@ -96,8 +101,7 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
       _data.assignAll(bodySides);
     } on FNetworkException catch (e) {
       e.notify();
-    } catch (e) {
-      dd(e);
+      rethrow;
     } finally {
       await saveToCache();
     }
@@ -109,16 +113,20 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
       requestMethod: RequestMethod.post,
     );
 
+    final imageFile = note.file != null
+        ? await ImageCompressor.compress(note.file!)
+        : null;
+
     n.setBody = FormData({
       'dx': note.dx,
       'dy': note.dy,
       'type': note.type,
       'note': note.note,
-      if (note.file != null)
+      if (imageFile != null)
         'image': MultipartFile(
-          note.file!,
-          filename: note.file!.path.split('/').last,
-          contentType: 'image/jpeg', // optional
+          imageFile,
+          filename: imageFile.path.split('/').last,
+          contentType: 'image/jpeg',
         ),
     });
 
@@ -132,8 +140,7 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
       _data.assignAll(bodySides);
     } on FNetworkException catch (e) {
       e.notify();
-    } catch (e) {
-      dd(e);
+      rethrow;
     } finally {
       await saveToCache();
     }
@@ -155,8 +162,7 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
       _data.assignAll(bodySides);
     } on FNetworkException catch (e) {
       e.notify();
-    } catch (e) {
-      dd(e);
+      rethrow;
     } finally {
       await saveToCache();
     }
