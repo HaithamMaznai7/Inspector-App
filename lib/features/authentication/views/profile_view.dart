@@ -108,7 +108,9 @@ class _ProfileViewState extends State<ProfileView> {
     if (avatarUrl != null && !avatarUrl.contains('ui-avatars.com')) {
       return avatarUrl;
     }
-    final initial = (name ?? 'U').isNotEmpty ? name![0] : 'U';
+    final initial = (name != null && name.isNotEmpty)
+        ? name[0].toUpperCase()
+        : 'U';
     return 'https://ui-avatars.com/api/?name=$initial&color=FF7D41&background=FFF0E8&format=png&size=128';
   }
 
@@ -203,142 +205,143 @@ class _ProfileViewState extends State<ProfileView> {
                   horizontal: FSizes.lg,
                   vertical: FSizes.lg,
                 ),
-              child: Column(
-                children: [
-                  // Avatar with edit button
-                  Center(
-                    child: Stack(
-                      children: [
-                        // Tap avatar to view full screen
-                        GestureDetector(
-                          onTap: _viewFullScreen,
-                          child: CircleAvatar(
-                            radius: FSizes.avatarRadiusMd,
-                            backgroundColor: FColors.grey.withValues(
-                              alpha: 0.2,
-                            ),
-                            backgroundImage: _pickedPhoto != null
-                                ? FileImage(_pickedPhoto!)
-                                : CachedNetworkImageProvider(
-                                    _safeAvatarUrl(
-                                      _profile?.avatar,
-                                      _profile?.name,
+                child: Column(
+                  children: [
+                    // Avatar with edit button
+                    Center(
+                      child: Stack(
+                        children: [
+                          // Tap avatar to view full screen
+                          GestureDetector(
+                            onTap: _viewFullScreen,
+                            child: CircleAvatar(
+                              radius: FSizes.avatarRadiusMd,
+                              backgroundColor: FColors.grey.withValues(
+                                alpha: 0.2,
+                              ),
+                              backgroundImage: _pickedPhoto != null
+                                  ? FileImage(_pickedPhoto!)
+                                  : CachedNetworkImageProvider(
+                                      _safeAvatarUrl(
+                                        _profile?.avatar,
+                                        _profile?.name,
+                                      ),
                                     ),
-                                  ),
-                            onBackgroundImageError: (_, _) {},
+                              onBackgroundImageError: (_, _) {},
+                            ),
                           ),
-                        ),
-                        // Edit button — bottom-right of avatar
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: _pickImageFromGallery,
-                            child: Container(
-                              padding: const EdgeInsets.all(FSizes.xs),
-                              decoration: BoxDecoration(
-                                color: FColors.primaryColor,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Theme.of(
-                                    context,
-                                  ).scaffoldBackgroundColor,
-                                  width: 2,
+                          // Edit button — bottom-right of avatar
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: _pickImageFromGallery,
+                              child: Container(
+                                padding: const EdgeInsets.all(FSizes.xs),
+                                decoration: BoxDecoration(
+                                  color: FColors.primaryColor,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Theme.of(
+                                      context,
+                                    ).scaffoldBackgroundColor,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Iconsax.camera,
+                                  size: FSizes.iconSm,
+                                  color: FColors.white,
                                 ),
                               ),
-                              child: const Icon(
-                                Iconsax.camera,
-                                size: FSizes.iconSm,
-                                color: FColors.white,
-                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: FSizes.lg),
-
-                  // Name (editable)
-                  _buildTextField(
-                    label: FTexts.profileName.tr,
-                    controller: _nameController,
-                    hint: FTexts.profileNameHint.tr,
-                    icon: Iconsax.user,
-                  ),
-                  const SizedBox(height: FSizes.md),
-
-                  // Email (read-only)
-                  _buildInfoTile(
-                    icon: Iconsax.sms,
-                    label: FTexts.profileEmail.tr,
-                    value: _profile?.email ?? '-',
-                  ),
-                  const SizedBox(height: FSizes.sm),
-
-                  // Phone (read-only)
-                  _buildInfoTile(
-                    icon: Iconsax.call,
-                    label: FTexts.profilePhone.tr,
-                    value: _profile?.mobile ?? '-',
-                  ),
-                  const SizedBox(height: FSizes.md),
-
-                  // City dropdown
-                  _buildCityDropdown(),
-                  const SizedBox(height: FSizes.lg),
-
-                  // Update button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: Theme.of(context).elevatedButtonTheme.style,
-                      onPressed: _isUpdating ? null : _updateProfile,
-                      child: _isUpdating
-                          ? const SizedBox(
-                              height: FSizes.iconInlineSm,
-                              width: FSizes.iconInlineSm,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: FColors.white,
-                              ),
-                            )
-                          : Text(FTexts.profileUpdate.tr),
-                    ),
-                  ),
-
-                  // Delete account — destructive zone
-                  const SizedBox(height: FSizes.xl),
-                  Divider(color: FColors.grey.withValues(alpha: 0.3)),
-                  const SizedBox(height: FSizes.md),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
-                        side: const BorderSide(color: Colors.red),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: FSizes.md,
-                        ),
+                        ],
                       ),
-                      onPressed:
-                          _isDeletingAccount ? null : _confirmDeleteAccount,
-                      icon: _isDeletingAccount
-                          ? const SizedBox(
-                              height: FSizes.iconInlineSm,
-                              width: FSizes.iconInlineSm,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.red,
-                              ),
-                            )
-                          : const Icon(Iconsax.trash, size: FSizes.iconSm),
-                      label: Text(FTexts.deleteAccountBtn.tr),
                     ),
-                  ),
-                  const SizedBox(height: FSizes.md),
-                ],
-              ),
+                    const SizedBox(height: FSizes.lg),
+
+                    // Name (editable)
+                    _buildTextField(
+                      label: FTexts.profileName.tr,
+                      controller: _nameController,
+                      hint: FTexts.profileNameHint.tr,
+                      icon: Iconsax.user,
+                    ),
+                    const SizedBox(height: FSizes.md),
+
+                    // Email (read-only)
+                    _buildInfoTile(
+                      icon: Iconsax.sms,
+                      label: FTexts.profileEmail.tr,
+                      value: _profile?.email ?? '-',
+                    ),
+                    const SizedBox(height: FSizes.sm),
+
+                    // Phone (read-only)
+                    _buildInfoTile(
+                      icon: Iconsax.call,
+                      label: FTexts.profilePhone.tr,
+                      value: _profile?.mobile ?? '-',
+                    ),
+                    const SizedBox(height: FSizes.md),
+
+                    // City dropdown
+                    _buildCityDropdown(),
+                    const SizedBox(height: FSizes.lg),
+
+                    // Update button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: Theme.of(context).elevatedButtonTheme.style,
+                        onPressed: _isUpdating ? null : _updateProfile,
+                        child: _isUpdating
+                            ? const SizedBox(
+                                height: FSizes.iconInlineSm,
+                                width: FSizes.iconInlineSm,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: FColors.white,
+                                ),
+                              )
+                            : Text(FTexts.profileUpdate.tr),
+                      ),
+                    ),
+
+                    // Delete account — destructive zone
+                    const SizedBox(height: FSizes.xl),
+                    Divider(color: FColors.grey.withValues(alpha: 0.3)),
+                    const SizedBox(height: FSizes.md),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          side: const BorderSide(color: Colors.red),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: FSizes.md,
+                          ),
+                        ),
+                        onPressed: _isDeletingAccount
+                            ? null
+                            : _confirmDeleteAccount,
+                        icon: _isDeletingAccount
+                            ? const SizedBox(
+                                height: FSizes.iconInlineSm,
+                                width: FSizes.iconInlineSm,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.red,
+                                ),
+                              )
+                            : const Icon(Iconsax.trash, size: FSizes.iconSm),
+                        label: Text(FTexts.deleteAccountBtn.tr),
+                      ),
+                    ),
+                    const SizedBox(height: FSizes.md),
+                  ],
+                ),
               ),
             ),
     );
@@ -368,7 +371,11 @@ class _ProfileViewState extends State<ProfileView> {
   }) {
     return ListTile(
       dense: true,
-      leading: Icon(icon, color: FColors.primaryColor, size: FSizes.iconInlineSm),
+      leading: Icon(
+        icon,
+        color: FColors.primaryColor,
+        size: FSizes.iconInlineSm,
+      ),
       title: Text(
         label,
         style: Theme.of(
@@ -634,7 +641,9 @@ class _ProfileViewState extends State<ProfileView> {
                                         ),
                                       )
                                     else
-                                      const SizedBox(width: FSizes.fontSizeLg + FSizes.xs),
+                                      const SizedBox(
+                                        width: FSizes.fontSizeLg + FSizes.xs,
+                                      ),
                                   ],
                                 ),
                               ),

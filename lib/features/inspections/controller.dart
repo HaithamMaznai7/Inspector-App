@@ -337,12 +337,6 @@ class InspectionsController extends GetxController
         '${RoutingUrl.inspections}/${inspection.slug}',
         arguments: inspection,
       );
-      // Refresh list when returning from details so stage labels are up to date
-      if (selectedStage.value == InspectionStage.all && !isSearchActive.value) {
-        loadOrders(reset: true);
-      } else {
-        load(reset: true);
-      }
     } on FNetworkException catch (e) {
       e.notify();
     } catch (e) {
@@ -376,9 +370,6 @@ class InspectionsController extends GetxController
       await Get.toNamed(
         '${RoutingUrl.inspections}/$slug',
       );
-
-      // Refresh orders list
-      loadOrders(reset: true);
     } on FNetworkException catch (e) {
       e.notify();
     } catch (e) {
@@ -412,14 +403,63 @@ class InspectionsController extends GetxController
       await Get.toNamed(
         '${RoutingUrl.inspections}/$slug',
       );
-
-      // Refresh b2b orders list
-      loadOrdersB2B(reset: true);
     } on FNetworkException catch (e) {
       e.notify();
     } catch (e) {
       dd(e.toString());
     }
+  }
+
+  /// Patches a single inspection's stage in-memory after the details screen
+  /// reports a successful stage change. Preserves pagination + scroll state.
+  void applyInspectionUpdate(Inspection updated) {
+    // Guard: controller may be closing (e.g. Get.offAllNamed called right after
+    // a terminal stage change). Touching RxLists while disposed causes
+    // "ScrollController used after disposed" via post-frame callbacks.
+    if (_isClosed) return;
+
+    final slug = updated.slug;
+    if (slug.isEmpty) return;
+
+    bool touched = false;
+
+    // 1. Inspections list (filter / search mode)
+    for (final ins in inspections) {
+      if (ins.slug == slug) {
+        ins.stage = updated.stage;
+        touched = true;
+        break;
+      }
+    }
+    if (touched) inspections.refresh();
+
+    // 2. B2C orders → items (default Individuals mode)
+    touched = false;
+    for (final order in orders) {
+      for (final item in order.items) {
+        if (item.slug == slug) {
+          item.stage = updated.stage.value ?? item.stage;
+          touched = true;
+          break;
+        }
+      }
+      if (touched) break;
+    }
+    if (touched) orders.refresh();
+
+    // 3. B2B orders → items (Companies mode)
+    touched = false;
+    for (final order in ordersB2B) {
+      for (final item in order.items) {
+        if (item.slug == slug) {
+          item.stage = updated.stage.value ?? item.stage;
+          touched = true;
+          break;
+        }
+      }
+      if (touched) break;
+    }
+    if (touched) ordersB2B.refresh();
   }
 
   /// Load B2B orders from API

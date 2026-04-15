@@ -315,6 +315,11 @@ class InspectionDetailsController extends GetxController
     try {
       inspection.value = await repository!.update(inspection.value!);
       success = true;
+
+      // Propagate stage change to the list without refetching.
+      if (InspectionsBinding().isRegistered && inspection.value != null) {
+        InspectionsBinding().instance.applyInspectionUpdate(inspection.value!);
+      }
     } on FNetworkException catch (e) {
       e.notify();
       inspection.value?.stage = oldValue;
