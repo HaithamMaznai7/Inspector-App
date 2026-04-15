@@ -5,6 +5,7 @@ import 'package:fahis_inspector/models/order.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
+import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/helpers/stage_mapper.dart';
 import 'package:flutter/material.dart';
@@ -104,8 +105,9 @@ class _CompanyInspectionsScreenState extends State<CompanyInspectionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = FHelper.isDarkMode(context);
     return Scaffold(
-      backgroundColor: FColors.softGrey,
+      backgroundColor: isDark ? FColors.dark : FColors.softGrey,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading: BackPageButton(),
@@ -123,7 +125,7 @@ class _CompanyInspectionsScreenState extends State<CompanyInspectionsScreen> {
             Text(
               '${_order.meta.total} ${'Vehicles'.tr}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: FColors.textSecondary,
+                    color: isDark ? FColors.grey : FColors.textSecondary,
                   ),
             ),
           ],
