@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:fahis_inspector/common/widgets/camera/image_source_picker.dart';
+import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/models/photo.dart';
 import 'package:fahis_inspector/resources/inspection_photos_repository.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
@@ -51,38 +53,7 @@ class InspectionPhotosController extends GetxController {
   void onInit() async {
     super.onInit();
     _log('onInit — controller created');
-
-    photos.listen((data) {
-      // RxList.assignAll fires TWO events: first clear() → empty list, then
-      // addAll() → full list. Skip the intermediate empty event during upload
-      // so it never resets the user's active tab.
-      if (data.isEmpty && _isMutating) {
-        _log('photos.listen [onInit] fired — photos=0 during upload, SKIPPING');
-        return;
-      }
-
-      _log('photos.listen [onInit] fired — '
-          'photos=${data.length}, '
-          'category.value=${category.value}');
-
-      final newCats = data.map((p) => p.type).toSet().toList();
-      categories.assignAll(newCats);
-      categories.refresh();
-
-      // Only auto-select a category on first load — never override the user's
-      // active tab choice when photos update (e.g. after an upload).
-      if (category.value == null && categories.isNotEmpty) {
-        _log('photos.listen [onInit] → auto-selecting category: ${categories.first}');
-        category.value = categories.first;
-      } else if (categories.isEmpty) {
-        _log('photos.listen [onInit] → categories empty, clearing category');
-        category.value = null;
-      } else {
-        _log('photos.listen [onInit] → category kept at: ${category.value}');
-      }
-
-      update();
-    });
+   
   }
 
   @override
@@ -254,14 +225,24 @@ class InspectionPhotosController extends GetxController {
     final savedCategory = category.value;
     _log('delete — photo.id=${photo.id} | savedCategory=$savedCategory');
     deletingIds.add(photo.id);
+    update();
+    var ok = false;
     try {
       await repository.delete(photo);
+      ok = true;
     } finally {
       deletingIds.remove(photo.id);
       if (savedCategory != null) {
         category.value = savedCategory;
       }
       update();
+    }
+    if (ok) {
+      FLoader.successSnackBar(
+        title: InspectionPage.deletePhoto.tr,
+        message: InspectionPage.photoDeletedSuccess.tr,
+        duration: 2,
+      );
     }
   }
 }

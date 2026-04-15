@@ -63,6 +63,7 @@ class InspectionPage {
   static const String takePhoto = 'takePhoto';
   static const String deletePhoto = 'deletePhoto';
   static const String deletePhotoConfirm = 'deletePhotoConfirm';
+  static const String photoDeletedSuccess = 'photoDeletedSuccess';
   static const String deleteAllPhotos = 'deleteAllPhotos';
   static const String deleteAllPhotosConfirm = 'deleteAllPhotosConfirm';
   static const String deleteAllPhotosSuccess = 'deleteAllPhotosSuccess';

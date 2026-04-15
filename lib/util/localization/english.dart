@@ -162,6 +162,7 @@ class English {
     InspectionPage.deletePhoto: 'Delete Photo',
     InspectionPage.deletePhotoConfirm:
         'Are you sure you want to delete this photo?',
+    InspectionPage.photoDeletedSuccess: 'The photo was removed successfully.',
     InspectionPage.deleteAllPhotos: 'Delete All Photos',
     InspectionPage.deleteAllPhotosConfirm:
         'Are you sure? All uploaded photos will be deleted and reset.',

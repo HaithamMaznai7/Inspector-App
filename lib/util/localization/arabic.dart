@@ -160,6 +160,7 @@ class Arabic {
     InspectionPage.takePhoto: 'التقاط صورة',
     InspectionPage.deletePhoto: 'حذف الصورة',
     InspectionPage.deletePhotoConfirm: 'هل أنت متأكد أنك تريد حذف هذه الصورة؟',
+    InspectionPage.photoDeletedSuccess: 'تم حذف الصورة بنجاح.',
     InspectionPage.deleteAllPhotos: 'حذف جميع الصور',
     InspectionPage.deleteAllPhotosConfirm:
         'هل أنت متأكد؟ سيتم حذف جميع الصور المرفوعة وإعادة تعيينها.',

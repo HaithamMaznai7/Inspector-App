@@ -381,15 +381,17 @@ class _PhotoGrid extends StatelessWidget {
       itemBuilder: (context, index) {
         final photo = photos[index];
         final isUploading = controller.uploadingIds.contains(photo.id);
+        final isDeleting = controller.deletingIds.contains(photo.id);
         return _PhotoGridCell(
           photo: photo,
           isUploading: isUploading,
-          onTap: isUploading
+          isDeleting: isDeleting,
+          onTap: (isUploading || isDeleting)
               ? null
               : photo.image != null
               ? () => _showFullImage(context, photo)
               : () => controller.picking(photo),
-          onDelete: photo.image != null
+          onDelete: (photo.image != null && !isDeleting)
               ? () => _confirmDelete(context, controller, photo)
               : null,
         );
@@ -449,12 +451,14 @@ class _PhotoGridCell extends StatelessWidget {
   const _PhotoGridCell({
     required this.photo,
     required this.isUploading,
+    required this.isDeleting,
     required this.onTap,
     required this.onDelete,
   });
 
   final Photo photo;
   final bool isUploading;
+  final bool isDeleting;
   final VoidCallback? onTap;
   final VoidCallback? onDelete;
 
@@ -513,23 +517,35 @@ class _PhotoGridCell extends StatelessWidget {
                       errorWidget: (_, _, _) => _placeholder(),
                     ),
             ),
-            // Delete badge — top-start
+            // Dim overlay while deleting
+            if (isDeleting)
+              Container(color: Colors.black.withValues(alpha: 0.35)),
+            // Delete badge — top-start (spinner while deleting)
             PositionedDirectional(
               top: FSizes.xs,
               start: FSizes.xs,
               child: GestureDetector(
-                onTap: onDelete,
+                onTap: isDeleting ? null : onDelete,
                 child: Container(
                   padding: const EdgeInsets.all(FSizes.xs),
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Iconsax.trash,
-                    color: FColors.error,
-                    size: FSizes.fontSizeSm,
-                  ),
+                  child: isDeleting
+                      ? const SizedBox(
+                          width: FSizes.fontSizeSm,
+                          height: FSizes.fontSizeSm,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: FColors.error,
+                          ),
+                        )
+                      : const Icon(
+                          Iconsax.trash,
+                          color: FColors.error,
+                          size: FSizes.fontSizeSm,
+                        ),
                 ),
               ),
             ),

@@ -25,6 +25,11 @@ class ImageCompressor {
   /// original if every pass fails.
   static Future<File> compress(File imageFile, {int? maxBytes}) async {
     final limit = maxBytes ?? _targetMaxBytes;
+
+    // Skip compression entirely if the file is already small enough 
+    
+    if (imageFile.lengthSync() <= limit) return imageFile;
+
     File? best;
 
     for (var i = 0; i < _passes.length; i++) {
