@@ -386,6 +386,7 @@ class _PhotoGrid extends StatelessWidget {
           photo: photo,
           isUploading: isUploading,
           isDeleting: isDeleting,
+          isPendingSync: controller.hasPendingUpload(photo.id),
           onTap: (isUploading || isDeleting)
               ? null
               : photo.image != null
@@ -452,6 +453,7 @@ class _PhotoGridCell extends StatelessWidget {
     required this.photo,
     required this.isUploading,
     required this.isDeleting,
+    required this.isPendingSync,
     required this.onTap,
     required this.onDelete,
   });
@@ -459,6 +461,8 @@ class _PhotoGridCell extends StatelessWidget {
   final Photo photo;
   final bool isUploading;
   final bool isDeleting;
+  /// True when a local upload is queued but hasn't synced to the server yet.
+  final bool isPendingSync;
   final VoidCallback? onTap;
   final VoidCallback? onDelete;
 
@@ -574,22 +578,47 @@ class _PhotoGridCell extends StatelessWidget {
     // ── Empty state: dashed border, camera icon, tappable ──
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-          border: Border.all(
-            color: FColors.primaryColor.withValues(alpha: 0.4),
-            width: 1.5,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+              border: Border.all(
+                color: isPendingSync
+                    ? FColors.primaryColor.withValues(alpha: 0.7)
+                    : FColors.primaryColor.withValues(alpha: 0.4),
+                width: 1.5,
+              ),
+            ),
+            child: Center(
+              child: Icon(
+                Iconsax.camera,
+                color: FColors.primaryColor,
+                size: FSizes.iconMd,
+              ),
+            ),
           ),
-        ),
-        child: Center(
-          child: Icon(
-            Iconsax.camera,
-            color: FColors.primaryColor,
-            size: FSizes.iconMd,
-          ),
-        ),
+          // Pending-sync badge — shown when upload is queued but not yet synced
+          if (isPendingSync)
+            PositionedDirectional(
+              top: FSizes.xs,
+              end: FSizes.xs,
+              child: Container(
+                padding: const EdgeInsets.all(FSizes.xs),
+                decoration: const BoxDecoration(
+                  color: FColors.primaryColor,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.cloud_upload_outlined,
+                  color: Colors.white,
+                  size: FSizes.iconXs,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

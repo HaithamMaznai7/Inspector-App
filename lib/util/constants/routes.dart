@@ -46,4 +46,5 @@ class BindingTags {
   static const String notifications = 'Notifications';
   static const String accessRequest = 'AccessRequest';
   static const String paintGauge = 'PaintGauge';
+  static const String connectionService = 'ConnectionService';
 }

@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:fahis_inspector/enums/point_status.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/point.dart';
 import 'package:fahis_inspector/resources/repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
+import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
@@ -67,6 +70,16 @@ class InspectionPointsRepository extends ListRepository<Point> {
   }
 
   Future<void> update(Point point, PointStatus status) async {
+    final localImagePath = point.file?.path;
+
+    // Persist before POST so the change survives app-kill while offline.
+    _savePendingPoint(point.id, status, point.note, localImagePath);
+
+    // Optimistic local update — UI reflects the change immediately.
+    point.setStatus = status;
+    updatePoints(point);
+    await saveToCache();
+
     try {
       Network n = Network(
         endpoint: '${EndPoints.points}/${point.id}',
@@ -80,7 +93,7 @@ class InspectionPointsRepository extends ListRepository<Point> {
           'image': MultipartFile(
             point.file!,
             filename: point.file!.path.split('/').last,
-            contentType: 'image/jpeg', // optional
+            contentType: 'image/jpeg',
           ),
       });
 
@@ -88,13 +101,14 @@ class InspectionPointsRepository extends ListRepository<Point> {
       point = Point.fromJson(r.data);
 
       updatePoints(point);
+      await saveToCache();
+      _clearPendingPoint(point.id);
     } on FNetworkException catch (e) {
+      // Leave pending — will retry on reconnect.
+      AppLogger.error('[Offline]', 'write points/$slug/point${point.id}: POST failed', e);
       e.notify();
-      // dd(e.toString());
     } catch (e) {
       dd(e);
-    } finally {
-      await saveToCache();
     }
   }
 
@@ -124,4 +138,91 @@ class InspectionPointsRepository extends ListRepository<Point> {
     await box.put('Points', points);
   }
 
+  // ── Pending points (offline-first write) ──────────────────────────────────
+
+  String get _pendingKey => 'pending_points_$slug';
+
+  void _savePendingPoint(
+    int pointId,
+    PointStatus status,
+    String? note,
+    String? localImagePath,
+  ) {
+    final pending = (box.get(_pendingKey) as List?)?.toList() ?? [];
+    // Replace existing entry for same point (user changed status again before sync).
+    pending.removeWhere((e) => (e is Map) && e['pointId'] == pointId);
+    pending.add({
+      'pointId': pointId,
+      'status': status.value,
+      'note': note,
+      'localImagePath': localImagePath,
+    });
+    box.put(_pendingKey, pending);
+    AppLogger.info('[Offline]', 'write points/$slug/point$pointId: pending=true');
+  }
+
+  void _clearPendingPoint(int pointId) {
+    final pending = (box.get(_pendingKey) as List?)?.toList() ?? [];
+    pending.removeWhere((e) => (e is Map) && e['pointId'] == pointId);
+    box.put(_pendingKey, pending);
+  }
+
+  List<Map<String, dynamic>> _pendingPoints() {
+    final raw = box.get(_pendingKey) as List?;
+    if (raw == null || raw.isEmpty) return [];
+    return raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+  }
+
+  /// True if [pointId] has a pending (unsynced) POST in the local store.
+  bool hasPendingPoint(int pointId) =>
+      _pendingPoints().any((e) => e['pointId'] == pointId);
+
+  /// Retries all point updates that failed while offline.
+  Future<void> flushPending() async {
+    final entries = _pendingPoints();
+    if (entries.isEmpty) return;
+    AppLogger.info('[Offline]', 'flush points/$slug: ${entries.length} pending points');
+
+    for (final entry in entries) {
+      final pointId = entry['pointId'] as int;
+      final statusValue = entry['status'] as String;
+      final note = entry['note'] as String?;
+      final localImagePath = entry['localImagePath'] as String?;
+
+      final n = Network(
+        endpoint: '${EndPoints.points}/$pointId',
+        requestMethod: RequestMethod.post,
+      );
+
+      File? imageFile;
+      if (localImagePath != null) {
+        final f = File(localImagePath);
+        if (f.existsSync()) imageFile = f;
+      }
+
+      n.setBody = FormData({
+        'status': statusValue,
+        'note': note,
+        if (imageFile != null)
+          'image': MultipartFile(
+            imageFile,
+            filename: imageFile.path.split('/').last,
+            contentType: 'image/jpeg',
+          ),
+      });
+
+      try {
+        final r = await n.response(RoutingUrl.home);
+        final point = Point.fromJson(r.data);
+        updatePoints(point);
+        await saveToCache();
+        _clearPendingPoint(pointId);
+        AppLogger.info('[Offline]', 'flush points/$slug/point$pointId: success');
+      } on FNetworkException catch (e) {
+        AppLogger.error('[Offline]', 'flush points/$slug/point$pointId: failed', e);
+      } catch (e) {
+        dd('flushPending points error: $e');
+      }
+    }
+  }
 }

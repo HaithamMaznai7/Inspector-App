@@ -5,6 +5,7 @@ import 'package:fahis_inspector/models/vehicle_details.dart';
 import 'package:fahis_inspector/resources/assets_repository.dart';
 import 'package:fahis_inspector/resources/vehicle_details_repository.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/plate_converter.dart';
@@ -49,6 +50,9 @@ class VehicleDetailsController extends GetxController {
   // is disposed. Guards all async continuations that run after await gaps.
   bool _disposed = false;
 
+  Worker? _reconnectWorker;
+  bool _repositoryReady = false;
+
   @override
   void onInit() async {
     super.onInit();
@@ -72,13 +76,11 @@ class VehicleDetailsController extends GetxController {
   @override
   void onReady() {
     super.onReady();
-    // Run on first load AND every URL change
-    // ever(Get.routing.obs, (_) {
-    //   final newSlug = Get.parameters['slug'];
-    //   if (newSlug != null && newSlug != slug) {
-    //     loadBySlug();
-    //   }
-    // });
+
+    _reconnectWorker = ever(
+      ConnectionService.instance.onReconnect,
+      (_) { if (_repositoryReady) repository!.flushPending(); },
+    );
 
     // Initial load
     loadBySlug();
@@ -102,6 +104,7 @@ class VehicleDetailsController extends GetxController {
     box = await Hive.openBox('Inspection_$slug');
     if (_disposed) return;
     repository = VehicleDetailsRepository(slug: slug!, box: box!);
+    _repositoryReady = true;
 
     // Fast path (navigation with arguments)
     if (Get.arguments is VehicleDetails) {
@@ -126,11 +129,15 @@ class VehicleDetailsController extends GetxController {
     updateDetails();
     isLoading.value = false;
     update();
+
+    // Flush any vehicle details pending from a prior offline session.
+    if (_repositoryReady) await repository!.flushPending();
   }
 
   @override
   void onClose() {
     _disposed = true;
+    _reconnectWorker?.dispose();
     super.onClose();
     vinController.dispose();
     plateController.dispose();

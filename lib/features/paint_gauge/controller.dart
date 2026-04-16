@@ -10,6 +10,7 @@ import 'package:fahis_inspector/paint_gauge/services/gauge_command_service.dart'
 import 'package:fahis_inspector/paint_gauge/ui/device_scan_page.dart';
 import 'package:fahis_inspector/resources/paint_gauge_repository.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
@@ -99,6 +100,9 @@ class PaintGaugeController extends GetxController {
   StreamSubscription? _autoConnectScanSub;
   Timer? _autoConnectTimeout;
 
+  // ── Reconnect listener ─────────────────────────────────────────────────────
+  Worker? _reconnectWorker;
+
   // Session timing
   DateTime? _sessionStartedAt;
 
@@ -123,6 +127,15 @@ class PaintGaugeController extends GetxController {
     await _openHiveBox();
     _loadCachedReadings();
     await _fetchPanels();
+    // Retry any readings left as pending from a prior session.
+    // Fire-and-forget — runs in background, no-op when nothing pending.
+    flushPending();
+
+    // Also flush on reconnect (covers "went offline while gauge was open").
+    _reconnectWorker = ever(
+      ConnectionService.instance.onReconnect,
+      (_) => flushPending(),
+    );
   }
 
   @override
@@ -135,6 +148,7 @@ class PaintGaugeController extends GetxController {
     _disconnect();
     _connectionStateSub?.cancel();
     _dataSub?.cancel();
+    _reconnectWorker?.dispose();
     super.onClose();
   }
 
@@ -182,15 +196,27 @@ class PaintGaugeController extends GetxController {
     AppLogger.info(_tag, 'Loaded ${_cachedReadings.length} cached readings');
   }
 
-  void _saveCachedReading(CarPart part, PartMeasurement m) {
+  void _saveCachedReading(CarPart part, PartMeasurement m, {bool? pending}) {
     if (_repository == null) return;
     _cachedReadings[part.backendId] = CachedReading(
       readings: List<double>.from(m.readings),
       substrate: m.substrate?.label,
     );
-    _repository!.saveReadingsCache(
-      _cachedReadings.map((k, v) => MapEntry(k, v.toJson())),
-    );
+    // Preserve existing pending flags across unrelated entries; caller sets
+    // the flag for the specific panel via [pending] or via [setPanelPending].
+    final raw = _repository!.loadReadingsCache();
+    final merged = <int, Map<String, dynamic>>{};
+    for (final entry in _cachedReadings.entries) {
+      final json = entry.value.toJson();
+      final prev = raw[entry.key];
+      if (entry.key == part.backendId && pending != null) {
+        json['pending'] = pending;
+      } else if (prev != null && prev['pending'] == true) {
+        json['pending'] = true;
+      }
+      merged[entry.key] = json;
+    }
+    _repository!.saveReadingsCache(merged);
   }
 
   void _clearCachedReading(CarPart part) {
@@ -540,6 +566,14 @@ class PaintGaugeController extends GetxController {
 
     _postingPanelIds.add(panel.id);
 
+    // Mark pending in Hive BEFORE the network call so the reading survives
+    // app-kill or failure and can be retried later.
+    await _repository?.setPanelPending(panel.id, true);
+    AppLogger.info(
+      '[Offline]',
+      'write paint/$slug/panel${panel.id}: pending=true',
+    );
+
     try {
       await _repository!.updatePanel(
         panel,
@@ -548,6 +582,11 @@ class PaintGaugeController extends GetxController {
         measurementCount: m.readings.length,
       );
       _dirtyPanelIds.remove(panel.id);
+      await _repository?.setPanelPending(panel.id, false);
+      AppLogger.info(
+        '[Offline]',
+        'flush paint/$slug/panel${panel.id}: success',
+      );
 
       // Update reactive map so UI reflects saved state
       final existing = _backendMap[panel.id];
@@ -558,16 +597,64 @@ class PaintGaugeController extends GetxController {
         _backendMap.refresh();
       }
     } on FNetworkException catch (e) {
-      AppLogger.error(_tag, 'POST failed for panel ${panel.name}', e);
-      FLoader.warningSnackBar(
-        title: PaintGaugePage.clearFailed.tr,
-        message: panel.name,
+      // Leave pending=true so the reconnect flush retries this panel.
+      AppLogger.error(
+        '[Offline]',
+        'flush paint/$slug/panel${panel.id}: failed',
+        e,
       );
     } catch (e) {
       AppLogger.error(_tag, 'POST failed for panel ${panel.name}', e);
     } finally {
       _postingPanelIds.remove(panel.id);
     }
+  }
+
+  /// Retries any readings that were cached with `pending: true` — e.g. from a
+  /// prior session that ended before the POST could succeed.
+  ///
+  /// Safe to call repeatedly: guarded by `_postingPanelIds` so concurrent
+  /// calls won't double-POST the same panel.
+  Future<void> flushPending() async {
+    if (_repository == null) return;
+    final pendingIds = _repository!.pendingPanelIds();
+    if (pendingIds.isEmpty) return;
+
+    AppLogger.info(
+      '[Offline]',
+      'flush paint/$slug: ${pendingIds.length} pending records',
+    );
+
+    for (final backendId in pendingIds) {
+      final bp = _backendMap[backendId];
+      if (bp == null) continue;
+
+      final cached = _cachedReadings[backendId];
+      if (cached == null || cached.readings.isEmpty) continue;
+
+      final carPart = CarPart.values.firstWhereOrNull(
+        (p) => p.backendId == backendId,
+      );
+      if (carPart == null) continue;
+
+      // Rehydrate a PartMeasurement from the cached readings so _postPanel
+      // can reuse its existing logic without duplicating the POST shape.
+      final m = PartMeasurement(part: carPart);
+      for (final r in cached.readings) {
+        m.update(r, _substrateFromLabel(cached.substrate));
+      }
+
+      _dirtyPanelIds.add(backendId);
+      await _postPanel(bp, m);
+    }
+  }
+
+  SubstrateType _substrateFromLabel(String? label) {
+    if (label == null) return SubstrateType.fe;
+    for (final s in SubstrateType.values) {
+      if (s.label == label) return s;
+    }
+    return SubstrateType.fe;
   }
 
   Future<void> _flushAllDirty() async {

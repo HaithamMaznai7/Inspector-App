@@ -653,5 +653,9 @@ class English {
     PaintGaugePage.panelRightFrontDoor: 'Right Front Door',
     PaintGaugePage.panelRightAPillar: 'Right A-Pillar',
     PaintGaugePage.panelRightFrontFender: 'Right Front Fender',
+
+    // Offline / sync messages
+    'saved_locally_will_sync': 'Saved — will sync when online',
+    'offline_bar_message': 'No connection — check your internet',
   };
 }

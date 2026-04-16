@@ -1,18 +1,3 @@
-/// Domain utility for Saudi license plate conversion and validation.
-///
-/// Saudi plate structure: 3 Arabic letters (RTL) + 4 digits.
-/// Each Arabic letter has a fixed English equivalent.
-///
-/// Ordering rule:
-///   Arabic plates are read right-to-left. When displayed as a LTR string
-///   in Arabic (e.g., from the API), the letters are stored LTR but rendered
-///   RTL.  Converting to English requires reversing the sequence so the
-///   result reads correctly left-to-right.
-///
-///   Example: API returns Arabic plate stored as "س ر ب" (LTR bytes).
-///     Step 1 – map each letter:  س→S, ر→R, ب→B  →  [S, R, B]
-///     Step 2 – reverse for LTR: [B, R, S]
-///     Result:  "BRS 1234"
 class PlateConverter {
   PlateConverter._();
 
@@ -45,15 +30,29 @@ class PlateConverter {
 
   /// The 17 valid English letter codes for Saudi plates, in display order.
   static const List<String> validLetters = [
-    'A', 'B', 'J', 'D', 'R', 'S', 'X', 'T', 'E', 'G',
-    'K', 'L', 'Z', 'N', 'H', 'U', 'V',
+    'A',
+    'B',
+    'J',
+    'D',
+    'R',
+    'S',
+    'X',
+    'T',
+    'E',
+    'G',
+    'K',
+    'L',
+    'Z',
+    'N',
+    'H',
+    'U',
+    'V',
   ];
 
   // ── Single-letter helpers ─────────────────────────────────────────────────
 
   /// Converts one Arabic plate character to its English equivalent.
-  static String? arabicToEnglish(String arabic) =>
-      arabicToEnglishMap[arabic];
+  static String? arabicToEnglish(String arabic) => arabicToEnglishMap[arabic];
 
   /// Converts one English plate letter to its Arabic equivalent.
   static String? englishToArabic(String english) =>
@@ -93,8 +92,7 @@ class PlateConverter {
           .toList();
 
       // Map each to English, then reverse to correct RTL → LTR ordering.
-      final mapped =
-          arabicChars.map((c) => arabicToEnglishMap[c]!).toList();
+      final mapped = arabicChars.map((c) => arabicToEnglishMap[c]!).toList();
       englishLetters = mapped.reversed.join();
     } else {
       // Already English — keep only the 17 valid Saudi plate letters.
@@ -149,7 +147,7 @@ class PlateConverter {
   static ({String letters, String digits}) parse(String plate) {
     final t = plate.trim();
     final letters = t.replaceAll(RegExp(r'[^A-Z]'), '');
-    final digits  = t.replaceAll(RegExp(r'[^0-9]'), '');
+    final digits = t.replaceAll(RegExp(r'[^0-9]'), '');
     return (letters: letters, digits: digits);
   }
 }

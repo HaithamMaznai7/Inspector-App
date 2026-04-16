@@ -13,6 +13,7 @@ import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/resources/inspection_details_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
+import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -38,6 +39,9 @@ class InspectionStepsController extends GetxController {
       !inspection.value.hasDetails &&
       !inspection.value.hasBody &&
       !inspection.value.hasObd;
+
+  Worker? _reconnectWorker;
+  bool _repositoryReady = false;
 
   int currentIndex = 0;
   int index = 0;
@@ -97,6 +101,17 @@ class InspectionStepsController extends GetxController {
     onInspectionChanged(inspection.value);
 
     inspection.listen(onInspectionChanged);
+
+    _reconnectWorker = ever(
+      ConnectionService.instance.onReconnect,
+      (_) { if (_repositoryReady) repository!.flushPendingStage(); },
+    );
+  }
+
+  @override
+  void onClose() {
+    _reconnectWorker?.dispose();
+    super.onClose();
   }
 
   Future<void> load({bool refresh = false}) async {
@@ -111,9 +126,7 @@ class InspectionStepsController extends GetxController {
       slug: inspection.value.slug,
       box: box!,
     );
-
-    // isLoading.value = false;
-    // update();
+    _repositoryReady = true;
   }
 
   void goToTab(int index) {

@@ -2,6 +2,7 @@ import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/services/app/app_service.dart';
 import 'package:fahis_inspector/services/app/support/bindings_service.dart';
+import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/services/force_update/force_update_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -28,6 +29,14 @@ class AppServiceProvider extends AppService {
 
   @override
   List<BindingsService> register() {
-    return [StorageBinding(), AuthBinding(), NotificationsBinding()];
+    return [ConnectionBinding(), StorageBinding(), AuthBinding(), NotificationsBinding()];
+  }
+
+  @override
+  void onResumed() {
+    dd('onResumed');
+    // When coming to foreground already online, flush any pending writes that
+    // accumulated while the app was backgrounded or the device was offline.
+    ConnectionService.instance.triggerReconnectIfOnline();
   }
 }

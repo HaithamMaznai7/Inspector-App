@@ -322,7 +322,10 @@ class _CodesCard extends StatelessWidget {
           else if (codes.isEmpty)
             _CodesEmpty(isDark: isDark)
           else
-            ...codes.map((c) => OBDCodeCard(code: c)),
+            ...codes.map((c) => OBDCodeCard(
+              code: c,
+              isPendingSync: controller.hasPendingCode(c.code),
+            )),
         ],
       ),
     );

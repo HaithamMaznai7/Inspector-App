@@ -3,6 +3,7 @@ import 'package:fahis_inspector/resources/repository.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/models/inspection.dart';
 import 'package:fahis_inspector/util/formatters/formatter.dart';
+import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
@@ -224,22 +225,72 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
       'general_notes': inspection.note,
     };
 
+    // Persist before POST so the stage change survives app-kill while offline.
+    _savePendingStage(inspection.stage.value, inspection.note);
+
     try {
       CustomResponse r = await n.response(RoutingUrl.inspections);
 
       if (r.data.isNotEmpty) {
         inspection = Inspection.fromJson(r.data);
-        _data.value = inspection; // تحديث الحالة
+        _data.value = inspection;
       }
 
       await saveToCache();
+      _clearPendingStage();
     } on FNetworkException {
+      // Leave pending for transport failures — will retry on reconnect.
       rethrow;
     } catch (_) {
       rethrow;
     }
 
     return _data.value ?? inspection;
+  }
+
+  // ── Pending stage transition (offline-first write) ────────────────────────
+
+  String get _pendingKey => 'pending_stage_$slug';
+
+  void _savePendingStage(String? stageValue, String? note) {
+    box.put(_pendingKey, {'stage': stageValue, 'general_notes': note});
+    AppLogger.info('[Offline]', 'write stage/$slug: pending=$stageValue');
+  }
+
+  void _clearPendingStage() {
+    box.delete(_pendingKey);
+  }
+
+  /// True if there is a pending (unsynced) stage transition.
+  bool hasPendingStage() => box.containsKey(_pendingKey);
+
+  /// Retries the pending stage transition if one exists.
+  Future<void> flushPendingStage() async {
+    final raw = box.get(_pendingKey);
+    if (raw == null) return;
+    final body = Map<String, dynamic>.from(raw as Map);
+    AppLogger.info('[Offline]', 'flush stage/$slug: retrying stage=${body['stage']}');
+
+    final n = Network(
+      endpoint: '${EndPoints.inspections}/$slug',
+      requestMethod: RequestMethod.post,
+    );
+    n.setBody = body;
+
+    try {
+      final r = await n.response(RoutingUrl.inspections);
+      if (r.data.isNotEmpty) {
+        final inspection = Inspection.fromJson(r.data);
+        _data.value = inspection;
+        await saveToCache();
+      }
+      _clearPendingStage();
+      AppLogger.info('[Offline]', 'flush stage/$slug: success');
+    } on FNetworkException catch (e) {
+      AppLogger.error('[Offline]', 'flush stage/$slug: failed', e);
+    } catch (e) {
+      AppLogger.error('[Offline]', 'flush stage/$slug: error', e);
+    }
   }
 }
 

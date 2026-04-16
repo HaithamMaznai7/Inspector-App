@@ -1,54 +1,77 @@
 import 'dart:async';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fahis_inspector/services/connection/connection_screen.dart';
+import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/popups/full_screen_loader.dart';
 import 'package:get/get.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
 class ConnectionService extends GetxController {
   static ConnectionService get instance =>
       Get.find<ConnectionService>(tag: 'ConnectionService');
 
-  final Connectivity _connectivity = Connectivity();
-  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
-  final Rx<List<ConnectivityResult>> _connectivityStatus = Rx([
-    ConnectivityResult.none,
-  ]);
+  late final InternetConnection _internetChecker;
+  late final StreamSubscription<InternetStatus> _internetSub;
+
   RxBool isConnectionGood = false.obs;
   RxBool isLoading = false.obs;
+
+  // Fires whenever connectivity transitions from offline → online.
+  // Feature controllers subscribe to this to flush pending writes.
+  final Rx<DateTime?> onReconnect = Rx<DateTime?>(null);
+
+  // True once the user has been online at least once this session.
+  // Used to decide whether to show the full-screen OfflineScreen (first boot)
+  // or just the thin offline bar (already loaded cached data).
+  bool _hasEverBeenOnline = false;
+  bool get hasEverBeenOnline => _hasEverBeenOnline;
 
   @override
   void onInit() {
     super.onInit();
-    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
-      _updateConnectionStatus,
-    );
+    _internetChecker = InternetConnection();
+    _internetSub = _internetChecker.onStatusChange.listen(_onStatusChange);
   }
 
-  Future<void> _updateConnectionStatus(List<ConnectivityResult> result) async {
-    _connectivityStatus.value = result;
-    if (_connectivityStatus.value.first == ConnectivityResult.none) {
-      FFullScreenLoader.openPage(page: OfflineScreen());
+  /// Handles verified internet status changes from
+  /// `internet_connection_checker_plus`. Unlike raw `connectivity_plus`,
+  /// this stream only emits `connected` after real HTTP checks confirm
+  /// the device can actually reach the internet.
+  void _onStatusChange(InternetStatus status) {
+    if (status == InternetStatus.disconnected) {
+      AppLogger.info('[Offline]', 'internet: connected → disconnected');
+      if (!_hasEverBeenOnline) {
+        FFullScreenLoader.openPage(page: OfflineScreen());
+      }
       isConnectionGood.value = false;
-    } else if (_connectivityStatus.value.first == ConnectivityResult.wifi ||
-        _connectivityStatus.value.first == ConnectivityResult.mobile ||
-        _connectivityStatus.value.first == ConnectivityResult.vpn) {
+    } else {
+      // InternetStatus.connected — verified via real HTTP checks
       FFullScreenLoader.stopLoading();
+      final wasOffline = !isConnectionGood.value;
       isConnectionGood.value = true;
+      _hasEverBeenOnline = true;
+      if (wasOffline) {
+        AppLogger.info(
+          '[Offline]',
+          'internet: disconnected → connected — flush starting',
+        );
+        onReconnect.value = DateTime.now();
+      }
+    }
+  }
+
+  /// Called by AppService.onResumed to trigger a flush when the app comes to
+  /// the foreground while already connected (handles "backgrounded offline,
+  /// resumed online" case).
+  void triggerReconnectIfOnline() {
+    if (isConnectionGood.value) {
+      AppLogger.info('[Offline]', 'resume: already online — flush starting');
+      onReconnect.value = DateTime.now();
     }
   }
 
   Future<bool> isConnected() async {
     try {
-      final result = await _connectivity.checkConnectivity();
-      if (result.first == ConnectivityResult.none) {
-        return false;
-      } else if (result.first == ConnectivityResult.wifi ||
-          result.first == ConnectivityResult.mobile ||
-          result.first == ConnectivityResult.vpn) {
-        return true;
-      } else {
-        return false;
-      }
+      return await _internetChecker.hasInternetAccess;
     } catch (_) {
       return false;
     }
@@ -67,14 +90,6 @@ class ConnectionService extends GetxController {
     }
   }
 
-  // continueOffline()async {
-  //   // await NetworkHelper.offlineMood();
-  //   // if (fStorage.read(StorageKey.enableOfflineMode)) {
-  //   //   fStorage.write(StorageKey.offlineMode, true);
-  //   //   Get.offNamed(Get.parameters['route']!);
-  //   // }
-  // }
-
   void restartApp() {
     // Process.runSync('flutter', ['run']);
     // if (Process.runSync('flutter', ['doctor']).exitCode == 0) {
@@ -84,7 +99,7 @@ class ConnectionService extends GetxController {
 
   @override
   void onClose() {
-    _connectivitySubscription.cancel();
+    _internetSub.cancel();
     super.onClose();
   }
 }

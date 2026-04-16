@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fahis_inspector/common/widgets/camera/image_quality_checker.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/inspection_body_notes.dart';
@@ -5,6 +7,7 @@ import 'package:fahis_inspector/models/marker.dart';
 import 'package:fahis_inspector/resources/repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
+import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
@@ -68,7 +71,112 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
     await box.put('BodyNotes', bodySides);
   }
 
-  Future<void> store(CarBody body, Marker note) async {
+  // ── Pending markers (offline-first write) ──────────────────────────────────
+
+  String get _pendingKey => 'pending_body_$slug';
+
+  /// Saves a marker as pending-sync before the POST so it survives app-kill.
+  /// Returns a [tempKey] that uniquely identifies this pending entry.
+  int _savePendingMarker(int bodyId, Marker note, String? localImagePath) {
+    final tempKey = DateTime.now().millisecondsSinceEpoch;
+    final pending = box.get(_pendingKey)?.toList() ?? [];
+    pending.add({
+      'tempKey': tempKey,
+      'bodyId': bodyId,
+      'dx': note.dx,
+      'dy': note.dy,
+      'type': note.type,
+      'note': note.note,
+      'localImagePath': localImagePath,
+    });
+    box.put(_pendingKey, pending);
+    AppLogger.info(
+      '[Offline]',
+      'write body/$slug/marker$tempKey: pending=true',
+    );
+    return tempKey;
+  }
+
+  void _clearPendingMarker(int tempKey) {
+    final pending = box.get(_pendingKey)?.toList() ?? [];
+    pending.removeWhere((e) => (e is Map) && e['tempKey'] == tempKey);
+    box.put(_pendingKey, pending);
+    AppLogger.info(
+      '[Offline]',
+      'flush body/$slug/marker$tempKey: success — cleared',
+    );
+  }
+
+  /// Returns pending marker entries that have not yet been POSTed.
+  List<Map<String, dynamic>> pendingMarkers() {
+    final raw = box.get(_pendingKey);
+    if (raw == null || raw.isEmpty) return [];
+    return raw
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+  }
+
+  /// Retries all pending markers. Returns true if all flushed successfully.
+  /// On partial failure, the successfully synced entries are removed.
+  Future<void> flushPendingMarkers() async {
+    final entries = pendingMarkers();
+    if (entries.isEmpty) return;
+    AppLogger.info(
+      '[Offline]',
+      'flush body/$slug: ${entries.length} pending markers',
+    );
+
+    for (final entry in entries) {
+      final tempKey = entry['tempKey'] as int;
+      final bodyId = entry['bodyId'] as int;
+      final localImagePath = entry['localImagePath'] as String?;
+
+      final n = Network(
+        endpoint: '${EndPoints.inspections}/$slug/bodies/$bodyId',
+        requestMethod: RequestMethod.post,
+      );
+
+      File? imageFile;
+      if (localImagePath != null) {
+        final f = File(localImagePath);
+        if (f.existsSync()) imageFile = f;
+      }
+
+      n.setBody = FormData({
+        'dx': entry['dx'],
+        'dy': entry['dy'],
+        'type': entry['type'],
+        'note': entry['note'],
+        if (imageFile != null)
+          'image': MultipartFile(
+            imageFile,
+            filename: imageFile.path.split('/').last,
+            contentType: 'image/jpeg',
+          ),
+      });
+
+      try {
+        final r = await n.response(RoutingUrl.home);
+        final bodySides = r.data.isNotEmpty
+            ? CarBody.setList(r.data)
+            : <CarBody>[];
+        _data.assignAll(bodySides);
+        await saveToCache();
+        _clearPendingMarker(tempKey);
+      } on FNetworkException catch (e) {
+        AppLogger.error('[Offline]', 'flush body/$slug/marker$tempKey: failed', e);
+        // Leave pending — will retry on next reconnect.
+      } catch (e) {
+        AppLogger.error('[Offline]', 'flush body/$slug/marker$tempKey: error', e);
+      }
+    }
+  }
+
+  // ── Store (create a new marker) ─────────────────────────────────────────────
+
+  /// Creates a new body note marker. Returns true if immediately synced,
+  /// false if saved locally as pending (will sync on next reconnect).
+  Future<bool> store(CarBody body, Marker note) async {
     Network n = Network(
       endpoint: '${EndPoints.inspections}/$slug/bodies/${body.id}',
       requestMethod: RequestMethod.post,
@@ -77,6 +185,13 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
     final imageFile = note.file != null
         ? await ImageCompressor.compress(note.file!)
         : null;
+
+    // Persist before the network call so data survives app-kill.
+    final tempKey = _savePendingMarker(
+      body.id,
+      note,
+      imageFile?.path,
+    );
 
     n.setBody = FormData({
       'dx': note.dx,
@@ -99,9 +214,12 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
           : <CarBody>[];
 
       _data.assignAll(bodySides);
-    } on FNetworkException catch (e) {
-      e.notify();
-      rethrow;
+      _clearPendingMarker(tempKey);
+      return true;
+    } on FNetworkException {
+      // Leave pending — returns false so the controller can show an appropriate
+      // "saved locally" message instead of a success toast.
+      return false;
     } finally {
       await saveToCache();
     }

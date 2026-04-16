@@ -699,5 +699,9 @@ class Arabic {
     PaintGaugePage.panelRightFrontDoor: 'الباب الأمامي الأيمن',
     PaintGaugePage.panelRightAPillar: 'العمود A الأيمن',
     PaintGaugePage.panelRightFrontFender: 'الرفرف الأمامي الأيمن',
+
+    // رسائل الوضع غير المتصل / المزامنة
+    'saved_locally_will_sync': 'تم الحفظ — ستتم المزامنة عند الاتصال',
+    'offline_bar_message': 'لا يوجد اتصال — تحقق من الإنترنت',
   };
 }

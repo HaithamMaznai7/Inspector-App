@@ -126,9 +126,28 @@ class PaintGaugeRepository {
   String get _readingsCacheKey => 'readings_$slug';
 
   /// Save individual reading values for all panels that have been measured.
-  /// Format: {backendId: {readings: [double], substrate: String?}}
+  /// Format: {backendId: {readings: [double], substrate: String?, pending: bool}}
   Future<void> saveReadingsCache(Map<int, Map<String, dynamic>> data) async {
     await box.put(_readingsCacheKey, data);
+  }
+
+  /// Toggle the "pending sync" flag for a single panel entry.
+  Future<void> setPanelPending(int backendId, bool pending) async {
+    final data = loadReadingsCache();
+    final entry = data[backendId];
+    if (entry == null) return;
+    entry['pending'] = pending;
+    data[backendId] = entry;
+    await box.put(_readingsCacheKey, data);
+  }
+
+  /// IDs of panels whose cached readings have not yet synced to backend.
+  List<int> pendingPanelIds() {
+    final data = loadReadingsCache();
+    return [
+      for (final e in data.entries)
+        if (e.value['pending'] == true) e.key,
+    ];
   }
 
   /// Load cached individual readings. Returns empty map if nothing cached.

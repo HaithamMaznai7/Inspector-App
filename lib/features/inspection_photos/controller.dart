@@ -6,6 +6,7 @@ import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/models/photo.dart';
 import 'package:fahis_inspector/resources/inspection_photos_repository.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:flutter/foundation.dart';
@@ -44,6 +45,13 @@ class InspectionPhotosController extends GetxController {
   /// during its internal clear() step.
   bool get _isMutating => uploadingIds.isNotEmpty || deletingIds.isNotEmpty;
 
+  Worker? _reconnectWorker;
+  bool _repositoryReady = false;
+
+  /// Whether a photo slot has an upload that hasn't yet synced to the server.
+  bool hasPendingUpload(int photoId) =>
+      _repositoryReady && repository.hasPendingUpload(photoId);
+
   final isLoading = false.obs;
   final isResetting = false.obs;
 
@@ -64,6 +72,17 @@ class InspectionPhotosController extends GetxController {
     if (mainController.inspection.value?.hasPhotos ?? false) {
       loadBySlug();
     }
+
+    _reconnectWorker = ever(
+      ConnectionService.instance.onReconnect,
+      (_) { if (_repositoryReady) repository.flushPending(); },
+    );
+  }
+
+  @override
+  void onClose() {
+    _reconnectWorker?.dispose();
+    super.onClose();
   }
 
   Future<void> loadBySlug() async {
@@ -78,6 +97,7 @@ class InspectionPhotosController extends GetxController {
     }
 
     repository = InspectionPhotosRepository(box: box!, slug: slug!);
+    _repositoryReady = true;
 
     repository.stream.listen((data) {
       _log('repository.stream → received ${data.length} photos, '
@@ -158,6 +178,9 @@ class InspectionPhotosController extends GetxController {
       isLoading.value = false;
       update();
     }
+
+    // Retry any uploads that were saved locally while offline.
+    if (_repositoryReady) await repository.flushPending();
   }
 
   Future<void> picking(Photo photo) async {

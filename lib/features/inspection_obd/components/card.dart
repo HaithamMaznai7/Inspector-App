@@ -11,8 +11,10 @@ import 'package:shimmer/shimmer.dart';
 
 class OBDCodeCard extends StatefulWidget {
   final OBDCode code;
+  /// True when the code was saved locally but hasn't been POSTed to the server.
+  final bool isPendingSync;
 
-  const OBDCodeCard({super.key, required this.code});
+  const OBDCodeCard({super.key, required this.code, this.isPendingSync = false});
 
   @override
   State<OBDCodeCard> createState() => _OBDCodeCardState();
@@ -102,25 +104,41 @@ class _OBDCodeCardState extends State<OBDCodeCard> {
         ),
         child: Row(
           children: [
-            // Code badge
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: FSizes.sm, vertical: FSizes.borderRadiusSm),
-              decoration: BoxDecoration(
-                color: FColors.primaryColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-                border: Border.all(
-                  color: FColors.primaryColor.withValues(alpha: 0.3),
+            // Code badge (+ pending-sync icon when offline)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: FSizes.sm, vertical: FSizes.borderRadiusSm),
+                  decoration: BoxDecoration(
+                    color: FColors.primaryColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                    border: Border.all(
+                      color: FColors.primaryColor.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Text(
+                    widget.code.code,
+                    style: const TextStyle(
+                      fontSize: FSizes.fontSizeXs,
+                      fontWeight: FontWeight.w700,
+                      color: FColors.primaryColor,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
                 ),
-              ),
-              child: Text(
-                widget.code.code,
-                style: const TextStyle(
-                  fontSize: FSizes.fontSizeXs,
-                  fontWeight: FontWeight.w700,
-                  color: FColors.primaryColor,
-                  letterSpacing: 0.5,
-                ),
-              ),
+                if (widget.isPendingSync) ...[
+                  const SizedBox(width: FSizes.xs),
+                  const Tooltip(
+                    message: 'Pending sync',
+                    child: Icon(
+                      Icons.cloud_upload_outlined,
+                      size: FSizes.fontSizeSm,
+                      color: FColors.primaryColor,
+                    ),
+                  ),
+                ],
+              ],
             ),
             const SizedBox(width: FSizes.sm),
             // Description

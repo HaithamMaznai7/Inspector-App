@@ -7,6 +7,7 @@ import 'package:fahis_inspector/models/marker.dart';
 import 'package:fahis_inspector/resources/assets_repository.dart';
 import 'package:fahis_inspector/resources/inspection_body_repository.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:get/get.dart';
@@ -25,6 +26,11 @@ class InspectionBodyController extends GetxController {
 
   final RxList<CarBody> bodySides = RxList<CarBody>([]);
   var isLoading = false.obs;
+
+  Worker?
+  _reconnectWorker; // Used to trigger a flush of pending markers when connectivity is restored.
+  bool _repositoryReady =
+      false; // To prevent trying to flush pending markers before the repository is initialized.
 
   @override
   void onInit() async {
@@ -45,6 +51,18 @@ class InspectionBodyController extends GetxController {
     if (mainController.inspection.value?.hasBody ?? false) {
       loadBySlug();
     }
+
+    _reconnectWorker = ever(
+      // Listen to connectivity changes and attempt to flush pending markers when a connection is re-established.
+      ConnectionService.instance.onReconnect,
+      (_) => _flushPendingIfRepositoryReady(),
+    );
+  }
+
+  @override
+  void onClose() {
+    _reconnectWorker?.dispose();
+    super.onClose();
   }
 
   Future<void> loadBySlug() async {
@@ -58,6 +76,7 @@ class InspectionBodyController extends GetxController {
     }
 
     repository = InspectionBodyRepository(box: box!, slug: slug!);
+    _repositoryReady = true;
 
     repository.stream.listen((data) {
       bodySides.assignAll(data);
@@ -87,6 +106,13 @@ class InspectionBodyController extends GetxController {
       isLoading.value = false;
       update();
     }
+    // Flush any markers that were saved locally during a prior offline session.
+    await _flushPendingIfRepositoryReady();
+  }
+
+  Future<void> _flushPendingIfRepositoryReady() async {
+    if (!_repositoryReady) return;
+    await repository.flushPendingMarkers();
   }
 
   Future<void> onCreateEdit(CarBody body, Marker marker) async {
@@ -109,15 +135,28 @@ class InspectionBodyController extends GetxController {
     try {
       // New marker (id == 0) → store it
       if (result.id == 0) {
-        await repository.store(body, result);
+        final synced = await repository.store(body, result);
+        if (synced) {
+          FLoader.successSnackBar(
+            title: FTexts.markerSavedSuccess.tr,
+            message: FTexts.markerSavedSuccessMsg.tr,
+          );
+        } else {
+          // Saved locally — will POST when connectivity returns.
+          // FLoader.warningSnackBar(
+          //   title: FTexts.markerSavedSuccess.tr,
+          //   message: 'saved_locally_will_sync'.tr,
+          // );
+          //TODO: decide if we want this snackbar or not.
+        }
       } else {
         // Existing marker → update it
         await repository.update(marker);
+        FLoader.successSnackBar(
+          title: FTexts.markerSavedSuccess.tr,
+          message: FTexts.markerSavedSuccessMsg.tr,
+        );
       }
-      FLoader.successSnackBar(
-        title: FTexts.markerSavedSuccess.tr,
-        message: FTexts.markerSavedSuccessMsg.tr,
-      );
     } on FNetworkException {
       // no second snackbar needed.
     } catch (_) {

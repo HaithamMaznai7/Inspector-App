@@ -5,6 +5,7 @@ import 'package:fahis_inspector/features/inspection_obd/components/dialog.dart';
 import 'package:fahis_inspector/models/obd_code.dart';
 import 'package:fahis_inspector/resources/inspection_obd_repository.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:file_picker/file_picker.dart';
@@ -31,8 +32,15 @@ class InspectionObdController extends GetxController {
   var isUpload = false.obs;
   var isLoading = false.obs;
 
+  Worker? _reconnectWorker;
+  bool _repositoryReady = false;
+
   /// Whether OBD data is ready (has report OR at least one code).
   bool get hasData => report.value != null && codes.isNotEmpty;
+
+  /// Whether [code] has a pending upload that hasn't synced to the server yet.
+  bool hasPendingCode(String code) =>
+      _repositoryReady && repository.hasPendingCode(code);
 
   /// Whether all async data has been loaded (not in a loading state).
   bool get isDataReady => !isLoading.value && !isUpload.value;
@@ -55,6 +63,16 @@ class InspectionObdController extends GetxController {
     if (mainController.inspection.value?.hasObd ?? false) {
       loadBySlug();
     }
+
+    _reconnectWorker = ever(ConnectionService.instance.onReconnect, (_) {
+      if (_repositoryReady) repository.flushPending();
+    });
+  }
+
+  @override
+  void onClose() {
+    _reconnectWorker?.dispose();
+    super.onClose();
   }
 
   Future<void> loadBySlug() async {
@@ -70,6 +88,7 @@ class InspectionObdController extends GetxController {
     _log('loadBySlug – box/slug ready, slug=$slug');
 
     repository = InspectionObdRepository(box: box!, slug: slug!);
+    _repositoryReady = true;
 
     repository.stream.listen((data) {
       _log('stream → ${data.length} codes');
@@ -114,6 +133,8 @@ class InspectionObdController extends GetxController {
         'fetchCodes – done. codes=${codes.length}, report=${report.value != null}',
       );
     }
+    // Flush any codes pending from a prior offline session.
+    await repository.flushPending();
   }
 
   void openReport() async {

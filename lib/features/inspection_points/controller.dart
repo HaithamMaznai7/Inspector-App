@@ -11,6 +11,7 @@ import 'package:fahis_inspector/models/point.dart';
 import 'package:fahis_inspector/models/point_category.dart';
 import 'package:fahis_inspector/models/review_point.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -41,6 +42,13 @@ class InspectionPointsController extends GetxController {
 
   final isEditing = false.obs;
 
+  Worker? _reconnectWorker;
+  bool _repositoryReady = false;
+
+  /// Whether [pointId] has a pending upload that hasn't synced to the server yet.
+  bool hasPendingPoint(int pointId) =>
+      _repositoryReady && repository.hasPendingPoint(pointId);
+
   @override
   void onInit() async {
     super.onInit();
@@ -51,22 +59,27 @@ class InspectionPointsController extends GetxController {
     }
 
     repository = InspectionPointsRepository(slug: slug!, box: box!);
+    _repositoryReady = true;
     dd('inspection points initialized');
   }
 
   @override
   void onClose() {
-    super.onClose();
-
+    _reconnectWorker?.dispose();
     repositorySubscribtion.cancel();
     allPointsSubscribtion.cancel();
+    super.onClose();
     dd('inspection points closed');
   }
 
   @override
   void onReady() {
     super.onReady();
-    // Run on first load AND every URL change
+
+    _reconnectWorker = ever(
+      ConnectionService.instance.onReconnect,
+      (_) { if (_repositoryReady) repository.flushPending(); },
+    );
 
     repositorySubscribtion = repository.stream.listen((data) {
       allPoints.assignAll(data);
@@ -111,6 +124,9 @@ class InspectionPointsController extends GetxController {
 
     isLoading.value = false;
     update();
+
+    // Flush any points pending from a prior offline session.
+    await repository.flushPending();
   }
 
   /// Opens the editing screen for a specific category.

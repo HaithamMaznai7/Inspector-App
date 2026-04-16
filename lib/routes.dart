@@ -38,6 +38,7 @@ import 'features/access_request/success_view.dart';
 import 'services/storage/storage_service.dart';
 import 'services/auth/auth_service.dart';
 import 'services/notifications/notifications_service.dart';
+import 'services/connection/connection.dart';
 
 // services bindings
 part 'util/constants/routes.dart';
@@ -45,6 +46,7 @@ part 'services/storage/binding.dart';
 part 'services/app/binding.dart';
 part 'services/auth/binding.dart';
 part 'services/notifications/binding.dart';
+part 'services/connection/binding.dart';
 
 // features bindings
 part 'features/configuration/binding.dart';

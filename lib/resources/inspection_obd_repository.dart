@@ -3,6 +3,7 @@ import 'package:fahis_inspector/models/obd_code.dart';
 import 'package:fahis_inspector/resources/repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
+import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
@@ -77,8 +78,76 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
     _log('saveToCache – saved ${codes.length} codes');
   }
 
+  // ── Pending OBD codes (offline-first write) ────────────────────────────────
+
+  String get _pendingKey => 'pending_obd_$slug';
+
+  void _savePendingCode(OBDCode code) {
+    final pending = (box.get(_pendingKey) as List?)?.toList() ?? [];
+    final alreadyQueued = pending.any(
+      (e) => (e as Map)['code'] == code.code,
+    );
+    if (alreadyQueued) return;
+    pending.add({'code': code.code, 'description': code.description});
+    box.put(_pendingKey, pending);
+    AppLogger.info('[Offline]', 'write obd/$slug/${code.code}: pending=true');
+  }
+
+  void _clearPendingCode(String code) {
+    final pending = (box.get(_pendingKey) as List?)?.toList() ?? [];
+    pending.removeWhere((e) => (e is Map) && e['code'] == code);
+    box.put(_pendingKey, pending);
+  }
+
+  List<Map<String, dynamic>> _pendingCodes() {
+    final raw = box.get(_pendingKey) as List?;
+    if (raw == null || raw.isEmpty) return [];
+    return raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+  }
+
+  /// True if [code] has a pending (unsynced) POST in the local store.
+  bool hasPendingCode(String code) =>
+      _pendingCodes().any((e) => e['code'] == code);
+
+  /// Retries all OBD codes that failed to POST while offline.
+  Future<void> flushPending() async {
+    final entries = _pendingCodes();
+    if (entries.isEmpty) return;
+    AppLogger.info('[Offline]', 'flush obd/$slug: ${entries.length} pending codes');
+
+    for (final entry in entries) {
+      final code = entry['code'] as String;
+      final n = Network(
+        endpoint: '${EndPoints.inspections}/$slug/obd-codes',
+        requestMethod: RequestMethod.post,
+      );
+      n.setBody = {'code': code, 'description': entry['description']};
+      try {
+        final r = await n.response(RoutingUrl.home);
+        final codes = r.data.isNotEmpty
+            ? OBDCode.setList(r.data['codes'])
+            : <OBDCode>[];
+        _report.value = r.data.isNotEmpty ? r.data['report'] : null;
+        _data.assignAll(codes);
+        await saveToCache();
+        _clearPendingCode(code);
+        AppLogger.info('[Offline]', 'flush obd/$slug/$code: success');
+      } on FNetworkException catch (e) {
+        AppLogger.error('[Offline]', 'flush obd/$slug/$code: failed', e);
+      } catch (e) {
+        _log('flushPending – error for code=$code: $e');
+      }
+    }
+  }
+
+  // ── Store ───────────────────────────────────────────────────────────────────
+
   Future<List<OBDCode>> store(OBDCode code) async {
     _log('store – POST code="${code.code}", desc="${code.description}"');
+
+    // Save before POST so the code survives app-kill while offline.
+    _savePendingCode(code);
+
     final n = Network(
       endpoint: '${EndPoints.inspections}/$slug/obd-codes',
       requestMethod: RequestMethod.post,
@@ -100,6 +169,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       _log('store – updated ${bodySides.length} codes');
 
       await saveToCache();
+      _clearPendingCode(code.code);
     } on FNetworkException catch (e) {
       _log('store – FNetworkException: ${e.statusCode}');
       e.notify();
