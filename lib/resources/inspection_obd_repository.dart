@@ -142,7 +142,11 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
   // ── Store ───────────────────────────────────────────────────────────────────
 
-  Future<List<OBDCode>> store(OBDCode code) async {
+  /// Returns true when the POST succeeded and the code is synced with the
+  /// server. Returns false when the request failed (offline, timeout, etc.)
+  /// — the code remains in the pending queue and `flushPending` retries on
+  /// reconnect.
+  Future<bool> store(OBDCode code) async {
     _log('store – POST code="${code.code}", desc="${code.description}"');
 
     // Save before POST so the code survives app-kill while offline.
@@ -170,14 +174,15 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
       await saveToCache();
       _clearPendingCode(code.code);
+      return true;
     } on FNetworkException catch (e) {
-      _log('store – FNetworkException: ${e.statusCode}');
-      e.notify();
+      _log('store – FNetworkException: ${e.statusCode} — queued as pending');
+      // Kept in the pending queue; flushPending will retry on reconnect.
+      return false;
     } catch (e) {
       _log('store – error: $e');
+      return false;
     }
-
-    return _data;
   }
 
   Future<List<OBDCode>> update(OBDCode code) async {

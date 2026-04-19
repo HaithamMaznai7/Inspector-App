@@ -113,13 +113,20 @@ class VehicleDetailsController extends GetxController {
 
     inspectionDetails.value ??= repository!.fetchFromCache();
 
-    try {
-      inspectionDetails.value = await repository!.fetchFromApi();
-    } catch (e) {
-      if (inspectionDetails.value == null && !_disposed) {
-        Future.microtask(() {
-          Get.offAllNamed(RoutingUrl.home);
-        });
+    // Only fetch from API if online — cache was already loaded above.
+    if (ConnectionService.instance.isConnectionGood.value) {
+      try {
+        inspectionDetails.value = await repository!.fetchFromApi();
+      } on FNetworkException catch (e) {
+        // Only a genuine "inspection is gone" (404) warrants bouncing home.
+        // Transient network drops must keep the user on screen with cache.
+        if (e.statusCode == 404 &&
+            inspectionDetails.value == null &&
+            !_disposed) {
+          Future.microtask(() => Get.offAllNamed(RoutingUrl.home));
+        }
+      } catch (_) {
+        // Timeout / cancelled / unknown — keep current state; reconnect retries.
       }
     }
 

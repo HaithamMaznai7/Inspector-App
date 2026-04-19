@@ -1,16 +1,17 @@
 import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/services/connection/connection_screen.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/popups/full_screen_loader.dart';
 import 'package:get/get.dart';
-import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
 class ConnectionService extends GetxController {
   static ConnectionService get instance =>
       Get.find<ConnectionService>(tag: 'ConnectionService');
 
-  late final InternetConnection _internetChecker;
-  late final StreamSubscription<InternetStatus> _internetSub;
+  final Connectivity _connectivity = Connectivity();
+  late final StreamSubscription<List<ConnectivityResult>> _connectivitySub;
 
   RxBool isConnectionGood = false.obs;
   RxBool isLoading = false.obs;
@@ -25,36 +26,65 @@ class ConnectionService extends GetxController {
   bool _hasEverBeenOnline = false;
   bool get hasEverBeenOnline => _hasEverBeenOnline;
 
+  // Tracks whether we actually opened the OfflineScreen dialog.
+  // Without this, stopLoading() calls Get.back() even when no dialog
+  // was opened, which pops the current route (inspection-steps, etc).
+  bool _offlineDialogOpen = false;
+
   @override
   void onInit() {
     super.onInit();
-    _internetChecker = InternetConnection();
-    _internetSub = _internetChecker.onStatusChange.listen(_onStatusChange);
+
+    // Seed initial state so the first consumer sees the correct value
+    // instead of the default `false`.
+    _connectivity.checkConnectivity().then((results) {
+      _applyStatus(_isOnline(results));
+    });
+
+    _connectivitySub = _connectivity.onConnectivityChanged.listen((results) {
+      _applyStatus(_isOnline(results));
+    });
   }
 
-  /// Handles verified internet status changes from
-  /// `internet_connection_checker_plus`. Unlike raw `connectivity_plus`,
-  /// this stream only emits `connected` after real HTTP checks confirm
-  /// the device can actually reach the internet.
-  void _onStatusChange(InternetStatus status) {
-    if (status == InternetStatus.disconnected) {
-      AppLogger.info('[Offline]', 'internet: connected → disconnected');
+  /// Online = any reported interface other than `none`.
+  /// `wifi`, `mobile`, `ethernet`, `vpn`, `bluetooth`, `other` all count.
+  bool _isOnline(List<ConnectivityResult> results) {
+    return results.any((r) => r != ConnectivityResult.none);
+  }
+
+  /// Handles OS-reported adapter state changes from `connectivity_plus`.
+  /// This is a passive, event-driven signal — no HTTP polling. When the
+  /// adapter reports "connected" we trust the OS; if the internet is
+  /// actually broken (captive portal, ISP outage), the next API call will
+  /// fail and the pending-write system handles retry on subsequent events.
+  void _applyStatus(bool online) {
+    if (!online) {
+      AppLogger.info('[Offline]', 'adapter: connected → disconnected');
       if (!_hasEverBeenOnline) {
         FFullScreenLoader.openPage(page: OfflineScreen());
+        _offlineDialogOpen = true;
       }
       isConnectionGood.value = false;
     } else {
-      // InternetStatus.connected — verified via real HTTP checks
-      FFullScreenLoader.stopLoading();
+      // Only dismiss the dialog if we actually opened one. Without this
+      // guard, Get.back() pops the current route instead of a dialog.
+      if (_offlineDialogOpen) {
+        FFullScreenLoader.stopLoading();
+        _offlineDialogOpen = false;
+      }
       final wasOffline = !isConnectionGood.value;
       isConnectionGood.value = true;
       _hasEverBeenOnline = true;
       if (wasOffline) {
         AppLogger.info(
           '[Offline]',
-          'internet: disconnected → connected — flush starting',
+          'adapter: disconnected → connected — flush starting',
         );
         onReconnect.value = DateTime.now();
+        FLoader.infoSnackBar(
+          title: 'back_online_title'.tr,
+          message: 'back_online_message'.tr,
+        );
       }
     }
   }
@@ -71,7 +101,8 @@ class ConnectionService extends GetxController {
 
   Future<bool> isConnected() async {
     try {
-      return await _internetChecker.hasInternetAccess;
+      final results = await _connectivity.checkConnectivity();
+      return _isOnline(results);
     } catch (_) {
       return false;
     }
@@ -99,7 +130,7 @@ class ConnectionService extends GetxController {
 
   @override
   void onClose() {
-    _internetSub.cancel();
+    _connectivitySub.cancel();
     super.onClose();
   }
 }

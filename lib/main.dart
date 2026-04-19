@@ -8,7 +8,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -26,11 +25,6 @@ void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-
   await Future.wait([
     _initHive(),
     Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
@@ -39,14 +33,11 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   if (kReleaseMode) {
-    await SentryFlutter.init(
-      (options) {
-        options.dsn =
-            'https://4ec6a6367c45345191d2696d165e426e@o4511109901189120.ingest.us.sentry.io/4511109907415040';
-        options.sendDefaultPii = true;
-      },
-      appRunner: () => runApp(SentryWidget(child: const Boot())),
-    );
+    await SentryFlutter.init((options) {
+      options.dsn =
+          'https://4ec6a6367c45345191d2696d165e426e@o4511109901189120.ingest.us.sentry.io/4511109907415040';
+      options.sendDefaultPii = true;
+    }, appRunner: () => runApp(SentryWidget(child: const Boot())));
   } else {
     runApp(const Boot());
   }

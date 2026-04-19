@@ -1,4 +1,5 @@
 import 'routes.dart';
+import 'services/connection/offline_status_bar.dart';
 import 'util/localization/localization.dart';
 import 'util/theme/theme.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +48,12 @@ class Boot extends StatelessWidget {
                 builder: (context) => GestureDetector(
                   onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
                   behavior: HitTestBehavior.opaque,
-                  child: child ?? const SizedBox(),
+                  child: Column(
+                    children: [
+                      const SafeArea(bottom: false, child: OfflineStatusBar()),
+                      Expanded(child: child ?? const SizedBox()),
+                    ],
+                  ),
                 ),
               ),
             ],

@@ -2,7 +2,6 @@ import 'package:fahis_inspector/common/widgets/app/logo.dart';
 import 'package:fahis_inspector/features/home/components/appbar_search.dart';
 import 'package:fahis_inspector/features/home/components/menu_side.dart';
 import 'package:fahis_inspector/features/inspections/view.dart';
-import 'package:fahis_inspector/services/connection/offline_status_bar.dart';
 import 'package:fahis_inspector/services/notifications/components/notification_icon.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
@@ -60,21 +59,14 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             )
           : null,
-      body: Column(
-        children: [
-          const OfflineStatusBar(),
-          Expanded(
-            child: isPhone
-                ? InspectionList()
-                : Row(
-                    children: [
-                      SideMenuWrapper(isTablet: true),
-                      Expanded(child: InspectionList()),
-                    ],
-                  ),
-          ),
-        ],
-      ),
+      body: isPhone
+          ? InspectionList()
+          : Row(
+              children: [
+                SideMenuWrapper(isTablet: true),
+                Expanded(child: InspectionList()),
+              ],
+            ),
     );
   }
 }

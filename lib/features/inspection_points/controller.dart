@@ -119,14 +119,18 @@ class InspectionPointsController extends GetxController {
       update();
     }
 
-    // Fetch from API — triggers repo stream → allPoints listener
-    await repository.fetchFromApi();
+    // Fetch from API only if online — triggers repo stream → allPoints listener
+    if (ConnectionService.instance.isConnectionGood.value) {
+      await repository.fetchFromApi();
+    }
 
     isLoading.value = false;
     update();
 
     // Flush any points pending from a prior offline session.
-    await repository.flushPending();
+    if (ConnectionService.instance.isConnectionGood.value) {
+      await repository.flushPending();
+    }
   }
 
   /// Opens the editing screen for a specific category.

@@ -244,18 +244,19 @@ class PaintGaugeController extends GetxController {
       update();
     }
 
-    // 2. Refresh from API
-    try {
-      final fresh = await _repository!.fetchPanelsFromApi();
-      _backendMap.assignAll({for (final row in fresh) row.id: row});
-    } on FNetworkException catch (e) {
-      if (_backendMap.isEmpty) e.notify();
-    } catch (e) {
-      AppLogger.error(_tag, 'Failed to fetch panels', e);
-    } finally {
-      isPanelsLoading.value = false;
-      update();
+    // 2. Refresh from API only if online
+    if (ConnectionService.instance.isConnectionGood.value) {
+      try {
+        final fresh = await _repository!.fetchPanelsFromApi();
+        _backendMap.assignAll({for (final row in fresh) row.id: row});
+      } on FNetworkException catch (e) {
+        if (_backendMap.isEmpty) e.notify();
+      } catch (e) {
+        AppLogger.error(_tag, 'Failed to fetch panels', e);
+      }
     }
+    isPanelsLoading.value = false;
+    update();
   }
 
   // ── BLE Scanning ─────────────────────────────────────────────────────────────

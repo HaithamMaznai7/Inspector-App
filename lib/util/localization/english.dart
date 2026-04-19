@@ -657,5 +657,12 @@ class English {
     // Offline / sync messages
     'saved_locally_will_sync': 'Saved — will sync when online',
     'offline_bar_message': 'No connection — check your internet',
+    'back_online_title': 'Back online',
+    'back_online_message': 'Syncing your pending changes…',
+    'offline_no_cache_message':
+        'This inspection hasn\'t been downloaded yet. Reconnect and pull to refresh.',
+    'saved_locally_title': 'Saved locally',
+    'saved_locally_message':
+        'Will sync automatically when you\'re back online.',
   };
 }

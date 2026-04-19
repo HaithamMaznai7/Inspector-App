@@ -115,13 +115,15 @@ class InspectionObdController extends GetxController {
       _log('fetchCodes – cached: ${codes.length} codes');
       update();
 
-      // 2. Then refresh from API
+      // 2. Then refresh from API only if online
       isLoading.value = codes.isEmpty;
       update();
 
-      final apiCodes = await repository.fetchFromApi();
-      _log('fetchCodes – API returned: ${apiCodes.length} codes');
-      codes.assignAll(apiCodes);
+      if (ConnectionService.instance.isConnectionGood.value) {
+        final apiCodes = await repository.fetchFromApi();
+        _log('fetchCodes – API returned: ${apiCodes.length} codes');
+        codes.assignAll(apiCodes);
+      }
     } on FNetworkException catch (e) {
       _log('fetchCodes – FNetworkException: ${e.statusCode}');
     } catch (e) {
@@ -134,7 +136,9 @@ class InspectionObdController extends GetxController {
       );
     }
     // Flush any codes pending from a prior offline session.
-    await repository.flushPending();
+    if (ConnectionService.instance.isConnectionGood.value) {
+      await repository.flushPending();
+    }
   }
 
   void openReport() async {
@@ -253,12 +257,19 @@ class InspectionObdController extends GetxController {
     try {
       if (result != null && result.id == 0) {
         _log('onCreateEdit – storing new code: ${result.code}');
-        await repository.store(result);
-        _log('onCreateEdit – stored successfully');
-        FLoader.successSnackBar(
-          title: InspectionPage.obdCodeAddSuccess.tr,
-          message: InspectionPage.obdCodeAddSuccessMsg.tr,
-        );
+        final synced = await repository.store(result);
+        _log('onCreateEdit – stored (synced=$synced)');
+        if (synced) {
+          FLoader.successSnackBar(
+            title: InspectionPage.obdCodeAddSuccess.tr,
+            message: InspectionPage.obdCodeAddSuccessMsg.tr,
+          );
+        } else {
+          FLoader.infoSnackBar(
+            title: 'saved_locally_title'.tr,
+            message: 'saved_locally_message'.tr,
+          );
+        }
       }
 
       if (result != null && result.id > 0) {

@@ -10,16 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
-/// Full-session editing screen.
-///
-/// The user arrives here by tapping any category row in [InspectionPointResults].
-/// Instead of going back to pick the next category, they can:
-///   - Tap a chip in the top tab strip to jump to any category directly.
-///   - Tap "Next" at the bottom to advance to the next category.
-///   - Tap "Back" to return to the previous category.
-///   - Tap "Done" (shown only on the last category) to finish and pop.
-///
-/// This removes the repetitive navigate-back → tap → navigate-forward loop.
 class InspectionPointsScreen extends StatelessWidget {
   const InspectionPointsScreen({super.key});
 
@@ -30,9 +20,6 @@ class InspectionPointsScreen extends StatelessWidget {
       body: Column(
         children: [
           const _CategoryTabStrip(),
-          // Thin progress bar shows how many points in this category
-          // have been explicitly rated (جيد or ملاحظة) vs still at N/A.
-          // Makes it obvious to the inspector when they still have work to do.
           const _CategoryProgressBar(),
           const Expanded(child: _PointsList()),
         ],
@@ -61,21 +48,19 @@ class InspectionPointsScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                cat?.category.title ??
-                    InspectionPage.inspectionDetailsTitle.tr,
+                cat?.category.title ?? InspectionPage.inspectionDetailsTitle.tr,
                 style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                      color: FColors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  color: FColors.white,
+                  fontWeight: FontWeight.w600,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
               if (total > 1)
                 Text(
                   '${idx + 1} / $total',
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall
-                      ?.copyWith(color: Colors.white70),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(color: Colors.white70),
                 ),
             ],
           );
@@ -137,8 +122,7 @@ class _CategoryTabStrip extends StatelessWidget {
                 final statusColor = _statusColor(cat);
 
                 return Padding(
-                  padding:
-                      const EdgeInsetsDirectional.only(end: FSizes.xs),
+                  padding: const EdgeInsetsDirectional.only(end: FSizes.xs),
                   child: ChoiceChip(
                     label: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -154,16 +138,16 @@ class _CategoryTabStrip extends StatelessWidget {
                             color: isSelected
                                 ? Colors.white.withValues(alpha: 0.25)
                                 : statusColor.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+                            borderRadius: BorderRadius.circular(
+                              FSizes.borderRadiusLg,
+                            ),
                           ),
                           child: Text(
                             '$answered/$total',
                             style: TextStyle(
                               fontSize: FSizes.fontSizeXs,
                               fontWeight: FontWeight.w700,
-                              color: isSelected
-                                  ? Colors.white
-                                  : statusColor,
+                              color: isSelected ? Colors.white : statusColor,
                             ),
                           ),
                         ),
@@ -172,12 +156,11 @@ class _CategoryTabStrip extends StatelessWidget {
                     selected: isSelected,
                     showCheckmark: false,
                     selectedColor: FColors.primaryColor,
-                    backgroundColor:
-                        FColors.primaryColor.withValues(alpha: 0.08),
+                    backgroundColor: FColors.primaryColor.withValues(
+                      alpha: 0.08,
+                    ),
                     labelStyle: TextStyle(
-                      color: isSelected
-                          ? Colors.white
-                          : FColors.primaryColor,
+                      color: isSelected ? Colors.white : FColors.primaryColor,
                       fontWeight: FontWeight.w500,
                       fontSize: FSizes.fontSizeSm,
                     ),
@@ -187,8 +170,9 @@ class _CategoryTabStrip extends StatelessWidget {
                           : FColors.primaryColor.withValues(alpha: 0.3),
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(FSizes.borderRadiusLg),
+                      borderRadius: BorderRadius.circular(
+                        FSizes.borderRadiusLg,
+                      ),
                     ),
                     onSelected: (_) => controller.setCategory(cat),
                   ),
@@ -239,9 +223,9 @@ class _CategoryProgressBar extends StatelessWidget {
               child: Text(
                 '$answered / $total',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: isDone ? FColors.success : FColors.darkGrey,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  color: isDone ? FColors.success : FColors.darkGrey,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             LinearProgressIndicator(
@@ -289,20 +273,18 @@ class _PointsList extends StatelessWidget {
                 Icon(
                   Iconsax.clipboard_text,
                   size: FSizes.iconCircleMd,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.3),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.3),
                 ),
                 const SizedBox(height: FSizes.sm),
                 Text(
                   InspectionPage.noPhotosYet.tr,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.45),
-                      ),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.45),
+                  ),
                 ),
               ],
             ),
@@ -359,8 +341,9 @@ class _CategoryNavBar extends StatelessWidget {
             color: theme.scaffoldBackgroundColor,
             boxShadow: [
               BoxShadow(
-                color: (isDark ? Colors.black : FColors.grey)
-                    .withValues(alpha: 0.3),
+                color: (isDark ? Colors.black : FColors.grey).withValues(
+                  alpha: 0.3,
+                ),
                 blurRadius: FSizes.sm,
                 offset: const Offset(0, -2),
               ),
@@ -380,14 +363,18 @@ class _CategoryNavBar extends StatelessWidget {
                     OutlinedButton(
                       onPressed: controller.toPreviousCategory,
                       style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(FSizes.iconCircleMd, FSizes.iconCircleMd),
+                        minimumSize: const Size(
+                          FSizes.iconCircleMd,
+                          FSizes.iconCircleMd,
+                        ),
                         padding: EdgeInsets.zero,
                         side: BorderSide(
                           color: FColors.grey.withValues(alpha: 0.35),
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(FSizes.borderRadiusLg),
+                          borderRadius: BorderRadius.circular(
+                            FSizes.borderRadiusLg,
+                          ),
                         ),
                       ),
                       child: const Icon(
@@ -404,9 +391,7 @@ class _CategoryNavBar extends StatelessWidget {
                           ? () => Get.back()
                           : controller.toNextCategory,
                       child: Text(
-                        isLast
-                            ? InspectionPage.doneBtn.tr
-                            : FTexts.nextBtn.tr,
+                        isLast ? InspectionPage.doneBtn.tr : FTexts.nextBtn.tr,
                       ),
                     ),
                   ),

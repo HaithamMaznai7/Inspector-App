@@ -703,5 +703,11 @@ class Arabic {
     // رسائل الوضع غير المتصل / المزامنة
     'saved_locally_will_sync': 'تم الحفظ — ستتم المزامنة عند الاتصال',
     'offline_bar_message': 'لا يوجد اتصال — تحقق من الإنترنت',
+    'back_online_title': 'عاد الاتصال',
+    'back_online_message': 'جارٍ مزامنة التغييرات المعلّقة…',
+    'offline_no_cache_message':
+        'لم يتم تنزيل هذا الفحص بعد. أعد الاتصال واسحب للأسفل للتحديث.',
+    'saved_locally_title': 'تم الحفظ محليًا',
+    'saved_locally_message': 'ستتم المزامنة تلقائيًا عند عودة الاتصال.',
   };
 }

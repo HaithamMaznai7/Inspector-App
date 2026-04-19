@@ -11,6 +11,7 @@ import 'package:fahis_inspector/features/inspection_details/components/stage_sel
 import 'package:fahis_inspector/features/inspection_details/components/reviews/vehicle_info_review.dart';
 import 'package:fahis_inspector/features/inspection_details/components/connect_person_info.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
@@ -56,6 +57,40 @@ class InspectionDetailsScreen extends StatelessWidget {
                   style: Theme.of(
                     context,
                   ).textTheme.bodyMedium?.apply(color: FColors.darkGrey),
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (controller.inspection.value == null) {
+          final isOnline =
+              ConnectionService.instance.isConnectionGood.value;
+          return RefreshIndicator(
+            onRefresh: () async =>
+                controller.load(controller.slug!, refresh: true),
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(height: Get.height * 0.2),
+                Icon(
+                  isOnline ? Icons.error_outline : Icons.wifi_off,
+                  size: 48,
+                  color: FColors.darkGrey,
+                ),
+                SizedBox(height: FSizes.md),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: FSizes.lg),
+                  child: Text(
+                    isOnline
+                        ? InspectionPage.loadingInspectionDetails.tr
+                        : 'offline_no_cache_message'.tr,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.apply(color: FColors.darkGrey),
+                  ),
                 ),
               ],
             ),

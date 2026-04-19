@@ -94,20 +94,23 @@ class InspectionBodyController extends GetxController {
       bodySides.assignAll(repository.fetchFromCache());
       update();
 
-      // 2. Then refresh from API
+      // 2. Then refresh from API only if online
       isLoading.value = bodySides.isEmpty;
       update();
 
-      bodySides.assignAll(await repository.fetchFromApi());
+      if (ConnectionService.instance.isConnectionGood.value) {
+        bodySides.assignAll(await repository.fetchFromApi());
+      }
     } on FNetworkException catch (_) {
-      // e.notify();
     } catch (_) {
     } finally {
       isLoading.value = false;
       update();
     }
     // Flush any markers that were saved locally during a prior offline session.
-    await _flushPendingIfRepositoryReady();
+    if (ConnectionService.instance.isConnectionGood.value) {
+      await _flushPendingIfRepositoryReady();
+    }
   }
 
   Future<void> _flushPendingIfRepositoryReady() async {

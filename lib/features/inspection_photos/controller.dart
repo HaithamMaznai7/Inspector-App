@@ -153,34 +153,38 @@ class InspectionPhotosController extends GetxController {
     // 1. Show cached first
     photos.assignAll(repository.fetchFromCache());
 
-    // 2. Then refresh from API
+    // 2. Then refresh from API only if online
     isLoading.value = photos.isEmpty;
     update();
 
-    try {
-      _log('fetchPhotos — fetching from API');
-      final fetched = await repository.fetchFromApi();
-      _log('fetchPhotos — API returned ${fetched.length} photos');
+    if (ConnectionService.instance.isConnectionGood.value) {
+      try {
+        _log('fetchPhotos — fetching from API');
+        final fetched = await repository.fetchFromApi();
+        _log('fetchPhotos — API returned ${fetched.length} photos');
 
-      // 3. If the server returned no photos, auto-initialize them via POST,
-      //    then re-fetch so the UI shows the newly created photo slots.
-      if (fetched.isEmpty) {
-        _log('fetchPhotos — generating initial slots via POST');
-        await repository.generate();
-        photos.assignAll(await repository.fetchFromApi());
-      } else {
-        photos.assignAll(fetched);
+        // 3. If the server returned no photos, auto-initialize them via POST,
+        //    then re-fetch so the UI shows the newly created photo slots.
+        if (fetched.isEmpty) {
+          _log('fetchPhotos — generating initial slots via POST');
+          await repository.generate();
+          photos.assignAll(await repository.fetchFromApi());
+        } else {
+          photos.assignAll(fetched);
+        }
+      } on FNetworkException catch (e) {
+        e.notify();
+      } catch (_) {
       }
-    } on FNetworkException catch (e) {
-      e.notify();
-    } catch (_) {
-    } finally {
-      isLoading.value = false;
-      update();
     }
 
+    isLoading.value = false;
+    update();
+
     // Retry any uploads that were saved locally while offline.
-    if (_repositoryReady) await repository.flushPending();
+    if (_repositoryReady && ConnectionService.instance.isConnectionGood.value) {
+      await repository.flushPending();
+    }
   }
 
   Future<void> picking(Photo photo) async {
