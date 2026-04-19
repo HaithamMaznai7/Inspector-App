@@ -42,21 +42,15 @@ class Boot extends StatelessWidget {
               maxScaleFactor: 1.3,
             ),
           ),
-          child: Overlay(
-            initialEntries: [
-              OverlayEntry(
-                builder: (context) => GestureDetector(
-                  onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-                  behavior: HitTestBehavior.opaque,
-                  child: Column(
-                    children: [
-                      const SafeArea(bottom: false, child: OfflineStatusBar()),
-                      Expanded(child: child ?? const SizedBox()),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+          child: GestureDetector(
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            behavior: HitTestBehavior.opaque,
+            child: Column(
+              children: [
+                const SafeArea(bottom: false, child: OfflineStatusBar()),
+                Expanded(child: child ?? const SizedBox()),
+              ],
+            ),
           ),
         );
       },

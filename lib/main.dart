@@ -2,6 +2,7 @@ import 'package:fahis_inspector/boot/app_service_provider.dart';
 import 'package:fahis_inspector/firebase_options.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/services/auth/auth_service.dart';
+import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/services/notifications/notifications_service.dart';
 import 'package:fahis_inspector/services/storage/storage_service.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,6 +10,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'boot.dart';
@@ -31,6 +33,14 @@ void main() async {
   ]);
 
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
+  // Register before runApp so OfflineStatusBar's Obx always finds the service,
+  // regardless of whether AppBinding has finished its async init chain yet.
+  Get.put<ConnectionService>(
+    ConnectionService(),
+    tag: BindingTags.connectionService,
+    permanent: true,
+  );
 
   if (kReleaseMode) {
     await SentryFlutter.init((options) {
