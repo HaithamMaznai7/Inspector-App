@@ -4,7 +4,6 @@ import 'package:fahis_inspector/enums/point_status.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/features/inspection_details/components/note_dialog.dart';
 import 'package:fahis_inspector/models/inspection.dart';
-import 'package:fahis_inspector/models/point.dart';
 import 'package:fahis_inspector/models/vehicle_details.dart';
 import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/resources/inspection_details_repository.dart';
@@ -18,6 +17,7 @@ import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
+import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -153,28 +153,26 @@ class InspectionDetailsController extends GetxController
     update();
   }
 
-  RxList<Point> inspectionPoints = RxList<Point>([]);
-  InspectionPointsRepository? inspectionPointsRepository;
-  var inspectionPointsLoading = true.obs;
+  // Points are no longer duplicated on this controller. The review card reads
+  // them from the Hive cache (key 'Points') directly, so every write-through
+  // in `InspectionPointsRepository` (optimistic + offline flush) is visible
+  // here without needing a field to keep in sync. The editor controller owns
+  // the reactive `_data` RxList for its own screen.
 
   Future<void> loadInspectionPoints() async {
-    inspectionPointsRepository = InspectionPointsRepository(
-      slug: slug!,
-      box: assetsBox!,
-    );
-
-    // Show cached data instantly
-    final cached = inspectionPointsRepository!.fetchFromCache();
-    if (cached.isNotEmpty) inspectionPoints.assignAll(cached);
-    inspectionPointsLoading.value = inspectionPoints.isEmpty;
-    update();
-
-    if (ConnectionService.instance.isConnectionGood.value) {
-      inspectionPoints.value = await inspectionPointsRepository!.fetchFromApi();
+    if (assetsBox == null || slug == null) return;
+    try {
+      final pointsRepo = InspectionPointsRepository(
+        slug: slug!,
+        box: assetsBox!,
+      );
+      if (ConnectionService.instance.isConnectionGood.value) {
+        await pointsRepo.fetchFromApi();
+      }
+      update();
+    } catch (e) {
+      AppLogger.log("Error loading points: ", "$e");
     }
-
-    inspectionPointsLoading.value = false;
-    update();
   }
 
   Future<void> loadInspectionPhotos() async {
@@ -189,7 +187,7 @@ class InspectionDetailsController extends GetxController
       }
       update();
     } catch (e) {
-      dd('Error loading photos: $e');
+      AppLogger.log('Error loading photos:', ' $e');
     }
   }
 
@@ -202,7 +200,7 @@ class InspectionDetailsController extends GetxController
       }
       update();
     } catch (e) {
-      dd('Error loading body notes: $e');
+      AppLogger.log('Error loading body notes:', ' $e');
     }
   }
 
@@ -216,7 +214,7 @@ class InspectionDetailsController extends GetxController
       }
       update();
     } catch (e) {
-      dd('Error loading paint panels: $e');
+      AppLogger.log('Error loading paint panels:', ' $e');
     }
   }
 
@@ -229,7 +227,7 @@ class InspectionDetailsController extends GetxController
       }
       update();
     } catch (e) {
-      dd('Error loading OBD: $e');
+      AppLogger.log('Error loading OBD:', ' $e');
     }
   }
 
@@ -242,13 +240,17 @@ class InspectionDetailsController extends GetxController
     }
     await Get.toNamed(RoutingUrl.inspectionSteps, arguments: inspection.value!);
     // Only refresh the main inspection (1 API call) to update the stage label.
-    // Sub-resources are already up to date in cache from the steps screen.
+    // Sub-resources are already up to date in the Hive cache from the steps
+    // screen, and the review cards read that cache directly.
     if (slug != null && ConnectionService.instance.isConnectionGood.value) {
       try {
         inspection.value = await repository!.fetchFromApi();
-        update();
       } catch (_) {}
     }
+    // Always rebuild — review cards read from Hive, which the steps screen
+    // just updated. This covers the offline case where the API call above
+    // is skipped but the cache still changed.
+    update();
   }
 
   Future<void> setSatge(InspectionStage stage) async {

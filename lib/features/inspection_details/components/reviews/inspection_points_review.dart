@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/info_card.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
+import 'package:fahis_inspector/models/point.dart';
 import 'package:fahis_inspector/models/review_point.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -9,6 +10,8 @@ import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
+
+import '../../../../util/helpers/logger.dart';
 
 class InspectionPointsReview extends StatelessWidget {
   const InspectionPointsReview({super.key});
@@ -20,7 +23,21 @@ class InspectionPointsReview extends StatelessWidget {
       builder: (c) {
         final isLoading = c.isLoading.value;
         final inspection = c.inspection.value;
-        final points = ReviewPoint.set(c.inspectionPoints);
+
+        // Read points straight from the Hive cache — same pattern as the
+        // body-notes review. This is the single source of truth that every
+        // editor repository writes through (optimistic + offline flush),
+        // so the review stays fresh without a separate controller field.
+        final raw = c.assetsBox?.get('Points') ?? const [];
+        final parsed = <Point>[];
+        for (final item in raw) {
+          try {
+            parsed.add(Point.fromJson(Map<String, dynamic>.from(item as Map)));
+          } catch (e) {
+            AppLogger.log('Error parsing cached point in review: ', ' $e');
+          }
+        }
+        final points = ReviewPoint.set(parsed);
 
         if (inspection == null || isLoading) {
           return SizedBox();
