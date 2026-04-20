@@ -24,6 +24,11 @@ class FNetworkException extends HttpException {
   /// a real network or server error. These should never be shown to the user.
   bool get isCancelled => statusCode == -1;
 
+  /// Generic message shown for server errors and other non-user-actionable
+  /// failures. Never expose raw technical details to the user.
+  static String get _genericErrorMessage =>
+      'Oops! Something went wrong. Please try again later.'.tr;
+
   void notify() {
     // Cancelled requests (user navigated away) are silent — not a real error.
     if (isCancelled) return;
@@ -34,42 +39,35 @@ class FNetworkException extends HttpException {
       return;
     }
 
-    final msg = _formatMessage();
-
     if (statusCode == 0) {
       FLoader.errorSnackBar(
         title: 'No Connection'.tr,
-        message: msg,
+        message: 'Please check your internet connection and try again.'.tr,
         duration: 4,
       );
     } else if (statusCode == 422) {
+      // Validation errors — these are meaningful to the user.
       FLoader.warningSnackBar(
         title: 'Invalid data'.tr,
-        message: msg,
+        message: _formatValidationMessage(),
         duration: 5,
       );
     } else if (statusCode == 401) {
       FLoader.warningSnackBar(
-        title: 'Unauthenticated'.tr,
-        message: msg,
+        title: 'Session Expired'.tr,
+        message: 'Please log in again to continue.'.tr,
         duration: 4,
       );
     } else if (statusCode == 403) {
       FLoader.warningSnackBar(
-        title: 'No Permission'.tr,
-        message: msg,
+        title: 'Access Denied'.tr,
+        message: 'You don\'t have permission to perform this action.'.tr,
         duration: 4,
       );
     } else if (statusCode == 404) {
       FLoader.errorSnackBar(
         title: 'Not Found'.tr,
-        message: msg,
-        duration: 4,
-      );
-    } else if (statusCode == 405) {
-      FLoader.warningSnackBar(
-        title: 'Method Not Allowed'.tr,
-        message: msg,
+        message: 'The requested resource could not be found.'.tr,
         duration: 4,
       );
     } else if (statusCode == 413) {
@@ -79,23 +77,25 @@ class FNetworkException extends HttpException {
         duration: 5,
       );
     } else if (statusCode >= 500) {
+      // Server errors — NEVER show raw technical details.
       FLoader.errorSnackBar(
-        title: 'Server Error'.tr,
-        message: msg,
+        title: 'Something Went Wrong'.tr,
+        message: _genericErrorMessage,
         duration: 4,
       );
     } else {
+      // Any other unexpected status code — use generic message.
       FLoader.errorSnackBar(
-        title: 'Error'.tr,
-        message: msg,
+        title: 'Something Went Wrong'.tr,
+        message: _genericErrorMessage,
         duration: 4,
       );
     }
   }
 
-  /// Builds a user-friendly message from the server response.
+  /// Builds a user-friendly message for **validation errors only** (422).
   /// Priority: field-level `errors` map → general `message` → fallback.
-  String _formatMessage() {
+  String _formatValidationMessage() {
     // 1. Summarize field-level validation errors (e.g. 422 responses)
     if (errors != null && errors!.isNotEmpty) {
       final lines = <String>[];
@@ -121,12 +121,13 @@ class FNetworkException extends HttpException {
     }
 
     // 2. Fall back to the general error string from the server
+    // For validation errors, the server message is usually meaningful.
     if (message.isNotEmpty) {
       return message;
     }
 
     // 3. Generic fallback
-    return 'Something went wrong, please try again.'.tr;
+    return 'Please check your input and try again.'.tr;
   }
 
   /// Check if the user is currently authenticated (has a valid session).
