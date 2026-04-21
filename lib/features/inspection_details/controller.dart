@@ -75,9 +75,13 @@ class InspectionDetailsController extends GetxController
       inspection.value = null;
       update();
     } else {
-      // Re-read cache on every load so freshly-opened boxes surface data
-      // even when a prior instance left `inspection.value` stale.
+      // 1. Try the per-inspection cache (written after every successful API fetch).
       inspection.value = repository!.fetchFromCache() ?? inspection.value;
+
+      // 2. Fallback: if never visited this inspection before, seed from the
+      //    inspections-list cache so offline users still see something useful.
+      inspection.value ??= await _seedFromListCache(slug!);
+
       update();
     }
 
@@ -354,6 +358,24 @@ class InspectionDetailsController extends GetxController
         message: InspectionPage.submitSuccessMsg.tr,
       );
       Get.offAllNamed(RoutingUrl.home);
+    }
+  }
+
+  /// Reads the matching inspection from the list cache as a seed for the
+  /// first-ever visit. The list box stores one entry per slug, written by
+  /// [InspectionsRepository.saveToCache()]. This lets offline users open an
+  /// inspection they haven't visited individually yet — they see the summary
+  /// data from the list rather than an empty screen.
+  Future<Inspection?> _seedFromListCache(String slug) async {
+    try {
+      final uid = auth().user?.uid;
+      if (uid == null) return null;
+      final listBox = await Hive.openBox<Map>('Inspections_User_$uid');
+      final raw = listBox.get(slug);
+      if (raw == null) return null;
+      return Inspection.fromJson(Map<String, dynamic>.from(raw));
+    } catch (_) {
+      return null;
     }
   }
 

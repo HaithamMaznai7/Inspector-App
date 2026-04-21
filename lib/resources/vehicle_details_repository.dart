@@ -131,6 +131,10 @@ class VehicleDetailsRepository extends BaseRepository<VehicleDetails> {
     try {
       final r = await n.response(RoutingUrl.home);
       if (!r.hasError) {
+        if (r.data != null) {
+          _data.value = VehicleDetails.fromJson(r.data);
+          await saveToCache();
+        }
         _clearPendingUpdate();
         AppLogger.info('[Offline]', 'flush vehicle/$slug: success');
       }

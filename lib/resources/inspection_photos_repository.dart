@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/photo.dart';
 import 'package:fahis_inspector/resources/repository.dart';
@@ -13,7 +12,6 @@ import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class InspectionPhotosRepository extends ListRepository<Photo> {
-
   final Box box;
   final String slug;
 
@@ -45,7 +43,10 @@ class InspectionPhotosRepository extends ListRepository<Photo> {
   Future<List<Photo>> resetAll() async => generate();
 
   Future<List<Photo>> generate() async {
-    final n = Network(endpoint: '${EndPoints.inspections}/$slug/photos', requestMethod: RequestMethod.post);
+    final n = Network(
+      endpoint: '${EndPoints.inspections}/$slug/photos',
+      requestMethod: RequestMethod.post,
+    );
 
     final r = await n.response(RoutingUrl.home);
 
@@ -86,7 +87,10 @@ class InspectionPhotosRepository extends ListRepository<Photo> {
     pending.removeWhere((e) => (e is Map) && e['photoId'] == photoId);
     pending.add({'photoId': photoId, 'localFilePath': localFilePath});
     box.put(_pendingKey, pending);
-    AppLogger.info('[Offline]', 'write photos/$slug/photo$photoId: pending=true');
+    AppLogger.info(
+      '[Offline]',
+      'write photos/$slug/photo$photoId: pending=true',
+    );
   }
 
   void _clearPendingUpload(int photoId) {

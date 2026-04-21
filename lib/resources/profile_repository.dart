@@ -21,9 +21,6 @@ class ProfileRepository {
     return Profile.fromJson(response.data);
   }
 
-  /// Switches the current active team for the user.
-  /// POST /user/current-team with { team_id: int }
-  /// After switching, re-fetches the full profile to get updated team state.
   Future<Profile> switchTeam(int teamId) async {
     final net = Network(
       endpoint: EndPoints.setTeam,
@@ -67,7 +64,10 @@ class ProfileRepository {
       'name': name,
       if (cityId != null) 'city': cityId.toString(),
       if (photo != null)
-        'profile_photo_path': MultipartFile(photo, filename: photo.path.split(Platform.pathSeparator).last),
+        'profile_photo_path': MultipartFile(
+          photo,
+          filename: photo.path.split(Platform.pathSeparator).last,
+        ),
     });
 
     net.setBody = form;

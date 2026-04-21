@@ -66,77 +66,20 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
   //جلب من الكاش
   @override
   Inspection? fetchFromCache() {
-    final data = (box.get('inspections') as List?) ?? [];
-
-    final cached = data
-        .map((item) => Inspection.fromJson(Map<String, dynamic>.from(item)))
-        .toList();
-
-    return cached.where((i) => i.slug == slug).firstOrNull;
+    final raw = box.get('inspection');
+    if (raw == null) return null;
+    try {
+      return Inspection.fromJson(Map<String, dynamic>.from(raw as Map));
+    } catch (_) {
+      return null;
+    }
   }
 
   @override
   Future<void> saveToCache() async {
-    final data = (box.get('inspections') as List?) ?? [];
-
-    final cached = data
-        .map((item) => Inspection.fromJson(Map<String, dynamic>.from(item)))
-        .toList();
-    data.clear();
-    for (Inspection item in cached) {
-      if (item.slug == slug) {
-        item = _data.value ?? item;
-      }
-      data.add(item.toJson());
-    }
-    await box.put('inspections', data);
+    if (_data.value == null) return;
+    await box.put('inspection', _data.value!.toJson());
   }
-
-  // Future<List<Inspection>> inspections({
-  //   int page = 1,
-  //   String? order,
-  //   String? search,
-  //   String? status,
-  // }) async {
-  //   /// connect with a network and passing the queries
-  //   List<Inspection> data = [];
-  //   Network network = Network(endpoint: EndPoints.inspections);
-  //   // Map<String, dynamic> query = {
-  //   //   'page': '$page',
-  //   // };
-  //   // if (search != null) {
-  //   //   query['search'] = search;
-  //   // }
-  //   // if (order != null) {
-  //   //   query['order'] = search;
-  //   // }
-  //   // if (status != null) {
-  //   //   query['status'] = status;
-  //   // }
-  //   // network.setQuery = query;
-  //   /// get
-  //   ///  response
-  //   try {
-  //     CustomResponse response = await network.response(RoutingUrl.home);
-
-  //     // /// if has not any error process data
-  //     // dd(response.data);
-  //     data = response.data['inspections'] != null
-  //         ? Inspection.setList(response.data['inspections'])
-  //         : [];
-
-  //     for (Inspection inspection in data) {
-  //       inspection.save(_box);
-  //     }
-  //   } on FNetworkException {
-  //     rethrow;
-  //   } catch (e) {
-  //     // dd(e);
-  //     rethrow;
-  //   }
-
-  //   return data;
-  // }
 
   Future<Book?> getBook() async {
     /// connect with the network
@@ -269,7 +212,10 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
     final raw = box.get(_pendingKey);
     if (raw == null) return;
     final body = Map<String, dynamic>.from(raw as Map);
-    AppLogger.info('[Offline]', 'flush stage/$slug: retrying stage=${body['stage']}');
+    AppLogger.info(
+      '[Offline]',
+      'flush stage/$slug: retrying stage=${body['stage']}',
+    );
 
     final n = Network(
       endpoint: '${EndPoints.inspections}/$slug',
@@ -293,15 +239,3 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
     }
   }
 }
-
-// class RequestResponse{
-//   int total;
-//   int lastPage;
-//   int currentPage;
-//   List mapInspections;
-//   List<InspectionCollection> get inspections  
-//     => InspectionCollection.listFromApi(mapInspections);
-    
-//   RequestResponse({required this.total, required this.lastPage, required this.currentPage, required this.mapInspections});
-
-// }

@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:fahis_inspector/enums/point_status.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/models/point.dart';
@@ -105,7 +104,11 @@ class InspectionPointsRepository extends ListRepository<Point> {
       _clearPendingPoint(point.id);
     } on FNetworkException catch (e) {
       // Leave pending — will retry on reconnect.
-      AppLogger.error('[Offline]', 'write points/$slug/point${point.id}: POST failed', e);
+      AppLogger.error(
+        '[Offline]',
+        'write points/$slug/point${point.id}: POST failed',
+        e,
+      );
       e.notify();
     } catch (e) {
       dd(e);
@@ -158,7 +161,10 @@ class InspectionPointsRepository extends ListRepository<Point> {
       'localImagePath': localImagePath,
     });
     box.put(_pendingKey, pending);
-    AppLogger.info('[Offline]', 'write points/$slug/point$pointId: pending=true');
+    AppLogger.info(
+      '[Offline]',
+      'write points/$slug/point$pointId: pending=true',
+    );
   }
 
   void _clearPendingPoint(int pointId) {
@@ -181,7 +187,10 @@ class InspectionPointsRepository extends ListRepository<Point> {
   Future<void> flushPending() async {
     final entries = _pendingPoints();
     if (entries.isEmpty) return;
-    AppLogger.info('[Offline]', 'flush points/$slug: ${entries.length} pending points');
+    AppLogger.info(
+      '[Offline]',
+      'flush points/$slug: ${entries.length} pending points',
+    );
 
     for (final entry in entries) {
       final pointId = entry['pointId'] as int;
@@ -217,9 +226,16 @@ class InspectionPointsRepository extends ListRepository<Point> {
         updatePoints(point);
         await saveToCache();
         _clearPendingPoint(pointId);
-        AppLogger.info('[Offline]', 'flush points/$slug/point$pointId: success');
+        AppLogger.info(
+          '[Offline]',
+          'flush points/$slug/point$pointId: success',
+        );
       } on FNetworkException catch (e) {
-        AppLogger.error('[Offline]', 'flush points/$slug/point$pointId: failed', e);
+        AppLogger.error(
+          '[Offline]',
+          'flush points/$slug/point$pointId: failed',
+          e,
+        );
       } catch (e) {
         dd('flushPending points error: $e');
       }

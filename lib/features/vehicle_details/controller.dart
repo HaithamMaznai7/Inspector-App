@@ -12,6 +12,7 @@ import 'package:fahis_inspector/util/helpers/plate_converter.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -51,6 +52,7 @@ class VehicleDetailsController extends GetxController {
   bool _disposed = false;
 
   Worker? _reconnectWorker;
+  StreamSubscription<VehicleDetails?>? _repoSub;
   bool _repositoryReady = false;
 
   @override
@@ -106,6 +108,15 @@ class VehicleDetailsController extends GetxController {
     repository = VehicleDetailsRepository(slug: slug!, box: box!);
     _repositoryReady = true;
 
+    // Subscribe so post-flush server reconciliation reaches the editor.
+    _repoSub?.cancel();
+    _repoSub = repository!.stream.listen((data) {
+      if (_disposed || isLoading.value || data == null) return;
+      inspectionDetails.value = data;
+      updateDetails();
+      update();
+    });
+
     // Fast path (navigation with arguments)
     if (Get.arguments is VehicleDetails) {
       inspectionDetails.value = Get.arguments as VehicleDetails;
@@ -145,6 +156,7 @@ class VehicleDetailsController extends GetxController {
   void onClose() {
     _disposed = true;
     _reconnectWorker?.dispose();
+    _repoSub?.cancel();
     super.onClose();
     vinController.dispose();
     plateController.dispose();

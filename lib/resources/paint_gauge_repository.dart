@@ -6,10 +6,6 @@ import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-/// Persistence + API layer for paint gauge panel data.
-///
-/// Backend is the source of truth. Session readings are ephemeral
-/// and never stored here — only the backend panel state is cached.
 class PaintGaugeRepository {
   static const String boxKey = 'PaintGauge';
   static const _tag = 'PaintGaugeRepo';

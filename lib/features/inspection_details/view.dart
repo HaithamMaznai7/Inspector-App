@@ -45,7 +45,10 @@ class InspectionDetailsScreen extends StatelessWidget {
         leading: BackPageButton(color: FColors.white),
       ),
       body: Obx(() {
-        if (controller.isLoading.value) {
+        // Only block the UI with a spinner when there is genuinely no data yet.
+        // If Hive returned a cached inspection, show it immediately and let the
+        // API refresh happen silently in the background (stale-while-revalidate).
+        if (controller.isLoading.value && controller.inspection.value == null) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
