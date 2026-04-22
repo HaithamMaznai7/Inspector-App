@@ -23,6 +23,7 @@ class VehicleDetailsRepository extends BaseRepository<VehicleDetails> {
 
   @override
   Future<VehicleDetails?> fetchFromApi() async {
+    await flushPending();
     try {
       final n = Network(endpoint: '${EndPoints.inspections}/$slug/details');
 

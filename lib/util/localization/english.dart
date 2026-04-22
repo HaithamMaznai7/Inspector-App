@@ -659,6 +659,7 @@ class English {
     'offline_bar_message': 'No connection — check your internet',
     'back_online_title': 'Back online',
     'back_online_message': 'Syncing your pending changes…',
+    'syncing_offline_changes': 'Syncing offline changes',
     'offline_no_cache_message':
         'This inspection hasn\'t been downloaded yet. Reconnect and pull to refresh.',
     'saved_locally_title': 'Saved locally',

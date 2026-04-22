@@ -26,6 +26,7 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
 
   @override
   Future<List<CarBody>> fetchFromApi() async {
+    await flushPendingMarkers();
     final n = Network(endpoint: '${EndPoints.inspections}/$slug/bodies');
 
     final r = await n.response(RoutingUrl.home);

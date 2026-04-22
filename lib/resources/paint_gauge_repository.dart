@@ -3,6 +3,7 @@ import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
+import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -20,6 +21,7 @@ class PaintGaugeRepository {
   // ── GET panels from API ──────────────────────────────────────────────────
 
   Future<List<PaintPanel>> fetchPanelsFromApi() async {
+    await flushPending();
     final n = Network(endpoint: '${EndPoints.inspections}/$slug/paints');
     final r = await n.response(RoutingUrl.home);
 
@@ -175,6 +177,68 @@ class PaintGaugeRepository {
   /// Clear all cached readings for this inspection.
   Future<void> clearReadingsCache() async {
     await box.delete(_readingsCacheKey);
+  }
+
+  // ── Offline flush: POST any panels marked pending in readings cache ──────
+
+  /// Retries any panels that were cached with `pending: true` — e.g. readings
+  /// saved while offline or from a prior session that ended before the POST
+  /// could succeed. Safe to call repeatedly: each successful POST clears the
+  /// pending flag, so the next call is a no-op.
+  ///
+  /// Does not require the paint gauge controller to be alive — used by the
+  /// global [OfflineSyncService] to drain writes regardless of which screen
+  /// is active.
+  Future<void> flushPending() async {
+    final pendingIds = pendingPanelIds();
+    if (pendingIds.isEmpty) return;
+
+    AppLogger.info(
+      _tag,
+      'flush paint/$slug: ${pendingIds.length} pending panels',
+    );
+
+    final panels = fetchPanelsFromCache();
+    final panelById = {for (final p in panels) p.id: p};
+    final readings = loadReadingsCache();
+
+    for (final backendId in pendingIds) {
+      final panel = panelById[backendId];
+      if (panel == null) continue;
+
+      final cached = readings[backendId];
+      if (cached == null) continue;
+
+      final rawReadings =
+          (cached['readings'] as List?)
+              ?.cast<num>()
+              .map((e) => e.toDouble())
+              .toList() ??
+          <double>[];
+      if (rawReadings.isEmpty) continue;
+
+      final sum = rawReadings.reduce((a, b) => a + b);
+      final avg = sum / rawReadings.length;
+      final thickness = avg.abs() < 99.95
+          ? double.parse(avg.toStringAsFixed(1))
+          : avg.round().toDouble();
+      final substrate = (cached['substrate'] as String?) ?? 'Fe';
+
+      try {
+        await updatePanel(
+          panel,
+          thickness: thickness,
+          substrate: substrate,
+          measurementCount: rawReadings.length,
+        );
+        await setPanelPending(backendId, false);
+        AppLogger.info(_tag, 'flush paint/$slug/panel$backendId: success');
+      } on FNetworkException catch (e) {
+        AppLogger.error(_tag, 'flush paint/$slug/panel$backendId: failed', e);
+      } catch (e) {
+        AppLogger.error(_tag, 'flush paint/$slug/panel$backendId: error', e);
+      }
+    }
   }
 
   // ── Saved BLE device (for auto-connect) ─────────────────────────────────

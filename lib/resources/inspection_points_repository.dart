@@ -26,6 +26,7 @@ class InspectionPointsRepository extends ListRepository<Point> {
 
   @override
   Future<List<Point>> fetchFromApi() async {
+    await flushPending();
     try {
       final n = Network(endpoint: '${EndPoints.inspections}/$slug/points');
 

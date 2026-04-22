@@ -23,6 +23,7 @@ class InspectionPhotosRepository extends ListRepository<Photo> {
 
   @override
   Future<List<Photo>> fetchFromApi() async {
+    await flushPending();
     final n = Network(endpoint: '${EndPoints.inspections}/$slug/photos');
 
     final r = await n.response(RoutingUrl.home);

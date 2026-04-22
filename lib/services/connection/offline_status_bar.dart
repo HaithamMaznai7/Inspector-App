@@ -1,5 +1,6 @@
 import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
+import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -19,24 +20,25 @@ class OfflineStatusBar extends StatelessWidget {
       if (service.isConnectionGood.value || !service.hasEverBeenOnline) {
         return const SizedBox.shrink();
       }
-      return Container(
-        width: double.infinity,
-        color: FColors.darkGrey,
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.wifi_off, size: 14, color: Colors.white),
-            const SizedBox(width: 6),
-            Text(
-              'offline_bar_message'.tr,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+      return Material(
+        color: FColors.error,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: FSizes.xs, horizontal: FSizes.md),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.wifi_off, size: FSizes.iconSm, color: FColors.white),
+              const SizedBox(width: FSizes.sm),
+              Text(
+                'offline_bar_message'.tr,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: FColors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                textAlign: TextAlign.center,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     });

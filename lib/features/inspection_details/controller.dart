@@ -71,10 +71,7 @@ class InspectionDetailsController extends GetxController
     repository = InspectionDetailsRepository(slug: slug!, box: box!);
 
     // Fast path (navigation with arguments)
-    if (refresh) {
-      inspection.value = null;
-      update();
-    } else {
+    if (!refresh) {
       // 1. Try the per-inspection cache (written after every successful API fetch).
       inspection.value = repository!.fetchFromCache() ?? inspection.value;
 

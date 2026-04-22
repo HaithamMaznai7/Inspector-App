@@ -39,6 +39,7 @@ import 'services/storage/storage_service.dart';
 import 'services/auth/auth_service.dart';
 import 'services/notifications/notifications_service.dart';
 import 'services/connection/connection.dart';
+import 'services/offline_sync/offline_sync_service.dart';
 
 // services bindings
 part 'util/constants/routes.dart';
@@ -47,6 +48,7 @@ part 'services/app/binding.dart';
 part 'services/auth/binding.dart';
 part 'services/notifications/binding.dart';
 part 'services/connection/binding.dart';
+part 'services/offline_sync/binding.dart';
 
 // features bindings
 part 'features/configuration/binding.dart';

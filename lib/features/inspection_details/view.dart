@@ -7,6 +7,7 @@ import 'package:fahis_inspector/features/inspection_details/components/reviews/i
 import 'package:fahis_inspector/features/inspection_details/components/reviews/inspection_paint_gauge_review.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/inspection_photos_review.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/inspection_points_review.dart';
+import 'package:fahis_inspector/common/widgets/offline/sync_banner.dart';
 import 'package:fahis_inspector/features/inspection_details/components/stage_selector.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/vehicle_info_review.dart';
 import 'package:fahis_inspector/features/inspection_details/components/connect_person_info.dart';
@@ -69,70 +70,92 @@ class InspectionDetailsScreen extends StatelessWidget {
         if (controller.inspection.value == null) {
           final isOnline =
               ConnectionService.instance.isConnectionGood.value;
-          return RefreshIndicator(
-            onRefresh: () async =>
-                controller.load(controller.slug!, refresh: true),
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              children: [
-                SizedBox(height: Get.height * 0.2),
-                Icon(
-                  isOnline ? Icons.error_outline : Icons.wifi_off,
-                  size: 48,
-                  color: FColors.darkGrey,
-                ),
-                SizedBox(height: FSizes.md),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: FSizes.lg),
-                  child: Text(
-                    isOnline
-                        ? InspectionPage.loadingInspectionDetails.tr
-                        : 'offline_no_cache_message'.tr,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.apply(color: FColors.darkGrey),
+          return Column(
+            children: [
+              const SyncBanner(),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () async =>
+                      controller.load(controller.slug!, refresh: true),
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      SizedBox(height: Get.height * 0.2),
+                      Icon(
+                        isOnline ? Icons.error_outline : Icons.wifi_off,
+                        size: 48,
+                        color: FColors.darkGrey,
+                      ),
+                      SizedBox(height: FSizes.md),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: FSizes.lg),
+                        child: Text(
+                          isOnline
+                              ? InspectionPage.loadingInspectionDetails.tr
+                              : 'offline_no_cache_message'.tr,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.apply(color: FColors.darkGrey),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         }
 
-        return RefreshIndicator(
-          onRefresh: () async =>
-              controller.load(controller.slug!, refresh: true),
-          triggerMode: RefreshIndicatorTriggerMode.onEdge,
-          child: Container(
-            color: FColors.grey.withValues(alpha: 0.05),
-            child: ListView(
-              scrollDirection: Axis.vertical,
-              padding: EdgeInsets.only(top: FSizes.sm, bottom: FSizes.xl),
-              children: [
-                InspectorNoteSection(),
-                ReviewerNoteSection(),
-                // Always show general info and contact
-                const InspectionInfoReview(),
-                // Only show cards for steps that exist in this order
-                if (controller.inspection.value?.hasDetails ?? false)
-                  const VehicleInfoReview(),
-                const ConnectPersonInfo(),
-                if (controller.inspection.value?.hasPoints ?? false)
-                  const InspectionPointsReview(),
-                if (controller.inspection.value?.hasPhotos ?? false)
-                  const InspectionPhotosReview(),
-                if (controller.inspection.value?.hasBody ?? false)
-                  const InspectionBodyNotesReview(),
-                if (controller.inspection.value?.hasBody ?? false ||
-                    (controller.inspection.value?.hasPaintBody ?? false))
-                  const InspectionPaintGaugeReview(),
-                if (controller.inspection.value?.hasObd ?? false)
-                  const InspectionOBDReview(),
-                SizedBox(height: FSizes.md),
-              ],
+        return Column(
+          children: [
+            const SyncBanner(),
+            // Thin progress bar while cached data is shown and API is
+            // refreshing in the background (stale-while-revalidate).
+            if (controller.isLoading.value)
+              LinearProgressIndicator(
+                minHeight: 2,
+                backgroundColor: Colors.transparent,
+                color: FColors.primaryColor,
+              ),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async =>
+                    controller.load(controller.slug!, refresh: true),
+                triggerMode: RefreshIndicatorTriggerMode.onEdge,
+                child: Container(
+                  color: FColors.grey.withValues(alpha: 0.05),
+                  child: ListView(
+                    scrollDirection: Axis.vertical,
+                    padding: EdgeInsets.only(top: FSizes.sm, bottom: FSizes.xl),
+                    children: [
+                      InspectorNoteSection(),
+                      ReviewerNoteSection(),
+                      // Always show general info and contact
+                      const InspectionInfoReview(),
+                      // Only show cards for steps that exist in this order
+                      if (controller.inspection.value?.hasDetails ?? false)
+                        const VehicleInfoReview(),
+                      const ConnectPersonInfo(),
+                      if (controller.inspection.value?.hasPoints ?? false)
+                        const InspectionPointsReview(),
+                      if (controller.inspection.value?.hasPhotos ?? false)
+                        const InspectionPhotosReview(),
+                      if (controller.inspection.value?.hasBody ?? false)
+                        const InspectionBodyNotesReview(),
+                      if (controller.inspection.value?.hasBody ?? false ||
+                          (controller.inspection.value?.hasPaintBody ?? false))
+                        const InspectionPaintGaugeReview(),
+                      if (controller.inspection.value?.hasObd ?? false)
+                        const InspectionOBDReview(),
+                      SizedBox(height: FSizes.md),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
+          ],
         );
       }),
       bottomNavigationBar: StageSelector(),

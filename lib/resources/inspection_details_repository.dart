@@ -39,6 +39,7 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
 
   @override
   Future<Inspection?> fetchFromApi() async {
+    await flushPendingStage();
     Network n = Network(endpoint: '${EndPoints.inspections}/$slug');
 
     CustomResponse r = await n.response(RoutingUrl.home);

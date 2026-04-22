@@ -29,7 +29,13 @@ class AppServiceProvider extends AppService {
 
   @override
   List<BindingsService> register() {
-    return [ConnectionBinding(), StorageBinding(), AuthBinding(), NotificationsBinding()];
+    return [
+      ConnectionBinding(),
+      StorageBinding(),
+      AuthBinding(),
+      NotificationsBinding(),
+      OfflineSyncBinding(),
+    ];
   }
 
   @override
