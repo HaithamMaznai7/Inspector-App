@@ -253,10 +253,9 @@ class InspectionPhotosController extends GetxController {
     _log('delete — photo.id=${photo.id} | savedCategory=$savedCategory');
     deletingIds.add(photo.id);
     update();
-    var ok = false;
+    var synced = false;
     try {
-      await repository.delete(photo);
-      ok = true;
+      synced = await repository.delete(photo);
     } finally {
       deletingIds.remove(photo.id);
       if (savedCategory != null) {
@@ -264,10 +263,16 @@ class InspectionPhotosController extends GetxController {
       }
       update();
     }
-    if (ok) {
+    if (synced) {
       FLoader.successSnackBar(
         title: InspectionPage.deletePhoto.tr,
         message: InspectionPage.photoDeletedSuccess.tr,
+        duration: 2,
+      );
+    } else {
+      FLoader.infoSnackBar(
+        title: 'queued_delete_title'.tr,
+        message: 'queued_delete_message'.tr,
         duration: 2,
       );
     }

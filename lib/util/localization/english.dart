@@ -665,5 +665,8 @@ class English {
     'saved_locally_title': 'Saved locally',
     'saved_locally_message':
         'Will sync automatically when you\'re back online.',
+    'queued_delete_title': 'Queued for deletion',
+    'queued_delete_message':
+        'Will be removed from the server when you\'re back online.',
   };
 }

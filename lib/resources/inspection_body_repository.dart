@@ -117,9 +117,15 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
         .toList();
   }
 
-  /// Retries all pending markers. Returns true if all flushed successfully.
-  /// On partial failure, the successfully synced entries are removed.
+  /// Retries all pending markers (writes + deletes). Returns when all have
+  /// been attempted. Idempotent: safe to call from both the per-controller
+  /// reconnect worker and the global [OfflineSyncService] dispatcher.
   Future<void> flushPendingMarkers() async {
+    await _flushPendingWrites();
+    await _flushPendingDeletes();
+  }
+
+  Future<void> _flushPendingWrites() async {
     final entries = pendingMarkers();
     if (entries.isEmpty) return;
     AppLogger.info(
@@ -169,6 +175,92 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
         // Leave pending — will retry on next reconnect.
       } catch (e) {
         AppLogger.error('[Offline]', 'flush body/$slug/marker$tempKey: error', e);
+      }
+    }
+  }
+
+  // ── Pending marker deletes (offline-first delete) ──────────────────────────
+
+  String get _pendingDeleteKey => 'pending_delete_marker_$slug';
+
+  void _savePendingDelete(int noteId) {
+    final raw = box.get(_pendingDeleteKey);
+    final pending = raw?.toList() ?? [];
+    if (!pending.contains(noteId)) {
+      pending.add(noteId);
+      box.put(_pendingDeleteKey, pending);
+    }
+    AppLogger.info(
+      '[Offline]',
+      'delete body/$slug/marker$noteId: pending=true',
+    );
+  }
+
+  void _clearPendingDelete(int noteId) {
+    final raw = box.get(_pendingDeleteKey);
+    if (raw == null) return;
+    final pending = raw.toList()..removeWhere((id) => id == noteId);
+    box.put(_pendingDeleteKey, pending);
+  }
+
+  List<int> _pendingDeletes() {
+    final raw = box.get(_pendingDeleteKey);
+    return raw?.map((e) => e as int).toList() ?? [];
+  }
+
+  /// True if [noteId] has a pending (unsynced) DELETE in the local store.
+  bool hasPendingDelete(int noteId) => _pendingDeletes().contains(noteId);
+
+  /// Removes a marker from the in-memory CarBody list by note id.
+  void _removeMarkerLocally(int noteId) {
+    for (int i = 0; i < _data.length; i++) {
+      final body = _data[i];
+      if (body.notes.any((m) => m.id == noteId)) {
+        body.notes.removeWhere((m) => m.id == noteId);
+        _data[i] = body;
+      }
+    }
+  }
+
+  Future<void> _flushPendingDeletes() async {
+    final ids = _pendingDeletes();
+    if (ids.isEmpty) return;
+    AppLogger.info(
+      '[Offline]',
+      'flush body/$slug: ${ids.length} pending deletes',
+    );
+
+    for (final id in List<int>.from(ids)) {
+      final n = Network(
+        endpoint: '${EndPoints.notes}/$id',
+        requestMethod: RequestMethod.delete,
+      );
+      try {
+        final r = await n.response(RoutingUrl.home);
+        final bodySides = r.data.isNotEmpty
+            ? CarBody.setList(r.data)
+            : <CarBody>[];
+        if (bodySides.isNotEmpty) _data.assignAll(bodySides);
+        await saveToCache();
+        _clearPendingDelete(id);
+        AppLogger.info('[Offline]', 'flush body/$slug/delete$id: success');
+      } on FNetworkException catch (e) {
+        // 404 = already gone on the server — treat as success.
+        if (e.statusCode == 404) {
+          _clearPendingDelete(id);
+          AppLogger.info(
+            '[Offline]',
+            'flush body/$slug/delete$id: already gone (404)',
+          );
+        } else {
+          AppLogger.error(
+            '[Offline]',
+            'flush body/$slug/delete$id: failed',
+            e,
+          );
+        }
+      } catch (e) {
+        AppLogger.error('[Offline]', 'flush body/$slug/delete$id: error', e);
       }
     }
   }
@@ -265,8 +357,20 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
     }
   }
 
-  Future<void> delete(Marker note) async {
-    Network n = Network(
+  /// Deletes a marker optimistically. Returns `true` when the DELETE
+  /// committed or the server already lacked the marker (404); returns
+  /// `false` when the operation was queued locally for retry on reconnect.
+  /// The marker is removed from the local cache in both cases — on failure
+  /// it stays removed and the pending-delete queue ensures the server is
+  /// reconciled later.
+  Future<bool> delete(Marker note) async {
+    // Persist pending marker + optimistic local removal BEFORE the network
+    // call so the removal survives app-kill while offline.
+    _savePendingDelete(note.id);
+    _removeMarkerLocally(note.id);
+    await saveToCache();
+
+    final n = Network(
       endpoint: '${EndPoints.notes}/${note.id}',
       requestMethod: RequestMethod.delete,
     );
@@ -278,12 +382,21 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
           ? CarBody.setList(r.data)
           : <CarBody>[];
 
-      _data.assignAll(bodySides);
-    } on FNetworkException catch (e) {
-      e.notify();
-      rethrow;
-    } finally {
+      if (bodySides.isNotEmpty) _data.assignAll(bodySides);
       await saveToCache();
+      _clearPendingDelete(note.id);
+      return true;
+    } on FNetworkException catch (e) {
+      // 404 = already gone on the server; our optimistic removal was correct.
+      if (e.statusCode == 404) {
+        _clearPendingDelete(note.id);
+        return true;
+      }
+      // Offline or server failure — leave pending queue for reconnect retry.
+      return false;
+    } catch (e) {
+      dd('delete marker error: $e');
+      return false;
     }
   }
 }

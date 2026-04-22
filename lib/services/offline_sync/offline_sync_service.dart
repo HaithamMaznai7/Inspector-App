@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fahis_inspector/resources/assets_repository.dart';
 import 'package:fahis_inspector/resources/inspection_body_repository.dart';
 import 'package:fahis_inspector/resources/inspection_details_repository.dart';
 import 'package:fahis_inspector/resources/inspection_obd_repository.dart';
@@ -43,12 +44,14 @@ class OfflineSyncService extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _reconnectWorker = ever(
-      ConnectionService.instance.onReconnect,
-      (_) => flushAll(),
-    );
+    _reconnectWorker = ever(ConnectionService.instance.onReconnect, (_) {
+      flushAll();
+      _prefetchAssets();
+    });
     // Seed the count so any UI bound to it renders the correct initial state.
     refreshPendingCount();
+    // Populate reference-data caches for offline-first users.
+    _prefetchAssets();
   }
 
   @override
@@ -99,6 +102,10 @@ class OfflineSyncService extends GetxController {
           'pending_body_$slug',
           'pending_photos_$slug',
           'pending_obd_$slug',
+          // Delete queues — parallel to the write queues above.
+          'pending_delete_obd_$slug',
+          'pending_delete_photo_$slug',
+          'pending_delete_marker_$slug',
         ]) {
           final raw = assets.get(key);
           if (raw is List) count += raw.length;
@@ -148,6 +155,16 @@ class OfflineSyncService extends GetxController {
       isSyncing.value = false;
       await refreshPendingCount();
       AppLogger.info(_tag, 'flushAll complete — pending=${pendingCount.value}');
+    }
+  }
+
+  Future<void> _prefetchAssets() async {
+    try {
+      final box = await Hive.openBox<List>('Assets');
+      await AssetsRepository(box).prefetchAll();
+      AppLogger.info(_tag, 'prefetchAssets: done');
+    } catch (e) {
+      AppLogger.error(_tag, 'prefetchAssets failed', e);
     }
   }
 

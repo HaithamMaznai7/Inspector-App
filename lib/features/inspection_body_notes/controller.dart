@@ -192,13 +192,18 @@ class InspectionBodyController extends GetxController {
 
   Future<void> onRemove(Marker note) async {
     try {
-      await repository.delete(note);
-      FLoader.successSnackBar(
-        title: FTexts.markerDeletedSuccess.tr,
-        message: FTexts.markerDeletedSuccessMsg.tr,
-      );
-    } on FNetworkException {
-      // Repository already called e.notify() — no second snackbar needed.
+      final synced = await repository.delete(note);
+      if (synced) {
+        FLoader.successSnackBar(
+          title: FTexts.markerDeletedSuccess.tr,
+          message: FTexts.markerDeletedSuccessMsg.tr,
+        );
+      } else {
+        FLoader.infoSnackBar(
+          title: 'queued_delete_title'.tr,
+          message: 'queued_delete_message'.tr,
+        );
+      }
     } catch (_) {
       FLoader.errorSnackBar(
         title: FTexts.markerErrorTitle.tr,

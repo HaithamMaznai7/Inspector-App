@@ -226,12 +226,19 @@ class InspectionObdController extends GetxController {
     update();
 
     try {
-      await repository.delete(code);
-      _log('delete code – success');
-      FLoader.successSnackBar(
-        title: InspectionPage.obdCodeDeletedSuccess.tr,
-        message: InspectionPage.obdCodeDeletedSuccessMsg.tr,
-      );
+      final synced = await repository.delete(code);
+      _log('delete code – done (synced=$synced)');
+      if (synced) {
+        FLoader.successSnackBar(
+          title: InspectionPage.obdCodeDeletedSuccess.tr,
+          message: InspectionPage.obdCodeDeletedSuccessMsg.tr,
+        );
+      } else {
+        FLoader.infoSnackBar(
+          title: 'queued_delete_title'.tr,
+          message: 'queued_delete_message'.tr,
+        );
+      }
     } catch (e) {
       _log('delete code – error: $e');
       FLoader.errorSnackBar(title: InspectionPage.obdActionError.tr);

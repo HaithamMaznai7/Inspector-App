@@ -110,8 +110,15 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   bool hasPendingCode(String code) =>
       _pendingCodes().any((e) => e['code'] == code);
 
-  /// Retries all OBD codes that failed to POST while offline.
+  /// Retries all OBD codes (writes + deletes) that failed while offline.
+  /// Idempotent: safe to call from both the per-controller reconnect worker
+  /// and the global [OfflineSyncService] dispatcher.
   Future<void> flushPending() async {
+    await _flushPendingWrites();
+    await _flushPendingDeletes();
+  }
+
+  Future<void> _flushPendingWrites() async {
     final entries = _pendingCodes();
     if (entries.isEmpty) return;
     AppLogger.info('[Offline]', 'flush obd/$slug: ${entries.length} pending codes');
@@ -136,7 +143,74 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       } on FNetworkException catch (e) {
         AppLogger.error('[Offline]', 'flush obd/$slug/$code: failed', e);
       } catch (e) {
-        _log('flushPending – error for code=$code: $e');
+        _log('flushPendingWrites – error for code=$code: $e');
+      }
+    }
+  }
+
+  // ── Pending OBD deletes (offline-first delete) ─────────────────────────────
+
+  String get _pendingDeleteKey => 'pending_delete_obd_$slug';
+
+  void _savePendingDelete(int codeId) {
+    final raw = box.get(_pendingDeleteKey) as List?;
+    final pending = raw?.toList() ?? [];
+    if (!pending.contains(codeId)) {
+      pending.add(codeId);
+      box.put(_pendingDeleteKey, pending);
+    }
+    AppLogger.info(
+      '[Offline]',
+      'delete obd/$slug/code$codeId: pending=true',
+    );
+  }
+
+  void _clearPendingDelete(int codeId) {
+    final raw = box.get(_pendingDeleteKey) as List?;
+    if (raw == null) return;
+    final pending = raw.toList()..removeWhere((id) => id == codeId);
+    box.put(_pendingDeleteKey, pending);
+  }
+
+  List<int> _pendingDeletes() {
+    final raw = box.get(_pendingDeleteKey) as List?;
+    return raw?.map((e) => e as int).toList() ?? [];
+  }
+
+  Future<void> _flushPendingDeletes() async {
+    final ids = _pendingDeletes();
+    if (ids.isEmpty) return;
+    AppLogger.info(
+      '[Offline]',
+      'flush obd/$slug: ${ids.length} pending deletes',
+    );
+
+    for (final id in List<int>.from(ids)) {
+      final n = Network(
+        endpoint: 'inspector/codes/$id',
+        requestMethod: RequestMethod.delete,
+      );
+      try {
+        await n.response(RoutingUrl.home);
+        _clearPendingDelete(id);
+        AppLogger.info('[Offline]', 'flush obd/$slug/delete$id: success');
+      } on FNetworkException catch (e) {
+        // 404 = already gone on the server — treat as success.
+        if (e.statusCode == 404) {
+          _clearPendingDelete(id);
+          AppLogger.info(
+            '[Offline]',
+            'flush obd/$slug/delete$id: already gone (404)',
+          );
+        } else {
+          AppLogger.error(
+            '[Offline]',
+            'flush obd/$slug/delete$id: failed',
+            e,
+          );
+        }
+      } catch (e) {
+        _log('flushPendingDeletes – error for id=$id: $e');
       }
     }
   }
@@ -214,8 +288,20 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
     return _data;
   }
 
-  Future<List<OBDCode>> delete(OBDCode code) async {
+  /// Deletes an OBD code optimistically. Returns `true` when the DELETE
+  /// committed to the server, `false` when it was queued locally for retry
+  /// on reconnect (offline, timeout, 5xx). The code is removed from the
+  /// local cache in both cases — on failure it stays removed and the
+  /// pending-delete queue ensures the server is reconciled later.
+  Future<bool> delete(OBDCode code) async {
     _log('delete – DELETE code id=${code.id}');
+
+    // Persist pending marker + optimistic local removal BEFORE the network
+    // call so the removal survives app-kill while offline.
+    _savePendingDelete(code.id);
+    _data.removeWhere((c) => c.id == code.id);
+    await saveToCache();
+
     final n = Network(
       endpoint: 'inspector/codes/${code.id}',
       requestMethod: RequestMethod.delete,
@@ -225,21 +311,33 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       final r = await n.response(RoutingUrl.home);
       _log('delete – response status: ${r.hasError ? "ERROR" : "OK"}');
 
+      // Server may echo the full codes list; reconcile when present.
       final bodySides = r.data.isNotEmpty
-          ? OBDCode.setList(r.data['codes'])
+          ? OBDCode.setList(r.data['codes'] ?? [])
           : <OBDCode>[];
-
-      _report.value = r.data.isNotEmpty ? r.data['report'] : null;
-
-      _data.assignAll(bodySides);
-      _log('delete – now ${bodySides.length} codes remaining');
+      if (bodySides.isNotEmpty || (r.data is Map && r.data.containsKey('codes'))) {
+        _report.value = r.data.isNotEmpty ? r.data['report'] : _report.value;
+        _data.assignAll(bodySides);
+      }
 
       await saveToCache();
+      _clearPendingDelete(code.id);
+      _log('delete – synced, ${_data.length} codes remaining');
+      return true;
+    } on FNetworkException catch (e) {
+      // 404 = already gone on the server; our optimistic removal was correct.
+      if (e.statusCode == 404) {
+        _clearPendingDelete(code.id);
+        _log('delete – 404 already gone, cleared pending');
+        return true;
+      }
+      // Offline or server failure — leave pending queue for reconnect retry.
+      _log('delete – FNetworkException: ${e.statusCode} — queued as pending');
+      return false;
     } catch (e) {
-      _log('delete – error: $e');
+      _log('delete – error: $e — queued as pending');
+      return false;
     }
-
-    return _data;
   }
 
   Future<String?> uploadReport(File? file) async {

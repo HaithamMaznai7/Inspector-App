@@ -112,8 +112,13 @@ class InspectionPhotosRepository extends ListRepository<Photo> {
   bool hasPendingUpload(int photoId) =>
       _pendingUploads().any((e) => e['photoId'] == photoId);
 
-  /// Retries any photo uploads that failed while offline.
+  /// Retries any photo uploads + deletes that failed while offline.
   Future<void> flushPending() async {
+    await _flushPendingUploads();
+    await _flushPendingDeletes();
+  }
+
+  Future<void> _flushPendingUploads() async {
     final entries = _pendingUploads();
     if (entries.isEmpty) return;
     AppLogger.info(
@@ -170,6 +175,79 @@ class InspectionPhotosRepository extends ListRepository<Photo> {
       }
     }
   }
+
+  // ── Pending photo deletes (offline-first delete) ───────────────────────────
+
+  String get _pendingDeleteKey => 'pending_delete_photo_$slug';
+
+  void _savePendingDelete(int photoId) {
+    final raw = box.get(_pendingDeleteKey) as List?;
+    final pending = raw?.toList() ?? [];
+    if (!pending.contains(photoId)) {
+      pending.add(photoId);
+      box.put(_pendingDeleteKey, pending);
+    }
+    AppLogger.info(
+      '[Offline]',
+      'delete photos/$slug/photo$photoId: pending=true',
+    );
+  }
+
+  void _clearPendingDelete(int photoId) {
+    final raw = box.get(_pendingDeleteKey) as List?;
+    if (raw == null) return;
+    final pending = raw.toList()..removeWhere((id) => id == photoId);
+    box.put(_pendingDeleteKey, pending);
+  }
+
+  List<int> _pendingDeletes() {
+    final raw = box.get(_pendingDeleteKey) as List?;
+    return raw?.map((e) => e as int).toList() ?? [];
+  }
+
+  Future<void> _flushPendingDeletes() async {
+    final ids = _pendingDeletes();
+    if (ids.isEmpty) return;
+    AppLogger.info(
+      '[Offline]',
+      'flush photos/$slug: ${ids.length} pending deletes',
+    );
+
+    for (final id in List<int>.from(ids)) {
+      final n = Network(
+        endpoint: '${EndPoints.photos}/$id',
+        requestMethod: RequestMethod.delete,
+      );
+      try {
+        final r = await n.response(RoutingUrl.home);
+        final newPhoto = r.data.isNotEmpty ? Photo.fromJson(r.data) : null;
+        if (newPhoto != null) updatePhoto(newPhoto);
+        await saveToCache();
+        _clearPendingDelete(id);
+        AppLogger.info('[Offline]', 'flush photos/$slug/delete$id: success');
+      } on FNetworkException catch (e) {
+        // 404 = already cleared on server — treat as success.
+        if (e.statusCode == 404) {
+          _clearPendingDelete(id);
+          AppLogger.info(
+            '[Offline]',
+            'flush photos/$slug/delete$id: already gone (404)',
+          );
+        } else {
+          AppLogger.error(
+            '[Offline]',
+            'flush photos/$slug/delete$id: failed',
+            e,
+          );
+        }
+      } catch (e) {
+        dd('flushPendingDeletes photos error: $e');
+      }
+    }
+  }
+
+  /// True if [photoId] has a pending (unsynced) DELETE in the local store.
+  bool hasPendingDelete(int photoId) => _pendingDeletes().contains(photoId);
 
   // ── update ───────────────────────────────────────────────────────────────────
 
@@ -230,31 +308,43 @@ class InspectionPhotosRepository extends ListRepository<Photo> {
     }
   }
 
-  Future<void> delete(Photo photo) async {
-    Network n = Network(
+  /// Deletes a photo optimistically (clears the image locally before the
+  /// network call). Returns `true` when the DELETE committed or the server
+  /// already lacked the image (404); returns `false` when the operation was
+  /// queued locally for retry on reconnect. The photo slot is cleared in both
+  /// cases — the pending-delete queue ensures the server is reconciled later.
+  Future<bool> delete(Photo photo) async {
+    // Persist pending marker + optimistic local clear BEFORE the network
+    // call so the cleared state survives app-kill while offline.
+    _savePendingDelete(photo.id);
+    photo.setImage = null;
+    photo.file = null;
+    updatePhoto(photo);
+    await saveToCache();
+
+    final n = Network(
       endpoint: '${EndPoints.photos}/${photo.id}',
       requestMethod: RequestMethod.delete,
     );
 
     try {
       final r = await n.response(RoutingUrl.home);
-      final newPhoto = !r.hasError || r.data.isNotEmpty
-          ? Photo.fromJson(r.data)
-          : null;
-
-      if (newPhoto == null) {
-        updatePhoto(photo);
-      } else {
-        updatePhoto(newPhoto);
-      }
-    } on FNetworkException catch (e) {
-      e.notify();
-      updatePhoto(photo);
-    } catch (e) {
-      dd(e);
-      updatePhoto(photo);
-    } finally {
+      final newPhoto = r.data.isNotEmpty ? Photo.fromJson(r.data) : null;
+      if (newPhoto != null) updatePhoto(newPhoto);
       await saveToCache();
+      _clearPendingDelete(photo.id);
+      return true;
+    } on FNetworkException catch (e) {
+      // 404 = already gone on the server; our optimistic clear was correct.
+      if (e.statusCode == 404) {
+        _clearPendingDelete(photo.id);
+        return true;
+      }
+      // Offline or server failure — leave pending queue for reconnect retry.
+      return false;
+    } catch (e) {
+      dd('delete photo error: $e');
+      return false;
     }
   }
 
