@@ -68,8 +68,7 @@ class InspectionDetailsScreen extends StatelessWidget {
         }
 
         if (controller.inspection.value == null) {
-          final isOnline =
-              ConnectionService.instance.isConnectionGood.value;
+          final isOnline = ConnectionService.instance.isConnectionGood.value;
           return Column(
             children: [
               const SyncBanner(),
@@ -94,10 +93,9 @@ class InspectionDetailsScreen extends StatelessWidget {
                               ? InspectionPage.loadingInspectionDetails.tr
                               : 'offline_no_cache_message'.tr,
                           textAlign: TextAlign.center,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.apply(color: FColors.darkGrey),
+                          style: Theme.of(context).textTheme.bodyMedium?.apply(
+                            color: FColors.darkGrey,
+                          ),
                         ),
                       ),
                     ],
@@ -115,9 +113,9 @@ class InspectionDetailsScreen extends StatelessWidget {
             // refreshing in the background (stale-while-revalidate).
             if (controller.isLoading.value)
               LinearProgressIndicator(
-                minHeight: 2,
+                minHeight: 3,
                 backgroundColor: Colors.transparent,
-                color: FColors.primaryColor,
+                color: FColors.success,
               ),
             Expanded(
               child: RefreshIndicator(
@@ -144,8 +142,10 @@ class InspectionDetailsScreen extends StatelessWidget {
                         const InspectionPhotosReview(),
                       if (controller.inspection.value?.hasBody ?? false)
                         const InspectionBodyNotesReview(),
-                      if (controller.inspection.value?.hasBody ?? false ||
-                          (controller.inspection.value?.hasPaintBody ?? false))
+                      if (controller.inspection.value?.hasBody ??
+                          false ||
+                              (controller.inspection.value?.hasPaintBody ??
+                                  false))
                         const InspectionPaintGaugeReview(),
                       if (controller.inspection.value?.hasObd ?? false)
                         const InspectionOBDReview(),

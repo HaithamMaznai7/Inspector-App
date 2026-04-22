@@ -19,15 +19,26 @@ class InspectionBodyTypeResults extends StatelessWidget {
       init: InspectionBodyBinding().instance,
       autoRemove: false,
       builder: (controller) {
-        return ListView.separated(
-          padding: const EdgeInsets.symmetric(
-            horizontal: FSizes.md,
-            vertical: FSizes.sm,
-          ),
-          itemCount: controller.bodySides.length,
-          separatorBuilder: (_, _) => const SizedBox(height: FSizes.xs),
-          itemBuilder: (context, index) {
-            final body = controller.bodySides[index];
+        return Obx(() {
+          final isLoading = controller.isLoading.value;
+          final bodySides = controller.bodySides;
+
+          if (isLoading && bodySides.isEmpty) {
+            return const _BodyNotesSkeleton();
+          }
+          if (bodySides.isEmpty) {
+            return const _BodyNotesEmpty();
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(
+              horizontal: FSizes.md,
+              vertical: FSizes.sm,
+            ),
+            itemCount: bodySides.length,
+            separatorBuilder: (_, _) => const SizedBox(height: FSizes.xs),
+            itemBuilder: (context, index) {
+              final body = bodySides[index];
             final noteCount = body.notes.length;
             final hasNotes = noteCount > 0;
 
@@ -159,9 +170,72 @@ class InspectionBodyTypeResults extends StatelessWidget {
                 ),
               ),
             );
-          },
-        );
+            },
+          );
+        });
       },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Skeleton + empty state
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _BodyNotesSkeleton extends StatelessWidget {
+  const _BodyNotesSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(
+        horizontal: FSizes.md,
+        vertical: FSizes.sm,
+      ),
+      itemCount: 3,
+      separatorBuilder: (_, _) => const SizedBox(height: FSizes.xs),
+      itemBuilder: (_, _) => Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Container(
+          height: FSizes.buttonHeightLg,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BodyNotesEmpty extends StatelessWidget {
+  const _BodyNotesEmpty();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(FSizes.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Iconsax.note,
+              size: FSizes.xl,
+              color: FColors.darkGrey,
+            ),
+            const SizedBox(height: FSizes.sm),
+            Text(
+              InspectionPage.bodyNotesEmpty.tr,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

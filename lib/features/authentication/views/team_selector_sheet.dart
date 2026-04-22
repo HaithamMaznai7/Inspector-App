@@ -188,7 +188,10 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
       ),
       trailing: isCurrent
           ? Container(
-              padding: const EdgeInsets.symmetric(horizontal: FSizes.sm, vertical: FSizes.xs),
+              padding: const EdgeInsets.symmetric(
+                horizontal: FSizes.sm,
+                vertical: FSizes.xs,
+              ),
               decoration: BoxDecoration(
                 color: FColors.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
@@ -201,7 +204,11 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
                 ),
               ),
             )
-          : Icon(Iconsax.arrow_right_3, size: FSizes.iconSm, color: FColors.darkGrey),
+          : Icon(
+              Iconsax.arrow_right_3,
+              size: FSizes.iconSm,
+              color: FColors.darkGrey,
+            ),
     );
   }
 
@@ -213,7 +220,11 @@ class _TeamSelectorSheetState extends State<TeamSelectorSheet> {
     if (team.isSystem) {
       return CircleAvatar(
         backgroundColor: FColors.primaryColor.withValues(alpha: 0.1),
-        child: Icon(Iconsax.shield_tick, color: FColors.primaryColor, size: FSizes.iconInlineSm),
+        child: Icon(
+          Iconsax.shield_tick,
+          color: FColors.primaryColor,
+          size: FSizes.iconInlineSm,
+        ),
       );
     }
 

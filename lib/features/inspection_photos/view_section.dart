@@ -44,8 +44,15 @@ class AlbumPhotos extends StatelessWidget {
           final categories = controller.categories;
           final currentCategory = controller.category.value;
 
-          if (categories.isEmpty) {
+          // Real empty state: loaded, no photos, no categories.
+          if (categories.isEmpty && !isLoading && allPhotos.isEmpty) {
             return _EmptyState(controller: controller);
+          }
+          // Transient race: photos arrived via cache, category listener
+          // hasn't fired yet. Render nothing for one frame — the listener
+          // will trigger a rebuild below.
+          if (categories.isEmpty) {
+            return const SizedBox.shrink();
           }
 
           final catPhotos = allPhotos

@@ -137,6 +137,7 @@ class InspectionPage {
   static const String obdNoCodesYet = 'obdNoCodesYet';
   static const String obdReportSection = 'obdReportSection';
   static const String obdOptionalBadge = 'obdOptionalBadge';
+  static const String bodyNotesEmpty = 'bodyNotesEmpty';
 
   /// Steps
   static const String stepLabel = 'stepLabel';

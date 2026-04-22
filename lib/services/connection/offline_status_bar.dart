@@ -23,18 +23,25 @@ class OfflineStatusBar extends StatelessWidget {
       return Material(
         color: FColors.error,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: FSizes.xs, horizontal: FSizes.md),
+          padding: const EdgeInsets.symmetric(
+            vertical: FSizes.md,
+            horizontal: FSizes.md,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.wifi_off, size: FSizes.iconSm, color: FColors.white),
+              const Icon(
+                Icons.wifi_off,
+                size: FSizes.iconSm,
+                color: FColors.white,
+              ),
               const SizedBox(width: FSizes.sm),
               Text(
                 'offline_bar_message'.tr,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: FColors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  color: FColors.white,
+                  fontWeight: FontWeight.w600,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],

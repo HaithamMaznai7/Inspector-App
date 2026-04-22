@@ -9,10 +9,31 @@ import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:iconsax/iconsax.dart';
 
 class InspectionBodyNotesReview extends StatelessWidget {
   const InspectionBodyNotesReview({super.key});
+
+  // Build a {value: label} lookup from the cached body-note-types asset so the
+  // review card can render human-readable labels (e.g. "Scratch") instead of
+  // the raw Selection.value stored on Marker.type (e.g. "scratch"). Labels
+  // are the i18n source of truth, so we resolve at render time rather than
+  // persisting a copy on the Marker.
+  Map<String, String> _buildTypeLabels() {
+    if (!Hive.isBoxOpen('Assets')) return const {};
+    final raw = Hive.box<List>('Assets').get('Assets-BodyNoteTypes');
+    if (raw is! List) return const {};
+    final map = <String, String>{};
+    for (final item in raw) {
+      if (item is Map) {
+        final value = item['value']?.toString();
+        final label = item['label']?.toString();
+        if (value != null && label != null) map[value] = label;
+      }
+    }
+    return map;
+  }
 
   ImageProvider _getImageProvider(String? imageUrl) {
     if (imageUrl == null) {
@@ -50,6 +71,8 @@ class InspectionBodyNotesReview extends StatelessWidget {
         if (inspection == null || isLoading) {
           return SizedBox();
         }
+
+        final typeLabels = _buildTypeLabels();
 
         // WHAT: Read body notes from Hive cache and deserialize safely.
         // WHY: The original code used Map<String, dynamic>.from() which only
@@ -179,7 +202,7 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                             left: FSizes.xs,
                                           ),
                                           child: Text(
-                                            '• ${marker.type}',
+                                            '• ${typeLabels[marker.type] ?? marker.type}',
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: Theme.of(context)

@@ -1,4 +1,5 @@
 import 'package:fahis_inspector/common/widgets/components/back_page_button.dart';
+import 'package:fahis_inspector/common/widgets/offline/sync_banner.dart';
 import 'package:fahis_inspector/features/inspection_steps/components/step_selector.dart';
 import 'package:fahis_inspector/features/inspection_steps/controller.dart';
 import 'package:fahis_inspector/routes.dart';
@@ -40,16 +41,25 @@ class InspectionStepsScreen extends StatelessWidget {
                   : _CompactStepBar(controller: controller),
             ),
           ),
-          body: controller.isLoading.value
-              ? Center(
-                  child: CircularProgressIndicator(color: FColors.primaryColor),
-                )
-              : IndexedStack(
-                  index: controller.index,
-                  children: controller.tabs
-                      .map((tab) => tab['screen'] as Widget)
-                      .toList(),
-                ),
+          body: Column(
+            children: [
+              const SyncBanner(),
+              Expanded(
+                child: controller.isLoading.value
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: FColors.primaryColor,
+                        ),
+                      )
+                    : IndexedStack(
+                        index: controller.index,
+                        children: controller.tabs
+                            .map((tab) => tab['screen'] as Widget)
+                            .toList(),
+                      ),
+              ),
+            ],
+          ),
           bottomNavigationBar: StepSelector(),
         );
       },

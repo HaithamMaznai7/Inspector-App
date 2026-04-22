@@ -215,6 +215,7 @@ class Arabic {
     InspectionPage.obdDescLabel: 'الوصف',
     InspectionPage.obdDescHint: 'وصف الرمز...',
     InspectionPage.obdNoCodesYet: 'لا توجد أكواد OBD بعد',
+    InspectionPage.bodyNotesEmpty: 'لا توجد ملاحظات بعد',
     InspectionPage.obdReportSection: 'تقرير OBD',
     InspectionPage.obdOptionalBadge: 'اختياري',
     InspectionPage.stepLabel: 'الخطوة @step',
@@ -711,6 +712,8 @@ class Arabic {
     'saved_locally_title': 'تم الحفظ محليًا',
     'saved_locally_message': 'ستتم المزامنة تلقائيًا عند عودة الاتصال.',
     'queued_delete_title': 'في قائمة الحذف',
-    'queued_delete_message': 'سيتم حذفه من الخادم عند عودة الاتصال.',
+    'queued_delete_message': 'سيتم حذفه عند عودة الاتصال.',
+    'report_not_cached_title': 'التقرير غير متاح دون اتصال',
+    'report_not_cached_message': 'اتصل بالإنترنت لتحميل التقرير لأول مرة.',
   };
 }

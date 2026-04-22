@@ -35,7 +35,9 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
     final r = await n.response(RoutingUrl.home);
 
-    _log('fetchFromApi – status: ${r.hasError ? "ERROR" : "OK"}, data type: ${r.data.runtimeType}');
+    _log(
+      'fetchFromApi – status: ${r.hasError ? "ERROR" : "OK"}, data type: ${r.data.runtimeType}',
+    );
 
     final bodySides = r.data.isNotEmpty
         ? OBDCode.setList(r.data['codes'] ?? [])
@@ -43,7 +45,9 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
     _report.value = r.data.isNotEmpty ? r.data['report'] : null;
 
-    _log('fetchFromApi – parsed ${bodySides.length} codes, report=${_report.value != null}');
+    _log(
+      'fetchFromApi – parsed ${bodySides.length} codes, report=${_report.value != null}',
+    );
 
     _data.assignAll(bodySides);
 
@@ -85,9 +89,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
   void _savePendingCode(OBDCode code) {
     final pending = (box.get(_pendingKey) as List?)?.toList() ?? [];
-    final alreadyQueued = pending.any(
-      (e) => (e as Map)['code'] == code.code,
-    );
+    final alreadyQueued = pending.any((e) => (e as Map)['code'] == code.code);
     if (alreadyQueued) return;
     pending.add({'code': code.code, 'description': code.description});
     box.put(_pendingKey, pending);
@@ -121,7 +123,10 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   Future<void> _flushPendingWrites() async {
     final entries = _pendingCodes();
     if (entries.isEmpty) return;
-    AppLogger.info('[Offline]', 'flush obd/$slug: ${entries.length} pending codes');
+    AppLogger.info(
+      '[Offline]',
+      'flush obd/$slug: ${entries.length} pending codes',
+    );
 
     for (final entry in entries) {
       final code = entry['code'] as String;
@@ -159,10 +164,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       pending.add(codeId);
       box.put(_pendingDeleteKey, pending);
     }
-    AppLogger.info(
-      '[Offline]',
-      'delete obd/$slug/code$codeId: pending=true',
-    );
+    AppLogger.info('[Offline]', 'delete obd/$slug/code$codeId: pending=true');
   }
 
   void _clearPendingDelete(int codeId) {
@@ -203,11 +205,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
             'flush obd/$slug/delete$id: already gone (404)',
           );
         } else {
-          AppLogger.error(
-            '[Offline]',
-            'flush obd/$slug/delete$id: failed',
-            e,
-          );
+          AppLogger.error('[Offline]', 'flush obd/$slug/delete$id: failed', e);
         }
       } catch (e) {
         _log('flushPendingDeletes – error for id=$id: $e');
@@ -315,7 +313,8 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       final bodySides = r.data.isNotEmpty
           ? OBDCode.setList(r.data['codes'] ?? [])
           : <OBDCode>[];
-      if (bodySides.isNotEmpty || (r.data is Map && r.data.containsKey('codes'))) {
+      if (bodySides.isNotEmpty ||
+          (r.data is Map && r.data.containsKey('codes'))) {
         _report.value = r.data.isNotEmpty ? r.data['report'] : _report.value;
         _data.assignAll(bodySides);
       }
@@ -341,14 +340,16 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   }
 
   Future<String?> uploadReport(File? file) async {
-    _log('uploadReport – POST ${EndPoints.inspections}/$slug/report, file=${file?.path}');
-    
+    _log(
+      'uploadReport – POST ${EndPoints.inspections}/$slug/report, file=${file?.path}',
+    );
+
     // Don't send null to backend
     if (file == null) {
       _log('uploadReport – no file provided, skipping API call');
       return null;
     }
-    
+
     try {
       final n = Network(
         endpoint: '${EndPoints.inspections}/$slug/report',
@@ -368,7 +369,9 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
           _data.assignAll(OBDCode.setList(codes));
         }
         _report.value = r.data['report'];
-        _log('uploadReport – report URL: ${_report.value}, codes: ${_data.length}');
+        _log(
+          'uploadReport – report URL: ${_report.value}, codes: ${_data.length}',
+        );
       }
     } on FNetworkException catch (e) {
       _log('uploadReport – FNetworkException: ${e.statusCode}');

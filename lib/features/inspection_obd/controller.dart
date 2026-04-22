@@ -11,8 +11,10 @@ import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Max upload file size: 10 MB
@@ -142,10 +144,32 @@ class InspectionObdController extends GetxController {
   }
 
   void openReport() async {
-    _log('openReport – url: ${report.value}');
-    final Uri uri = Uri.parse(report.value!);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      throw Exception("Could not launch ${report.value!}");
+    final url = report.value;
+    if (url == null || url.isEmpty) return;
+    _log('openReport – url: $url');
+
+    if (ConnectionService.instance.isConnectionGood.value) {
+      final ok = await launchUrl(
+        Uri.parse(url),
+        mode: LaunchMode.externalApplication,
+      );
+      if (!ok) _log('openReport – launchUrl returned false');
+      return;
+    }
+
+    // Offline path: open the PDF from flutter_cache_manager via OpenFilex,
+    // which hands off to a platform PDF viewer. If the file was never cached
+    // online, surface a clear warning instead of silently failing.
+    final fileInfo = await DefaultCacheManager().getFileFromCache(url);
+    if (fileInfo != null) {
+      _log('openReport – opening cached file: ${fileInfo.file.path}');
+      await OpenFilex.open(fileInfo.file.path);
+    } else {
+      _log('openReport – offline and no cached file');
+      FLoader.warningSnackBar(
+        title: 'report_not_cached_title'.tr,
+        message: 'report_not_cached_message'.tr,
+      );
     }
   }
 

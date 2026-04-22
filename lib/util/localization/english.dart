@@ -222,6 +222,7 @@ class English {
     InspectionPage.obdDescLabel: 'Description',
     InspectionPage.obdDescHint: 'Code description...',
     InspectionPage.obdNoCodesYet: 'No OBD codes yet',
+    InspectionPage.bodyNotesEmpty: 'No body notes yet',
     InspectionPage.obdReportSection: 'OBD Report',
     InspectionPage.obdOptionalBadge: 'optional',
     InspectionPage.stepLabel: 'Step @step',
@@ -668,5 +669,8 @@ class English {
     'queued_delete_title': 'Queued for deletion',
     'queued_delete_message':
         'Will be removed from the server when you\'re back online.',
+    'report_not_cached_title': 'Report not available offline',
+    'report_not_cached_message':
+        'Connect to the internet to load the report for the first time.',
   };
 }

@@ -1,25 +1,32 @@
 import 'package:flutter/material.dart';
 
-class FColors{
+class FColors {
   FColors._();
 
   // App Basic Colors
   static const Color primaryColor = Color(0xFFFF7D41);
+  static const Color primarySuccessColor = Color(0xFF27B951);
   static const Color secondaryColor = Color(0xFFFFE24B);
   static const Color primaryGradientColor = Color(0xFFF56969);
+  static const Color primaryGradientColorSuccess = Color(0xFF27B951);
   static const Color secondaryGradientColor = Color(0xFF382723);
   static const Color accent = Color(0xFFB0C7FF);
 
   // Gradient Colors
   static const LinearGradient primaryGradient = LinearGradient(
-  colors: [primaryGradientColor, primaryColor],
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
+    colors: [primaryGradientColor, primaryColor],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
   static const LinearGradient secondaryGradient = LinearGradient(
-  colors: [primaryColor, primaryGradientColor],
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
+    colors: [primaryColor, primaryGradientColor],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  static const LinearGradient primaryGradientColorSuccesss = LinearGradient(
+    colors: [primaryGradientColorSuccess, primarySuccessColor],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 
   // Text Colors
@@ -60,5 +67,4 @@ class FColors{
   static const Color softGrey = Color(0xFFF4F4F4);
   static const Color lightGrey = Color(0xFFF9F9F9);
   static const Color white = Color(0xFFF4F1EB);
-
 }
