@@ -657,6 +657,7 @@ class English {
 
     // Offline / sync messages
     'saved_locally_will_sync': 'Saved — will sync when online',
+    'offline_no_cached_orders': 'You\'re offline — your inspections will load when you reconnect',
     'offline_bar_message': 'No connection — check your internet',
     'back_online_title': 'Back online',
     'back_online_message': 'Syncing your pending changes…',

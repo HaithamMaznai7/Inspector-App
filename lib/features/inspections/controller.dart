@@ -143,9 +143,10 @@ class InspectionsController extends GetxController
     ordersRepository = OrdersRepository(box: box, type: 'b2c');
     ordersRepositoryB2B = OrdersRepository(box: box, type: 'b2b');
 
-    // Skip cache on init — cache is keyed by user UID only, not by team,
-    // so after a team switch it would briefly show the previous team's orders.
-    await loadOrders(cache: false);
+    // Show cached orders immediately, then refresh from API.
+    // Cache keys are now team-scoped (Orders_<type>_Team_<id>_User_<uid>)
+    // so a team switch will resolve to a different, empty key — no leakage.
+    await loadOrders(cache: true);
   }
 
   @override

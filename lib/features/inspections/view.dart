@@ -1,4 +1,5 @@
 import 'package:fahis_inspector/common/widgets/skeletons/skeleton.dart';
+import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/features/inspections/components/company_card.dart';
 import 'package:fahis_inspector/features/inspections/components/company_inspections_screen.dart';
 import 'package:fahis_inspector/features/inspections/components/inspection_card.dart';
@@ -142,9 +143,11 @@ class _CompanyList extends StatelessWidget {
       final b2bOrders = controller.b2bOrders;
 
       if (b2bOrders.isEmpty) {
+        final offline = !ConnectionService.instance.isConnectionGood.value;
         return _EmptyOrdersState(
           message: 'No company requests'.tr,
           onRefresh: controller.refreshPage,
+          isOffline: offline,
         );
       }
 
@@ -267,9 +270,11 @@ class _IndividualList extends StatelessWidget {
     final orders = controller.orders;
 
     if (orders.isEmpty) {
+      final offline = !ConnectionService.instance.isConnectionGood.value;
       return _EmptyOrdersState(
         message: 'No individual requests'.tr,
         onRefresh: controller.refreshPage,
+        isOffline: offline,
       );
     }
 
@@ -381,10 +386,18 @@ class _IndividualList extends StatelessWidget {
 }
 
 /// Professional empty-state widget shown when a tab has no orders.
+/// Pass [isOffline] = true when the device has no connection so a more
+/// informative message is shown instead of the generic empty-list copy.
 class _EmptyOrdersState extends StatelessWidget {
   final String message;
   final Future<void> Function() onRefresh;
-  const _EmptyOrdersState({required this.message, required this.onRefresh});
+  final bool isOffline;
+
+  const _EmptyOrdersState({
+    required this.message,
+    required this.onRefresh,
+    this.isOffline = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -406,13 +419,13 @@ class _EmptyOrdersState extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Iconsax.document,
+                        isOffline ? Icons.wifi_off : Iconsax.document,
                         size: FSizes.iconXl,
                         color: FColors.darkGrey.withValues(alpha: 0.4),
                       ),
                       const SizedBox(height: FSizes.md),
                       Text(
-                        message,
+                        isOffline ? 'offline_no_cached_orders'.tr : message,
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(

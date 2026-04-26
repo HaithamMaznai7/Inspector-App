@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 /// A thin, non-blocking bar displayed below the AppBar whenever the device
-/// is offline AND the user has previously loaded data (so they can keep
-/// working with cached content). The bar disappears automatically when
-/// connectivity is restored.
+/// is offline. Visible from the very first cold boot so the user always has
+/// a clear connectivity signal even before any data has been cached.
+/// Disappears automatically when connectivity is restored.
 class OfflineStatusBar extends StatelessWidget {
   const OfflineStatusBar({super.key});
 
@@ -15,9 +15,7 @@ class OfflineStatusBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final service = ConnectionService.instance;
-      // Only show after the user has been online at least once (has cached data).
-      // On initial boot with no cache the full-screen OfflineScreen is used instead.
-      if (service.isConnectionGood.value || !service.hasEverBeenOnline) {
+      if (service.isConnectionGood.value) {
         return const SizedBox.shrink();
       }
       return Material(

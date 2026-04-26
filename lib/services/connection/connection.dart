@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
-import 'package:fahis_inspector/services/connection/connection_screen.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/popups/full_screen_loader.dart';
 import 'package:get/get.dart';
@@ -21,14 +20,13 @@ class ConnectionService extends GetxController {
   final Rx<DateTime?> onReconnect = Rx<DateTime?>(null);
 
   // True once the user has been online at least once this session.
-  // Used to decide whether to show the full-screen OfflineScreen (first boot)
-  // or just the thin offline bar (already loaded cached data).
+  // Exposed so call-sites can differentiate "never connected" from
+  // "was online, then dropped" when needed.
   bool _hasEverBeenOnline = false;
   bool get hasEverBeenOnline => _hasEverBeenOnline;
 
-  // Tracks whether we actually opened the OfflineScreen dialog.
-  // Without this, stopLoading() calls Get.back() even when no dialog
-  // was opened, which pops the current route (inspection-steps, etc).
+  // Guards stopLoading() so it only calls Get.back() when we actually
+  // opened a full-screen loader — prevents accidentally popping routes.
   bool _offlineDialogOpen = false;
 
   @override
@@ -60,10 +58,9 @@ class ConnectionService extends GetxController {
   void _applyStatus(bool online) {
     if (!online) {
       AppLogger.info('[Offline]', 'adapter: connected → disconnected');
-      if (!_hasEverBeenOnline) {
-        FFullScreenLoader.openPage(page: OfflineScreen());
-        _offlineDialogOpen = true;
-      }
+      // Never auto-open the full-screen OfflineScreen on cold boot.
+      // The persistent OfflineStatusBar gives the user the connectivity
+      // signal while cached home content remains accessible.
       isConnectionGood.value = false;
     } else {
       // Only dismiss the dialog if we actually opened one. Without this

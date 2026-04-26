@@ -17,6 +17,14 @@ class OrdersRepository extends ListRepository<Order> {
 
   OrdersRepository({required this.box, required this.type});
 
+  /// Scopes Hive cache keys to the current team + user so that switching
+  /// teams resolves to a different, initially-empty key — no data leakage.
+  String get _teamSuffix {
+    final teamId = auth().profile?.currentTeam?.id ?? 'noteam';
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'anon';
+    return 'Team_${teamId}_User_$uid';
+  }
+
   final RxList<Order> _data = RxList<Order>([]);
 
   int _currentPage = 1;
@@ -147,17 +155,10 @@ class OrdersRepository extends ListRepository<Order> {
     List<Order> cached = [];
     try {
       final countsData =
-          box.get(
-            "Orders_${type}_Meta_User_${FirebaseAuth.instance.currentUser?.uid}",
-          ) ??
-          {};
+          box.get("Orders_${type}_Meta_$_teamSuffix") ?? {};
 
       Map pages =
-          box.get(
-            "Orders_${type}_User_${FirebaseAuth.instance.currentUser?.uid}",
-            defaultValue: {},
-          ) ??
-          {};
+          box.get("Orders_${type}_$_teamSuffix", defaultValue: {}) ?? {};
 
       for (String slug in pages.keys.toList()) {
         final item = box.get(slug);
@@ -188,14 +189,11 @@ class OrdersRepository extends ListRepository<Order> {
     }
 
     await box.put(
-      "Orders_${type}_Meta_User_${FirebaseAuth.instance.currentUser?.uid}",
+      "Orders_${type}_Meta_$_teamSuffix",
       Map<String, int>.from(_counts),
     );
 
-    await box.put(
-      "Orders_${type}_User_${FirebaseAuth.instance.currentUser?.uid}",
-      pages,
-    );
+    await box.put("Orders_${type}_$_teamSuffix", pages);
   }
 
   Future<List<Order>> fetchNextPage() async {
