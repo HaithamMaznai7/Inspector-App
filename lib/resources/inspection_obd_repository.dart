@@ -491,10 +491,8 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
   /// Returns the local file path of a queued report, or null if none.
   String? pendingReportPath() {
-    final raw = box.get(_pendingReportKey);
-    if (raw is Map) return raw['path']?.toString();
-    if (raw is String) return raw;
-    return null;
+    final entry = _pendingReportEntry();
+    return entry?['path']?.toString();
   }
 
   Future<String> _savePendingReport(File src) async {
@@ -508,19 +506,32 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
     final dest = File('${dir.path}/$originalName');
     await src.copy(dest.path);
 
-    await box.put(_pendingReportKey, {
-      'path': dest.path,
-      'name': originalName,
-      'savedAt': DateTime.now().toIso8601String(),
-    });
+    // Box<List> only accepts List values — wrap the metadata map in a list.
+    await box.put(_pendingReportKey, [
+      {
+        'path': dest.path,
+        'name': originalName,
+        'savedAt': DateTime.now().toIso8601String(),
+      }
+    ]);
     AppLogger.info('[Offline]', 'write report/$slug: pending=true');
     return dest.path;
   }
 
-  Future<void> _clearPendingReport() async {
+  /// Extracts the pending-report metadata map from whatever is in the box.
+  /// Handles both the new `[{...}]` list format and legacy `{...}` or `String`
+  /// entries that may already be in storage.
+  Map? _pendingReportEntry() {
     final raw = box.get(_pendingReportKey);
-    if (raw == null) return;
-    final path = (raw is Map) ? raw['path']?.toString() : raw.toString();
+    if (raw is List && raw.isNotEmpty && raw.first is Map) return raw.first as Map;
+    if (raw is Map) return raw;
+    return null;
+  }
+
+  Future<void> _clearPendingReport() async {
+    final entry = _pendingReportEntry();
+    if (entry == null && box.get(_pendingReportKey) == null) return;
+    final path = entry?['path']?.toString();
     if (path != null) {
       try {
         final f = File(path);
@@ -533,10 +544,9 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   }
 
   Future<void> _flushPendingReport() async {
-    final raw = box.get(_pendingReportKey);
-    if (raw == null) return;
+    if (box.get(_pendingReportKey) == null) return;
 
-    final path = (raw is Map) ? raw['path']?.toString() : raw.toString();
+    final path = _pendingReportEntry()?['path']?.toString();
     if (path == null) {
       await box.delete(_pendingReportKey);
       return;
