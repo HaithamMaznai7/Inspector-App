@@ -172,6 +172,8 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   Future<void> flushPending() async {
     await _flushPendingWrites();
     await _flushPendingDeletes();
+    // Delete must run before upload: if both are queued the delete wins.
+    await _flushPendingReportDelete();
     await _flushPendingReport();
   }
 
@@ -608,6 +610,20 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   }
 
   Future<String?> removeReport() async {
+    // If the report was uploaded offline and never reached the server, cancel
+    // the local queue immediately — no server DELETE is needed.
+    if (hasPendingReport()) {
+      await _clearPendingReport();
+      _report.value = null;
+      await saveToCache();
+      _log('removeReport – cancelled pending upload (never reached server)');
+      return null;
+    }
+
+    // Optimistic removal so UI clears immediately regardless of connectivity.
+    _report.value = null;
+    await saveToCache();
+
     _log('removeReport – DELETE ${EndPoints.inspections}/$slug/report');
     final n = Network(
       endpoint: '${EndPoints.inspections}/$slug/report',
@@ -617,17 +633,60 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
     try {
       final r = await n.response(RoutingUrl.home);
       _log('removeReport – response status: ${r.hasError ? "ERROR" : "OK"}');
-      _report.value = r.data.isNotEmpty ? r.data['report'] : null;
+      if (r.data.isNotEmpty) _report.value = r.data['report'];
       _log('removeReport – report after delete: ${_report.value}');
+      await saveToCache();
     } on FNetworkException catch (e) {
-      _log('removeReport – FNetworkException: ${e.statusCode}');
+      _log('removeReport – FNetworkException: ${e.statusCode} — queued as pending delete');
+      await _savePendingReportDelete();
       e.notify();
     } catch (e) {
       _log('removeReport – error: $e');
     }
-    await saveToCache();
 
     return _report.value;
+  }
+
+  // ── Pending OBD report delete (offline-first delete) ───────────────────────
+
+  String get _pendingReportDeleteKey => 'pending_report_delete_$slug';
+
+  Future<void> _savePendingReportDelete() async {
+    await box.put(_pendingReportDeleteKey, [1]);
+    AppLogger.info('[Offline]', 'delete report/$slug: pending=true');
+  }
+
+  Future<void> _clearPendingReportDelete() async {
+    await box.delete(_pendingReportDeleteKey);
+  }
+
+  Future<void> _flushPendingReportDelete() async {
+    if (box.get(_pendingReportDeleteKey) == null) return;
+
+    // If a pending upload also exists, they cancel each other — the user
+    // uploaded and then deleted before reconnect, so nothing reaches the server.
+    if (hasPendingReport()) {
+      await _clearPendingReport();
+      await _clearPendingReportDelete();
+      _log('_flushPendingReportDelete – pending upload + delete cancel each other');
+      return;
+    }
+
+    AppLogger.info('[Offline]', 'flush report delete/$slug: sending DELETE');
+    final n = Network(
+      endpoint: '${EndPoints.inspections}/$slug/report',
+      requestMethod: RequestMethod.delete,
+    );
+
+    try {
+      await n.response(RoutingUrl.home);
+      await _clearPendingReportDelete();
+      AppLogger.info('[Offline]', 'flush report delete/$slug: success');
+    } on FNetworkException catch (e) {
+      AppLogger.error('[Offline]', 'flush report delete/$slug: failed', e);
+    } catch (e) {
+      _log('_flushPendingReportDelete – error: $e');
+    }
   }
 
   void _log(String message) {
