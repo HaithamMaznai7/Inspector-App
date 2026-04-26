@@ -11,23 +11,6 @@ import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:fahis_inspector/routes.dart';
 
-/// Represents a detected multi-inspector conflict on the inspection's stage
-/// transition. [baselineStage] is the stage we saw when we queued the change;
-/// [server] is the live inspection from the API.
-class StageConflict {
-  final String? pendingStage;
-  final String? baselineStage;
-  final Inspection server;
-  final Map<String, dynamic> payload;
-
-  StageConflict({
-    required this.pendingStage,
-    required this.baselineStage,
-    required this.server,
-    required this.payload,
-  });
-}
-
 class InspectionDetailsRepository extends BaseRepository<Inspection> {
   final Box box;
   final String slug;
@@ -35,15 +18,8 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
   InspectionDetailsRepository({required this.box, required this.slug});
 
   final Rxn<Inspection> _data = Rxn<Inspection>(null);
-  final Rxn<StageConflict> _conflict = Rxn<StageConflict>();
 
   Stream<Inspection?> get stream => _data.stream;
-
-  /// Emits a [StageConflict] when a pending stage transition can't be
-  /// replayed because another inspector moved the stage in the meantime.
-  Stream<StageConflict?> get conflictStream => _conflict.stream;
-
-  StageConflict? get currentConflict => _conflict.value;
 
   Stream<Inspection?> get() async* {
     // 1. Yield cached data first
@@ -193,12 +169,8 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
       'general_notes': inspection.note,
     };
 
-    // Capture the server-side baseline stage BEFORE this mutation so
-    // flushPendingStage() can detect conflicts with other inspectors.
-    final baselineStage = _data.value?.stage.value;
-
     // Persist before POST so the stage change survives app-kill while offline.
-    _savePendingStage(inspection.stage.value, inspection.note, baselineStage);
+    _savePendingStage(inspection.stage.value, inspection.note);
 
     try {
       CustomResponse r = await n.response(RoutingUrl.inspections);
@@ -224,15 +196,10 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
 
   String get _pendingKey => 'pending_stage_$slug';
 
-  void _savePendingStage(
-    String? stageValue,
-    String? note,
-    String? baselineStage,
-  ) {
+  void _savePendingStage(String? stageValue, String? note) {
     box.put(_pendingKey, {
       'stage': stageValue,
       'general_notes': note,
-      'baselineStage': baselineStage,
     });
     AppLogger.info('[Offline]', 'write stage/$slug: pending=$stageValue');
   }
@@ -245,10 +212,7 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
   bool hasPendingStage() => box.containsKey(_pendingKey);
 
   /// Retries the pending stage transition if one exists.
-  ///
-  /// Conflict-aware: if the server's current stage differs from the baseline
-  /// we stored at save-time, another inspector moved the inspection and we
-  /// surface a [StageConflict] instead of blindly overwriting.
+  /// Last-writer-wins: no client-side conflict detection.
   Future<void> flushPendingStage() async {
     final raw = box.get(_pendingKey);
     if (raw == null) return;
@@ -257,41 +221,7 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
       'stage': body['stage'],
       'general_notes': body['general_notes'],
     };
-    final baselineStage = body['baselineStage'] as String?;
 
-    if (baselineStage != null) {
-      try {
-        final check = Network(endpoint: '${EndPoints.inspections}/$slug');
-        final sr = await check.response(RoutingUrl.home);
-        if (sr.data.isNotEmpty) {
-          final server = Inspection.fromJson(sr.data);
-          if (server.stage.value != baselineStage) {
-            AppLogger.info(
-              '[Offline]',
-              'flush stage/$slug: conflict — baseline=$baselineStage '
-                  'server=${server.stage.value}',
-            );
-            _conflict.value = StageConflict(
-              pendingStage: body['stage'] as String?,
-              baselineStage: baselineStage,
-              server: server,
-              payload: payload,
-            );
-            return;
-          }
-        }
-      } on FNetworkException catch (e) {
-        AppLogger.error('[Offline]', 'flush stage/$slug: pre-check failed', e);
-        return;
-      } catch (_) {
-        // Continue to POST on non-network error; last-writer-wins fallback.
-      }
-    }
-
-    await _postPendingStage(payload);
-  }
-
-  Future<void> _postPendingStage(Map<String, dynamic> payload) async {
     AppLogger.info(
       '[Offline]',
       'flush stage/$slug: retrying stage=${payload['stage']}',
@@ -316,23 +246,5 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
     } catch (e) {
       AppLogger.error('[Offline]', 'flush stage/$slug: error', e);
     }
-  }
-
-  /// Resolution: overwrite the server with the queued stage transition.
-  Future<void> resolveConflictKeepMine() async {
-    final c = _conflict.value;
-    if (c == null) return;
-    await _postPendingStage(c.payload);
-    _conflict.value = null;
-  }
-
-  /// Resolution: discard the queued transition and accept the server stage.
-  Future<void> resolveConflictUseServer() async {
-    final c = _conflict.value;
-    if (c == null) return;
-    _data.value = c.server;
-    await saveToCache();
-    _clearPendingStage();
-    _conflict.value = null;
   }
 }

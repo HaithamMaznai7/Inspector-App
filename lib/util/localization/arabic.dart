@@ -715,14 +715,5 @@ class Arabic {
     'queued_delete_message': 'سيتم حذفه عند عودة الاتصال.',
     'report_not_cached_title': 'التقرير غير متاح دون اتصال',
     'report_not_cached_message': 'اتصل بالإنترنت لتحميل التقرير لأول مرة.',
-    // تعارض عدّة فاحصين (فحص من طرف العميل)
-    'vehicle_conflict_title': 'تم تعديل بيانات المركبة من جهة أخرى',
-    'vehicle_conflict_message':
-        'قام فاحص آخر بتعديل هذه المركبة بينما كنت غير متصل. ماذا تريد أن تفعل؟',
-    'stage_conflict_title': 'تم تحديث مرحلة الفحص من جهة أخرى',
-    'stage_conflict_message':
-        'قام فاحص آخر بتغيير مرحلة هذا الفحص. هل ترغب في الإبقاء على تغييرك أم اعتماد الأحدث؟',
-    'conflict_keep_mine': 'احتفظ بتغييراتي',
-    'conflict_use_server': 'استخدم الأحدث',
   };
 }

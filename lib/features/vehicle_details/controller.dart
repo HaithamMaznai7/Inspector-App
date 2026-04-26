@@ -8,8 +8,6 @@ import 'package:fahis_inspector/resources/vehicle_details_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
-import 'package:fahis_inspector/util/constants/colors.dart';
-import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/plate_converter.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
@@ -56,9 +54,7 @@ class VehicleDetailsController extends GetxController {
 
   Worker? _reconnectWorker;
   StreamSubscription<VehicleDetails?>? _repoSub;
-  StreamSubscription<VehicleConflict?>? _conflictSub;
   bool _repositoryReady = false;
-  bool _conflictDialogOpen = false;
 
   @override
   void onInit() async {
@@ -122,15 +118,6 @@ class VehicleDetailsController extends GetxController {
       update();
     });
 
-    // Subscribe to multi-inspector conflicts surfaced by flushPending().
-    // When a conflict fires we prompt the user to either keep their edits
-    // or accept the server copy. Guarded against showing multiple dialogs.
-    _conflictSub?.cancel();
-    _conflictSub = repository!.conflictStream.listen((conflict) {
-      if (_disposed || conflict == null || _conflictDialogOpen) return;
-      _showVehicleConflictDialog(conflict);
-    });
-
     // Fast path (navigation with arguments)
     if (Get.arguments is VehicleDetails) {
       inspectionDetails.value = Get.arguments as VehicleDetails;
@@ -171,7 +158,6 @@ class VehicleDetailsController extends GetxController {
     _disposed = true;
     _reconnectWorker?.dispose();
     _repoSub?.cancel();
-    _conflictSub?.cancel();
     super.onClose();
     vinController.dispose();
     plateController.dispose();
@@ -397,119 +383,4 @@ class VehicleDetailsController extends GetxController {
     Get.find<InspectionDetailsController>().onVehicleSaved(v);
   }
 
-  // ── Multi-inspector conflict dialog ─────────────────────────────────────
-  //
-  // Surfaced when the repo's pre-flush check detects the server moved between
-  // save-time and flush-time. The user chooses between keeping their pending
-  // edits (POST payload, last-writer-wins) or accepting the server version
-  // (discard pending, refresh local cache with server state).
-  Future<void> _showVehicleConflictDialog(VehicleConflict conflict) async {
-    if (_disposed) return;
-    _conflictDialogOpen = true;
-    final ctx = Get.context;
-    if (ctx == null) {
-      _conflictDialogOpen = false;
-      return;
-    }
-    final isDark = Theme.of(ctx).brightness == Brightness.dark;
-    final changes = _describeVehicleChanges(conflict.baseline, conflict.server);
-
-    final keepMine = await Get.dialog<bool>(
-      AlertDialog(
-        backgroundColor: isDark ? FColors.dark : Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-        ),
-        title: Text(
-          'vehicle_conflict_title'.tr,
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            color: isDark ? FColors.light : FColors.dark,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'vehicle_conflict_message'.tr,
-              style: TextStyle(
-                color: isDark ? FColors.grey : FColors.darkGrey,
-                fontSize: FSizes.fontSizeSm,
-              ),
-            ),
-            if (changes.isNotEmpty) ...[
-              const SizedBox(height: FSizes.sm),
-              ...changes.map(
-                (line) => Padding(
-                  padding: const EdgeInsets.only(top: FSizes.xxs),
-                  child: Text(
-                    '• $line',
-                    style: TextStyle(
-                      color: isDark ? FColors.grey : FColors.darkGrey,
-                      fontSize: FSizes.fontSizeSm,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: Text('conflict_use_server'.tr),
-          ),
-          TextButton(
-            onPressed: () => Get.back(result: true),
-            child: Text(
-              'conflict_keep_mine'.tr,
-              style: const TextStyle(
-                color: FColors.primaryColor,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-      barrierDismissible: false,
-    );
-
-    _conflictDialogOpen = false;
-    if (_disposed || repository == null) return;
-
-    if (keepMine == true) {
-      await repository!.resolveConflictKeepMine();
-    } else {
-      await repository!.resolveConflictUseServer();
-      // Refresh the form with the newly-applied server copy.
-      inspectionDetails.value = repository!.fetchFromCache();
-      updateDetails();
-      update();
-    }
-  }
-
-  /// Produces a short human-readable diff between the baseline we captured at
-  /// save-time and the server's current state, so the dialog can show which
-  /// fields conflict (e.g. "VIN changed by another inspector").
-  List<String> _describeVehicleChanges(
-    VehicleDetails baseline,
-    VehicleDetails server,
-  ) {
-    final lines = <String>[];
-    void add(String label, String? a, String? b) {
-      if ((a ?? '') != (b ?? '')) lines.add(label);
-    }
-
-    add(DetailsPage.vin.tr, baseline.vin, server.vin);
-    add(DetailsPage.plateNumber.tr, baseline.plate, server.plate);
-    add(DetailsPage.milage.tr, baseline.milage, server.milage);
-    add(DetailsPage.yearModel.tr, baseline.yearModel, server.yearModel);
-    add(DetailsPage.engineSize.tr, baseline.enginSize, server.enginSize);
-    add(DetailsPage.bodyType.tr, baseline.bodyType, server.bodyType);
-    add(DetailsPage.fuelType.tr, baseline.fuelType, server.fuelType);
-    add(DetailsPage.exteriorColor.tr, baseline.color, server.color);
-    add(DetailsPage.interiorColor.tr, baseline.seatColor, server.seatColor);
-    return lines;
-  }
 }

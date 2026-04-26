@@ -16,13 +16,10 @@ import 'package:fahis_inspector/resources/inspection_obd_repository.dart';
 import 'package:fahis_inspector/resources/paint_gauge_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/services/connection/connection.dart';
-import 'package:fahis_inspector/util/constants/colors.dart';
-import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -39,9 +36,6 @@ class InspectionDetailsController extends GetxController
   final Rxn<Inspection> inspection = Rxn<Inspection>();
   final isLoading = true.obs;
   final isSubmitting = false.obs;
-
-  StreamSubscription<StageConflict?>? _stageConflictSub;
-  bool _stageConflictDialogOpen = false;
 
   @override
   void onReady() {
@@ -76,13 +70,6 @@ class InspectionDetailsController extends GetxController
     box = await Hive.openBox('Inspection_$slug');
     assetsBox = await Hive.openBox<List>(slug!);
     repository = InspectionDetailsRepository(slug: slug!, box: box!);
-
-    // Listen for multi-inspector stage conflicts surfaced during flush.
-    _stageConflictSub?.cancel();
-    _stageConflictSub = repository!.conflictStream.listen((conflict) {
-      if (conflict == null || _stageConflictDialogOpen) return;
-      _showStageConflictDialog(conflict);
-    });
 
     // Fast path (navigation with arguments)
     if (!refresh) {
@@ -447,85 +434,4 @@ class InspectionDetailsController extends GetxController
     }
   }
 
-  @override
-  void onClose() {
-    _stageConflictSub?.cancel();
-    super.onClose();
-  }
-
-  // ── Multi-inspector conflict dialog (stage transition) ──────────────────
-  Future<void> _showStageConflictDialog(StageConflict conflict) async {
-    _stageConflictDialogOpen = true;
-    final ctx = Get.context;
-    if (ctx == null) {
-      _stageConflictDialogOpen = false;
-      return;
-    }
-    final isDark = Theme.of(ctx).brightness == Brightness.dark;
-
-    final keepMine = await Get.dialog<bool>(
-      AlertDialog(
-        backgroundColor: isDark ? FColors.dark : Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-        ),
-        title: Text(
-          'stage_conflict_title'.tr,
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            color: isDark ? FColors.light : FColors.dark,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'stage_conflict_message'.tr,
-              style: TextStyle(
-                color: isDark ? FColors.grey : FColors.darkGrey,
-                fontSize: FSizes.fontSizeSm,
-              ),
-            ),
-            const SizedBox(height: FSizes.sm),
-            Text(
-              '• ${'conflict_use_server'.tr}: ${conflict.server.stage.value ?? ''}',
-              style: TextStyle(
-                color: isDark ? FColors.grey : FColors.darkGrey,
-                fontSize: FSizes.fontSizeSm,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: Text('conflict_use_server'.tr),
-          ),
-          TextButton(
-            onPressed: () => Get.back(result: true),
-            child: Text(
-              'conflict_keep_mine'.tr,
-              style: const TextStyle(
-                color: FColors.primaryColor,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-      barrierDismissible: false,
-    );
-
-    _stageConflictDialogOpen = false;
-    if (repository == null) return;
-
-    if (keepMine == true) {
-      await repository!.resolveConflictKeepMine();
-    } else {
-      await repository!.resolveConflictUseServer();
-      inspection.value = repository!.fetchFromCache();
-      update();
-    }
-  }
 }

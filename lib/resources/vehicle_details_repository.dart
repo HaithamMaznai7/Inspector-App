@@ -11,22 +11,6 @@ import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-/// Represents a detected multi-inspector conflict on the vehicle payload:
-/// [baseline] is what the local device saw before it queued [payload],
-/// [server] is what the server reports now. When [baseline] != [server]
-/// another inspector modified the record while we were offline.
-class VehicleConflict {
-  final Map<String, dynamic> payload;
-  final VehicleDetails baseline;
-  final VehicleDetails server;
-
-  VehicleConflict({
-    required this.payload,
-    required this.baseline,
-    required this.server,
-  });
-}
-
 class VehicleDetailsRepository extends BaseRepository<VehicleDetails> {
   final Box box;
   final String slug;
@@ -34,16 +18,8 @@ class VehicleDetailsRepository extends BaseRepository<VehicleDetails> {
   VehicleDetailsRepository({required this.box, required this.slug});
 
   final Rxn<VehicleDetails> _data = Rxn<VehicleDetails>();
-  final Rxn<VehicleConflict> _conflict = Rxn<VehicleConflict>();
 
   Stream<VehicleDetails?> get stream => _data.stream;
-
-  /// Emits a [VehicleConflict] whenever [flushPending] detects that the
-  /// server moved between the time we queued the pending update and the
-  /// time we tried to push it. Controllers listen and surface a dialog.
-  Stream<VehicleConflict?> get conflictStream => _conflict.stream;
-
-  VehicleConflict? get currentConflict => _conflict.value;
 
   @override
   Future<VehicleDetails?> fetchFromApi() async {
@@ -99,13 +75,8 @@ class VehicleDetailsRepository extends BaseRepository<VehicleDetails> {
 
     dd('[VehicleDetails] POST body: $jsonBody');
 
-    // Capture the pre-edit server state as a baseline BEFORE the optimistic
-    // mutation so the conflict check in flushPending() can tell whether any
-    // other inspector changed the record while we were offline.
-    final baseline = _data.value;
-
     // Persist before POST so the change survives app-kill while offline.
-    _savePendingUpdate(jsonBody, baseline);
+    _savePendingUpdate(jsonBody);
 
     // Optimistic local cache update.
     _data.value = body;
@@ -133,15 +104,8 @@ class VehicleDetailsRepository extends BaseRepository<VehicleDetails> {
 
   String get _pendingKey => 'pending_vehicle_$slug';
 
-  void _savePendingUpdate(
-    Map<String, dynamic> body,
-    VehicleDetails? baseline,
-  ) {
-    box.put(_pendingKey, {
-      'payload': body,
-      'baseline': baseline?.toJson(),
-      'savedAt': DateTime.now().toIso8601String(),
-    });
+  void _savePendingUpdate(Map<String, dynamic> body) {
+    box.put(_pendingKey, body);
     AppLogger.info('[Offline]', 'write vehicle/$slug: pending=true');
   }
 
@@ -153,69 +117,14 @@ class VehicleDetailsRepository extends BaseRepository<VehicleDetails> {
   bool hasPendingUpdate() => box.containsKey(_pendingKey);
 
   /// Retries the pending vehicle details update if one exists.
-  ///
-  /// Conflict-aware: before pushing, we GET the current server state and
-  /// compare it to the baseline we captured at save-time. If another
-  /// inspector moved the record, we surface a [VehicleConflict] via
-  /// [conflictStream] and leave the pending entry intact until the user
-  /// resolves it via [resolveConflictKeepMine] / [resolveConflictUseServer].
+  /// Last-writer-wins: no client-side conflict detection.
   Future<void> flushPending() async {
     final raw = box.get(_pendingKey);
     if (raw == null) return;
 
-    // Backward-compat: old entries were stored as the raw payload map.
-    final stored = Map<String, dynamic>.from(raw as Map);
-    Map<String, dynamic> payload;
-    VehicleDetails? baseline;
-    if (stored.containsKey('payload')) {
-      payload = Map<String, dynamic>.from(stored['payload'] as Map);
-      final b = stored['baseline'];
-      if (b is Map) {
-        baseline = VehicleDetails.fromJson(Map<String, dynamic>.from(b));
-      }
-    } else {
-      payload = stored;
-    }
-
-    // Conflict check — skip if we have no baseline to compare against.
-    if (baseline != null) {
-      try {
-        final check = Network(
-          endpoint: '${EndPoints.inspections}/$slug/details',
-        );
-        final sr = await check.response(RoutingUrl.home);
-        final server = sr.data != null
-            ? VehicleDetails.fromJson(sr.data)
-            : null;
-        if (server != null && server != baseline) {
-          AppLogger.info(
-            '[Offline]',
-            'flush vehicle/$slug: conflict detected — awaiting user',
-          );
-          _conflict.value = VehicleConflict(
-            payload: payload,
-            baseline: baseline,
-            server: server,
-          );
-          return;
-        }
-      } on FNetworkException catch (e) {
-        AppLogger.error(
-          '[Offline]',
-          'flush vehicle/$slug: pre-check failed',
-          e,
-        );
-        return; // still offline — retry on next reconnect
-      } catch (_) {
-        // Continue to POST on non-network error; last-writer-wins fallback.
-      }
-    }
-
-    await _postPending(payload);
-  }
-
-  Future<void> _postPending(Map<String, dynamic> payload) async {
+    final payload = Map<String, dynamic>.from(raw as Map);
     AppLogger.info('[Offline]', 'flush vehicle/$slug: retrying pending update');
+
     final n = Network(
       endpoint: '${EndPoints.inspections}/$slug/details',
       requestMethod: RequestMethod.post,
@@ -237,26 +146,5 @@ class VehicleDetailsRepository extends BaseRepository<VehicleDetails> {
     } catch (e) {
       dd('flushPending vehicle error: $e');
     }
-  }
-
-  /// Resolution: user chose to overwrite the server with their pending
-  /// payload. Posts the stored payload and clears the conflict.
-  Future<void> resolveConflictKeepMine() async {
-    final c = _conflict.value;
-    if (c == null) return;
-    await _postPending(c.payload);
-    _conflict.value = null;
-  }
-
-  /// Resolution: user chose to discard their pending edits and accept the
-  /// server's copy. Updates the local cache to server state and drops the
-  /// pending queue.
-  Future<void> resolveConflictUseServer() async {
-    final c = _conflict.value;
-    if (c == null) return;
-    _data.value = c.server;
-    await saveToCache();
-    _clearPendingUpdate();
-    _conflict.value = null;
   }
 }

@@ -672,14 +672,5 @@ class English {
     'report_not_cached_title': 'Report not available offline',
     'report_not_cached_message':
         'Connect to the internet to load the report for the first time.',
-    // Multi-inspector conflict dialogs (client-side best-effort)
-    'vehicle_conflict_title': 'Vehicle details updated elsewhere',
-    'vehicle_conflict_message':
-        'Another inspector changed this vehicle while you were offline. What would you like to do?',
-    'stage_conflict_title': 'Inspection stage updated elsewhere',
-    'stage_conflict_message':
-        'Another inspector changed this inspection\'s stage. Keep your transition or accept the latest?',
-    'conflict_keep_mine': 'Keep my changes',
-    'conflict_use_server': 'Use latest',
   };
 }
