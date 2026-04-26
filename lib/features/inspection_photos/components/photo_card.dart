@@ -54,27 +54,38 @@ class PhotoCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: FSizes.xs),
-                    // Status chip
+                    // Status chip: pending > uploaded > empty
                     Row(
                       children: [
                         Icon(
-                          _hasImage ? Iconsax.tick_circle : Iconsax.camera,
+                          photo.isPending
+                              ? Iconsax.cloud_minus
+                              : (_hasImage ? Iconsax.tick_circle : Iconsax.camera),
                           size: FSizes.iconXs,
-                          color: _hasImage ? FColors.success : FColors.grey,
+                          color: photo.isPending
+                              ? FColors.warning
+                              : (_hasImage ? FColors.success : FColors.grey),
                         ),
                         const SizedBox(width: FSizes.xs),
                         Flexible(
                           child: Text(
-                            _hasImage
-                                ? InspectionPage.photoUploaded.tr
-                                : InspectionPage.addPhoto.tr,
+                            photo.isPending
+                                ? 'saved_locally_will_sync'.tr
+                                : (_hasImage
+                                    ? InspectionPage.photoUploaded.tr
+                                    : InspectionPage.addPhoto.tr),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                  color: _hasImage
-                                      ? FColors.success
-                                      : FColors.grey,
+                                  color: photo.isPending
+                                      ? FColors.warning
+                                      : (_hasImage
+                                          ? FColors.success
+                                          : FColors.grey),
+                                  fontWeight: photo.isPending
+                                      ? FontWeight.w500
+                                      : null,
                                 ),
                           ),
                         ),

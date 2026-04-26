@@ -4,6 +4,7 @@ import 'package:fahis_inspector/features/inspection_photos/controller.dart';
 import 'package:fahis_inspector/models/photo.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
+import 'package:fahis_inspector/util/helpers/cached_image_key.dart';
 
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
@@ -409,9 +410,10 @@ class _PhotoGrid extends StatelessWidget {
 
   static void _showFullImage(BuildContext context, Photo photo) {
     final url = photo.image!;
+    final resolvedUrl = url.startsWith('//') ? 'https:$url' : url;
     showImageViewer(
       context,
-      CachedNetworkImageProvider(url.startsWith('//') ? 'https:$url' : url),
+      CachedNetworkImageProvider(resolvedUrl, cacheKey: stableCacheKey(resolvedUrl)),
       useSafeArea: true,
       swipeDismissible: true,
     );
@@ -523,6 +525,7 @@ class _PhotoGridCell extends StatelessWidget {
                   ? Image.file(photo.file!, fit: BoxFit.cover)
                   : CachedNetworkImage(
                       imageUrl: photo.image!,
+                      cacheKey: stableCacheKey(photo.image!),
                       fit: BoxFit.cover,
                       placeholder: (ctx, _) => _shimmerPlaceholder(ctx),
                       errorWidget: (_, _, _) => _placeholder(),

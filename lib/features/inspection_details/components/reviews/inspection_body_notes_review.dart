@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
+import 'package:fahis_inspector/util/helpers/cached_image_key.dart';
 import 'package:fahis_inspector/features/inspection_details/components/reviews/info_card.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/models/inspection_body_notes.dart';
@@ -27,9 +28,10 @@ class InspectionBodyNotesReview extends StatelessWidget {
     final map = <String, String>{};
     for (final item in raw) {
       if (item is Map) {
-        final value = item['value']?.toString();
-        final label = item['label']?.toString();
-        if (value != null && label != null) map[value] = label;
+        final id = item['id'];
+        if (id == null) continue;
+        final label = (item['name'] ?? item['label'])?.toString();
+        if (label != null && label.isNotEmpty) map['$id'] = label;
       }
     }
     return map;
@@ -40,13 +42,11 @@ class InspectionBodyNotesReview extends StatelessWidget {
       return const AssetImage('assets/images/placeholder.png');
     }
 
-    if (imageUrl.startsWith('https://') || imageUrl.startsWith('http://')) {
-      return CachedNetworkImageProvider(imageUrl);
-    } else if (imageUrl.startsWith('//s3')) {
-      return CachedNetworkImageProvider('https:$imageUrl');
-    } else {
-      return CachedNetworkImageProvider(imageUrl);
-    }
+    final resolved = imageUrl.startsWith('//s3') ? 'https:$imageUrl' : imageUrl;
+    return CachedNetworkImageProvider(
+      resolved,
+      cacheKey: stableCacheKey(resolved),
+    );
   }
 
   void _showFullImage(BuildContext context, String? imageUrl) {
@@ -71,8 +71,6 @@ class InspectionBodyNotesReview extends StatelessWidget {
         if (inspection == null || isLoading) {
           return SizedBox();
         }
-
-        final typeLabels = _buildTypeLabels();
 
         // WHAT: Read body notes from Hive cache and deserialize safely.
         // WHY: The original code used Map<String, dynamic>.from() which only
@@ -101,7 +99,12 @@ class InspectionBodyNotesReview extends StatelessWidget {
           }
         }
 
-        return InfoCard(
+        // Wrap the card in a ValueListenableBuilder bound to the Assets box
+        // so the type-label chip ("• Scratch") rebuilds when the body-note-
+        // types prefetch lands. On a cold start the user may open this screen
+        // before OfflineSyncService finishes prefetching → without this the
+        // chip would show the raw id "4" forever (until next screen rebuild).
+        InfoCard buildCard(Map<String, String> typeLabels) => InfoCard(
           title: Text(InspectionPage.inspectionBodyNotes.tr),
           tilePadding: FSizes.md,
           icon: Iconsax.note,
@@ -194,6 +197,7 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                             ),
                                       ),
                                     ),
+                                    Spacer(),
                                     if (marker.type != null &&
                                         marker.type!.isNotEmpty)
                                       Flexible(
@@ -208,21 +212,12 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodySmall
-                                                ?.apply(color: FColors.grey),
+                                                ?.apply(
+                                                  color: FColors.primaryColor,
+                                                ),
                                           ),
                                         ),
                                       ),
-                                    Spacer(),
-                                    Text(
-                                      InspectionPage.positionLabel.trParams({
-                                        'dx': marker.dx.toStringAsFixed(1),
-                                        'dy': marker.dy.toStringAsFixed(1),
-                                      }),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.apply(color: FColors.darkGrey),
-                                    ),
                                   ],
                                 ),
 
@@ -253,6 +248,9 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                         ),
                                         child: CachedNetworkImage(
                                           imageUrl: marker.image!,
+                                          cacheKey: stableCacheKey(
+                                            marker.image!,
+                                          ),
                                           width: FSizes.imagePreviewMd,
                                           height: FSizes.imagePreviewMd,
                                           fit: BoxFit.cover,
@@ -263,19 +261,18 @@ class InspectionBodyNotesReview extends StatelessWidget {
                                               alpha: 0.1,
                                             ),
                                           ),
-                                          errorWidget: (_, _, _) =>
-                                              Container(
-                                                width: FSizes.imagePreviewMd,
-                                                height: FSizes.imagePreviewMd,
-                                                color: FColors.grey.withValues(
-                                                  alpha: 0.1,
-                                                ),
-                                                child: Icon(
-                                                  Iconsax.image,
-                                                  color: FColors.grey,
-                                                  size: FSizes.iconInlineMd,
-                                                ),
-                                              ),
+                                          errorWidget: (_, _, _) => Container(
+                                            width: FSizes.imagePreviewMd,
+                                            height: FSizes.imagePreviewMd,
+                                            color: FColors.grey.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                            child: Icon(
+                                              Iconsax.image,
+                                              color: FColors.grey,
+                                              size: FSizes.iconInlineMd,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -303,6 +300,16 @@ class InspectionBodyNotesReview extends StatelessWidget {
               }),
           ],
         );
+
+        if (Hive.isBoxOpen('Assets')) {
+          return ValueListenableBuilder(
+            valueListenable: Hive.box<List>(
+              'Assets',
+            ).listenable(keys: const ['Assets-BodyNoteTypes']),
+            builder: (_, _, _) => buildCard(_buildTypeLabels()),
+          );
+        }
+        return buildCard(const {});
       },
     );
   }

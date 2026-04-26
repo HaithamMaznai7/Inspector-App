@@ -32,6 +32,54 @@ class VehicleDetailsView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildVehicleHeader(context, controller, isTablet, hPad),
+          GetBuilder<VehicleDetailsController>(
+            init: VehicleDetailsBinding().instance,
+            autoRemove: false,
+            builder: (c) {
+              if (c.repository?.hasPendingUpdate() != true) {
+                return const SizedBox.shrink();
+              }
+              return Padding(
+                padding: EdgeInsets.fromLTRB(
+                  hPad,
+                  0,
+                  hPad,
+                  FSizes.spaceBtwItems,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: FSizes.md,
+                    vertical: FSizes.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: FColors.warning.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                    border: Border.all(
+                      color: FColors.warning.withValues(alpha: 0.35),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Iconsax.cloud_minus,
+                        size: FSizes.iconSm,
+                        color: FColors.warning,
+                      ),
+                      const SizedBox(width: FSizes.sm),
+                      Expanded(
+                        child: Text(
+                          'saved_locally_will_sync'.tr,
+                          style: Theme.of(context).textTheme.bodySmall?.apply(
+                            color: FColors.warning,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
           Padding(
             padding: EdgeInsets.fromLTRB(
               hPad,

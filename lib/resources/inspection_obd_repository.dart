@@ -1,15 +1,19 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:fahis_inspector/models/obd_code.dart';
 import 'package:fahis_inspector/resources/repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/api_endpoints.dart';
+import 'package:fahis_inspector/util/helpers/cached_image_key.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 
 class InspectionObdRepository extends ListRepository<OBDCode> {
   static String get boxKey => "Inspection_Obd";
@@ -72,7 +76,31 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
     }
 
     _log('fetchFromCache – loaded ${result.length} codes from cache');
+
+    // Merge queued-but-not-synced codes so they render in the list with a
+    // pending badge, not just as a background task. Each pending entry gets
+    // a negative placeholder id so the UI can still show it before the
+    // server assigns a real one on flush.
+    for (final pending in _pendingCodes()) {
+      final code = pending['code']?.toString();
+      if (code == null) continue;
+      if (result.any((c) => c.code == code)) continue;
+      result.add(OBDCode(
+        id: -DateTime.now().millisecondsSinceEpoch,
+        code: code,
+        description: pending['description']?.toString() ?? '',
+        isPending: true,
+      ));
+    }
+
     _data.assignAll(result);
+
+    // Re-hydrate a queued report so the pending badge + in-app viewer still
+    // work after app-kill while offline. The server URL is restored by the
+    // next successful fetchFromApi; the pending sentinel takes priority here.
+    final pendingPath = pendingReportPath();
+    if (pendingPath != null) _report.value = _pendingReportUri(pendingPath);
+
     return _data;
   }
 
@@ -118,6 +146,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   Future<void> flushPending() async {
     await _flushPendingWrites();
     await _flushPendingDeletes();
+    await _flushPendingReport();
   }
 
   Future<void> _flushPendingWrites() async {
@@ -225,6 +254,18 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
     // Save before POST so the code survives app-kill while offline.
     _savePendingCode(code);
 
+    // Optimistic UI: append with isPending=true + a negative placeholder id
+    // so the row renders immediately. Replaced on successful POST with the
+    // server entity (real id, isPending=false).
+    if (!_data.any((c) => c.code == code.code)) {
+      _data.add(OBDCode(
+        id: -DateTime.now().millisecondsSinceEpoch,
+        code: code.code,
+        description: code.description,
+        isPending: true,
+      ));
+    }
+
     final n = Network(
       endpoint: '${EndPoints.inspections}/$slug/obd-codes',
       requestMethod: RequestMethod.post,
@@ -250,7 +291,8 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       return true;
     } on FNetworkException catch (e) {
       _log('store – FNetworkException: ${e.statusCode} — queued as pending');
-      // Kept in the pending queue; flushPending will retry on reconnect.
+      // Optimistic entry stays in _data with isPending=true; flushPending
+      // will retry on reconnect and replace it with the server entity.
       return false;
     } catch (e) {
       _log('store – error: $e');
@@ -339,12 +381,18 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
     }
   }
 
+  /// Uploads the OBD report. On network failure the file is copied to
+  /// app-private storage and queued for retry — the caller gets the local
+  /// path back so the UI can still display the picked document while it
+  /// waits for reconnect.
+  ///
+  /// Returns the server URL on success, or `pending://<absolute-path>` when
+  /// queued offline. Returns null if the caller passed no file.
   Future<String?> uploadReport(File? file) async {
     _log(
       'uploadReport – POST ${EndPoints.inspections}/$slug/report, file=${file?.path}',
     );
 
-    // Don't send null to backend
     if (file == null) {
       _log('uploadReport – no file provided, skipping API call');
       return null;
@@ -372,10 +420,22 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
         _log(
           'uploadReport – report URL: ${_report.value}, codes: ${_data.length}',
         );
+        // Clear any prior pending report — this upload replaced it.
+        await _clearPendingReport();
+        // Warm PDF cache so offline open works without extra round-trip.
+        final url = _report.value;
+        if (url != null && url.isNotEmpty) {
+          _warmReportCache(url);
+        }
       }
     } on FNetworkException catch (e) {
-      _log('uploadReport – FNetworkException: ${e.statusCode}');
-      e.notify();
+      _log(
+        'uploadReport – FNetworkException: ${e.statusCode} — queued as pending',
+      );
+      final localPath = await _savePendingReport(file);
+      _report.value = _pendingReportUri(localPath);
+      await saveToCache();
+      return _report.value;
     } catch (e) {
       _log('uploadReport – error: $e');
     }
@@ -383,6 +443,132 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
     await saveToCache();
 
     return _report.value;
+  }
+
+  // ── Pending OBD report upload (offline-first file queue) ───────────────────
+  //
+  // The report endpoint is a single-file overwrite, not an append list. To
+  // survive offline + app-kill we copy the picked file into app-private
+  // storage and persist its path in Hive under `pending_report_$slug`.
+  // [_flushPendingReport] retries on reconnect; on success the local copy is
+  // deleted and the cache is warmed with the server URL.
+
+  String get _pendingReportKey => 'pending_report_$slug';
+
+  /// Returns the `pending://` sentinel URL that the UI can recognise and
+  /// treat as "show the local file while we wait for reconnect".
+  String _pendingReportUri(String absolutePath) => 'pending://$absolutePath';
+
+  /// True if a report upload is waiting for reconnect. UI callers use this
+  /// to render a pending badge next to the uploaded document.
+  bool hasPendingReport() => box.get(_pendingReportKey) != null;
+
+  /// Returns the local file path of a queued report, or null if none.
+  String? pendingReportPath() {
+    final raw = box.get(_pendingReportKey);
+    if (raw is Map) return raw['path']?.toString();
+    if (raw is String) return raw;
+    return null;
+  }
+
+  Future<String> _savePendingReport(File src) async {
+    final docs = await getApplicationDocumentsDirectory();
+    final dir = Directory('${docs.path}/inspector_reports/$slug');
+    if (!dir.existsSync()) dir.createSync(recursive: true);
+
+    final originalName = src.path.split(Platform.pathSeparator).last.isNotEmpty
+        ? src.path.split(Platform.pathSeparator).last
+        : src.path.split('/').last;
+    final dest = File('${dir.path}/$originalName');
+    await src.copy(dest.path);
+
+    await box.put(_pendingReportKey, {
+      'path': dest.path,
+      'name': originalName,
+      'savedAt': DateTime.now().toIso8601String(),
+    });
+    AppLogger.info('[Offline]', 'write report/$slug: pending=true');
+    return dest.path;
+  }
+
+  Future<void> _clearPendingReport() async {
+    final raw = box.get(_pendingReportKey);
+    if (raw == null) return;
+    final path = (raw is Map) ? raw['path']?.toString() : raw.toString();
+    if (path != null) {
+      try {
+        final f = File(path);
+        if (f.existsSync()) await f.delete();
+      } catch (e) {
+        _log('clearPendingReport – delete failed: $e');
+      }
+    }
+    await box.delete(_pendingReportKey);
+  }
+
+  Future<void> _flushPendingReport() async {
+    final raw = box.get(_pendingReportKey);
+    if (raw == null) return;
+
+    final path = (raw is Map) ? raw['path']?.toString() : raw.toString();
+    if (path == null) {
+      await box.delete(_pendingReportKey);
+      return;
+    }
+    final file = File(path);
+    if (!file.existsSync()) {
+      AppLogger.warn(
+        '[Offline]',
+        'flush report/$slug: local file missing — dropping pending entry',
+      );
+      await box.delete(_pendingReportKey);
+      return;
+    }
+
+    AppLogger.info('[Offline]', 'flush report/$slug: uploading $path');
+
+    try {
+      final n = Network(
+        endpoint: '${EndPoints.inspections}/$slug/report',
+        requestMethod: RequestMethod.post,
+      );
+      n.setBody = FormData({
+        'report': MultipartFile(file, filename: file.path.split('/').last),
+      });
+      final r = await n.response(RoutingUrl.home);
+
+      if (r.data.isNotEmpty) {
+        final codes = r.data['codes'];
+        if (codes != null) _data.assignAll(OBDCode.setList(codes));
+        _report.value = r.data['report'];
+        await saveToCache();
+        final url = _report.value;
+        if (url != null && url.isNotEmpty) _warmReportCache(url);
+      }
+      await _clearPendingReport();
+      AppLogger.info('[Offline]', 'flush report/$slug: success');
+    } on FNetworkException catch (e) {
+      AppLogger.error('[Offline]', 'flush report/$slug: failed', e);
+    } catch (e) {
+      _log('flushPendingReport – error: $e');
+    }
+  }
+
+  /// Downloads the uploaded report into [DefaultCacheManager] so that a
+  /// subsequent offline open does not need network. Errors are swallowed —
+  /// the cache warm-up is best-effort and should never block the caller.
+  ///
+  /// Keyed by [stableCacheKey] so SAS query rotation doesn't invalidate the
+  /// cache on each fetch (controller's openReport() uses the same key).
+  void _warmReportCache(String url) {
+    unawaited(
+      DefaultCacheManager()
+          .getSingleFile(url, key: stableCacheKey(url))
+          .then(
+            (_) {},
+            onError: (e) => _log('warmReportCache – failed for $url: $e'),
+          ),
+    );
   }
 
   Future<String?> removeReport() async {

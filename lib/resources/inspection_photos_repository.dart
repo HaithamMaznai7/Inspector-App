@@ -66,9 +66,34 @@ class InspectionPhotosRepository extends ListRepository<Photo> {
   List<Photo> fetchFromCache() {
     final data = (box.get('Photos') as List?) ?? [];
 
-    return data
+    final result = data
         .map((item) => Photo.fromJson(Map<String, dynamic>.from(item)))
         .toList();
+
+    // WHY: `update()` does an id lookup against `_data`. If we only returned
+    // the list without assigning it, an offline capture on a fresh app-start
+    // would throw "Not Found the photo" because `_data` stayed empty. Mirror
+    // the OBD repo pattern — warm `_data` from cache so the lookup succeeds.
+    _data.assignAll(result);
+
+    // Surface pending uploads as `isPending=true` so the grid can render a
+    // badge while the queued entries wait for reconnect. File is unchanged
+    // on the server but exists locally in app-private storage.
+    for (final pending in _pendingUploads()) {
+      final idx = _data.indexWhere((p) => p.id == pending['photoId']);
+      if (idx != -1) {
+        final photo = _data[idx];
+        final path = pending['localFilePath']?.toString();
+        if (path != null) {
+          final f = File(path);
+          if (f.existsSync()) photo.file = f;
+        }
+        photo.isPending = true;
+        _data[idx] = photo;
+      }
+    }
+
+    return _data;
   }
 
   @override
@@ -251,58 +276,69 @@ class InspectionPhotosRepository extends ListRepository<Photo> {
 
   // ── update ───────────────────────────────────────────────────────────────────
 
-  Future<void> update(Photo photo) async {
-    final oldPhoto = _data.where((p) => p.id == photo.id).firstOrNull;
-
-    if (oldPhoto == null) {
-      throw FNetworkException(
-        'Not Found the photo',
-        statusCode: 404,
-        title: "Not Found",
-      );
+  /// Uploads a photo for [photo]'s slot.
+  ///
+  /// Offline-tolerant: when the network call fails we keep the local file
+  /// queued in the pending store and mark the slot with `isPending=true` so
+  /// the grid can render a visual badge. The user sees their capture
+  /// immediately; the reconnect worker drains the queue later.
+  ///
+  /// Returns `true` when the upload synced, `false` when it was queued.
+  Future<bool> update(Photo photo) async {
+    if (photo.file == null) {
+      // No file selected, skip API call.
+      return true;
     }
 
+    final oldPhoto = _data.where((p) => p.id == photo.id).firstOrNull;
+
+    // Optimistic UI: mark as pending so the badge shows immediately.
+    photo.isPending = true;
     updatePhoto(photo);
 
-    Network n = Network(
+    // Save pending BEFORE the network call so the file path survives app-kill.
+    _savePendingUpload(photo.id, photo.file!.path);
+
+    final n = Network(
       endpoint: '${EndPoints.photos}/${photo.id}',
       requestMethod: RequestMethod.post,
     );
-
-    if (photo.file != null) {
-      // Save pending BEFORE the network call so the file path survives app-kill.
-      _savePendingUpload(photo.id, photo.file!.path);
-      n.setBody = FormData({
-        'image': MultipartFile(
-          photo.file!,
-          filename: photo.file!.path.split('/').last,
-          contentType: 'image/jpeg',
-        ),
-      });
-    } else {
-      // No file selected, skip API call
-      return;
-    }
+    n.setBody = FormData({
+      'image': MultipartFile(
+        photo.file!,
+        filename: photo.file!.path.split('/').last,
+        contentType: 'image/jpeg',
+      ),
+    });
 
     try {
       final r = await n.response(RoutingUrl.home);
 
-      final point = !r.hasError || r.data.isNotEmpty
+      final synced = !r.hasError && r.data.isNotEmpty
           ? Photo.fromJson(r.data)
           : null;
 
-      if (point == null) {
-        updatePhoto(oldPhoto);
-      } else {
-        updatePhoto(point);
-        _clearPendingUpload(photo.id); // synced — remove pending flag
+      if (synced == null) {
+        // Treat as rollback only when we had a previous slot to restore.
+        if (oldPhoto != null) updatePhoto(oldPhoto);
+        return false;
       }
+      updatePhoto(synced);
+      _clearPendingUpload(photo.id);
+      return true;
     } on FNetworkException catch (e) {
-      e.notify();
-      updatePhoto(oldPhoto); // rollback optimistic UI; pending flag stays
+      // Offline / 5xx / timeout — keep the optimistic entry with isPending=true
+      // and let flushPending retry on reconnect. Do NOT surface the exception
+      // to the caller; the queue IS the success path for offline capture.
+      AppLogger.warn(
+        '[Offline]',
+        'update photos/$slug/photo${photo.id}: ${e.statusCode} — queued',
+      );
+      return false;
     } catch (e) {
       dd(e);
-      updatePhoto(oldPhoto);
+      if (oldPhoto != null) updatePhoto(oldPhoto);
+      return false;
     } finally {
       await saveToCache();
     }

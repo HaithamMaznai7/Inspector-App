@@ -63,6 +63,31 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
         dd('Error parsing cached body note: $e');
       }
     }
+
+    // Merge pending markers so offline-created notes render with an
+    // isPending=true badge immediately after app restart. Negative ids
+    // (derived from tempKey) don't collide with server ids.
+    for (final pending in pendingMarkers()) {
+      final bodyId = pending['bodyId'] as int?;
+      if (bodyId == null) continue;
+      final bodyIdx = result.indexWhere((b) => b.id == bodyId);
+      if (bodyIdx == -1) continue;
+      final tempKey = pending['tempKey'] as int? ?? DateTime.now().millisecondsSinceEpoch;
+      final marker = Marker(
+        id: -tempKey,
+        dx: (pending['dx'] as num?)?.toDouble() ?? 0,
+        dy: (pending['dy'] as num?)?.toDouble() ?? 0,
+        type: pending['type']?.toString(),
+        note: pending['note']?.toString(),
+        image: pending['localImagePath']?.toString(),
+        isPending: true,
+      );
+      if (!result[bodyIdx].notes.any((m) => m.id == marker.id)) {
+        result[bodyIdx].notes.add(marker);
+      }
+    }
+
+    _data.assignAll(result);
     return result;
   }
 
@@ -285,6 +310,29 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
       note,
       imageFile?.path,
     );
+
+    // Optimistically show the pending marker on the step list so the user
+    // sees their work immediately, even when offline. Negative id avoids
+    // colliding with server-assigned ids; isPending drives the badge in
+    // _NoteItem. On success the server response replaces _data wholesale,
+    // so the temp marker is naturally swapped for the real one.
+    final optimisticMarker = Marker(
+      id: -tempKey,
+      dx: note.dx,
+      dy: note.dy,
+      type: note.type,
+      note: note.note,
+      image: imageFile?.path,
+      isPending: true,
+    );
+    final bodyIdx = _data.indexWhere((b) => b.id == body.id);
+    if (bodyIdx != -1 &&
+        !_data[bodyIdx].notes.any((m) => m.id == optimisticMarker.id)) {
+      _data[bodyIdx].notes.add(optimisticMarker);
+      // Reassign the entry so RxList fires listeners for the nested mutation.
+      _data[bodyIdx] = _data[bodyIdx];
+      await saveToCache();
+    }
 
     n.setBody = FormData({
       'dx': note.dx,

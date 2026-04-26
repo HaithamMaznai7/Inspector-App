@@ -1,12 +1,15 @@
 import 'dart:io';
+import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/features/inspection_obd/components/dialog.dart';
+import 'package:fahis_inspector/features/inspection_obd/components/pdf_viewer_screen.dart';
 import 'package:fahis_inspector/models/obd_code.dart';
 import 'package:fahis_inspector/resources/inspection_obd_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
+import 'package:fahis_inspector/util/helpers/cached_image_key.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -15,10 +18,9 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:open_filex/open_filex.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-/// Max upload file size: 10 MB
-const int _kMaxFileSizeBytes = 10 * 1024 * 1024;
+/// Max upload file size: 1 MB
+const int _kMaxFileSizeBytes = 1 * 1024 * 1024;
 
 class InspectionObdController extends GetxController {
   late InspectionObdRepository repository;
@@ -43,6 +45,10 @@ class InspectionObdController extends GetxController {
   /// Whether [code] has a pending upload that hasn't synced to the server yet.
   bool hasPendingCode(String code) =>
       _repositoryReady && repository.hasPendingCode(code);
+
+  /// Whether the OBD report upload is queued offline and hasn't synced yet.
+  bool get hasPendingReport =>
+      _repositoryReady && repository.hasPendingReport();
 
   /// Whether all async data has been loaded (not in a loading state).
   bool get isDataReady => !isLoading.value && !isUpload.value;
@@ -143,34 +149,99 @@ class InspectionObdController extends GetxController {
     }
   }
 
-  void openReport() async {
+  /// Opens the OBD report inside the app. Single code path for online +
+  /// offline + pending — pick the first file we can get:
+  ///
+  ///  1. `pending://<path>` sentinel → the user's queued local file.
+  ///  2. Cached file from [DefaultCacheManager] (warm after prior online view).
+  ///  3. Download via `getSingleFile` (online only, best effort).
+  ///
+  /// Routes to a viewer based on the file extension parsed from the URL —
+  /// PDF → in-app `PdfViewerScreen`, image → `easy_image_viewer`, otherwise
+  /// hand off to the platform via `OpenFilex`. New uploads are PDF-only, but
+  /// legacy server-side reports may still be JPG/PNG and must remain viewable.
+  Future<void> openReport() async {
     final url = report.value;
     if (url == null || url.isEmpty) return;
     _log('openReport – url: $url');
 
-    if (ConnectionService.instance.isConnectionGood.value) {
-      final ok = await launchUrl(
-        Uri.parse(url),
-        mode: LaunchMode.externalApplication,
-      );
-      if (!ok) _log('openReport – launchUrl returned false');
-      return;
+    // 1. Pending local file (offline upload not yet synced)
+    if (url.startsWith('pending://')) {
+      final path = url.substring('pending://'.length);
+      final file = File(path);
+      if (file.existsSync()) {
+        _log('openReport – opening pending local file: $path');
+        await _routeToViewer(file, url);
+        return;
+      }
+      _log('openReport – pending local file missing: $path');
     }
 
-    // Offline path: open the PDF from flutter_cache_manager via OpenFilex,
-    // which hands off to a platform PDF viewer. If the file was never cached
-    // online, surface a clear warning instead of silently failing.
-    final fileInfo = await DefaultCacheManager().getFileFromCache(url);
-    if (fileInfo != null) {
-      _log('openReport – opening cached file: ${fileInfo.file.path}');
-      await OpenFilex.open(fileInfo.file.path);
-    } else {
-      _log('openReport – offline and no cached file');
-      FLoader.warningSnackBar(
-        title: 'report_not_cached_title'.tr,
-        message: 'report_not_cached_message'.tr,
+    // 2/3. Real URL → cache first, fall back to network. SAS query params
+    // rotate per response, so we key the cache by the path-only form.
+    try {
+      final key = stableCacheKey(url);
+      final cached = await DefaultCacheManager().getFileFromCache(key);
+      if (cached != null) {
+        _log('openReport – opening cached file: ${cached.file.path}');
+        await _routeToViewer(cached.file, url);
+        return;
+      }
+
+      if (!ConnectionService.instance.isConnectionGood.value) {
+        _log('openReport – offline and no cached file');
+        FLoader.warningSnackBar(
+          title: 'report_not_cached_title'.tr,
+          message: 'report_not_cached_message'.tr,
+        );
+        return;
+      }
+
+      final downloaded = await DefaultCacheManager().getSingleFile(
+        url,
+        key: key,
       );
+      _log('openReport – downloaded file: ${downloaded.path}');
+      await _routeToViewer(downloaded, url);
+    } catch (e) {
+      _log('openReport – error: $e');
+      FLoader.errorSnackBar(title: InspectionPage.obdActionError.tr);
     }
+  }
+
+  /// Picks the right viewer based on the URL's path extension. The query
+  /// string never lies (SAS tokens don't change file type), so we read it
+  /// from `Uri.path` to be robust against `?se=…&sig=…`.
+  Future<void> _routeToViewer(File file, String url) async {
+    final ext = _extensionOf(url);
+    if (ext == 'pdf') {
+      await Get.to(() => PdfViewerScreen(file: file));
+      return;
+    }
+    if (const {'jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'}.contains(ext)) {
+      final ctx = Get.context;
+      if (ctx == null) {
+        await OpenFilex.open(file.path);
+        return;
+      }
+      showImageViewer(
+        ctx,
+        FileImage(file),
+        swipeDismissible: true,
+        doubleTapZoomable: true,
+        useSafeArea: true,
+      );
+      return;
+    }
+    // Unknown extension — hand off to the platform viewer.
+    await OpenFilex.open(file.path);
+  }
+
+  String _extensionOf(String url) {
+    final path = Uri.tryParse(url)?.path ?? url;
+    final dot = path.lastIndexOf('.');
+    if (dot < 0 || dot == path.length - 1) return '';
+    return path.substring(dot + 1).toLowerCase();
   }
 
   Future<void> deleteReport() async {
@@ -190,7 +261,10 @@ class InspectionObdController extends GetxController {
   }
 
   Future<void> pickReport() async {
-    final result = await FilePicker.pickFiles(type: FileType.any);
+    final result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['pdf'],
+    );
 
     final file = result != null && result.files.single.path != null
         ? File(result.files.single.path!)
@@ -201,7 +275,6 @@ class InspectionObdController extends GetxController {
       return;
     }
 
-    // File size check
     final fileSize = await file.length();
     _log(
       'pickReport – selected file: ${file.path}, size: ${(fileSize / 1024 / 1024).toStringAsFixed(2)} MB',
@@ -223,14 +296,21 @@ class InspectionObdController extends GetxController {
       update();
 
       _log('pickReport – uploading...');
-      report.value = await repository.uploadReport(file);
+      final result = await repository.uploadReport(file);
+      report.value = result;
 
-      if (report.value != null) {
-        _log('pickReport – upload success, report URL: ${report.value}');
-        FLoader.successSnackBar(title: InspectionPage.obdUploadSuccess.tr);
-      } else {
+      if (result == null) {
         _log('pickReport – upload returned null');
         FLoader.errorSnackBar(title: InspectionPage.obdUploadFailed.tr);
+      } else if (result.startsWith('pending://')) {
+        _log('pickReport – queued for reconnect, local path: $result');
+        FLoader.infoSnackBar(
+          title: 'saved_locally_title'.tr,
+          message: 'saved_locally_message'.tr,
+        );
+      } else {
+        _log('pickReport – upload success, report URL: $result');
+        FLoader.successSnackBar(title: InspectionPage.obdUploadSuccess.tr);
       }
     } catch (e) {
       _log('pickReport – error: $e');

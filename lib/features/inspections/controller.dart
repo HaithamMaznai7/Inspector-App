@@ -92,6 +92,36 @@ class InspectionsController extends GetxController
     return converted;
   }
 
+  /// Patches a single inspection in the home-listing caches (b2c orders and
+  /// paginated inspections) so make/model/year/plate edits made deep inside
+  /// the details flow propagate to the card without a manual pull-to-refresh.
+  /// Called by [InspectionDetailsController] after a successful vehicle edit.
+  void patchInspection(Inspection updated) {
+    // Patch paginated inspections cache (filter/search mode).
+    final idx = inspections.indexWhere((i) => i.slug == updated.slug);
+    if (idx != -1) {
+      inspections[idx] = updated;
+    }
+
+    // Patch b2c orders cache (default orders mode). Each order contains a
+    // list of items — find the matching item by slug and swap its vehicle.
+    // OrderItem.vehicle is non-nullable, so skip the patch if the refreshed
+    // inspection arrived with a null vehicle (shouldn't happen in practice).
+    final v = updated.vehicle;
+    if (v != null) {
+      for (var i = 0; i < orders.length; i++) {
+        final order = orders[i];
+        final itemIdx = order.items.indexWhere((it) => it.slug == updated.slug);
+        if (itemIdx != -1) {
+          order.items[itemIdx].vehicle = v;
+          orders.refresh();
+          break;
+        }
+      }
+    }
+    update();
+  }
+
   /// Switch between Companies and Individuals tabs
   void changeSegment(int index) {
     selectedSegment.value = index;

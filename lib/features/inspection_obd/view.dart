@@ -205,36 +205,55 @@ class _ReportUploaded extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isPending = controller.hasPendingReport;
+    final accent = isPending ? FColors.warning : FColors.success;
+
     return Container(
       padding: const EdgeInsets.all(FSizes.md),
       decoration: BoxDecoration(
-        color: FColors.success.withValues(alpha: 0.08),
+        color: accent.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-        border: Border.all(color: FColors.success.withValues(alpha: 0.3)),
+        border: Border.all(color: accent.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(FSizes.sm),
             decoration: BoxDecoration(
-              color: FColors.success.withValues(alpha: 0.12),
+              color: accent.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.check_circle_rounded,
-              color: FColors.success,
+            child: Icon(
+              isPending ? Iconsax.cloud_minus : Icons.check_circle_rounded,
+              color: accent,
               size: FSizes.iconInlineSm,
             ),
           ),
           const SizedBox(width: FSizes.sm),
           Expanded(
-            child: Text(
-              InspectionPage.obdFileName.tr,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: isDark ? FColors.light : FColors.dark,
-              ),
-              overflow: TextOverflow.ellipsis,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  InspectionPage.obdFileName.tr,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? FColors.light : FColors.dark,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (isPending) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    'saved_locally_will_sync'.tr,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: FColors.warning,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
           const SizedBox(width: FSizes.xs),

@@ -9,7 +9,12 @@ class OBDCode {
   String code ;
   String description ;
 
-  OBDCode({this.id = 0, this.code = 'New Code', this.description = 'Unknown Description'});  
+  // Transient: true while this entry is queued for offline sync and has not
+  // yet been POSTed to the server. Never serialized — only set at runtime
+  // when the repo rehydrates pending entries into the reactive list.
+  bool isPending;
+
+  OBDCode({this.id = 0, this.code = 'New Code', this.description = 'Unknown Description', this.isPending = false});
 
   static List<OBDCode> setList(List codes) =>
     codes.isEmpty ? [] : codes.map((code) => OBDCode.fromJson(code)).toList();

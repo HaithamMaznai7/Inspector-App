@@ -12,6 +12,7 @@ import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 
 // ignore_for_file: avoid_print
 
@@ -201,22 +202,36 @@ class InspectionPhotosController extends GetxController {
       _log('picking — camera closed | file=${photo.file != null ? "selected" : "cancelled"} | category.value=${category.value}');
     }
 
-    // Only upload if file exists (user didn't cancel)
     if (photo.file != null) {
+      // Copy the captured file out of volatile tmp storage into app-private
+      // storage. The OS can reclaim tmp between capture and reconnect — that
+      // was a silent data-loss path for offline uploads. App-documents survive
+      // until we explicitly delete after a successful sync.
+      photo.file = await _persistCapture(photo.id, photo.file!);
+
       _log('picking — upload START | category.value=${category.value}');
       uploadingIds.add(photo.id);
       update();
+      bool synced = false;
       try {
-        await repository.update(photo);
-        _log('picking — upload COMPLETE | category.value=${category.value}');
+        synced = await repository.update(photo);
+        _log('picking — upload COMPLETE synced=$synced | category.value=${category.value}');
       } finally {
         uploadingIds.remove(photo.id);
         update();
       }
+
+      // Show a pending-sync snackbar when the upload was queued offline so the
+      // inspector knows their capture is saved and will sync on reconnect.
+      if (!synced) {
+        FLoader.infoSnackBar(
+          title: 'saved_locally_title'.tr,
+          message: 'saved_locally_message'.tr,
+          duration: 2,
+        );
+      }
     }
 
-    // Restore the user's active tab — guards against any reset that may have
-    // happened across the camera dialog or upload async gaps.
     _log('picking — END | category.value=${category.value} | savedCategory=$savedCategory');
     if (savedCategory != null) {
       if (category.value != savedCategory) {
@@ -225,6 +240,27 @@ class InspectionPhotosController extends GetxController {
       category.value = savedCategory;
     }
     update();
+  }
+
+  /// Copies a captured image from tmp/file_picker cache into app-documents so
+  /// it survives OS tmp reclamation and app-kill while a pending upload waits
+  /// for reconnect. Returns the destination file (falls back to the original
+  /// on copy failure — the upload still tries the tmp path).
+  Future<File> _persistCapture(int photoId, File src) async {
+    try {
+      final docs = await getApplicationDocumentsDirectory();
+      final dir = Directory('${docs.path}/inspector_photos/$slug');
+      if (!dir.existsSync()) dir.createSync(recursive: true);
+
+      final ext = src.path.split('.').isNotEmpty ? src.path.split('.').last : 'jpg';
+      final dest = File('${dir.path}/photo_$photoId.$ext');
+      await src.copy(dest.path);
+      _log('persistCapture — copied to ${dest.path}');
+      return dest;
+    } catch (e) {
+      _log('persistCapture — copy failed: $e, using tmp path');
+      return src;
+    }
   }
 
   Future<void> deleteAll() async {

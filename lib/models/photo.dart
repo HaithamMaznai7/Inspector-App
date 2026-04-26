@@ -19,11 +19,16 @@ class Photo {
 
   File? file;
 
+  // Transient: true while a picked image is queued offline and has not been
+  // POSTed yet. Never serialized — set at runtime only.
+  bool isPending;
+
   Photo({
     required this.id,
     required this.title,
     required this.type,
     String? image,
+    this.isPending = false,
   }) {
     if (image != '' && image != null && image != 'null') {
       _image = image;

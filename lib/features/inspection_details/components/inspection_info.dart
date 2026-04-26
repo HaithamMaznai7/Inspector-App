@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
+import 'package:fahis_inspector/util/helpers/cached_image_key.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/formatters/formatter.dart';
@@ -67,6 +68,7 @@ class InspectionInfo extends StatelessWidget {
                           c.inspection.value?.vehicle?.make?.avatar != null
                               ? CachedNetworkImage(
                                   imageUrl: c.inspection.value!.vehicle!.make!.avatar!,
+                                  cacheKey: stableCacheKey(c.inspection.value!.vehicle!.make!.avatar!),
                                   fit: BoxFit.contain,
                                   width: FSizes.iconInlineMd,
                                   height: FSizes.iconInlineMd,

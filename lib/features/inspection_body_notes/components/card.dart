@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fahis_inspector/util/helpers/cached_image_key.dart';
 import 'package:fahis_inspector/common/widgets/camera/image_source_picker.dart';
 import 'package:fahis_inspector/models/marker.dart';
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
@@ -184,6 +185,7 @@ class _InspectionBodyNotesDialogState extends State<InspectionBodyNotesDialog> {
                       )
                     : CachedNetworkImage(
                         imageUrl: _marker.image!,
+                        cacheKey: stableCacheKey(_marker.image!),
                         height: FSizes.imagePreviewMd,
                         width: double.infinity,
                         fit: BoxFit.cover,

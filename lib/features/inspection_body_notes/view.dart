@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fahis_inspector/util/helpers/cached_image_key.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:fahis_inspector/features/inspection_body_notes/components/editing_screen.dart';
 import 'package:fahis_inspector/features/inspection_body_notes/controller.dart';
@@ -8,7 +9,29 @@ import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:iconsax/iconsax.dart';
+
+// Build a {value: label} lookup from cached body-note-types so we can show
+// the human-readable label (e.g. "Scratch") beside each marker row instead
+// of the raw Selection.value stored on Marker.type (e.g. "scratch"). Same
+// pattern as inspection_body_notes_review.dart — labels are i18n-driven so
+// resolving at render time keeps markers locale-correct.
+Map<String, String> _buildTypeLabels() {
+  if (!Hive.isBoxOpen('Assets')) return const {};
+  final raw = Hive.box<List>('Assets').get('Assets-BodyNoteTypes');
+  if (raw is! List) return const {};
+  final map = <String, String>{};
+  for (final item in raw) {
+    if (item is Map) {
+      final id = item['id'];
+      if (id == null) continue;
+      final label = (item['name'] ?? item['label'])?.toString();
+      if (label != null && label.isNotEmpty) map['$id'] = label;
+    }
+  }
+  return map;
+}
 
 class InspectionBodyTypeResults extends StatelessWidget {
   const InspectionBodyTypeResults({super.key});
@@ -30,7 +53,12 @@ class InspectionBodyTypeResults extends StatelessWidget {
             return const _BodyNotesEmpty();
           }
 
-          return ListView.separated(
+          // Wrap in ValueListenableBuilder so the type-label chip rebuilds
+          // when OfflineSyncService finishes prefetching the body-note-types
+          // asset. Without this the editor list shows raw ids ("4") on a
+          // cold start until the screen is left and re-entered.
+          Widget buildList(Map<String, String> typeLabels) =>
+              ListView.separated(
             padding: const EdgeInsets.symmetric(
               horizontal: FSizes.md,
               vertical: FSizes.sm,
@@ -76,6 +104,7 @@ class InspectionBodyTypeResults extends StatelessWidget {
                           ),
                           child: CachedNetworkImage(
                             imageUrl: body.image,
+                            cacheKey: stableCacheKey(body.image),
                             width: FSizes.iconCircleLg,
                             height: FSizes.iconCircleSm,
                             fit: BoxFit.cover,
@@ -162,6 +191,9 @@ class InspectionBodyTypeResults extends StatelessWidget {
                       ...body.notes.map(
                         (note) => _NoteItem(
                           note: note,
+                          typeLabel: note.type == null
+                              ? null
+                              : (typeLabels[note.type] ?? note.type),
                           onEdit: () => controller.onCreateEdit(body, note),
                           onDelete: () => controller.onRemove(note),
                         ),
@@ -172,6 +204,16 @@ class InspectionBodyTypeResults extends StatelessWidget {
             );
             },
           );
+
+          if (Hive.isBoxOpen('Assets')) {
+            return ValueListenableBuilder(
+              valueListenable: Hive.box<List>('Assets').listenable(
+                keys: const ['Assets-BodyNoteTypes'],
+              ),
+              builder: (_, _, _) => buildList(_buildTypeLabels()),
+            );
+          }
+          return buildList(const {});
         });
       },
     );
@@ -247,11 +289,13 @@ class _BodyNotesEmpty extends StatelessWidget {
 class _NoteItem extends StatelessWidget {
   const _NoteItem({
     required this.note,
+    required this.typeLabel,
     required this.onEdit,
     required this.onDelete,
   });
 
   final dynamic note;
+  final String? typeLabel;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -304,6 +348,10 @@ class _NoteItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // `note` is typed dynamic (accepted as Marker) so we can read the
+    // transient isPending flag without importing the model here.
+    final bool isPending = note.isPending == true;
+
     return GestureDetector(
       onTap: onEdit,
       child: Container(
@@ -315,17 +363,56 @@ class _NoteItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
-          border: Border.all(color: FColors.grey.withValues(alpha: 0.15)),
+          border: Border.all(
+            color: isPending
+                ? FColors.warning.withValues(alpha: 0.35)
+                : FColors.grey.withValues(alpha: 0.15),
+          ),
         ),
         child: Row(
           children: [
-            // Note text
+            // Type label (chip) + note text
             Expanded(
-              child: Text(
-                note.note ?? '',
-                style: Theme.of(context).textTheme.bodyMedium,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if ((typeLabel != null && typeLabel!.isNotEmpty) || isPending)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: FSizes.xxs),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isPending) ...[
+                            const Icon(
+                              Iconsax.cloud_minus,
+                              size: FSizes.iconXs,
+                              color: FColors.warning,
+                            ),
+                            const SizedBox(width: FSizes.xxs),
+                          ],
+                          if (typeLabel != null && typeLabel!.isNotEmpty)
+                            Text(
+                              '• $typeLabel',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.apply(
+                                    color: isPending
+                                        ? FColors.warning
+                                        : FColors.primaryColor,
+                                  ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  Text(
+                    note.note ?? '',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
             // Note image indicator

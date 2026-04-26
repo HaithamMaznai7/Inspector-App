@@ -11,6 +11,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_remote_config
   flutter_blue_plus_winrt
   flutter_secure_storage_windows
+  pdfx
   permission_handler_windows
   sentry_flutter
   share_plus

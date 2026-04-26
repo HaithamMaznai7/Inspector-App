@@ -13,6 +13,10 @@ class Marker {
   String? image;
   File? file;
 
+  // Transient: true while this marker is queued offline. Never serialized —
+  // set at runtime when rehydrating pending markers into the reactive list.
+  bool isPending;
+
   Marker({
     required this.id,
     this.note,
@@ -20,6 +24,7 @@ class Marker {
     required this.dy,
     this.type,
     this.image,
+    this.isPending = false,
   });
 
   Map<String, dynamic> toJson() => _$MarkerToJson(this);
