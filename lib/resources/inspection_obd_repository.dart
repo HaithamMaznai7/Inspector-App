@@ -95,20 +95,46 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
     _data.assignAll(result);
 
-    // Re-hydrate a queued report so the pending badge + in-app viewer still
-    // work after app-kill while offline. The server URL is restored by the
-    // next successful fetchFromApi; the pending sentinel takes priority here.
+    // Re-hydrate the report URL. A queued offline upload (`pending://…`)
+    // takes priority over a stale server URL so the user keeps seeing what
+    // they just queued. Otherwise we restore the last known server URL the
+    // API gave us — without this the report tile flashes "no report" on
+    // every re-entry until fetchFromApi resolves, and is unreachable
+    // entirely while offline.
     final pendingPath = pendingReportPath();
-    if (pendingPath != null) _report.value = _pendingReportUri(pendingPath);
+    if (pendingPath != null) {
+      _report.value = _pendingReportUri(pendingPath);
+    } else {
+      final cached = box.get(_reportCacheKey);
+      if (cached is List && cached.isNotEmpty) {
+        final v = cached.first?.toString();
+        if (v != null && v.isNotEmpty) _report.value = v;
+      }
+    }
 
     return _data;
   }
+
+  /// Hive key for the persisted server report URL. Distinct from the codes
+  /// list (`box.get(slug)`) and the pending upload (`_pendingReportKey`).
+  String get _reportCacheKey => 'report_$slug';
 
   @override
   Future<void> saveToCache() async {
     final codes = _data.map((i) => i.toJson()).toList();
     await box.put(slug, codes);
-    _log('saveToCache – saved ${codes.length} codes');
+
+    // Persist the server URL so re-entry shows the report instantly. We
+    // intentionally do NOT cache `pending://…` sentinels — those are owned
+    // by `_pendingReportKey` and would shadow the real URL after sync.
+    // When the report is deleted upstream, drop the cached URL too.
+    final url = _report.value;
+    if (url == null) {
+      await box.delete(_reportCacheKey);
+    } else if (!url.startsWith('pending://')) {
+      await box.put(_reportCacheKey, [url]);
+    }
+    _log('saveToCache – saved ${codes.length} codes, report=${url != null}');
   }
 
   // ── Pending OBD codes (offline-first write) ────────────────────────────────
