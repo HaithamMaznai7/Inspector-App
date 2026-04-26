@@ -362,7 +362,23 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   /// local cache in both cases — on failure it stays removed and the
   /// pending-delete queue ensures the server is reconciled later.
   Future<bool> delete(OBDCode code) async {
-    _log('delete – DELETE code id=${code.id}');
+    _log('delete – DELETE code id=${code.id}, code="${code.code}"');
+
+    // If this code has a pending write that never reached the server, cancel
+    // the pending write instead of queueing a server DELETE. The placeholder
+    // id is negative and doesn't exist on the backend, so the eventual flush
+    // would otherwise:
+    //   1. POST the pending write → server creates a NEW entity with a real id
+    //   2. DELETE the placeholder id → 404 "already gone" → silently cleared
+    // → leaving a phantom code on the server. Mirrors removeReport()'s
+    //    "cancelled pending upload (never reached server)" path.
+    if (hasPendingCode(code.code)) {
+      _clearPendingCode(code.code);
+      _data.removeWhere((c) => c.id == code.id);
+      await saveToCache();
+      _log('delete – cancelled pending write (never reached server)');
+      return false;
+    }
 
     // Persist pending marker + optimistic local removal BEFORE the network
     // call so the removal survives app-kill while offline.
