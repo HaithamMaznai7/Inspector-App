@@ -249,9 +249,16 @@ class InspectionObdController extends GetxController {
     isUpload.value = true;
     update();
     try {
-      report.value = await repository.removeReport();
-      _log('deleteReport – success');
-      FLoader.successSnackBar(title: InspectionPage.obdDeleteSuccess.tr);
+      final synced = await repository.removeReport();
+      _log('deleteReport – done (synced=$synced)');
+      if (synced) {
+        FLoader.successSnackBar(title: InspectionPage.obdDeleteSuccess.tr);
+      } else {
+        FLoader.infoSnackBar(
+          title: 'queued_delete_title'.tr,
+          message: 'queued_delete_message'.tr,
+        );
+      }
     } catch (e) {
       _log('deleteReport – error: $e');
     } finally {

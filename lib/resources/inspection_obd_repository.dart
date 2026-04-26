@@ -609,7 +609,13 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
     );
   }
 
-  Future<String?> removeReport() async {
+  /// Deletes the OBD report.
+  ///
+  /// Returns `true` when the DELETE was committed to the server, `false` when
+  /// it was handled locally (pending upload cancelled or queued for reconnect).
+  /// The UI should show a success snackbar on `true` and an info snackbar on
+  /// `false`, mirroring the pattern used by [delete] for OBD codes.
+  Future<bool> removeReport() async {
     // If the report was uploaded offline and never reached the server, cancel
     // the local queue immediately — no server DELETE is needed.
     if (hasPendingReport()) {
@@ -617,7 +623,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       _report.value = null;
       await saveToCache();
       _log('removeReport – cancelled pending upload (never reached server)');
-      return null;
+      return false;
     }
 
     // Optimistic removal so UI clears immediately regardless of connectivity.
@@ -636,15 +642,16 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       if (r.data.isNotEmpty) _report.value = r.data['report'];
       _log('removeReport – report after delete: ${_report.value}');
       await saveToCache();
+      return true;
     } on FNetworkException catch (e) {
       _log('removeReport – FNetworkException: ${e.statusCode} — queued as pending delete');
       await _savePendingReportDelete();
       e.notify();
+      return false;
     } catch (e) {
       _log('removeReport – error: $e');
+      return false;
     }
-
-    return _report.value;
   }
 
   // ── Pending OBD report delete (offline-first delete) ───────────────────────
