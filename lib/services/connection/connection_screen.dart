@@ -30,7 +30,7 @@ class OfflineScreen extends StatelessWidget {
                   const SizedBox(height: FSizes.spaceBtwItems ,),
                   Text('disconnected_message'.tr,style: Theme.of(context).textTheme.headlineSmall,textAlign: TextAlign.center,),
                   const SizedBox(height: FSizes.spaceBtwSections ,),
-                  GetBuilder<ConnectionService>(builder: (controller){
+                  GetBuilder<ConnectionService>(tag: 'ConnectionService', builder: (controller){
                     return SizedBox(height: FSizes.buttonHeightLg, width: double.infinity , child: ElevatedButton(onPressed: controller.reload, child: controller.isLoading.value
                         ? const CircularProgressIndicator(color: FColors.white,)
                         : const Text('Reload'),
