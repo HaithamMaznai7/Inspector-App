@@ -16,6 +16,13 @@ class AuthService extends GetxController {
   /// Guard flag to prevent multiple simultaneous session-expiry flows.
   static bool _isHandlingSessionExpiry = false;
 
+  /// AppSettings keys for the uid/team id snapshot used to keep Hive
+  /// cache lookups stable across offline cold starts (Firebase's in-memory
+  /// `currentUser` and the in-memory profile are both unavailable until the
+  /// auth listener / profile fetch fire — which doesn't happen offline).
+  static const String _kCachedUidKey = 'cachedAuthUid';
+  static const String _kCachedTeamIdKey = 'cachedTeamId';
+
   FirebaseAuth get firebase => FirebaseAuth.instance;
 
   RxBool isLoggingIn = false.obs;
@@ -24,9 +31,41 @@ class AuthService extends GetxController {
   final RxnString _idToken = RxnString(null);
   final Rxn<Profile> _profile = Rxn<Profile>(null);
   final RxList<City> _cities = <City>[].obs;
+
+  String? _cachedUid;
+  String? _cachedTeamId;
+
   User? get user => firebase.currentUser;
   String? get token => _token.value;
   String? get idToken => _idToken.value;
+
+  /// AppSettings box if already open — opened before runApp() so it's
+  /// synchronously readable at any point during the app lifetime.
+  Box? get _settingsBox {
+    try {
+      return Hive.isBoxOpen('AppSettings') ? Hive.box('AppSettings') : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Stable user id for Hive cache keys. Priority:
+  ///   1. Firebase in-memory currentUser (fastest, most up-to-date)
+  ///   2. In-memory _cachedUid (set by _restoreCachedAuthScope)
+  ///   3. AppSettings Hive box direct read (synchronous, always available)
+  ///      — this is the critical fallback for offline cold start before any
+  ///        async restore has had a chance to run.
+  String? get cachedUid =>
+      firebase.currentUser?.uid ??
+      _cachedUid ??
+      _settingsBox?.get(_kCachedUidKey) as String?;
+
+  /// Stable current-team id for Hive cache keys. Same three-tier fallback
+  /// strategy as [cachedUid].
+  String? get cachedTeamId =>
+      _profile.value?.currentTeam?.id.toString() ??
+      _cachedTeamId ??
+      _settingsBox?.get(_kCachedTeamIdKey) as String?;
 
   Stream<User?> get userChanges => firebase.userChanges();
   Stream<String?> get tokenChange => _token.stream;
@@ -61,6 +100,10 @@ class AuthService extends GetxController {
     // This prevents the app from signing out a previously logged-in user.
     await _restoreTokenFromStorage();
 
+    // Restore the last-known uid/team id so cache lookups work on cold
+    // offline start, before Firebase's auth listener / profile fetch fire.
+    await _restoreCachedAuthScope();
+
     // No session found: clear any stale local data and let the auth
     // listener redirect to login once it fires.
     if (_token.value == null && firebase.currentUser == null) {
@@ -71,6 +114,33 @@ class AuthService extends GetxController {
     }
 
     _initAuthListener();
+  }
+
+  Future<void> _restoreCachedAuthScope() async {
+    try {
+      final settings = await Hive.openBox('AppSettings');
+      _cachedUid = settings.get(_kCachedUidKey) as String?;
+      _cachedTeamId = settings.get(_kCachedTeamIdKey) as String?;
+    } catch (_) {/* best-effort restore */}
+  }
+
+  /// Persists the current uid + team id to AppSettings so they're available
+  /// synchronously on the next cold start (including offline). Skipped fields
+  /// stay at their previously-persisted value — never overwritten with null.
+  Future<void> _persistAuthScope() async {
+    try {
+      final settings = await Hive.openBox('AppSettings');
+      final uid = firebase.currentUser?.uid;
+      final teamId = _profile.value?.currentTeam?.id.toString();
+      if (uid != null && uid != _cachedUid) {
+        await settings.put(_kCachedUidKey, uid);
+        _cachedUid = uid;
+      }
+      if (teamId != null && teamId != _cachedTeamId) {
+        await settings.put(_kCachedTeamIdKey, teamId);
+        _cachedTeamId = teamId;
+      }
+    } catch (_) {/* best-effort persistence */}
   }
 
   Future<void> _clearStaleTokenOnReinstall() async {
@@ -164,6 +234,9 @@ class AuthService extends GetxController {
         }
       }
 
+      // Snapshot uid for offline cold-start cache lookups.
+      await _persistAuthScope();
+
       // If profile is loaded, check if user has a current team
       final profileLoaded = _profile.value != null && !_profile.value!.isEmpty;
       final hasCurrentTeam =
@@ -179,6 +252,8 @@ class AuthService extends GetxController {
       if (!profileLoaded || _profile.value!.isFromFirebase(user)) {
         AuthRepository().fetchProfile().then((profile) {
           _profile.value = profile;
+          // Team id is now known — snapshot it too.
+          _persistAuthScope();
         }).catchError((_) {});
       }
     } else if (_token.value != null) {
@@ -188,6 +263,7 @@ class AuthService extends GetxController {
       if (!profileLoaded) {
         AuthRepository().fetchProfile().then((profile) {
           _profile.value = profile;
+          _persistAuthScope();
         }).catchError((_) {});
       }
       _goTo(RoutingUrl.home);
@@ -318,6 +394,8 @@ class AuthService extends GetxController {
     // Fetch profile in background — don't block navigation
     AuthRepository().fetchProfile().then((profile) {
       _profile.value = profile;
+      // Snapshot team id once profile arrives.
+      _persistAuthScope();
     }).catchError((_) {});
 
     _goTo(RoutingUrl.home);
@@ -335,6 +413,8 @@ class AuthService extends GetxController {
     _idToken.value = null;
     _profile.value = Profile.empty();
     _cities.clear();
+    _cachedUid = null;
+    _cachedTeamId = null;
 
     // 3. Hive caches — clear boxes that hold inspection data.
     //    These boxes are typed as Box<List> in StorageService.
@@ -354,6 +434,12 @@ class AuthService extends GetxController {
       if (Hive.isBoxOpen('Notifications')) {
         await Hive.box('Notifications').clear();
       }
+
+      // Drop the cached uid/team id snapshot so a different user logging
+      // in next can't accidentally read the previous user's cache keys.
+      final settings = await Hive.openBox('AppSettings');
+      await settings.delete(_kCachedUidKey);
+      await settings.delete(_kCachedTeamIdKey);
     } catch (e) {
       if (kDebugMode) {
         debugPrint('[AuthService] clearLocalData – Hive error: $e');

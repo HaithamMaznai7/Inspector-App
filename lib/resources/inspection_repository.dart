@@ -5,7 +5,6 @@ import 'package:fahis_inspector/util/constants/api_endpoints.dart';
 import 'package:fahis_inspector/models/inspection.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:fahis_inspector/routes.dart';
@@ -96,13 +95,13 @@ class InspectionsRepository extends ListRepository<Inspection> {
     try {
       final stagesData =
           box.get(
-            "Inspections_Meta_User_${FirebaseAuth.instance.currentUser?.uid}",
+            "Inspections_Meta_User_${auth().cachedUid}",
           ) ??
           {};
 
       Map pages =
           box.get(
-            "Inspections_User_${FirebaseAuth.instance.currentUser?.uid}",
+            "Inspections_User_${auth().cachedUid}",
             defaultValue: {},
           ) ??
           {};
@@ -140,12 +139,12 @@ class InspectionsRepository extends ListRepository<Inspection> {
     }
 
     await box.put(
-      "Inspections_Meta_User_${FirebaseAuth.instance.currentUser?.uid}",
+      "Inspections_Meta_User_${auth().cachedUid}",
       Map<String, int>.from(_counts),
     );
 
     await box.put(
-      "Inspections_User_${FirebaseAuth.instance.currentUser?.uid}",
+      "Inspections_User_${auth().cachedUid}",
       pages,
     );
   }

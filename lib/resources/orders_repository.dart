@@ -6,7 +6,6 @@ import 'package:fahis_inspector/util/http/custom_response.dart';
 import 'package:fahis_inspector/util/http/http_client.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:fahis_inspector/routes.dart';
@@ -19,9 +18,12 @@ class OrdersRepository extends ListRepository<Order> {
 
   /// Scopes Hive cache keys to the current team + user so that switching
   /// teams resolves to a different, initially-empty key — no data leakage.
+  /// Reads via `auth().cachedUid` / `auth().cachedTeamId` so the key is
+  /// stable across offline cold starts (Firebase's in-memory currentUser
+  /// and the in-memory profile may not have been restored yet).
   String get _teamSuffix {
-    final teamId = auth().profile?.currentTeam?.id ?? 'noteam';
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'anon';
+    final teamId = auth().cachedTeamId ?? 'noteam';
+    final uid = auth().cachedUid ?? 'anon';
     return 'Team_${teamId}_User_$uid';
   }
 

@@ -393,7 +393,7 @@ class InspectionDetailsController extends GetxController
   /// data from the list rather than an empty screen.
   Future<Inspection?> _seedFromListCache(String slug) async {
     try {
-      final uid = auth().user?.uid;
+      final uid = auth().cachedUid;
       if (uid == null) return null;
       final listBox = await Hive.openBox<Map>('Inspections_User_$uid');
       final raw = listBox.get(slug);

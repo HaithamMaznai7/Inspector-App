@@ -6,6 +6,7 @@ import 'package:fahis_inspector/enums/inspection_stages.dart';
 import 'package:fahis_inspector/resources/inspection_repository.dart';
 import 'package:fahis_inspector/resources/orders_repository.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/util/device/device_utility.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:fahis_inspector/util/http/network_exception.dart';
@@ -137,7 +138,7 @@ class InspectionsController extends GetxController
   void onInit() async {
     super.onInit();
 
-    box = await Hive.openBox<Map>("Inspections_User_${auth().user?.uid}");
+    box = await Hive.openBox<Map>("Inspections_User_${auth().cachedUid}");
 
     repository = InspectionsRepository(box: box, stage: selectedStage.value);
     ordersRepository = OrdersRepository(box: box, type: 'b2c');
@@ -287,6 +288,14 @@ class InspectionsController extends GetxController
       }
     }
 
+    if (!ConnectionService.instance.isConnectionGood.value) {
+      if (load) {
+        isLoading.value = false;
+        update();
+      }
+      return;
+    }
+
     try {
       while (auth().token == null) {
         await Future.delayed(Duration(seconds: 3));
@@ -319,6 +328,14 @@ class InspectionsController extends GetxController
         isLoading.value = orders.isEmpty;
         update();
       }
+    }
+
+    if (!ConnectionService.instance.isConnectionGood.value) {
+      if (load) {
+        isLoading.value = false;
+        update();
+      }
+      return;
     }
 
     try {
@@ -520,6 +537,14 @@ class InspectionsController extends GetxController
         isLoadingB2B.value = ordersB2B.isEmpty;
         update();
       }
+    }
+
+    if (!ConnectionService.instance.isConnectionGood.value) {
+      if (load) {
+        isLoadingB2B.value = false;
+        update();
+      }
+      return;
     }
 
     try {
