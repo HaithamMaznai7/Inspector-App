@@ -142,7 +142,29 @@ class VehicleDetailsRepository extends BaseRepository<VehicleDetails> {
         AppLogger.info('[Offline]', 'flush vehicle/$slug: success');
       }
     } on FNetworkException catch (e) {
-      AppLogger.error('[Offline]', 'flush vehicle/$slug: failed', e);
+      final code = e.statusCode;
+      if (code >= 400 && code < 600) {
+        AppLogger.error(
+          '[Offline]',
+          'flush vehicle/$slug: rejected (HTTP $code) — dropping pending',
+          e,
+        );
+        _clearPendingUpdate();
+        try {
+          final fresh = Network(
+            endpoint: '${EndPoints.inspections}/$slug/details',
+          );
+          final r2 = await fresh.response(RoutingUrl.home);
+          if (!r2.hasError && r2.data != null) {
+            _data.value = VehicleDetails.fromJson(r2.data);
+            await saveToCache();
+          }
+        } catch (_) {
+          /* best-effort refresh */
+        }
+      } else {
+        AppLogger.error('[Offline]', 'flush vehicle/$slug: failed', e);
+      }
     } catch (e) {
       dd('flushPending vehicle error: $e');
     }

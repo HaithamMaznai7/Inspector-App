@@ -197,10 +197,7 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
   String get _pendingKey => 'pending_stage_$slug';
 
   void _savePendingStage(String? stageValue, String? note) {
-    box.put(_pendingKey, {
-      'stage': stageValue,
-      'general_notes': note,
-    });
+    box.put(_pendingKey, {'stage': stageValue, 'general_notes': note});
     AppLogger.info('[Offline]', 'write stage/$slug: pending=$stageValue');
   }
 
@@ -242,7 +239,27 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
       _clearPendingStage();
       AppLogger.info('[Offline]', 'flush stage/$slug: success');
     } on FNetworkException catch (e) {
-      AppLogger.error('[Offline]', 'flush stage/$slug: failed', e);
+      final code = e.statusCode;
+      if (code >= 400 && code < 600) {
+        AppLogger.error(
+          '[Offline]',
+          'flush stage/$slug: rejected (HTTP $code) — dropping pending',
+          e,
+        );
+        _clearPendingStage();
+        try {
+          final fresh = Network(endpoint: '${EndPoints.inspections}/$slug');
+          final r2 = await fresh.response(RoutingUrl.home);
+          if (r2.data.isNotEmpty) {
+            _data.value = Inspection.fromJson(r2.data);
+            await saveToCache();
+          }
+        } catch (_) {
+          /* best-effort refresh */
+        }
+      } else {
+        AppLogger.error('[Offline]', 'flush stage/$slug: failed', e);
+      }
     } catch (e) {
       AppLogger.error('[Offline]', 'flush stage/$slug: error', e);
     }
