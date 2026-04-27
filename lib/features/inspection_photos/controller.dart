@@ -219,6 +219,8 @@ class InspectionPhotosController extends GetxController {
       } finally {
         uploadingIds.remove(photo.id);
         update();
+        // Notify the review page so the photo counter rebuilds.
+        mainController.update();
       }
 
       // Show a pending-sync snackbar when the upload was queued offline so the
@@ -298,6 +300,8 @@ class InspectionPhotosController extends GetxController {
         category.value = savedCategory;
       }
       update();
+      // Notify the review page so the photo counter rebuilds.
+      mainController.update();
     }
     if (synced) {
       FLoader.successSnackBar(

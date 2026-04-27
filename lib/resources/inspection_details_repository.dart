@@ -240,25 +240,28 @@ class InspectionDetailsRepository extends BaseRepository<Inspection> {
       AppLogger.info('[Offline]', 'flush stage/$slug: success');
     } on FNetworkException catch (e) {
       final code = e.statusCode;
-      if (code >= 400 && code < 600) {
-        AppLogger.error(
-          '[Offline]',
-          'flush stage/$slug: rejected (HTTP $code) — dropping pending',
-          e,
-        );
-        _clearPendingStage();
-        try {
-          final fresh = Network(endpoint: '${EndPoints.inspections}/$slug');
-          final r2 = await fresh.response(RoutingUrl.home);
-          if (r2.data.isNotEmpty) {
-            _data.value = Inspection.fromJson(r2.data);
-            await saveToCache();
-          }
-        } catch (_) {
-          /* best-effort refresh */
+      if (code == 0) {
+        // No connection — keep pending so it retries on reconnect.
+        AppLogger.error('[Offline]', 'flush stage/$slug: no connection', e);
+        return;
+      }
+      // Any other error (4xx, 5xx, or unexpected): drop pending and pull
+      // fresh server state so the UI doesn't stay stuck on "will sync".
+      AppLogger.error(
+        '[Offline]',
+        'flush stage/$slug: flush failed (HTTP $code) — dropping pending',
+        e,
+      );
+      _clearPendingStage();
+      try {
+        final fresh = Network(endpoint: '${EndPoints.inspections}/$slug');
+        final r2 = await fresh.response(RoutingUrl.home);
+        if (r2.data.isNotEmpty) {
+          _data.value = Inspection.fromJson(r2.data);
+          await saveToCache();
         }
-      } else {
-        AppLogger.error('[Offline]', 'flush stage/$slug: failed', e);
+      } catch (_) {
+        /* best-effort refresh */
       }
     } catch (e) {
       AppLogger.error('[Offline]', 'flush stage/$slug: error', e);

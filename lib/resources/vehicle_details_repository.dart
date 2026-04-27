@@ -143,27 +143,30 @@ class VehicleDetailsRepository extends BaseRepository<VehicleDetails> {
       }
     } on FNetworkException catch (e) {
       final code = e.statusCode;
-      if (code >= 400 && code < 600) {
-        AppLogger.error(
-          '[Offline]',
-          'flush vehicle/$slug: rejected (HTTP $code) — dropping pending',
-          e,
+      if (code == 0) {
+        // No connection — keep pending so it retries on reconnect.
+        AppLogger.error('[Offline]', 'flush vehicle/$slug: no connection', e);
+        return;
+      }
+      // Any other error (4xx, 5xx, or unexpected): drop pending and pull
+      // fresh server state so the UI doesn't stay stuck on "will sync".
+      AppLogger.error(
+        '[Offline]',
+        'flush vehicle/$slug: flush failed (HTTP $code) — dropping pending',
+        e,
+      );
+      _clearPendingUpdate();
+      try {
+        final fresh = Network(
+          endpoint: '${EndPoints.inspections}/$slug/details',
         );
-        _clearPendingUpdate();
-        try {
-          final fresh = Network(
-            endpoint: '${EndPoints.inspections}/$slug/details',
-          );
-          final r2 = await fresh.response(RoutingUrl.home);
-          if (!r2.hasError && r2.data != null) {
-            _data.value = VehicleDetails.fromJson(r2.data);
-            await saveToCache();
-          }
-        } catch (_) {
-          /* best-effort refresh */
+        final r2 = await fresh.response(RoutingUrl.home);
+        if (!r2.hasError && r2.data != null) {
+          _data.value = VehicleDetails.fromJson(r2.data);
+          await saveToCache();
         }
-      } else {
-        AppLogger.error('[Offline]', 'flush vehicle/$slug: failed', e);
+      } catch (_) {
+        /* best-effort refresh */
       }
     } catch (e) {
       dd('flushPending vehicle error: $e');
