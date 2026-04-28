@@ -45,6 +45,14 @@ class Elm327CommandService {
       // ATZ returns a banner, not OK — accept any non-error response.
       if (cmd == Elm327Commands.reset) continue;
 
+      // 0100 returns the supported-PIDs bitmask (e.g. "41 00 BE 1F B8 13"),
+      // not OK. Its purpose at init time is to *trigger* the ATSP0 protocol
+      // search — `_runOne` already throws ElmEcuConnectionException if the
+      // chip reports UNABLE TO CONNECT / BUS INIT / etc., so reaching this
+      // point means the search succeeded. We don't validate the bitmask
+      // because any ECU that answers Mode 01 is "alive enough" for Mode 03.
+      if (cmd == Elm327Commands.pidsSupported01) continue;
+
       if (!Elm327Parser.isOk(response)) {
         throw ElmInitException(cmd, response);
       }
@@ -113,6 +121,14 @@ class Elm327CommandService {
       );
       final cleaned = _stripEcho(body, cmd);
       AppLogger.log('[OBD ELM]', 'RX: ${_oneLine(cleaned)}');
+
+      // ELM-side ECU comms failure (UNABLE TO CONNECT, BUS INIT, etc.).
+      // Surface as a typed exception so the controller can render a
+      // car-specific snackbar instead of a generic "no codes found".
+      if (Elm327Parser.isConnectionError(cleaned)) {
+        throw ElmEcuConnectionException(cmd, cleaned.trim());
+      }
+
       return cleaned.trim();
     } finally {
       await sub.cancel();

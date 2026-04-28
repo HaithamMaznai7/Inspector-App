@@ -24,3 +24,15 @@ class ElmTimeoutException extends ElmException {
   final Duration timeout;
   const ElmTimeoutException(this.timeout) : super('No response within timeout');
 }
+
+/// The ELM327 reported a vehicle-side comms error (e.g. `UNABLE TO CONNECT`,
+/// `BUS INIT...ERROR`, `CAN ERROR`, `BUS BUSY`). The BLE/SPP link is fine and
+/// the chip itself is responsive — but it can't talk to the car ECU. Distinct
+/// from [ElmInitException] because the cure is "check the car / OBD port",
+/// not "the adapter is broken".
+class ElmEcuConnectionException extends ElmException {
+  final String command;
+  final String response;
+  const ElmEcuConnectionException(this.command, this.response)
+      : super('ELM could not reach ECU on "$command": "$response"');
+}

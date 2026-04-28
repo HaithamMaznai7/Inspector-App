@@ -14,6 +14,35 @@ class Elm327Parser {
   static bool isNoData(String response) =>
       _normalize(response).toUpperCase().contains('NO DATA');
 
+  /// True if [response] is one of the documented ELM327 vehicle-comms errors.
+  /// These signal that the chip itself is healthy but it could not talk to
+  /// the car's ECU — e.g. ignition off, OBD port not seated, ECU asleep, or
+  /// an unsupported protocol on this vehicle.
+  ///
+  /// Distinct from [isNoData], which is a *successful* "ECU answered with
+  /// zero DTCs" reply. Distinct from `OK`, which is a successful AT command.
+  ///
+  /// The list is from the ELM327 datasheet (Elm Electronics, rev. 1.4):
+  ///   - `UNABLE TO CONNECT` — auto-detect could not find a responding ECU.
+  ///   - `BUS INIT...ERROR`  — ISO 9141 / 14230 init failed (K-line cars).
+  ///   - `BUS ERROR`         — generic CAN/J1850 frame error.
+  ///   - `BUS BUSY`          — bus is too busy to insert a frame.
+  ///   - `CAN ERROR`         — CAN-specific arbitration / framing error.
+  ///   - `STOPPED`           — chip was interrupted mid-search.
+  ///   - bare `?`            — the chip didn't recognise the command we sent
+  ///                           (only matches a `?` standing alone, so we
+  ///                           don't false-positive on a `?` inside data).
+  static bool isConnectionError(String response) {
+    final n = _normalize(response).toUpperCase();
+    if (n == '?') return true;
+    return n.contains('UNABLE TO CONNECT') ||
+        n.contains('BUS INIT') ||
+        n.contains('BUS ERROR') ||
+        n.contains('BUS BUSY') ||
+        n.contains('CAN ERROR') ||
+        n.contains('STOPPED');
+  }
+
   /// Parses a Mode 03 (read DTCs) response into a list of DTC strings like
   /// `"P0123"`. Returns an empty list for `NO DATA`, `43 00`, or unparseable
   /// input. Skips zero-padded entries.

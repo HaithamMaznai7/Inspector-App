@@ -6,6 +6,7 @@ import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/features/inspection_obd/components/dialog.dart';
 import 'package:fahis_inspector/features/inspection_obd/components/pdf_viewer_screen.dart';
 import 'package:fahis_inspector/models/obd_code.dart';
+import 'package:fahis_inspector/obd_ble/protocol/errors.dart';
 import 'package:fahis_inspector/obd_ble/services/elm327_command_service.dart';
 import 'package:fahis_inspector/obd_ble/services/obd_ble_connection_service.dart';
 import 'package:fahis_inspector/obd_ble/ui/obd_device_scan_page.dart';
@@ -183,7 +184,13 @@ class InspectionObdController extends GetxController {
       await readCodesFromDevice();
     } catch (e) {
       _log('connectToDevice – failed: $e');
-      FLoader.errorSnackBar(title: InspectionPage.obdConnectionFailed.tr);
+      // ECU comms failures (UNABLE TO CONNECT, BUS INIT, etc.) get a distinct
+      // message — the BLE/SPP link is fine, the issue is between the adapter
+      // and the car. Anything else stays on the generic "connection failed".
+      final title = e is ElmEcuConnectionException
+          ? InspectionPage.obdEcuConnectFailed.tr
+          : InspectionPage.obdConnectionFailed.tr;
+      FLoader.errorSnackBar(title: title);
       await disconnectDevice();
     }
   }
@@ -239,7 +246,12 @@ class InspectionObdController extends GetxController {
       }
     } catch (e) {
       _log('readCodesFromDevice – error: $e');
-      FLoader.errorSnackBar(title: InspectionPage.obdActionError.tr);
+      // Surface ECU comms failures specifically — same rationale as
+      // connectToDevice's catch: link is fine, car-side is the problem.
+      final title = e is ElmEcuConnectionException
+          ? InspectionPage.obdEcuConnectFailed.tr
+          : InspectionPage.obdActionError.tr;
+      FLoader.errorSnackBar(title: title);
     } finally {
       isReadingFromDevice.value = false;
     }

@@ -231,6 +231,8 @@ class English {
     InspectionPage.obdConnecting: 'Connecting…',
     InspectionPage.obdReadingCodes: 'Reading codes…',
     InspectionPage.obdConnectionFailed: 'Connection failed',
+    InspectionPage.obdEcuConnectFailed:
+        'Couldn\'t reach the vehicle ECU. Make sure the engine is running and the OBD-II port is properly seated.',
     InspectionPage.obdDeviceDisconnected: 'Device disconnected',
     InspectionPage.obdReconnect: 'Reconnect',
     InspectionPage.obdNoCodesFromDevice: 'No error codes found',

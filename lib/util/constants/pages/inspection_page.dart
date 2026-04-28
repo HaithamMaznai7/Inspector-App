@@ -145,6 +145,7 @@ class InspectionPage {
   static const String obdConnecting = 'obdConnecting';
   static const String obdReadingCodes = 'obdReadingCodes';
   static const String obdConnectionFailed = 'obdConnectionFailed';
+  static const String obdEcuConnectFailed = 'obdEcuConnectFailed';
   static const String obdDeviceDisconnected = 'obdDeviceDisconnected';
   static const String obdReconnect = 'obdReconnect';
   static const String obdNoCodesFromDevice = 'obdNoCodesFromDevice';

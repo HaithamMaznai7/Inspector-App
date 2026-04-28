@@ -224,6 +224,8 @@ class Arabic {
     InspectionPage.obdConnecting: 'جارٍ الاتصال…',
     InspectionPage.obdReadingCodes: 'جارٍ قراءة الأكواد…',
     InspectionPage.obdConnectionFailed: 'فشل الاتصال',
+    InspectionPage.obdEcuConnectFailed:
+        'تعذّر الاتصال بوحدة التحكم في السيارة. تأكد من تشغيل المحرك ومن تثبيت منفذ OBD-II بشكل صحيح.',
     InspectionPage.obdDeviceDisconnected: 'تم قطع الجهاز',
     InspectionPage.obdReconnect: 'إعادة الاتصال',
     InspectionPage.obdNoCodesFromDevice: 'لم يتم العثور على أكواد أعطال',
