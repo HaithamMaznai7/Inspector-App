@@ -24,6 +24,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_blue_plus: ^2.2.1
+  flutter_bluetooth_serial: ^0.4.0
   flutter_image_compress: ^2.4.0
   flutter_native_splash: ^2.4.6
   flutter_secure_storage: ^10.0.0

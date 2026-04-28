@@ -247,6 +247,7 @@ class Arabic {
     InspectionPage.obdScanRecommended: 'موصى به',
     InspectionPage.obdFromDevice: 'من الجهاز',
     InspectionPage.obdAddedCodesList: 'الأكواد المضافة',
+    InspectionPage.obdPairNewDevice: 'إقران جهاز',
     InspectionPage.stepLabel: 'الخطوة @step',
     InspectionPage.submitValidationTitle: 'لا يمكن الإرسال',
     InspectionPage.submitValidationMsg: 'يرجى إكمال جميع الخطوات قبل الإرسال:',

@@ -115,9 +115,16 @@ class InspectionObdController extends GetxController {
     super.onClose();
   }
 
-  /// Opens the BLE scan picker as a **bottom sheet** (matches paint gauge UX)
-  /// and connects to the device the inspector selects.
+  /// Opens the bonded-device picker as a **bottom sheet** (matches paint
+  /// gauge UX) and connects to the device the inspector selects.
+  ///
+  /// OBD adapter connection uses Bluetooth Classic SPP, which is Android-only
+  /// for non-MFi devices. The view already hides the connect button on iOS,
+  /// but this guard is defensive — if anything else triggers this path, we
+  /// short-circuit cleanly instead of throwing inside the Classic stack.
   Future<void> pickAndConnectDevice() async {
+    if (!Platform.isAndroid) return;
+
     final ctx = Get.context;
     if (ctx == null) return;
 
@@ -170,6 +177,10 @@ class InspectionObdController extends GetxController {
 
       bleState.value = ObdBleConnectionState.connected;
       _log('connectToDevice – ready');
+
+      // Connecting an OBD reader is itself the user's request to read codes —
+      // skip the extra "Read from device" tap and fetch immediately.
+      await readCodesFromDevice();
     } catch (e) {
       _log('connectToDevice – failed: $e');
       FLoader.errorSnackBar(title: InspectionPage.obdConnectionFailed.tr);

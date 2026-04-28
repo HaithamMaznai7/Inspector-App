@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:fahis_inspector/util/helpers/logger.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
 /// Connection state exposed to consumers. Same shape as the paint gauge's
 /// state enum so the controller pattern is identical.
@@ -11,25 +12,34 @@ enum ObdBleConnectionState {
   connected,
   error,
 
-  /// Device dropped the link unexpectedly (e.g. LINK_SUPERVISION_TIMEOUT).
+  /// Device dropped the link unexpectedly (e.g. socket closed by peer).
   /// Distinct from [disconnected] which is user-initiated via [disconnect()].
   lostConnection,
 }
 
-/// Encapsulates the BLE lifecycle for a Veepeak / ELM327 OBD adapter.
+/// Encapsulates the Bluetooth Classic (SPP / RFCOMM) lifecycle for a Veepeak
+/// or other ELM327 OBD-II adapter on Android.
 ///
-/// Connects to a Veepeak / ELM327 OBD adapter and exposes the first NOTIFY
-/// + WRITE characteristic pair the device advertises.
+/// Why Classic and not BLE: most consumer ELM327 adapters (Veepeak Mini, older
+/// OBDCheck BLE, no-name clones) only wire the ELM327 UART to the Classic
+/// Bluetooth side, even when they advertise a BLE GATT profile. On the BLE
+/// side every GATT write returns `GATT_SUCCESS` but the bytes never reach the
+/// ELM327 chip and no notifications fire — the BLE GATT server is essentially
+/// a stub. CarScanner, Torque, and the working reference apps all use Classic
+/// SPP for this reason. iOS callers get no transport here; the controller is
+/// expected to gate the "connect" path with `Platform.isAndroid` and route
+/// iOS users to manual entry.
+///
+/// The class deliberately keeps its old name and public API so the rest of
+/// the app (controller, ELM327 service, UI) is untouched by the transport
+/// swap. Internally it owns a single SPP socket via [BluetoothConnection].
 class ObdBleConnectionService {
-  BluetoothDevice? _device;
-  BluetoothCharacteristic? _notifyChar;
-  BluetoothCharacteristic? _writeChar;
-  final List<StreamSubscription<List<int>>> _subscriptions = [];
+  BluetoothConnection? _connection;
+  StreamSubscription<Uint8List>? _inputSub;
 
   // True while the user has explicitly called disconnect() — prevents the
-  // device.connectionState listener from treating it as a lost link.
+  // socket's onDone callback from being treated as a lost link.
   bool _intentionalDisconnect = false;
-  StreamSubscription<BluetoothConnectionState>? _connectionStateSub;
 
   final _stateController = StreamController<ObdBleConnectionState>.broadcast();
   final _dataController = StreamController<List<int>>.broadcast();
@@ -37,108 +47,108 @@ class ObdBleConnectionService {
   Stream<ObdBleConnectionState> get connectionState => _stateController.stream;
   Stream<List<int>> get notifications => _dataController.stream;
 
-  bool get canWrite => _writeChar != null;
+  bool get canWrite => _connection?.isConnected ?? false;
 
   ObdBleConnectionState _currentState = ObdBleConnectionState.disconnected;
   ObdBleConnectionState get currentState => _currentState;
 
-  Future<void> connect(String deviceId) async {
+  /// Opens an RFCOMM SPP connection to [deviceMac] using the well-known
+  /// Serial Port Profile UUID (`00001101-…`). The remote device must already
+  /// be bonded — pairing happens through the Android Bluetooth settings, not
+  /// in-app. Throws on failure (caller's `try/catch` already handles the
+  /// snackbar + disconnect).
+  Future<void> connect(String deviceMac) async {
     _setState(ObdBleConnectionState.connecting);
 
     try {
-      _device = BluetoothDevice.fromId(deviceId);
-      AppLogger.log('[OBD BLE]', 'Connecting to $deviceId');
+      AppLogger.log('[OBD BT]', 'Connecting to $deviceMac');
 
-      await _device!
-          .connect(timeout: const Duration(seconds: 15), license: License.free)
-          .catchError((e) {
-            AppLogger.error('[OBD BLE]', 'Connection error', e);
-            throw e;
-          });
+      _connection = await BluetoothConnection.toAddress(deviceMac);
+      AppLogger.log('[OBD BT]', 'SPP socket open');
 
-      AppLogger.log('[OBD BLE]', 'Connected to ${_device!.platformName}');
+      _intentionalDisconnect = false;
+      _inputSub = _connection!.input!.listen(
+        _onIncomingBytes,
+        onDone: _onSocketClosed,
+        onError: (Object e) {
+          AppLogger.error('[OBD BT]', 'Socket stream error', e);
+          if (!_intentionalDisconnect) {
+            _setState(ObdBleConnectionState.lostConnection);
+          }
+        },
+        cancelOnError: false,
+      );
 
-      try {
-        await _device!.requestMtu(247);
-      } catch (e) {
-        AppLogger.log('[OBD BLE]', 'MTU request failed (not critical): $e');
-      }
-
-      final services = await _device!.discoverServices();
-      _findCharacteristics(services);
-
-      if (_notifyChar == null || _writeChar == null) {
-        AppLogger.error(
-          '[OBD BLE]',
-          'No NOTIFY+WRITE characteristic pair found',
-          'characteristics not discovered',
-        );
-        _setState(ObdBleConnectionState.error);
-        return;
-      }
-
-      _connectionStateSub = _device!.connectionState.listen((state) {
-        if (state == BluetoothConnectionState.disconnected &&
-            !_intentionalDisconnect &&
-            _currentState == ObdBleConnectionState.connected) {
-          AppLogger.log('[OBD BLE]', 'Device dropped connection unexpectedly');
-          _notifyChar = null;
-          _writeChar = null;
-          _setState(ObdBleConnectionState.lostConnection);
-        }
-      });
-
-      await _subscribeToNotifications();
       _setState(ObdBleConnectionState.connected);
     } catch (e) {
-      AppLogger.error('[OBD BLE]', 'Connection failed', e);
+      AppLogger.error('[OBD BT]', 'Connection failed', e);
       _setState(ObdBleConnectionState.error);
       rethrow;
     }
   }
 
+  /// Writes [data] to the SPP socket and waits until the OS confirms the
+  /// bytes have been flushed. Used by the ELM327 service for `ATZ\r` and
+  /// every other command — serialization is enforced upstream.
   Future<void> write(List<int> data) async {
-    if (_writeChar == null) {
-      throw StateError('No write characteristic available');
+    final connection = _connection;
+    if (connection == null || !connection.isConnected) {
+      throw StateError('SPP socket not connected');
     }
-    final withResponse = _writeChar!.properties.write;
-    await _writeChar!.write(data, withoutResponse: !withResponse);
+    connection.output.add(Uint8List.fromList(data));
+    await connection.output.allSent;
   }
 
   Future<void> disconnect() async {
     _intentionalDisconnect = true;
 
-    await _connectionStateSub?.cancel();
-    _connectionStateSub = null;
-
-    for (final sub in _subscriptions) {
-      await sub.cancel();
-    }
-    _subscriptions.clear();
+    await _inputSub?.cancel();
+    _inputSub = null;
 
     try {
-      await _device?.disconnect();
+      await _connection?.close();
     } catch (e) {
-      AppLogger.log('[OBD BLE]', 'Disconnect error (non-critical): $e');
+      AppLogger.log('[OBD BT]', 'Disconnect error (non-critical): $e');
     }
 
-    _device = null;
-    _notifyChar = null;
-    _writeChar = null;
+    _connection = null;
     _setState(ObdBleConnectionState.disconnected);
   }
 
   void dispose() {
-    _connectionStateSub?.cancel();
-    for (final sub in _subscriptions) {
-      sub.cancel();
-    }
-    _subscriptions.clear();
+    _inputSub?.cancel();
+    _inputSub = null;
     _stateController.close();
     _dataController.close();
   }
 
   // ── Private ─────────────────────────────────────────────────────────────
+
+  void _onIncomingBytes(Uint8List bytes) {
+    if (bytes.isEmpty) return;
+
+    // Raw byte trace mirrors the BLE-era log so capture parity stays
+    // intact for support; ELM327 responses are ASCII so showing both forms
+    // makes framing/CR-LF bugs immediately obvious.
+    AppLogger.log(
+      '[OBD BT]',
+      'RX bytes (${bytes.length}): hex=${_hex(bytes)} '
+      'ascii="${_ascii(bytes)}"',
+    );
+
+    if (!_dataController.isClosed) {
+      _dataController.add(bytes);
+    }
+  }
+
+  void _onSocketClosed() {
+    AppLogger.log('[OBD BT]', 'SPP socket closed (intentional='
+        '$_intentionalDisconnect)');
+    if (_intentionalDisconnect) return;
+    if (_currentState == ObdBleConnectionState.connected) {
+      _setState(ObdBleConnectionState.lostConnection);
+    }
+  }
 
   void _setState(ObdBleConnectionState state) {
     _currentState = state;
@@ -147,35 +157,24 @@ class ObdBleConnectionService {
     }
   }
 
-  void _findCharacteristics(List<BluetoothService> services) {
-    for (final service in services) {
-      for (final char in service.characteristics) {
-        if (_notifyChar == null &&
-            (char.properties.notify || char.properties.indicate)) {
-          _notifyChar = char;
-          AppLogger.log('[OBD BLE]', 'Notify char: ${char.uuid}');
-        }
-        if (_writeChar == null &&
-            (char.properties.write || char.properties.writeWithoutResponse)) {
-          _writeChar = char;
-          AppLogger.log('[OBD BLE]', 'Write char: ${char.uuid}');
-        }
+  static String _hex(List<int> bytes) =>
+      bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ');
+
+  /// Renders printable ASCII as-is and escapes control bytes so a single log
+  /// line stays readable in `flutter logs` (matches the BLE service format).
+  static String _ascii(List<int> bytes) {
+    final sb = StringBuffer();
+    for (final b in bytes) {
+      if (b == 0x0D) {
+        sb.write(r'\r');
+      } else if (b == 0x0A) {
+        sb.write(r'\n');
+      } else if (b >= 0x20 && b <= 0x7E) {
+        sb.writeCharCode(b);
+      } else {
+        sb.write('\\x${b.toRadixString(16).padLeft(2, '0')}');
       }
-      if (_notifyChar != null && _writeChar != null) break;
     }
-  }
-
-  Future<void> _subscribeToNotifications() async {
-    if (_notifyChar == null) return;
-
-    await _notifyChar!.setNotifyValue(true);
-
-    final sub = _notifyChar!.lastValueStream.listen((bytes) {
-      if (bytes.isEmpty) return;
-      if (!_dataController.isClosed) {
-        _dataController.add(bytes);
-      }
-    });
-    _subscriptions.add(sub);
+    return sb.toString();
   }
 }

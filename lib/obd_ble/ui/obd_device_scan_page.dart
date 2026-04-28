@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -6,30 +5,31 @@ import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-/// Lightweight description of a discovered BLE device. Returned to the
-/// caller via `Get.back(result: BleObdDevice)` when the user taps an entry.
+/// Lightweight description of a paired Bluetooth Classic device. Returned to
+/// the caller via `Get.back(result: BleObdDevice)` when the user taps an
+/// entry. The class name is kept from the BLE era to avoid cascading renames
+/// — internally this is now a Classic SPP device.
 class BleObdDevice {
   final String mac;
   final String name;
+
+  /// Bluetooth Classic doesn't surface RSSI from the bonded-device list, so
+  /// this stays at 0. Kept on the model only because callers reference it.
   final int rssi;
-  const BleObdDevice({
-    required this.mac,
-    required this.name,
-    required this.rssi,
-  });
+
+  const BleObdDevice({required this.mac, required this.name, this.rssi = 0});
 }
 
-/// Veepeak / ELM327 scan picker rendered as the **body of a bottom sheet**
-/// (matches the paint gauge UX). Connection itself is owned by
-/// [InspectionObdController] so the OBD screen can show its own progress +
-/// error states.
-///
-/// Tapping a device pops the sheet with `Get.back(result: BleObdDevice)`.
+/// Bonded-device picker rendered as the **body of a bottom sheet**. We list
+/// devices the user has already paired through Android Bluetooth settings —
+/// SPP requires bonding, so live discovery would only confuse the inspector.
+/// A "Pair new device" tile opens the system Bluetooth settings so the user
+/// can complete pairing and come back.
 class ObdDeviceScanPage extends StatefulWidget {
   const ObdDeviceScanPage({super.key});
 
@@ -38,140 +38,132 @@ class ObdDeviceScanPage extends StatefulWidget {
 }
 
 class _ObdDeviceScanPageState extends State<ObdDeviceScanPage> {
-  final Map<String, BleObdDevice> _seen = {};
-  bool _isScanning = false;
-  StreamSubscription? _scanSub;
+  List<BleObdDevice> _bonded = const [];
+  bool _isLoading = true;
+  String? _errorKey;
 
   @override
   void initState() {
     super.initState();
-    // Auto-start scanning when the sheet opens — same UX as paint gauge.
-    Future.microtask(_startScan);
+    Future.microtask(_loadBonded);
   }
 
-  @override
-  void dispose() {
-    _scanSub?.cancel();
-    if (_isScanning) FlutterBluePlus.stopScan();
-    super.dispose();
+  bool _isVeepeak(BleObdDevice d) => d.name.toUpperCase().contains('VEEPEAK');
+
+  /// Soft-detect adapters likely to be ELM327. Used purely for sort priority
+  /// and the "Recommended" pill — never blocks selection.
+  bool _looksLikeObd(BleObdDevice d) {
+    final n = d.name.toUpperCase();
+    return n.contains('OBD') ||
+        n.contains('ELM') ||
+        n.contains('VEEPEAK') ||
+        n.contains('VLINKER');
   }
 
-  bool _hasName(BleObdDevice d) => d.name != d.mac;
+  Future<bool> _ensurePermissions() async {
+    if (!Platform.isAndroid) return false;
 
-  Future<void> _requestPermissions() async {
-    if (!Platform.isAndroid) return;
+    // Android 12+ uses BLUETOOTH_CONNECT for socket connections to bonded
+    // devices. Older devices fall through to legacy BLUETOOTH (granted at
+    // install time) — the Permission API silently returns granted for those.
+    final connect = await Permission.bluetoothConnect.request();
+    if (connect.isGranted) return true;
 
-    if (await Permission.bluetoothScan.request().isGranted &&
-        await Permission.bluetoothConnect.request().isGranted) {
-      return;
+    if (mounted) {
+      setState(() {
+        _errorKey = InspectionPage.obdBlePermissionDenied;
+      });
     }
-    if (await Permission.location.request().isGranted) return;
-    _showSnackBar(InspectionPage.obdBlePermissionDenied.tr, FColors.error);
+    return false;
   }
 
-  Future<void> _startScan() async {
-    await _requestPermissions();
-
-    final supported = await FlutterBluePlus.isSupported;
-    if (!supported) {
-      _showSnackBar(InspectionPage.obdBleNotSupported.tr, FColors.error);
-      return;
-    }
-    final adapterState = await FlutterBluePlus.adapterState.first;
-    if (adapterState != BluetoothAdapterState.on) {
-      _showSnackBar(InspectionPage.obdBleOff.tr, FColors.warning);
-      return;
-    }
-
+  Future<void> _loadBonded() async {
     if (!mounted) return;
     setState(() {
-      _isScanning = true;
-      _seen.clear();
+      _isLoading = true;
+      _errorKey = null;
     });
 
-    await FlutterBluePlus.stopScan();
-    _scanSub?.cancel();
-
-    _scanSub = FlutterBluePlus.scanResults.listen((results) {
-      bool changed = false;
-      for (final r in results) {
-        final d = r.device;
-        final adv = r.advertisementData;
-        final name = d.platformName.isNotEmpty
-            ? d.platformName
-            : adv.advName.isNotEmpty
-            ? adv.advName
-            : d.remoteId.str;
-        _seen[d.remoteId.str] = BleObdDevice(
-          mac: d.remoteId.str,
-          name: name,
-          rssi: r.rssi,
-        );
-        changed = true;
-      }
-      if (changed && mounted) setState(() {});
-    });
+    if (!await _ensurePermissions()) {
+      if (mounted) setState(() => _isLoading = false);
+      return;
+    }
 
     try {
-      await FlutterBluePlus.startScan();
-    } catch (_) {
+      final isOn = await FlutterBluetoothSerial.instance.isEnabled ?? false;
+      if (!isOn) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _errorKey = InspectionPage.obdBleOff;
+          });
+        }
+        return;
+      }
+
+      final devices = await FlutterBluetoothSerial.instance.getBondedDevices();
+      final mapped = devices
+          .map(
+            (d) => BleObdDevice(
+              mac: d.address,
+              name: (d.name ?? '').isNotEmpty ? d.name! : d.address,
+            ),
+          )
+          .toList()
+        ..sort((a, b) {
+          if (_isVeepeak(a) != _isVeepeak(b)) return _isVeepeak(a) ? -1 : 1;
+          if (_looksLikeObd(a) != _looksLikeObd(b)) {
+            return _looksLikeObd(a) ? -1 : 1;
+          }
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        });
+
       if (!mounted) return;
-      _showSnackBar(InspectionPage.obdBleOff.tr, FColors.warning);
-      setState(() => _isScanning = false);
+      setState(() {
+        _bonded = mapped;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorKey = InspectionPage.obdBleNotSupported;
+        });
+      }
     }
   }
 
-  Future<void> _stopScan() async {
-    _scanSub?.cancel();
-    _scanSub = null;
-    await FlutterBluePlus.stopScan();
-    if (mounted) setState(() => _isScanning = false);
+  Future<void> _openSystemBluetoothSettings() async {
+    try {
+      await FlutterBluetoothSerial.instance.openSettings();
+    } catch (_) {
+      // Non-critical: a few OEM ROMs reject the intent. The inspector can
+      // pair via their own Bluetooth UI and come back.
+    }
   }
 
-  Future<void> _selectDevice(BleObdDevice device) async {
-    if (_isScanning) await _stopScan();
+  void _selectDevice(BleObdDevice device) {
     if (!mounted) return;
     Get.back<BleObdDevice>(result: device);
   }
 
-  void _showSnackBar(String message, Color color) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final named = _seen.values.where(_hasName).toList()
-      ..sort((a, b) => b.rssi.compareTo(a.rssi));
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // _Header(
-        //   isScanning: _isScanning,
-        //   onScanToggle: _isScanning ? _stopScan : _startScan,
-        // ),
-        _buildHeader(),
-        Expanded(child: _buildBody(named)),
+        _Header(
+          isLoading: _isLoading,
+          onRefresh: _loadBonded,
+          onOpenSettings: _openSystemBluetoothSettings,
+        ),
+        Expanded(child: _buildBody()),
       ],
     );
   }
 
-  Widget _buildBody(List<BleObdDevice> named) {
-    if (!_isScanning && _seen.isEmpty) {
-      return _EmptyState(
-        icon: Iconsax.bluetooth,
-        title: InspectionPage.obdScanEmptyTitle.tr,
-        subtitle: InspectionPage.obdScanEmptyHint.tr,
-      );
-    }
-    if (_isScanning && _seen.isEmpty) {
+  Widget _buildBody() {
+    if (_isLoading) {
       return _EmptyState(
         icon: Iconsax.bluetooth_2,
         title: InspectionPage.obdScanScanningTitle.tr,
@@ -180,43 +172,122 @@ class _ObdDeviceScanPageState extends State<ObdDeviceScanPage> {
       );
     }
 
+    if (_errorKey != null) {
+      return _EmptyState(
+        icon: Iconsax.bluetooth_2,
+        title: _errorKey!.tr,
+        subtitle: InspectionPage.obdScanEmptyHint.tr,
+      );
+    }
+
+    if (_bonded.isEmpty) {
+      return _EmptyState(
+        icon: Iconsax.bluetooth,
+        title: InspectionPage.obdScanEmptyTitle.tr,
+        subtitle: InspectionPage.obdScanEmptyHint.tr,
+      );
+    }
+
     return ListView(
       padding: const EdgeInsets.only(bottom: FSizes.xl),
       children: [
-        if (named.isNotEmpty) ...[
-          _SectionHeader(
-            label: InspectionPage.obdScanSectionNamed.tr,
-            count: named.length,
+        _SectionHeader(
+          label: InspectionPage.obdScanSectionNamed.tr,
+          count: _bonded.length,
+        ),
+        ..._bonded.map(
+          (d) => _DeviceTile(
+            device: d,
+            isVeepeak: _isVeepeak(d),
+            onTap: () => _selectDevice(d),
           ),
-          ...named.map(
-            (d) => _DeviceTile(device: d, onTap: () => _selectDevice(d)),
-          ),
-        ],
+        ),
       ],
     );
   }
+}
 
-  Widget _buildHeader() {
+// ── Header (sheet drag handle + title + refresh / open-settings buttons) ───
+
+class _Header extends StatelessWidget {
+  const _Header({
+    required this.isLoading,
+    required this.onRefresh,
+    required this.onOpenSettings,
+  });
+
+  final bool isLoading;
+  final VoidCallback onRefresh;
+  final VoidCallback onOpenSettings;
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(FSizes.md, FSizes.md, FSizes.md, 0),
+      padding: const EdgeInsets.fromLTRB(FSizes.md, FSizes.sm, FSizes.md, 0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            InspectionPage.obdScanTitle.tr,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          Container(
+            width: FSizes.iconLg,
+            height: FSizes.dividerHeight * 2,
+            margin: const EdgeInsets.only(bottom: FSizes.sm),
+            decoration: BoxDecoration(
+              color: FColors.darkGrey.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(FSizes.dividerHeight),
+            ),
           ),
-          const SizedBox(height: FSizes.xxs),
-          Text(
-            InspectionPage.obdScanScanningHint.tr,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: FColors.darkGrey),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      InspectionPage.obdScanTitle.tr,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: FSizes.xxs),
+                    Text(
+                      InspectionPage.obdScanEmptyHint.tr,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: FColors.darkGrey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                tooltip: InspectionPage.obdScanStart.tr,
+                onPressed: isLoading ? null : onRefresh,
+                icon: const Icon(
+                  Icons.refresh_rounded,
+                  color: FColors.primaryColor,
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: onOpenSettings,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: FColors.primaryColor,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+                  ),
+                ),
+                icon: const Icon(Icons.settings_bluetooth, size: FSizes.iconSm),
+                label: Text(
+                  InspectionPage.obdPairNewDevice.tr,
+                  style: const TextStyle(
+                    fontSize: FSizes.fontSizeSm,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: FSizes.sm),
-          const Divider(),
+          const Divider(height: 1),
         ],
       ),
     );
@@ -270,103 +341,91 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-// ── Device tile ─────────────────────────────────────────────────────────────
-
 class _DeviceTile extends StatelessWidget {
   final BleObdDevice device;
-
+  final bool isVeepeak;
   final VoidCallback onTap;
-  const _DeviceTile({required this.device, required this.onTap});
+  const _DeviceTile({
+    required this.device,
+    required this.isVeepeak,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isNamed = device.name != device.mac;
-    final accent = isNamed ? FColors.primaryColor : FColors.darkGrey;
-
-    return ListTile(
-      leading: CircleAvatar(
-        radius: FSizes.iconInlineSm,
-        backgroundColor: accent.withValues(alpha: 0.12),
-        child: Icon(Iconsax.bluetooth, size: FSizes.iconSm, color: accent),
-      ),
-      title: Row(
-        children: [
-          Flexible(
-            child: Text(
-              isNamed ? device.name : InspectionPage.obdScanUnknownDevice.tr,
-              style: TextStyle(
-                fontWeight: isNamed ? FontWeight.w600 : FontWeight.normal,
-                fontSize: FSizes.fontSizeSm,
+    return Container(
+      color: isVeepeak
+          ? FColors.primaryColor.withValues(alpha: 0.06)
+          : Colors.transparent,
+      child: ListTile(
+        leading: CircleAvatar(
+          radius: FSizes.iconInlineSm,
+          backgroundColor: FColors.primaryColor.withValues(alpha: 0.12),
+          child: const Icon(
+            Iconsax.bluetooth,
+            size: FSizes.iconSm,
+            color: FColors.primaryColor,
+          ),
+        ),
+        title: Row(
+          children: [
+            Flexible(
+              child: Text(
+                device.name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: FSizes.fontSizeSm,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
-              overflow: TextOverflow.ellipsis,
             ),
-          ),
-        ],
+            if (isVeepeak) ...[
+              const SizedBox(width: FSizes.xs),
+              const _RecommendedPill(),
+            ],
+          ],
+        ),
+        subtitle: Text(
+          device.mac,
+          style: Theme.of(
+            context,
+          ).textTheme.labelSmall?.copyWith(color: FColors.darkGrey),
+        ),
+        trailing: const Icon(
+          Icons.chevron_right_rounded,
+          color: FColors.darkGrey,
+        ),
+        onTap: onTap,
       ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _SignalBars(rssi: device.rssi),
-          const SizedBox(width: FSizes.xs),
-          Text(
-            '${device.rssi} dBm',
-            style: Theme.of(
-              context,
-            ).textTheme.labelSmall?.copyWith(color: FColors.darkGrey),
-          ),
-        ],
-      ),
-      onTap: onTap,
     );
   }
 }
 
-// ── Signal strength ─────────────────────────────────────────────────────────
-
-class _SignalBars extends StatelessWidget {
-  final int rssi;
-  const _SignalBars({required this.rssi});
+class _RecommendedPill extends StatelessWidget {
+  const _RecommendedPill();
 
   @override
   Widget build(BuildContext context) {
-    final isDark = FHelper.isDarkMode(context);
-    final bars = rssi >= -60
-        ? 4
-        : rssi >= -70
-        ? 3
-        : rssi >= -80
-        ? 2
-        : 1;
-    final color = rssi >= -70
-        ? FColors.success
-        : rssi >= -80
-        ? FColors.warning
-        : FColors.error;
-    final inactive = (isDark ? FColors.light : FColors.darkGrey).withValues(
-      alpha: 0.25,
-    );
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: List.generate(
-        4,
-        (i) => Container(
-          width: FSizes.xs,
-          height: FSizes.xs + (i * FSizes.xs),
-          margin: const EdgeInsets.symmetric(horizontal: FSizes.dividerHeight),
-          decoration: BoxDecoration(
-            color: i < bars ? color : inactive,
-            borderRadius: BorderRadius.circular(FSizes.dividerHeight),
-          ),
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: FSizes.sm,
+        vertical: FSizes.xxs,
+      ),
+      decoration: BoxDecoration(
+        color: FColors.primaryColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+      ),
+      child: Text(
+        InspectionPage.obdScanRecommended.tr,
+        style: const TextStyle(
+          fontSize: FSizes.fontSizeXs,
+          fontWeight: FontWeight.w700,
+          color: FColors.primaryColor,
         ),
       ),
     );
   }
 }
-
-// ── Empty / scanning state ──────────────────────────────────────────────────
 
 class _EmptyState extends StatelessWidget {
   final IconData icon;

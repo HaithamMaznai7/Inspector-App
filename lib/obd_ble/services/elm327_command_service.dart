@@ -22,8 +22,10 @@ class Elm327CommandService {
   Elm327CommandService({
     required this.writeBytes,
     required this.notifications,
-    this.commandTimeout = const Duration(seconds: 5),
-    this.resetTimeout = const Duration(seconds: 3),
+    this.commandTimeout = const Duration(seconds: 20),
+    this.resetTimeout = const Duration(seconds: 20),
+    // this.commandTimeout = const Duration(seconds: 5),
+    // this.resetTimeout = const Duration(seconds: 3),
   });
 
   // Lock so only one command can be in-flight at a time.
@@ -34,8 +36,9 @@ class Elm327CommandService {
   /// wait for the prompt.
   Future<void> initialize() async {
     for (final cmd in Elm327Commands.initSequence) {
-      final timeout =
-          cmd == Elm327Commands.reset ? resetTimeout : commandTimeout;
+      final timeout = cmd == Elm327Commands.reset
+          ? resetTimeout
+          : commandTimeout;
       final response = await sendCommand(cmd, timeout: timeout);
 
       // ATZ returns a banner, not OK — accept any non-error response.
@@ -101,9 +104,12 @@ class Elm327CommandService {
       AppLogger.log('[OBD ELM]', 'TX: $cmd');
       await writeBytes(utf8.encode('$cmd\r'));
 
-      final body = await done.future.timeout(timeout, onTimeout: () {
-        throw ElmTimeoutException(timeout);
-      });
+      final body = await done.future.timeout(
+        timeout,
+        onTimeout: () {
+          throw ElmTimeoutException(timeout);
+        },
+      );
       AppLogger.log('[OBD ELM]', 'RX: ${_oneLine(body)}');
       return body.trim();
     } finally {
@@ -111,6 +117,5 @@ class Elm327CommandService {
     }
   }
 
-  static String _oneLine(String s) =>
-      s.replaceAll(RegExp(r'\s+'), ' ').trim();
+  static String _oneLine(String s) => s.replaceAll(RegExp(r'\s+'), ' ').trim();
 }

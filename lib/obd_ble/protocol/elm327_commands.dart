@@ -19,6 +19,11 @@ class Elm327Commands {
   /// Spaces OFF. Hex bytes are concatenated without separators.
   static const String spacesOff = 'ATS0';
 
+  /// Headers OFF. Strips the protocol header bytes from responses so Mode 03
+  /// payloads start directly at the `0x43` service-id byte. Without this,
+  /// some adapters prepend ECU/protocol headers that confuse the parser.
+  static const String headersOff = 'ATH0';
+
   /// Auto-detect protocol. Lets the adapter pick whichever ISO/CAN variant
   /// the vehicle uses — works across most modern cars.
   static const String autoProtocol = 'ATSP0';
@@ -28,11 +33,20 @@ class Elm327Commands {
 
   /// Init sequence run sequentially after connect. Each command must return
   /// `OK` (except [reset], whose banner is ignored — we just wait for `>`).
+  ///
+  /// Order is significant:
+  ///   1. [reset]        — clear adapter state and emit the boot banner.
+  ///   2. [echoOff]      — stop the adapter from echoing our commands back.
+  ///   3. [spacesOff]    — drop hex separators so parsing is simpler.
+  ///   4. [linefeedsOff] — `\r`-only line endings.
+  ///   5. [headersOff]   — strip protocol headers from response frames.
+  ///   6. [autoProtocol] — let the adapter pick the right OBD protocol.
   static const List<String> initSequence = [
     reset,
     echoOff,
-    linefeedsOff,
     spacesOff,
+    linefeedsOff,
+    headersOff,
     autoProtocol,
   ];
 }

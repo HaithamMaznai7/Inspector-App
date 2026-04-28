@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fahis_inspector/features/inspection_obd/controller.dart';
 import 'package:fahis_inspector/features/inspection_obd/components/ble_status_card.dart';
 import 'package:fahis_inspector/features/inspection_obd/components/card.dart';
@@ -352,6 +354,19 @@ class _InputSection extends StatelessWidget {
     return Obx(() {
       final isDisconnected =
           controller.bleState.value == ObdBleConnectionState.disconnected;
+
+      // OBD adapter connection uses Bluetooth Classic SPP, which doesn't work
+      // on iOS for non-MFi devices (which is virtually every ELM327 clone).
+      // On iOS we hide the connect-device path entirely and show only the
+      // manual-add card so the inspector still has a way to record codes.
+      if (!Platform.isAndroid) {
+        return _ActionCard(
+          icon: Iconsax.edit,
+          label: InspectionPage.obdAddManualCode.tr,
+          isDark: isDark,
+          onTap: () => InspectionObdBinding().instance.onCreateEdit(),
+        );
+      }
 
       if (isDisconnected) {
         return Row(

@@ -254,6 +254,7 @@ class English {
     InspectionPage.obdScanRecommended: 'Recommended',
     InspectionPage.obdFromDevice: 'Read from device',
     InspectionPage.obdAddedCodesList: 'Added Codes',
+    InspectionPage.obdPairNewDevice: 'Pair Device',
     InspectionPage.stepLabel: 'Step @step',
     InspectionPage.submitValidationTitle: 'Cannot Submit',
     InspectionPage.submitValidationMsg:
