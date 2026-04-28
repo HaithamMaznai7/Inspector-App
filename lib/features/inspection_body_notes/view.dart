@@ -5,6 +5,7 @@ import 'package:fahis_inspector/features/inspection_body_notes/components/editin
 import 'package:fahis_inspector/features/inspection_body_notes/controller.dart';
 import 'package:fahis_inspector/models/inspection_body_notes.dart';
 import 'package:fahis_inspector/routes.dart';
+import 'package:fahis_inspector/services/connection/connection.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
@@ -52,8 +53,17 @@ class _InspectionBodyTypeResultsState extends State<InspectionBodyTypeResults> {
   // CachedNetworkImageProvider, the on-disk DefaultCacheManager keyed by
   // stableCacheKey — the same key the editing screen reads — so opening
   // /InspectionBodyTypeScreen shows the diagram without a spinner.
-  // Best-effort: a failed precache (offline, bad URL) must not break the list.
+  //
+  // Best-effort:
+  //  - Skip entirely while offline. Without this, every body URL fires a
+  //    DNS lookup that fails and prints a `_ClientSocketException` through
+  //    Flutter's image error channel. The editing screen's own
+  //    CachedNetworkImage error widget already covers the visible case.
+  //  - Pass `onError` to precacheImage so any other failure (bad URL,
+  //    transient drop) is swallowed rather than bubbling to FlutterError.
   void _precacheBodyImages(List<CarBody> bodySides) {
+    if (!ConnectionService.instance.isConnectionGood.value) return;
+
     final pending = bodySides
         .where((b) => !_precachedIds.contains(b.id) && b.image.isNotEmpty)
         .toList();
@@ -62,18 +72,18 @@ class _InspectionBodyTypeResultsState extends State<InspectionBodyTypeResults> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       for (final body in pending) {
-        try {
-          precacheImage(
-            CachedNetworkImageProvider(
-              body.image,
-              cacheKey: stableCacheKey(body.image),
-            ),
-            context,
-          );
-          _precachedIds.add(body.id);
-        } catch (_) {
-          // Swallow — best-effort warm-up.
-        }
+        _precachedIds.add(body.id);
+        precacheImage(
+          CachedNetworkImageProvider(
+            body.image,
+            cacheKey: stableCacheKey(body.image),
+          ),
+          context,
+          onError: (_, _) {
+            // Allow a future retry once we're back online.
+            _precachedIds.remove(body.id);
+          },
+        );
       }
     });
   }
