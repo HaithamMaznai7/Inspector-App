@@ -24,6 +24,7 @@ class Elm327CommandService {
     required this.notifications,
     this.commandTimeout = const Duration(seconds: 20),
     this.resetTimeout = const Duration(seconds: 20),
+
     // this.commandTimeout = const Duration(seconds: 5),
     // this.resetTimeout = const Duration(seconds: 3),
   });
@@ -110,12 +111,37 @@ class Elm327CommandService {
           throw ElmTimeoutException(timeout);
         },
       );
-      AppLogger.log('[OBD ELM]', 'RX: ${_oneLine(body)}');
-      return body.trim();
+      final cleaned = _stripEcho(body, cmd);
+      AppLogger.log('[OBD ELM]', 'RX: ${_oneLine(cleaned)}');
+      return cleaned.trim();
     } finally {
       await sub.cancel();
     }
   }
 
   static String _oneLine(String s) => s.replaceAll(RegExp(r'\s+'), ' ').trim();
+
+  /// Strips a leading echo of [cmd] from [body]. ELM327 defaults to echo-on
+  /// (`ATE1`); the reply to every command therefore starts with the bytes
+  /// `<cmd>\r` until `ATE0` is processed by the chip — and `ATE0`'s own
+  /// reply still carries the echo because echo was still on when `ATE0`
+  /// arrived. Without this strip, `Elm327Parser.isOk("ATE0\rOK")` returns
+  /// false and init aborts on a perfectly correct adapter response.
+  ///
+  /// Defensive against three observed firmware variants:
+  ///   - exact echo:   `<cmd>\r<response>` (the documented form, our log).
+  ///   - CR-less echo: `<cmd><response>` (some no-name clones).
+  ///   - leading-CR:   `\r\r<cmd>\r<response>` (a few BM-78 builds).
+  /// On adapters that don't echo at all (the post-`ATE0` steady state), all
+  /// three branches fall through and `body` is returned unchanged.
+  static String _stripEcho(String body, String cmd) {
+    final stripped = body.replaceFirst(RegExp(r'^[\r\n]+'), '');
+    if (stripped.startsWith('$cmd\r')) {
+      return stripped.substring(cmd.length + 1);
+    }
+    if (stripped.startsWith(cmd)) {
+      return stripped.substring(cmd.length);
+    }
+    return body;
+  }
 }

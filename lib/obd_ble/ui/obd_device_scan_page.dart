@@ -1,11 +1,11 @@
 import 'dart:io';
 
+import 'package:fahis_inspector/obd_ble/transport/spp.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
 import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -90,7 +90,7 @@ class _ObdDeviceScanPageState extends State<ObdDeviceScanPage> {
     }
 
     try {
-      final isOn = await FlutterBluetoothSerial.instance.isEnabled ?? false;
+      final isOn = await Spp.isEnabled();
       if (!isOn) {
         if (mounted) {
           setState(() {
@@ -101,22 +101,23 @@ class _ObdDeviceScanPageState extends State<ObdDeviceScanPage> {
         return;
       }
 
-      final devices = await FlutterBluetoothSerial.instance.getBondedDevices();
-      final mapped = devices
-          .map(
-            (d) => BleObdDevice(
-              mac: d.address,
-              name: (d.name ?? '').isNotEmpty ? d.name! : d.address,
-            ),
-          )
-          .toList()
-        ..sort((a, b) {
-          if (_isVeepeak(a) != _isVeepeak(b)) return _isVeepeak(a) ? -1 : 1;
-          if (_looksLikeObd(a) != _looksLikeObd(b)) {
-            return _looksLikeObd(a) ? -1 : 1;
-          }
-          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-        });
+      final devices = await Spp.bondedDevices();
+      final mapped =
+          devices
+              .map(
+                (d) => BleObdDevice(
+                  mac: d.id,
+                  name: d.name.isNotEmpty ? d.name : d.id,
+                ),
+              )
+              .toList()
+            ..sort((a, b) {
+              if (_isVeepeak(a) != _isVeepeak(b)) return _isVeepeak(a) ? -1 : 1;
+              if (_looksLikeObd(a) != _looksLikeObd(b)) {
+                return _looksLikeObd(a) ? -1 : 1;
+              }
+              return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+            });
 
       if (!mounted) return;
       setState(() {
@@ -135,7 +136,7 @@ class _ObdDeviceScanPageState extends State<ObdDeviceScanPage> {
 
   Future<void> _openSystemBluetoothSettings() async {
     try {
-      await FlutterBluetoothSerial.instance.openSettings();
+      await Spp.openSettings();
     } catch (_) {
       // Non-critical: a few OEM ROMs reject the intent. The inspector can
       // pair via their own Bluetooth UI and come back.
@@ -250,9 +251,9 @@ class _Header extends StatelessWidget {
                     const SizedBox(height: FSizes.xxs),
                     Text(
                       InspectionPage.obdScanEmptyHint.tr,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: FColors.darkGrey,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: FColors.darkGrey),
                     ),
                   ],
                 ),

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:fahis_inspector/obd_ble/transport/spp.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
 /// Connection state exposed to consumers. Same shape as the paint gauge's
 /// state enum so the controller pattern is identical.
@@ -32,14 +32,19 @@ enum ObdBleConnectionState {
 ///
 /// The class deliberately keeps its old name and public API so the rest of
 /// the app (controller, ELM327 service, UI) is untouched by the transport
-/// swap. Internally it owns a single SPP socket via [BluetoothConnection].
+/// swap. Internally it talks to the native `SppPlugin` via the [Spp] facade
+/// instead of `flutter_bluetooth_serial`.
 class ObdBleConnectionService {
-  BluetoothConnection? _connection;
   StreamSubscription<Uint8List>? _inputSub;
 
   // True while the user has explicitly called disconnect() — prevents the
   // socket's onDone callback from being treated as a lost link.
   bool _intentionalDisconnect = false;
+
+  // Tracks whether we currently hold an open SPP socket. Replaces the old
+  // `BluetoothConnection.isConnected` getter — there's no connection object
+  // to query when we're talking to the native plugin directly.
+  bool _isConnected = false;
 
   final _stateController = StreamController<ObdBleConnectionState>.broadcast();
   final _dataController = StreamController<List<int>>.broadcast();
@@ -47,7 +52,7 @@ class ObdBleConnectionService {
   Stream<ObdBleConnectionState> get connectionState => _stateController.stream;
   Stream<List<int>> get notifications => _dataController.stream;
 
-  bool get canWrite => _connection?.isConnected ?? false;
+  bool get canWrite => _isConnected;
 
   ObdBleConnectionState _currentState = ObdBleConnectionState.disconnected;
   ObdBleConnectionState get currentState => _currentState;
@@ -63,16 +68,19 @@ class ObdBleConnectionService {
     try {
       AppLogger.log('[OBD BT]', 'Connecting to $deviceMac');
 
-      _connection = await BluetoothConnection.toAddress(deviceMac);
+      await Spp.connect(deviceMac);
       AppLogger.log('[OBD BT]', 'SPP socket open');
 
       _intentionalDisconnect = false;
-      _inputSub = _connection!.input!.listen(
+      _isConnected = true;
+
+      _inputSub = Spp.byteStream().listen(
         _onIncomingBytes,
         onDone: _onSocketClosed,
         onError: (Object e) {
           AppLogger.error('[OBD BT]', 'Socket stream error', e);
           if (!_intentionalDisconnect) {
+            _isConnected = false;
             _setState(ObdBleConnectionState.lostConnection);
           }
         },
@@ -82,36 +90,35 @@ class ObdBleConnectionService {
       _setState(ObdBleConnectionState.connected);
     } catch (e) {
       AppLogger.error('[OBD BT]', 'Connection failed', e);
+      _isConnected = false;
       _setState(ObdBleConnectionState.error);
       rethrow;
     }
   }
 
-  /// Writes [data] to the SPP socket and waits until the OS confirms the
-  /// bytes have been flushed. Used by the ELM327 service for `ATZ\r` and
-  /// every other command — serialization is enforced upstream.
+  /// Writes [data] to the SPP socket. Used by the ELM327 service for `ATZ\r`
+  /// and every other command — serialization is enforced upstream by the
+  /// `Elm327CommandService`'s single-flight lock.
   Future<void> write(List<int> data) async {
-    final connection = _connection;
-    if (connection == null || !connection.isConnected) {
+    if (!_isConnected) {
       throw StateError('SPP socket not connected');
     }
-    connection.output.add(Uint8List.fromList(data));
-    await connection.output.allSent;
+    await Spp.write(data);
   }
 
   Future<void> disconnect() async {
     _intentionalDisconnect = true;
+    _isConnected = false;
 
     await _inputSub?.cancel();
     _inputSub = null;
 
     try {
-      await _connection?.close();
+      await Spp.disconnect();
     } catch (e) {
       AppLogger.log('[OBD BT]', 'Disconnect error (non-critical): $e');
     }
 
-    _connection = null;
     _setState(ObdBleConnectionState.disconnected);
   }
 
@@ -133,7 +140,7 @@ class ObdBleConnectionService {
     AppLogger.log(
       '[OBD BT]',
       'RX bytes (${bytes.length}): hex=${_hex(bytes)} '
-      'ascii="${_ascii(bytes)}"',
+          'ascii="${_ascii(bytes)}"',
     );
 
     if (!_dataController.isClosed) {
@@ -142,8 +149,12 @@ class ObdBleConnectionService {
   }
 
   void _onSocketClosed() {
-    AppLogger.log('[OBD BT]', 'SPP socket closed (intentional='
-        '$_intentionalDisconnect)');
+    AppLogger.log(
+      '[OBD BT]',
+      'SPP socket closed (intentional='
+          '$_intentionalDisconnect)',
+    );
+    _isConnected = false;
     if (_intentionalDisconnect) return;
     if (_currentState == ObdBleConnectionState.connected) {
       _setState(ObdBleConnectionState.lostConnection);
