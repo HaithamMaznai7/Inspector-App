@@ -46,10 +46,7 @@ class InspectionDetailsScreen extends StatelessWidget {
         leading: BackPageButton(color: FColors.white),
       ),
       body: Obx(() {
-        // Only block the UI with a spinner when there is genuinely no data yet.
-        // If Hive returned a cached inspection, show it immediately and let the
-        // API refresh happen silently in the background (stale-while-revalidate).
-        if (controller.isLoading.value && controller.inspection.value == null) {
+        if (controller.isLoading.value) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -109,14 +106,6 @@ class InspectionDetailsScreen extends StatelessWidget {
         return Column(
           children: [
             const SyncBanner(),
-            // Thin progress bar while cached data is shown and API is
-            // refreshing in the background (stale-while-revalidate).
-            if (controller.isLoading.value)
-              LinearProgressIndicator(
-                minHeight: 3,
-                backgroundColor: Colors.transparent,
-                color: FColors.success,
-              ),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async =>
