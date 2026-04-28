@@ -7,6 +7,7 @@ import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
+import 'package:fahis_inspector/util/helpers/cached_image_key.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -139,6 +140,7 @@ class _InspectionBodyTypeScreenState extends State<InspectionBodyTypeScreen> {
                                       FSizes.borderRadiusMd),
                                   child: CachedNetworkImage(
                                     imageUrl: body.image,
+                                    cacheKey: stableCacheKey(body.image),
                                     fit: BoxFit.fill,
                                     width: double.infinity,
                                     height: double.infinity,

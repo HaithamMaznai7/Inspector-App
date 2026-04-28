@@ -3,6 +3,7 @@ import 'package:fahis_inspector/util/helpers/cached_image_key.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:fahis_inspector/features/inspection_body_notes/components/editing_screen.dart';
 import 'package:fahis_inspector/features/inspection_body_notes/controller.dart';
+import 'package:fahis_inspector/models/inspection_body_notes.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
@@ -33,8 +34,49 @@ Map<String, String> _buildTypeLabels() {
   return map;
 }
 
-class InspectionBodyTypeResults extends StatelessWidget {
+class InspectionBodyTypeResults extends StatefulWidget {
   const InspectionBodyTypeResults({super.key});
+
+  @override
+  State<InspectionBodyTypeResults> createState() =>
+      _InspectionBodyTypeResultsState();
+}
+
+class _InspectionBodyTypeResultsState extends State<InspectionBodyTypeResults> {
+  // Tracks which body diagrams have already been warmed into the image
+  // cache so we don't re-precache on every Obx rebuild (markers move,
+  // notes get added/removed, etc.).
+  final Set<int> _precachedIds = <int>{};
+
+  // Warms Flutter's in-memory image cache *and*, via
+  // CachedNetworkImageProvider, the on-disk DefaultCacheManager keyed by
+  // stableCacheKey — the same key the editing screen reads — so opening
+  // /InspectionBodyTypeScreen shows the diagram without a spinner.
+  // Best-effort: a failed precache (offline, bad URL) must not break the list.
+  void _precacheBodyImages(List<CarBody> bodySides) {
+    final pending = bodySides
+        .where((b) => !_precachedIds.contains(b.id) && b.image.isNotEmpty)
+        .toList();
+    if (pending.isEmpty) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      for (final body in pending) {
+        try {
+          precacheImage(
+            CachedNetworkImageProvider(
+              body.image,
+              cacheKey: stableCacheKey(body.image),
+            ),
+            context,
+          );
+          _precachedIds.add(body.id);
+        } catch (_) {
+          // Swallow — best-effort warm-up.
+        }
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +94,8 @@ class InspectionBodyTypeResults extends StatelessWidget {
           if (bodySides.isEmpty) {
             return const _BodyNotesEmpty();
           }
+
+          _precacheBodyImages(bodySides);
 
           // Wrap in ValueListenableBuilder so the type-label chip rebuilds
           // when OfflineSyncService finishes prefetching the body-note-types
