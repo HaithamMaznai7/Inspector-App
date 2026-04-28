@@ -25,6 +25,12 @@ class ConnectionService extends GetxController {
   bool _hasEverBeenOnline = false;
   bool get hasEverBeenOnline => _hasEverBeenOnline;
 
+  // The very first _applyStatus call is the boot-time seed from
+  // checkConnectivity(), not a real adapter transition. We must not treat it
+  // as offline → online (which would flash the "Back online" snackbar and
+  // trigger every feature's flush worker on every cold boot / hot restart).
+  bool _hasAppliedInitialStatus = false;
+
   // Guards stopLoading() so it only calls Get.back() when we actually
   // opened a full-screen loader — prevents accidentally popping routes.
   bool _offlineDialogOpen = false;
@@ -56,8 +62,23 @@ class ConnectionService extends GetxController {
   /// actually broken (captive portal, ISP outage), the next API call will
   /// fail and the pending-write system handles retry on subsequent events.
   void _applyStatus(bool online) {
+    // First emission is the seeded boot value, not a real transition.
+    // Apply state silently so we don't fire onReconnect / show the
+    // "Back online" snackbar / kick every feature's flush worker on a
+    // cold boot or hot restart that started already-online.
+    if (!_hasAppliedInitialStatus) {
+      _hasAppliedInitialStatus = true;
+      isConnectionGood.value = online;
+      if (online) _hasEverBeenOnline = true;
+      AppLogger.info(
+        '[STATE]',
+        'adapter: initial state → ${online ? 'online' : 'offline'}',
+      );
+      return;
+    }
+
     if (!online) {
-      AppLogger.info('[Offline]', 'adapter: connected → disconnected');
+      AppLogger.info('[STATE]', 'adapter: connected → disconnected');
       // Never auto-open the full-screen OfflineScreen on cold boot.
       // The persistent OfflineStatusBar gives the user the connectivity
       // signal while cached home content remains accessible.
