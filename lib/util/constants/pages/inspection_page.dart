@@ -137,6 +137,24 @@ class InspectionPage {
   static const String obdNoCodesYet = 'obdNoCodesYet';
   static const String obdReportSection = 'obdReportSection';
   static const String obdOptionalBadge = 'obdOptionalBadge';
+
+  /// OBD BLE (Veepeak / ELM327)
+  static const String obdConnectDevice = 'obdConnectDevice';
+  static const String obdDisconnect = 'obdDisconnect';
+  static const String obdReadFromDevice = 'obdReadFromDevice';
+  static const String obdConnecting = 'obdConnecting';
+  static const String obdReadingCodes = 'obdReadingCodes';
+  static const String obdConnectionFailed = 'obdConnectionFailed';
+  static const String obdDeviceDisconnected = 'obdDeviceDisconnected';
+  static const String obdReconnect = 'obdReconnect';
+  static const String obdNoCodesFromDevice = 'obdNoCodesFromDevice';
+  static const String obdNoNewCodes = 'obdNoNewCodes';
+  static const String obdCodesAdded = 'obdCodesAdded';
+  static const String obdScanTitle = 'obdScanTitle';
+  static const String obdBleNotSupported = 'obdBleNotSupported';
+  static const String obdBleOff = 'obdBleOff';
+  static const String obdBlePermissionDenied = 'obdBlePermissionDenied';
+  static const String obdConnectedTo = 'obdConnectedTo';
   static const String bodyNotesEmpty = 'bodyNotesEmpty';
 
   /// Steps

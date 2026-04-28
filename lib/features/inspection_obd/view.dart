@@ -1,4 +1,5 @@
 import 'package:fahis_inspector/features/inspection_obd/controller.dart';
+import 'package:fahis_inspector/features/inspection_obd/components/ble_status_card.dart';
 import 'package:fahis_inspector/features/inspection_obd/components/card.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
@@ -333,6 +334,10 @@ class _CodesCard extends StatelessWidget {
             height: 1,
             color: FColors.grey.withValues(alpha: isDark ? 0.15 : 0.4),
           ),
+          const SizedBox(height: FSizes.sm),
+
+          // ── BLE device row ──
+          BleStatusCard(controller: controller),
           const SizedBox(height: FSizes.sm),
 
           // ── List / states ──

@@ -1,0 +1,107 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:fahis_inspector/obd_ble/protocol/elm327_commands.dart';
+import 'package:fahis_inspector/obd_ble/protocol/elm327_parser.dart';
+import 'package:fahis_inspector/obd_ble/protocol/errors.dart';
+import 'package:fahis_inspector/util/helpers/logger.dart';
+
+/// Sends ELM327 ASCII commands and accumulates the streamed BLE response
+/// until the prompt character `>` arrives — then returns the trimmed body.
+///
+/// Single-flight: only one command runs at a time (an internal completer
+/// queue serializes calls). Required because the device returns responses
+/// in arrival order and we need to associate each one with its sender.
+class Elm327CommandService {
+  final Future<void> Function(List<int>) writeBytes;
+  final Stream<List<int>> notifications;
+
+  final Duration commandTimeout;
+  final Duration resetTimeout;
+
+  Elm327CommandService({
+    required this.writeBytes,
+    required this.notifications,
+    this.commandTimeout = const Duration(seconds: 5),
+    this.resetTimeout = const Duration(seconds: 3),
+  });
+
+  // Lock so only one command can be in-flight at a time.
+  Future<void> _lock = Future.value();
+
+  /// Runs the ELM init sequence. Throws [ElmInitException] on the first
+  /// command that doesn't return `OK`. The reset banner is ignored — we just
+  /// wait for the prompt.
+  Future<void> initialize() async {
+    for (final cmd in Elm327Commands.initSequence) {
+      final timeout =
+          cmd == Elm327Commands.reset ? resetTimeout : commandTimeout;
+      final response = await sendCommand(cmd, timeout: timeout);
+
+      // ATZ returns a banner, not OK — accept any non-error response.
+      if (cmd == Elm327Commands.reset) continue;
+
+      if (!Elm327Parser.isOk(response)) {
+        throw ElmInitException(cmd, response);
+      }
+    }
+  }
+
+  /// Sends [cmd] (a bare ASCII string, no `\r`) and returns the device's
+  /// response stripped of the prompt and trailing whitespace. Throws
+  /// [ElmTimeoutException] if no prompt arrives within [timeout].
+  Future<String> sendCommand(String cmd, {Duration? timeout}) {
+    final t = timeout ?? commandTimeout;
+
+    // Chain onto the lock so commands run strictly serially.
+    final completer = Completer<String>();
+    _lock = _lock.then((_) async {
+      try {
+        final result = await _runOne(cmd, t);
+        if (!completer.isCompleted) completer.complete(result);
+      } catch (e, st) {
+        if (!completer.isCompleted) completer.completeError(e, st);
+      }
+    });
+    return completer.future;
+  }
+
+  // ── Internals ─────────────────────────────────────────────────────────────
+
+  Future<String> _runOne(String cmd, Duration timeout) async {
+    final buffer = StringBuffer();
+    final done = Completer<String>();
+    late final StreamSubscription<List<int>> sub;
+
+    // Subscribe BEFORE writing — ELM responses can come back faster than the
+    // listener-attach if we do it the other way around.
+    sub = notifications.listen((bytes) {
+      try {
+        buffer.write(utf8.decode(bytes, allowMalformed: true));
+      } catch (_) {
+        // Best-effort decode; keep listening.
+      }
+      final s = buffer.toString();
+      if (s.contains('>')) {
+        final body = s.substring(0, s.indexOf('>'));
+        if (!done.isCompleted) done.complete(body);
+      }
+    });
+
+    try {
+      AppLogger.log('[OBD ELM]', 'TX: $cmd');
+      await writeBytes(utf8.encode('$cmd\r'));
+
+      final body = await done.future.timeout(timeout, onTimeout: () {
+        throw ElmTimeoutException(timeout);
+      });
+      AppLogger.log('[OBD ELM]', 'RX: ${_oneLine(body)}');
+      return body.trim();
+    } finally {
+      await sub.cancel();
+    }
+  }
+
+  static String _oneLine(String s) =>
+      s.replaceAll(RegExp(r'\s+'), ' ').trim();
+}

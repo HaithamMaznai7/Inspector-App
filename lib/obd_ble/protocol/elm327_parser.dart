@@ -41,7 +41,7 @@ class Elm327Parser {
       final b2 = dtcBytes[i + 1];
       if (b1 == 0 && b2 == 0) continue; // padding / no-DTC slot
       final dtc = _decodeDtc(b1, b2);
-      if (dtc != null && !out.contains(dtc)) out.add(dtc);
+      if (!out.contains(dtc)) out.add(dtc);
     }
     return out;
   }
@@ -78,7 +78,7 @@ class Elm327Parser {
   /// Decodes a 2-byte DTC into the standard 5-char form (e.g. `"P0123"`).
   /// See SAE J2012 — top 2 bits select the system letter, next 2 bits + low
   /// nibble form the first two digits, byte 2 forms the last two.
-  static String? _decodeDtc(int b1, int b2) {
+  static String _decodeDtc(int b1, int b2) {
     const letters = ['P', 'C', 'B', 'U'];
     final letter = letters[(b1 >> 6) & 0x03];
     final d1 = (b1 >> 4) & 0x03;

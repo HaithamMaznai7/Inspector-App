@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
@@ -5,6 +6,11 @@ import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/features/inspection_obd/components/dialog.dart';
 import 'package:fahis_inspector/features/inspection_obd/components/pdf_viewer_screen.dart';
 import 'package:fahis_inspector/models/obd_code.dart';
+import 'package:fahis_inspector/obd_ble/protocol/elm327_commands.dart';
+import 'package:fahis_inspector/obd_ble/protocol/elm327_parser.dart';
+import 'package:fahis_inspector/obd_ble/services/elm327_command_service.dart';
+import 'package:fahis_inspector/obd_ble/services/obd_ble_connection_service.dart';
+import 'package:fahis_inspector/obd_ble/ui/obd_device_scan_page.dart';
 import 'package:fahis_inspector/resources/inspection_obd_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/services/connection/connection.dart';
@@ -77,10 +83,143 @@ class InspectionObdController extends GetxController {
     });
   }
 
+  // ── BLE device (Veepeak / ELM327) ────────────────────────────────────────
+  final Rx<ObdBleConnectionState> bleState =
+      Rx<ObdBleConnectionState>(ObdBleConnectionState.disconnected);
+  final RxnString connectedDeviceName = RxnString();
+  final RxBool isReadingFromDevice = false.obs;
+
+  ObdBleConnectionService? _ble;
+  Elm327CommandService? _elm;
+  StreamSubscription<ObdBleConnectionState>? _bleStateSub;
+
   @override
   void onClose() {
     _reconnectWorker?.dispose();
+    // Cancel the state-change subscription synchronously — no Rx writes needed
+    // at shutdown, so skip disconnectDevice() to avoid async Rx access after
+    // the controller is removed from Get's registry.
+    _bleStateSub?.cancel();
+    _bleStateSub = null;
+    _ble?.disconnect().catchError((_) {});
+    _ble?.dispose();
+    _ble = null;
+    _elm = null;
     super.onClose();
+  }
+
+  /// Opens the BLE scan page and connects to the device the inspector selects.
+  Future<void> pickAndConnectDevice() async {
+    final device = await Get.to<BleObdDevice>(() => const ObdDeviceScanPage());
+    if (device == null) return;
+    await connectToDevice(device.mac, device.name);
+  }
+
+  /// Instantiates the BLE + ELM327 services, connects, and runs the init
+  /// sequence. Any failure shows a snackbar and resets to disconnected.
+  Future<void> connectToDevice(String mac, String name) async {
+    _log('connectToDevice – mac: $mac, name: $name');
+
+    await disconnectDevice();
+
+    final ble = ObdBleConnectionService();
+    _ble = ble;
+    _elm = Elm327CommandService(
+      writeBytes: ble.write,
+      notifications: ble.notifications,
+    );
+
+    _bleStateSub = ble.connectionState.listen((state) {
+      bleState.value = state;
+      if (state == ObdBleConnectionState.lostConnection) {
+        FLoader.warningSnackBar(title: InspectionPage.obdDeviceDisconnected.tr);
+      }
+    });
+
+    try {
+      connectedDeviceName.value = name;
+      bleState.value = ObdBleConnectionState.connecting;
+
+      await ble.connect(mac);
+      await _elm!.initialize();
+
+      bleState.value = ObdBleConnectionState.connected;
+      _log('connectToDevice – ready');
+    } catch (e) {
+      _log('connectToDevice – failed: $e');
+      FLoader.errorSnackBar(title: InspectionPage.obdConnectionFailed.tr);
+      await disconnectDevice();
+    }
+  }
+
+  /// Disconnects the BLE link and nulls out the services.
+  Future<void> disconnectDevice() async {
+    _log('disconnectDevice');
+    await _bleStateSub?.cancel();
+    _bleStateSub = null;
+
+    try {
+      await _ble?.disconnect();
+    } catch (_) {}
+    _ble?.dispose();
+    _ble = null;
+    _elm = null;
+
+    bleState.value = ObdBleConnectionState.disconnected;
+    connectedDeviceName.value = null;
+  }
+
+  /// Sends Mode 03 to the adapter, parses the DTCs, and ingests any new codes
+  /// through the same `repository.store()` path as manually added codes.
+  Future<void> readCodesFromDevice() async {
+    if (bleState.value != ObdBleConnectionState.connected) return;
+    _log('readCodesFromDevice – start');
+
+    isReadingFromDevice.value = true;
+    try {
+      final raw = await _elm!.sendCommand(Elm327Commands.readDtcs);
+      final dtcs = Elm327Parser.parseDtcResponse(raw);
+      _log('readCodesFromDevice – parsed ${dtcs.length} DTCs');
+
+      if (dtcs.isEmpty) {
+        FLoader.infoSnackBar(title: InspectionPage.obdNoCodesFromDevice.tr);
+        return;
+      }
+
+      int addedCount = 0;
+      for (final dtc in dtcs) {
+        final added = await _ingestDeviceCode(dtc);
+        if (added) addedCount++;
+      }
+
+      if (addedCount == 0) {
+        FLoader.infoSnackBar(title: InspectionPage.obdNoNewCodes.tr);
+      } else {
+        FLoader.successSnackBar(
+          title: InspectionPage.obdCodesAdded.trParams({
+            'count': addedCount.toString(),
+          }),
+        );
+      }
+    } catch (e) {
+      _log('readCodesFromDevice – error: $e');
+      FLoader.errorSnackBar(title: InspectionPage.obdActionError.tr);
+    } finally {
+      isReadingFromDevice.value = false;
+    }
+  }
+
+  /// Returns `true` if the code was ingested, `false` if it was a duplicate.
+  Future<bool> _ingestDeviceCode(String dtc) async {
+    final isDuplicate =
+        codes.any((c) => c.code == dtc) || hasPendingCode(dtc);
+    if (isDuplicate) {
+      _log('_ingestDeviceCode – skip duplicate: $dtc');
+      return false;
+    }
+    _log('_ingestDeviceCode – storing: $dtc');
+    await repository.store(OBDCode(id: 0, code: dtc, description: ''));
+    return true;
   }
 
   Future<void> loadBySlug() async {
