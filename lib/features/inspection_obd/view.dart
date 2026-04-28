@@ -315,7 +315,11 @@ class _CodesCard extends StatelessWidget {
 
           // ── Two peer-level input paths ──
           BleStatusCard(controller: controller),
-          const SizedBox(height: FSizes.xs),
+          const SizedBox(height: FSizes.sm),
+          Divider(
+            height: 1,
+            color: FColors.grey.withValues(alpha: isDark ? 0.15 : 0.4),
+          ),
           _AddManuallyButton(
             onTap: () => InspectionObdBinding().instance.onCreateEdit(),
           ),
@@ -327,11 +331,13 @@ class _CodesCard extends StatelessWidget {
           else if (codes.isEmpty)
             _CodesEmpty(isDark: isDark)
           else
-            ...codes.map((c) => OBDCodeCard(
-              code: c,
-              isPendingSync: controller.hasPendingCode(c.code),
-              isFromDevice: controller.isBleSourced(c.code),
-            )),
+            ...codes.map(
+              (c) => OBDCodeCard(
+                code: c,
+                isPendingSync: controller.hasPendingCode(c.code),
+                isFromDevice: controller.isBleSourced(c.code),
+              ),
+            ),
         ],
       ),
     );
@@ -375,9 +381,9 @@ class _AddManuallyButton extends StatelessWidget {
               child: Text(
                 InspectionPage.obdAddManualCode.tr,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: isDark ? FColors.light : FColors.dark,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  color: isDark ? FColors.light : FColors.dark,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             Container(
