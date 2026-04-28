@@ -1,6 +1,7 @@
 import 'package:fahis_inspector/features/inspection_obd/controller.dart';
 import 'package:fahis_inspector/features/inspection_obd/components/ble_status_card.dart';
 import 'package:fahis_inspector/features/inspection_obd/components/card.dart';
+import 'package:fahis_inspector/obd_ble/services/obd_ble_connection_service.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
@@ -57,15 +58,12 @@ class _ReportCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Title row ──
           _CardTitle(
             icon: Iconsax.document_upload,
             title: InspectionPage.uploadObdReport.tr,
             isDark: isDark,
           ),
           const SizedBox(height: FSizes.md),
-
-          // ── Content ──
           hasReport
               ? _ReportUploaded(controller: controller, isDark: isDark)
               : _ReportEmpty(
@@ -136,7 +134,7 @@ class _ReportEmpty extends StatelessWidget {
               const SizedBox(height: FSizes.sm),
               Text(
                 InspectionPage.uploadObdReport.tr,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: FSizes.fontSizeSm,
                   fontWeight: FontWeight.w600,
                   color: FColors.primaryColor,
@@ -258,7 +256,6 @@ class _ReportUploaded extends StatelessWidget {
             ),
           ),
           const SizedBox(width: FSizes.xs),
-          // View
           _IconBtn(
             icon: Iconsax.eye,
             color: FColors.primaryColor,
@@ -266,7 +263,6 @@ class _ReportUploaded extends StatelessWidget {
             onTap: controller.openReport,
           ),
           const SizedBox(width: FSizes.xs),
-          // Delete — requires confirmation
           _IconBtn(
             icon: Iconsax.trash,
             color: FColors.error,
@@ -299,38 +295,29 @@ class _CodesCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── Title row (no inline + button — both input paths live below) ──
           _CardTitle(
             icon: Iconsax.cpu,
             title: InspectionPage.obdCodesTitle.tr,
             isDark: isDark,
           ),
-
           const SizedBox(height: FSizes.sm),
           Divider(
             height: 1,
             color: FColors.grey.withValues(alpha: isDark ? 0.15 : 0.4),
           ),
-          const SizedBox(height: FSizes.sm),
+          // const SizedBox(height: FSizes.md),
 
-          // ── Two peer-level input paths ──
-          BleStatusCard(controller: controller),
-          const SizedBox(height: FSizes.sm),
-          Divider(
-            height: 1,
-            color: FColors.grey.withValues(alpha: isDark ? 0.15 : 0.4),
-          ),
-          _AddManuallyButton(
-            onTap: () => InspectionObdBinding().instance.onCreateEdit(),
-          ),
-          const SizedBox(height: FSizes.sm),
+          // ── Input paths ──
+          _InputSection(controller: controller, isDark: isDark),
+          const SizedBox(height: FSizes.md),
 
           // ── List / states ──
           if (isLoading)
             _SkeletonList(isDark: isDark)
           else if (codes.isEmpty)
             _CodesEmpty(isDark: isDark)
-          else
+          else ...[
+            _CodesSectionLabel(count: codes.length, isDark: isDark),
             ...codes.map(
               (c) => OBDCodeCard(
                 code: c,
@@ -338,21 +325,147 @@ class _CodesCard extends StatelessWidget {
                 isFromDevice: controller.isBleSourced(c.code),
               ),
             ),
+          ],
         ],
       ),
     );
   }
 }
 
-/// Full-width "Add Manually" button — peer to the BLE input path so the
-/// inspector clearly sees both ways to add a code.
-class _AddManuallyButton extends StatelessWidget {
-  const _AddManuallyButton({required this.onTap});
+// ─────────────────────────────────────────────────────────────────────────────
+// Input section — switches layout based on BLE connection state
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// When BLE is disconnected: two equal action cards side by side so the
+/// inspector immediately sees both input paths at a glance.
+///
+/// When BLE is active (connecting / connected / error): full-width BLE status
+/// row + a secondary manual-add row below.
+class _InputSection extends StatelessWidget {
+  const _InputSection({required this.controller, required this.isDark});
+
+  final InspectionObdController controller;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final isDisconnected =
+          controller.bleState.value == ObdBleConnectionState.disconnected;
+
+      if (isDisconnected) {
+        return Row(
+          children: [
+            Expanded(
+              child: _ActionCard(
+                icon: Iconsax.bluetooth,
+                label: InspectionPage.obdConnectDevice.tr,
+                isDark: isDark,
+                onTap: controller.pickAndConnectDevice,
+              ),
+            ),
+            const SizedBox(width: FSizes.sm),
+            Expanded(
+              child: _ActionCard(
+                icon: Iconsax.edit,
+                label: InspectionPage.obdAddManualCode.tr,
+                isDark: isDark,
+                onTap: () => InspectionObdBinding().instance.onCreateEdit(),
+              ),
+            ),
+          ],
+        );
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          BleStatusCard(controller: controller),
+          const SizedBox(height: FSizes.xs),
+          _ManualAddRow(
+            isDark: isDark,
+            onTap: () => InspectionObdBinding().instance.onCreateEdit(),
+          ),
+        ],
+      );
+    });
+  }
+}
+
+/// Tappable card used for the two equal input paths in the disconnected state.
+class _ActionCard extends StatelessWidget {
+  const _ActionCard({
+    required this.icon,
+    required this.label,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isDark;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = FHelper.isDarkMode(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          vertical: FSizes.md,
+          horizontal: FSizes.sm,
+        ),
+        decoration: BoxDecoration(
+          color: isDark
+              ? FColors.darkGrey.withValues(alpha: 0.2)
+              : FColors.primaryColor.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+          border: Border.all(
+            color: FColors.primaryColor.withValues(alpha: 0.2),
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(FSizes.sm),
+              decoration: BoxDecoration(
+                color: FColors.primaryColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: FSizes.iconSm,
+                color: FColors.primaryColor,
+              ),
+            ),
+            const SizedBox(height: FSizes.xs),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: isDark ? FColors.light : FColors.dark,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Secondary manual-add row shown below the BLE status when a device is active.
+class _ManualAddRow extends StatelessWidget {
+  const _ManualAddRow({required this.isDark, required this.onTap});
+
+  final bool isDark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -398,19 +511,58 @@ class _AddManuallyButton extends StatelessWidget {
                   color: FColors.primaryColor.withValues(alpha: 0.3),
                 ),
               ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Iconsax.add,
-                    size: FSizes.fontSizeSm,
-                    color: FColors.primaryColor,
-                  ),
-                ],
+              child: const Icon(
+                Iconsax.add,
+                size: FSizes.fontSizeSm,
+                color: FColors.primaryColor,
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Section label shown above the codes list when at least one code exists.
+class _CodesSectionLabel extends StatelessWidget {
+  const _CodesSectionLabel({required this.count, required this.isDark});
+
+  final int count;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: FSizes.sm),
+      child: Row(
+        children: [
+          Text(
+            InspectionPage.obdAddedCodesList.tr,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: isDark ? FColors.grey : FColors.darkGrey,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: FSizes.xs),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: FSizes.sm,
+              vertical: 2,
+            ),
+            decoration: BoxDecoration(
+              color: FColors.primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+            ),
+            child: Text(
+              '$count',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: FColors.primaryColor,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

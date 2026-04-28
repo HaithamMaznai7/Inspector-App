@@ -135,26 +135,14 @@ class _AddingObdCodeState extends State<AddingObdCode> {
               ),
               const SizedBox(width: FSizes.sm),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      (_isEditing
-                              ? InspectionPage.obdEditCode
-                              : InspectionPage.obdAddCode)
-                          .tr,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    if (_isEditing)
-                      Text(
-                        FTexts.editBtn.tr,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.copyWith(color: FColors.grey),
-                      ),
-                  ],
+                child: Text(
+                  (_isEditing
+                          ? InspectionPage.obdEditCode
+                          : InspectionPage.obdAddCode)
+                      .tr,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               GestureDetector(
@@ -261,7 +249,10 @@ class _AddingObdCodeState extends State<AddingObdCode> {
           icon: const Icon(Iconsax.tick_circle, size: FSizes.fontSizeLg),
           label: Text(
             FTexts.submitBtn.tr,
-            style: const TextStyle(fontSize: FSizes.fontSizeMd, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              fontSize: FSizes.fontSizeMd,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: FColors.primaryColor,
@@ -282,7 +273,10 @@ class _AddingObdCodeState extends State<AddingObdCode> {
           ),
           child: Text(
             FTexts.cancelBtn.tr,
-            style: const TextStyle(fontSize: FSizes.fontSizeSm, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              fontSize: FSizes.fontSizeSm,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ],

@@ -247,11 +247,13 @@ class English {
     InspectionPage.obdScanEmptyTitle: 'No devices found',
     InspectionPage.obdScanEmptyHint: 'Tap "Scan Devices" to start',
     InspectionPage.obdScanScanningTitle: 'Scanning…',
-    InspectionPage.obdScanScanningHint: 'Looking for nearby Bluetooth devices',
+    InspectionPage.obdScanScanningHint:
+        'Turn on Bluetooth and place the Veepeak device nearby to scan',
     InspectionPage.obdScanSectionNamed: 'Available Devices',
     InspectionPage.obdScanUnknownDevice: 'Unknown Device',
     InspectionPage.obdScanRecommended: 'Recommended',
     InspectionPage.obdFromDevice: 'Read from device',
+    InspectionPage.obdAddedCodesList: 'Added Codes',
     InspectionPage.stepLabel: 'Step @step',
     InspectionPage.submitValidationTitle: 'Cannot Submit',
     InspectionPage.submitValidationMsg:
@@ -684,7 +686,8 @@ class English {
 
     // Offline / sync messages
     'saved_locally_will_sync': 'Saved — will sync when online',
-    'offline_no_cached_orders': 'You\'re offline — your inspections will load when you reconnect',
+    'offline_no_cached_orders':
+        'You\'re offline — your inspections will load when you reconnect',
     'offline_bar_message': 'No connection — check your internet',
     'back_online_title': 'Back online',
     'back_online_message': 'Syncing your pending changes…',

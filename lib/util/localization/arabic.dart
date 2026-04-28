@@ -240,11 +240,13 @@ class Arabic {
     InspectionPage.obdScanEmptyTitle: 'لم يتم العثور على أجهزة',
     InspectionPage.obdScanEmptyHint: 'اضغط على "بحث عن الأجهزة" للبدء',
     InspectionPage.obdScanScanningTitle: 'جارٍ البحث…',
-    InspectionPage.obdScanScanningHint: 'البحث عن الأجهزة القريبة',
+    InspectionPage.obdScanScanningHint:
+        'شغّل البلوتوث وضع جهاز Veepeak بالقرب منك للبحث',
     InspectionPage.obdScanSectionNamed: 'الأجهزة المتاحة',
     InspectionPage.obdScanUnknownDevice: 'جهاز غير معروف',
     InspectionPage.obdScanRecommended: 'موصى به',
     InspectionPage.obdFromDevice: 'من الجهاز',
+    InspectionPage.obdAddedCodesList: 'الأكواد المضافة',
     InspectionPage.stepLabel: 'الخطوة @step',
     InspectionPage.submitValidationTitle: 'لا يمكن الإرسال',
     InspectionPage.submitValidationMsg: 'يرجى إكمال جميع الخطوات قبل الإرسال:',
@@ -730,7 +732,8 @@ class Arabic {
 
     // رسائل الوضع غير المتصل / المزامنة
     'saved_locally_will_sync': 'تم الحفظ — ستتم المزامنة عند الاتصال',
-    'offline_no_cached_orders': 'أنت غير متصل — ستظهر الفحوصات عند عودة الاتصال',
+    'offline_no_cached_orders':
+        'أنت غير متصل — ستظهر الفحوصات عند عودة الاتصال',
     'offline_bar_message': 'لا يوجد اتصال — تحقق من الإنترنت',
     'back_online_title': 'عاد الاتصال',
     'back_online_message': 'جارٍ مزامنة التغييرات المعلّقة…',

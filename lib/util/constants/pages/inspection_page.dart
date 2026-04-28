@@ -166,6 +166,7 @@ class InspectionPage {
   static const String obdScanUnknownDevice = 'obdScanUnknownDevice';
   static const String obdScanRecommended = 'obdScanRecommended';
   static const String obdFromDevice = 'obdFromDevice';
+  static const String obdAddedCodesList = 'obdAddedCodesList';
   static const String bodyNotesEmpty = 'bodyNotesEmpty';
 
   /// Steps
