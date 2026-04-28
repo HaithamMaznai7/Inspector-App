@@ -47,6 +47,15 @@ class Elm327CommandService {
     }
   }
 
+  /// Sends Mode 03 (read stored DTCs) and parses the response into a list of
+  /// DTC strings like `"P0123"`. Returns `[]` for `NO DATA` or all-zero
+  /// (padding) responses. Encapsulates send + parse so callers don't depend
+  /// on the parser directly.
+  Future<List<String>> readDtcs() async {
+    final raw = await sendCommand(Elm327Commands.readDtcs);
+    return Elm327Parser.parseDtcResponse(raw);
+  }
+
   /// Sends [cmd] (a bare ASCII string, no `\r`) and returns the device's
   /// response stripped of the prompt and trailing whitespace. Throws
   /// [ElmTimeoutException] if no prompt arrives within [timeout].

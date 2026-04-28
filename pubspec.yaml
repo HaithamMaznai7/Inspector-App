@@ -67,11 +67,8 @@ flutter:
   #-------------------- LOCAL ASSETS --------------------#
   assets:
     - assets/images/logos/
-    - assets/images/on_boarding_images/
     - assets/images/
-    - assets/icons/
     - assets/animations/
-    - assets/images/inspection_body_note_details/Interior/
     - shorebird.yaml
 
   #-------------------- LOCAL FONTS --------------------#

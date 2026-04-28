@@ -155,6 +155,17 @@ class InspectionPage {
   static const String obdBleOff = 'obdBleOff';
   static const String obdBlePermissionDenied = 'obdBlePermissionDenied';
   static const String obdConnectedTo = 'obdConnectedTo';
+  static const String obdAddManualCode = 'obdAddManualCode';
+  static const String obdScanStart = 'obdScanStart';
+  static const String obdScanStop = 'obdScanStop';
+  static const String obdScanEmptyTitle = 'obdScanEmptyTitle';
+  static const String obdScanEmptyHint = 'obdScanEmptyHint';
+  static const String obdScanScanningTitle = 'obdScanScanningTitle';
+  static const String obdScanScanningHint = 'obdScanScanningHint';
+  static const String obdScanSectionNamed = 'obdScanSectionNamed';
+  static const String obdScanUnknownDevice = 'obdScanUnknownDevice';
+  static const String obdScanRecommended = 'obdScanRecommended';
+  static const String obdFromDevice = 'obdFromDevice';
   static const String bodyNotesEmpty = 'bodyNotesEmpty';
 
   /// Steps

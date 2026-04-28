@@ -6,11 +6,10 @@ import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/features/inspection_obd/components/dialog.dart';
 import 'package:fahis_inspector/features/inspection_obd/components/pdf_viewer_screen.dart';
 import 'package:fahis_inspector/models/obd_code.dart';
-import 'package:fahis_inspector/obd_ble/protocol/elm327_commands.dart';
-import 'package:fahis_inspector/obd_ble/protocol/elm327_parser.dart';
 import 'package:fahis_inspector/obd_ble/services/elm327_command_service.dart';
 import 'package:fahis_inspector/obd_ble/services/obd_ble_connection_service.dart';
 import 'package:fahis_inspector/obd_ble/ui/obd_device_scan_page.dart';
+import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/resources/inspection_obd_repository.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/services/connection/connection.dart';
@@ -93,6 +92,14 @@ class InspectionObdController extends GetxController {
   Elm327CommandService? _elm;
   StreamSubscription<ObdBleConnectionState>? _bleStateSub;
 
+  /// In-session marker of codes that came from the BLE adapter. Used to
+  /// render a small bluetooth badge on the code card so the inspector can
+  /// tell at a glance which codes the device produced. Not persisted — after
+  /// the inspector leaves the screen the marker is gone (the server has no
+  /// concept of source).
+  final RxSet<String> _bleSourcedCodes = <String>{}.obs;
+  bool isBleSourced(String code) => _bleSourcedCodes.contains(code);
+
   @override
   void onClose() {
     _reconnectWorker?.dispose();
@@ -108,9 +115,27 @@ class InspectionObdController extends GetxController {
     super.onClose();
   }
 
-  /// Opens the BLE scan page and connects to the device the inspector selects.
+  /// Opens the BLE scan picker as a **bottom sheet** (matches paint gauge UX)
+  /// and connects to the device the inspector selects.
   Future<void> pickAndConnectDevice() async {
-    final device = await Get.to<BleObdDevice>(() => const ObdDeviceScanPage());
+    final ctx = Get.context;
+    if (ctx == null) return;
+
+    final device = await showModalBottomSheet<BleObdDevice>(
+      context: ctx,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Container(
+        height: MediaQuery.of(sheetCtx).size.height * 0.65,
+        decoration: BoxDecoration(
+          color: Theme.of(sheetCtx).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(FSizes.borderRadiusLg),
+          ),
+        ),
+        child: const ObdDeviceScanPage(),
+      ),
+    );
     if (device == null) return;
     await connectToDevice(device.mac, device.name);
   }
@@ -169,16 +194,16 @@ class InspectionObdController extends GetxController {
     connectedDeviceName.value = null;
   }
 
-  /// Sends Mode 03 to the adapter, parses the DTCs, and ingests any new codes
-  /// through the same `repository.store()` path as manually added codes.
+  /// Reads stored DTCs from the adapter and ingests any new ones through the
+  /// same `repository.store()` path as manually added codes. The command
+  /// service handles the protocol details.
   Future<void> readCodesFromDevice() async {
     if (bleState.value != ObdBleConnectionState.connected) return;
     _log('readCodesFromDevice – start');
 
     isReadingFromDevice.value = true;
     try {
-      final raw = await _elm!.sendCommand(Elm327Commands.readDtcs);
-      final dtcs = Elm327Parser.parseDtcResponse(raw);
+      final dtcs = await _elm!.readDtcs();
       _log('readCodesFromDevice – parsed ${dtcs.length} DTCs');
 
       if (dtcs.isEmpty) {
@@ -218,6 +243,7 @@ class InspectionObdController extends GetxController {
       return false;
     }
     _log('_ingestDeviceCode – storing: $dtc');
+    _bleSourcedCodes.add(dtc);
     await repository.store(OBDCode(id: 0, code: dtc, description: ''));
     return true;
   }

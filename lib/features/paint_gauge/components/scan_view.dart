@@ -129,24 +129,11 @@ class _PaintGaugeScanViewState extends State<PaintGaugeScanView> {
   Widget build(BuildContext context) {
     final named = _seen.values.where(_hasName).toList()
       ..sort((a, b) => b.rssi.compareTo(a.rssi));
-    final unnamed = _seen.values.where((d) => !_hasName(d)).toList()
-      ..sort((a, b) => b.rssi.compareTo(a.rssi));
 
     return Column(
       children: [
-        // const SizedBox(height: FSizes.sm),
-        // Center(
-        //   child: Container(
-        //     width: 40,
-        //     height: 4,
-        //     decoration: BoxDecoration(
-        //       color: FColors.darkGrey.withValues(alpha: 0.3),
-        //       borderRadius: BorderRadius.circular(2),
-        //     ),
-        //   ),
-        // ),
         _buildHeader(),
-        Expanded(child: _buildBody(named, unnamed)),
+        Expanded(child: _buildBody(named)),
       ],
     );
   }
@@ -177,7 +164,7 @@ class _PaintGaugeScanViewState extends State<PaintGaugeScanView> {
     );
   }
 
-  Widget _buildBody(List<BleDevice> named, List<BleDevice> unnamed) {
+  Widget _buildBody(List<BleDevice> named) {
     if (!_isScanning && _seen.isEmpty) {
       return _EmptyState(
         icon: Iconsax.bluetooth,

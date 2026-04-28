@@ -299,34 +299,11 @@ class _CodesCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── Title row with add button ──
+          // ── Title row (no inline + button — both input paths live below) ──
           _CardTitle(
             icon: Iconsax.cpu,
             title: InspectionPage.obdCodesTitle.tr,
             isDark: isDark,
-            trailing: GestureDetector(
-              onTap: () => InspectionObdBinding().instance.onCreateEdit(),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: FSizes.sm,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: FColors.primaryColor,
-                  borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Iconsax.add,
-                      size: FSizes.iconXs,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ),
 
           const SizedBox(height: FSizes.sm),
@@ -336,8 +313,12 @@ class _CodesCard extends StatelessWidget {
           ),
           const SizedBox(height: FSizes.sm),
 
-          // ── BLE device row ──
+          // ── Two peer-level input paths ──
           BleStatusCard(controller: controller),
+          const SizedBox(height: FSizes.xs),
+          _AddManuallyButton(
+            onTap: () => InspectionObdBinding().instance.onCreateEdit(),
+          ),
           const SizedBox(height: FSizes.sm),
 
           // ── List / states ──
@@ -349,8 +330,81 @@ class _CodesCard extends StatelessWidget {
             ...codes.map((c) => OBDCodeCard(
               code: c,
               isPendingSync: controller.hasPendingCode(c.code),
+              isFromDevice: controller.isBleSourced(c.code),
             )),
         ],
+      ),
+    );
+  }
+}
+
+/// Full-width "Add Manually" button — peer to the BLE input path so the
+/// inspector clearly sees both ways to add a code.
+class _AddManuallyButton extends StatelessWidget {
+  const _AddManuallyButton({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = FHelper.isDarkMode(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: FSizes.sm,
+          vertical: FSizes.sm,
+        ),
+        decoration: BoxDecoration(
+          color: isDark
+              ? FColors.darkGrey.withValues(alpha: 0.15)
+              : FColors.primaryColor.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+          border: Border.all(
+            color: FColors.primaryColor.withValues(alpha: 0.15),
+          ),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Iconsax.edit,
+              size: FSizes.iconInlineSm,
+              color: FColors.primaryColor,
+            ),
+            const SizedBox(width: FSizes.sm),
+            Expanded(
+              child: Text(
+                InspectionPage.obdAddManualCode.tr,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: isDark ? FColors.light : FColors.dark,
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: FSizes.sm,
+                vertical: FSizes.xs,
+              ),
+              decoration: BoxDecoration(
+                color: FColors.primaryColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+                border: Border.all(
+                  color: FColors.primaryColor.withValues(alpha: 0.3),
+                ),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Iconsax.add,
+                    size: FSizes.fontSizeSm,
+                    color: FColors.primaryColor,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -442,13 +496,11 @@ class _CardTitle extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.isDark,
-    this.trailing,
   });
 
   final IconData icon;
   final String title;
   final bool isDark;
-  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -472,7 +524,6 @@ class _CardTitle extends StatelessWidget {
             ),
           ),
         ),
-        ?trailing,
       ],
     );
   }

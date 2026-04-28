@@ -135,8 +135,6 @@ class _DeviceScanPageState extends State<DeviceScanPage> {
   Widget build(BuildContext context) {
     final named = _seen.values.where(_hasName).toList()
       ..sort((a, b) => b.rssi.compareTo(a.rssi));
-    final unnamed = _seen.values.where((d) => !_hasName(d)).toList()
-      ..sort((a, b) => b.rssi.compareTo(a.rssi));
 
     return Scaffold(
       appBar: AppBar(
@@ -153,7 +151,7 @@ class _DeviceScanPageState extends State<DeviceScanPage> {
             ),
         ],
       ),
-      body: _buildBody(named, unnamed),
+      body: _buildBody(named),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _isScanning ? _stopScan : _startScan,
         icon: Icon(_isScanning ? Icons.stop : Icons.search),
@@ -162,7 +160,7 @@ class _DeviceScanPageState extends State<DeviceScanPage> {
     );
   }
 
-  Widget _buildBody(List<BleDevice> named, List<BleDevice> unnamed) {
+  Widget _buildBody(List<BleDevice> named) {
     if (!_isScanning && _seen.isEmpty) {
       return const _EmptyState(
         icon: Icons.bluetooth_searching,
@@ -187,12 +185,6 @@ class _DeviceScanPageState extends State<DeviceScanPage> {
             (d) => _DeviceTile(device: d, onTap: () => _connectToDevice(d)),
           ),
         ],
-        if (unnamed.isNotEmpty) ...[
-          _SectionHeader(label: 'Unknown / Unnamed', count: unnamed.length),
-          ...unnamed.map(
-            (d) => _DeviceTile(device: d, onTap: () => _connectToDevice(d)),
-          ),
-        ],
       ],
     );
   }
@@ -208,7 +200,12 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(FSizes.md, FSizes.borderRadiusLg, FSizes.md, FSizes.xs),
+      padding: const EdgeInsets.fromLTRB(
+        FSizes.md,
+        FSizes.borderRadiusLg,
+        FSizes.md,
+        FSizes.xs,
+      ),
       child: Row(
         children: [
           Text(
@@ -219,7 +216,10 @@ class _SectionHeader extends StatelessWidget {
           ),
           const SizedBox(width: FSizes.sm),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: FSizes.sm, vertical: FSizes.xxs),
+            padding: const EdgeInsets.symmetric(
+              horizontal: FSizes.sm,
+              vertical: FSizes.xxs,
+            ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primaryContainer,
               borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
@@ -257,7 +257,10 @@ class _DeviceTile extends StatelessWidget {
           fontWeight: isNamed ? FontWeight.w600 : FontWeight.normal,
         ),
       ),
-      subtitle: Text(device.mac, style: const TextStyle(fontSize: FSizes.fontSizeXs)),
+      subtitle: Text(
+        device.mac,
+        style: const TextStyle(fontSize: FSizes.fontSizeXs),
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -266,7 +269,10 @@ class _DeviceTile extends StatelessWidget {
           const SizedBox(width: FSizes.sm),
           Text(
             '${device.rssi} dBm',
-            style: const TextStyle(fontSize: FSizes.fontSizeXs, color: Colors.grey),
+            style: const TextStyle(
+              fontSize: FSizes.fontSizeXs,
+              color: Colors.grey,
+            ),
           ),
         ],
       ),
@@ -335,12 +341,18 @@ class _EmptyState extends StatelessWidget {
           const SizedBox(height: FSizes.md),
           Text(
             title,
-            style: TextStyle(fontSize: FSizes.fontSizeMd, color: Colors.grey.shade600),
+            style: TextStyle(
+              fontSize: FSizes.fontSizeMd,
+              color: Colors.grey.shade600,
+            ),
           ),
           const SizedBox(height: FSizes.sm),
           Text(
             subtitle,
-            style: TextStyle(fontSize: FSizes.fontSizeSm, color: Colors.grey.shade500),
+            style: TextStyle(
+              fontSize: FSizes.fontSizeSm,
+              color: Colors.grey.shade500,
+            ),
           ),
         ],
       ),

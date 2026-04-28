@@ -13,8 +13,15 @@ class OBDCodeCard extends StatefulWidget {
   final OBDCode code;
   /// True when the code was saved locally but hasn't been POSTed to the server.
   final bool isPendingSync;
+  /// True when the code was added by reading from a BLE OBD device this session.
+  final bool isFromDevice;
 
-  const OBDCodeCard({super.key, required this.code, this.isPendingSync = false});
+  const OBDCodeCard({
+    super.key,
+    required this.code,
+    this.isPendingSync = false,
+    this.isFromDevice = false,
+  });
 
   @override
   State<OBDCodeCard> createState() => _OBDCodeCardState();
@@ -127,6 +134,17 @@ class _OBDCodeCardState extends State<OBDCodeCard> {
                     ),
                   ),
                 ),
+                if (widget.isFromDevice) ...[
+                  const SizedBox(width: FSizes.xs),
+                  Tooltip(
+                    message: InspectionPage.obdFromDevice.tr,
+                    child: const Icon(
+                      Iconsax.bluetooth,
+                      size: FSizes.fontSizeSm,
+                      color: FColors.primaryColor,
+                    ),
+                  ),
+                ],
                 if (widget.isPendingSync) ...[
                   const SizedBox(width: FSizes.xs),
                   const Tooltip(

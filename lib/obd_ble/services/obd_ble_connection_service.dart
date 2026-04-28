@@ -18,9 +18,8 @@ enum ObdBleConnectionState {
 
 /// Encapsulates the BLE lifecycle for a Veepeak / ELM327 OBD adapter.
 ///
-/// Unlike the paint gauge which targets a fixed FFE0/FFE1 service, ELM327
-/// BLE adapters expose generic SPP-over-BLE — we just take the first NOTIFY
-/// + WRITE characteristic the device advertises.
+/// Connects to a Veepeak / ELM327 OBD adapter and exposes the first NOTIFY
+/// + WRITE characteristic pair the device advertises.
 class ObdBleConnectionService {
   BluetoothDevice? _device;
   BluetoothCharacteristic? _notifyChar;
@@ -148,21 +147,21 @@ class ObdBleConnectionService {
     }
   }
 
-  /// Find the first NOTIFY (or INDICATE) and WRITE characteristic across all
-  /// discovered services. ELM327 BLE clones don't share a single canonical
-  /// UUID, so we don't pre-filter.
   void _findCharacteristics(List<BluetoothService> services) {
     for (final service in services) {
       for (final char in service.characteristics) {
         if (_notifyChar == null &&
             (char.properties.notify || char.properties.indicate)) {
           _notifyChar = char;
+          AppLogger.log('[OBD BLE]', 'Notify char: ${char.uuid}');
         }
         if (_writeChar == null &&
             (char.properties.write || char.properties.writeWithoutResponse)) {
           _writeChar = char;
+          AppLogger.log('[OBD BLE]', 'Write char: ${char.uuid}');
         }
       }
+      if (_notifyChar != null && _writeChar != null) break;
     }
   }
 

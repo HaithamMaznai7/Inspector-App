@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
+import 'package:fahis_inspector/util/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 /// Lightweight description of a discovered BLE device. Returned to the
@@ -21,9 +24,12 @@ class BleObdDevice {
   });
 }
 
-/// Scan + picker for a Veepeak / ELM327 OBD adapter. Connection itself is
-/// owned by [InspectionObdController] so the OBD screen can show its own
-/// progress + error states.
+/// Veepeak / ELM327 scan picker rendered as the **body of a bottom sheet**
+/// (matches the paint gauge UX). Connection itself is owned by
+/// [InspectionObdController] so the OBD screen can show its own progress +
+/// error states.
+///
+/// Tapping a device pops the sheet with `Get.back(result: BleObdDevice)`.
 class ObdDeviceScanPage extends StatefulWidget {
   const ObdDeviceScanPage({super.key});
 
@@ -35,6 +41,13 @@ class _ObdDeviceScanPageState extends State<ObdDeviceScanPage> {
   final Map<String, BleObdDevice> _seen = {};
   bool _isScanning = false;
   StreamSubscription? _scanSub;
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-start scanning when the sheet opens — same UX as paint gauge.
+    Future.microtask(_startScan);
+  }
 
   @override
   void dispose() {
@@ -53,7 +66,7 @@ class _ObdDeviceScanPageState extends State<ObdDeviceScanPage> {
       return;
     }
     if (await Permission.location.request().isGranted) return;
-    _showSnackBar(InspectionPage.obdBlePermissionDenied.tr, Colors.red);
+    _showSnackBar(InspectionPage.obdBlePermissionDenied.tr, FColors.error);
   }
 
   Future<void> _startScan() async {
@@ -61,15 +74,16 @@ class _ObdDeviceScanPageState extends State<ObdDeviceScanPage> {
 
     final supported = await FlutterBluePlus.isSupported;
     if (!supported) {
-      _showSnackBar(InspectionPage.obdBleNotSupported.tr, Colors.red);
+      _showSnackBar(InspectionPage.obdBleNotSupported.tr, FColors.error);
       return;
     }
     final adapterState = await FlutterBluePlus.adapterState.first;
     if (adapterState != BluetoothAdapterState.on) {
-      _showSnackBar(InspectionPage.obdBleOff.tr, Colors.orange);
+      _showSnackBar(InspectionPage.obdBleOff.tr, FColors.warning);
       return;
     }
 
+    if (!mounted) return;
     setState(() {
       _isScanning = true;
       _seen.clear();
@@ -100,11 +114,10 @@ class _ObdDeviceScanPageState extends State<ObdDeviceScanPage> {
 
     try {
       await FlutterBluePlus.startScan();
-    } catch (e) {
-      if (mounted) {
-        _showSnackBar(InspectionPage.obdBleOff.tr, Colors.orange);
-        setState(() => _isScanning = false);
-      }
+    } catch (_) {
+      if (!mounted) return;
+      _showSnackBar(InspectionPage.obdBleOff.tr, FColors.warning);
+      setState(() => _isScanning = false);
     }
   }
 
@@ -137,51 +150,44 @@ class _ObdDeviceScanPageState extends State<ObdDeviceScanPage> {
     final named = _seen.values.where(_hasName).toList()
       ..sort((a, b) => b.rssi.compareTo(a.rssi));
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(InspectionPage.obdScanTitle.tr),
-        actions: [
-          if (_isScanning)
-            const Padding(
-              padding: EdgeInsets.all(FSizes.md),
-              child: SizedBox(
-                width: FSizes.iconInlineSm,
-                height: FSizes.iconInlineSm,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-        ],
-      ),
-      body: _buildBody(named),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _isScanning ? _stopScan : _startScan,
-        icon: Icon(_isScanning ? Icons.stop : Icons.search),
-        label: Text(_isScanning ? 'Stop Scan' : 'Scan Devices'),
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // _Header(
+        //   isScanning: _isScanning,
+        //   onScanToggle: _isScanning ? _stopScan : _startScan,
+        // ),
+        _buildHeader(),
+        Expanded(child: _buildBody(named)),
+      ],
     );
   }
 
   Widget _buildBody(List<BleObdDevice> named) {
     if (!_isScanning && _seen.isEmpty) {
-      return const _EmptyState(
-        icon: Icons.bluetooth_searching,
-        title: 'No devices found',
-        subtitle: 'Tap "Scan Devices" to start',
+      return _EmptyState(
+        icon: Iconsax.bluetooth,
+        title: InspectionPage.obdScanEmptyTitle.tr,
+        subtitle: InspectionPage.obdScanEmptyHint.tr,
       );
     }
     if (_isScanning && _seen.isEmpty) {
-      return const _EmptyState(
-        icon: Icons.radar,
-        title: 'Scanning...',
-        subtitle: 'Looking for nearby Bluetooth devices',
+      return _EmptyState(
+        icon: Iconsax.bluetooth_2,
+        title: InspectionPage.obdScanScanningTitle.tr,
+        subtitle: InspectionPage.obdScanScanningHint.tr,
+        showSpinner: true,
       );
     }
 
     return ListView(
-      padding: const EdgeInsets.only(bottom: FSizes.imageThumbSize),
+      padding: const EdgeInsets.only(bottom: FSizes.xl),
       children: [
         if (named.isNotEmpty) ...[
-          _SectionHeader(label: 'Named Devices', count: named.length),
+          _SectionHeader(
+            label: InspectionPage.obdScanSectionNamed.tr,
+            count: named.length,
+          ),
           ...named.map(
             (d) => _DeviceTile(device: d, onTap: () => _selectDevice(d)),
           ),
@@ -189,9 +195,33 @@ class _ObdDeviceScanPageState extends State<ObdDeviceScanPage> {
       ],
     );
   }
-}
 
-// ── Supporting widgets ────────────────────────────────────────────────────
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(FSizes.md, FSizes.md, FSizes.md, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            InspectionPage.obdScanTitle.tr,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: FSizes.xxs),
+          Text(
+            InspectionPage.obdScanScanningHint.tr,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: FColors.darkGrey),
+          ),
+          const SizedBox(height: FSizes.sm),
+          const Divider(),
+        ],
+      ),
+    );
+  }
+}
 
 class _SectionHeader extends StatelessWidget {
   final String label;
@@ -203,7 +233,7 @@ class _SectionHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         FSizes.md,
-        FSizes.borderRadiusLg,
+        FSizes.sm,
         FSizes.md,
         FSizes.xs,
       ),
@@ -211,25 +241,26 @@ class _SectionHeader extends StatelessWidget {
         children: [
           Text(
             label,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: FColors.primaryColor,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(width: FSizes.sm),
+          const SizedBox(width: FSizes.xs),
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: FSizes.sm,
               vertical: FSizes.xxs,
             ),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer,
+              color: FColors.primaryColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
             ),
             child: Text(
               '$count',
-              style: TextStyle(
-                fontSize: FSizes.fontSizeXs,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: FColors.primaryColor,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -239,41 +270,50 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
+// ── Device tile ─────────────────────────────────────────────────────────────
+
 class _DeviceTile extends StatelessWidget {
   final BleObdDevice device;
+
   final VoidCallback onTap;
   const _DeviceTile({required this.device, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final isNamed = device.name != device.mac;
+    final accent = isNamed ? FColors.primaryColor : FColors.darkGrey;
+
     return ListTile(
-      leading: Icon(
-        Icons.bluetooth,
-        color: isNamed ? Theme.of(context).colorScheme.primary : Colors.grey,
+      leading: CircleAvatar(
+        radius: FSizes.iconInlineSm,
+        backgroundColor: accent.withValues(alpha: 0.12),
+        child: Icon(Iconsax.bluetooth, size: FSizes.iconSm, color: accent),
       ),
-      title: Text(
-        isNamed ? device.name : 'Unknown Device',
-        style: TextStyle(
-          fontWeight: isNamed ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-      subtitle: Text(
-        device.mac,
-        style: const TextStyle(fontSize: FSizes.fontSizeXs),
+      title: Row(
+        children: [
+          Flexible(
+            child: Text(
+              isNamed ? device.name : InspectionPage.obdScanUnknownDevice.tr,
+              style: TextStyle(
+                fontWeight: isNamed ? FontWeight.w600 : FontWeight.normal,
+                fontSize: FSizes.fontSizeSm,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _SignalBars(rssi: device.rssi),
-          const SizedBox(width: FSizes.sm),
+          const SizedBox(width: FSizes.xs),
           Text(
             '${device.rssi} dBm',
-            style: const TextStyle(
-              fontSize: FSizes.fontSizeXs,
-              color: Colors.grey,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: FColors.darkGrey),
           ),
         ],
       ),
@@ -282,12 +322,15 @@ class _DeviceTile extends StatelessWidget {
   }
 }
 
+// ── Signal strength ─────────────────────────────────────────────────────────
+
 class _SignalBars extends StatelessWidget {
   final int rssi;
   const _SignalBars({required this.rssi});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = FHelper.isDarkMode(context);
     final bars = rssi >= -60
         ? 4
         : rssi >= -70
@@ -295,13 +338,14 @@ class _SignalBars extends StatelessWidget {
         : rssi >= -80
         ? 2
         : 1;
-    final color = rssi >= -60
-        ? Colors.green
-        : rssi >= -70
-        ? Colors.lightGreen
+    final color = rssi >= -70
+        ? FColors.success
         : rssi >= -80
-        ? Colors.orange
-        : Colors.red;
+        ? FColors.warning
+        : FColors.error;
+    final inactive = (isDark ? FColors.light : FColors.darkGrey).withValues(
+      alpha: 0.25,
+    );
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -313,7 +357,7 @@ class _SignalBars extends StatelessWidget {
           height: FSizes.xs + (i * FSizes.xs),
           margin: const EdgeInsets.symmetric(horizontal: FSizes.dividerHeight),
           decoration: BoxDecoration(
-            color: i < bars ? color : Colors.grey.shade300,
+            color: i < bars ? color : inactive,
             borderRadius: BorderRadius.circular(FSizes.dividerHeight),
           ),
         ),
@@ -322,40 +366,65 @@ class _SignalBars extends StatelessWidget {
   }
 }
 
+// ── Empty / scanning state ──────────────────────────────────────────────────
+
 class _EmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final bool showSpinner;
+
   const _EmptyState({
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.showSpinner = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = FHelper.isDarkMode(context);
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: FSizes.iconXl, color: Colors.grey.shade400),
-          const SizedBox(height: FSizes.md),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: FSizes.fontSizeMd,
-              color: Colors.grey.shade600,
+      child: Padding(
+        padding: const EdgeInsets.all(FSizes.xl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (showSpinner)
+              const SizedBox(
+                width: FSizes.iconCircleMd,
+                height: FSizes.iconCircleMd,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: FColors.primaryColor,
+                ),
+              )
+            else
+              Icon(
+                icon,
+                size: FSizes.buttonHeightLg,
+                color: (isDark ? FColors.light : FColors.darkGrey).withValues(
+                  alpha: 0.4,
+                ),
+              ),
+            const SizedBox(height: FSizes.md),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: isDark ? FColors.light : FColors.dark,
+              ),
+              textAlign: TextAlign.center,
             ),
-          ),
-          const SizedBox(height: FSizes.sm),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: FSizes.fontSizeSm,
-              color: Colors.grey.shade500,
+            const SizedBox(height: FSizes.xs),
+            Text(
+              subtitle,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: FColors.darkGrey),
+              textAlign: TextAlign.center,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
