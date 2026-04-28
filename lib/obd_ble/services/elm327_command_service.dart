@@ -22,11 +22,11 @@ class Elm327CommandService {
   Elm327CommandService({
     required this.writeBytes,
     required this.notifications,
-    this.commandTimeout = const Duration(seconds: 20),
-    this.resetTimeout = const Duration(seconds: 20),
 
-    // this.commandTimeout = const Duration(seconds: 5),
-    // this.resetTimeout = const Duration(seconds: 3),
+    // this.commandTimeout = const Duration(seconds: 20),
+    // this.resetTimeout = const Duration(seconds: 20),
+    this.commandTimeout = const Duration(seconds: 5),
+    this.resetTimeout = const Duration(seconds: 3),
   });
 
   // Lock so only one command can be in-flight at a time.
