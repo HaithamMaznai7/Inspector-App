@@ -1,3 +1,4 @@
+import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/models/obd_code.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
@@ -41,6 +42,21 @@ class _AddingObdCodeState extends State<AddingObdCode> {
   void _submit() {
     final code = _codeController.text.trim();
     final desc = _descController.text.trim();
+
+    if (code.isEmpty) {
+      FLoader.warningSnackBar(
+        title: InspectionPage.obdCodeRequired.tr,
+        message: InspectionPage.obdCodeRequiredMsg.tr,
+      );
+      return;
+    }
+    if (desc.isEmpty) {
+      FLoader.warningSnackBar(
+        title: InspectionPage.obdDescRequired.tr,
+        message: InspectionPage.obdDescRequiredMsg.tr,
+      );
+      return;
+    }
 
     if (_code == null) {
       _code = OBDCode(id: 0, code: code, description: desc);

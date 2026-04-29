@@ -284,8 +284,14 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
     // Optimistic UI: append with isPending=true + a negative placeholder id
     // so the row renders immediately. Replaced on successful POST with the
-    // server entity (real id, isPending=false).
-    if (!_data.any((c) => c.code == code.code)) {
+    // server entity (real id, isPending=false). On a re-store of an existing
+    // placeholder (e.g. user added the description to a 422'd device code),
+    // refresh its description in place instead of duplicating the row.
+    final existingIdx = _data.indexWhere((c) => c.code == code.code);
+    if (existingIdx >= 0) {
+      _data[existingIdx].description = code.description;
+      _data.refresh();
+    } else {
       _data.add(OBDCode(
         id: -DateTime.now().millisecondsSinceEpoch,
         code: code.code,
@@ -318,6 +324,15 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       _clearPendingCode(code.code);
       return true;
     } on FNetworkException catch (e) {
+      // 422 is server-side validation (e.g. device-fetched code with empty
+      // description). Retrying will fail forever, so drop the Hive pending
+      // entry but keep the optimistic row visible so the inspector can edit
+      // it and add the missing fields.
+      if (e.statusCode == 422) {
+        _log('store – 422 validation error; keeping row visible, not queuing');
+        _clearPendingCode(code.code);
+        return false;
+      }
       _log('store – FNetworkException: ${e.statusCode} — queued as pending');
       // Optimistic entry stays in _data with isPending=true; flushPending
       // will retry on reconnect and replace it with the server entity.

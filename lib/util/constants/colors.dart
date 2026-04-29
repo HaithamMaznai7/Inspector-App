@@ -56,7 +56,7 @@ class FColors {
   // Error and Validation Colors
   static const Color error = Color(0xFFCF2828);
   static const Color success = Color(0xFF27B951);
-  static const Color warning = Color(0xFFFAB515);
+  static const Color warning = Color.fromARGB(255, 223, 88, 15);
   static const Color info = Color(0xFF1976D2);
 
   // Error and Validation Colors

@@ -23,7 +23,7 @@ class FLoader {
     }, duration: 1);
   }
 
-  static void warningSnackBar({String? title, String? message, duration = 3}) {
+  static void warningSnackBar({String? title, String? message, duration = 4}) {
     // SnackbarQueue.show(() {
     _snackBar(
       title: title,

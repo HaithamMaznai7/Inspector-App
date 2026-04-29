@@ -561,8 +561,8 @@ class InspectionObdController extends GetxController {
     );
 
     try {
-      if (result != null && result.id == 0) {
-        _log('onCreateEdit – storing new code: ${result.code}');
+      if (result != null && result.id <= 0) {
+        _log('onCreateEdit – storing code (id=${result.id}): ${result.code}');
         final synced = await repository.store(result);
         _log('onCreateEdit – stored (synced=$synced)');
         if (synced) {
