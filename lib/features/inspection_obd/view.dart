@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:fahis_inspector/features/inspection_obd/controller.dart';
-import 'package:fahis_inspector/features/inspection_obd/components/ble_status_card.dart';
 import 'package:fahis_inspector/features/inspection_obd/components/card.dart';
 import 'package:fahis_inspector/obd_ble/services/obd_ble_connection_service.dart';
 import 'package:fahis_inspector/routes.dart';
@@ -335,14 +334,9 @@ class _CodesCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Input section — switches layout based on BLE connection state
+// Input section — consistently side-by-side
 // ─────────────────────────────────────────────────────────────────────────────
 
-/// When BLE is disconnected: two equal action cards side by side so the
-/// inspector immediately sees both input paths at a glance.
-///
-/// When BLE is active (connecting / connected / error): full-width BLE status
-/// row + a secondary manual-add row below.
 class _InputSection extends StatelessWidget {
   const _InputSection({required this.controller, required this.isDark});
 
@@ -352,13 +346,6 @@ class _InputSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final isDisconnected =
-          controller.bleState.value == ObdBleConnectionState.disconnected;
-
-      // OBD adapter connection uses Bluetooth Classic SPP, which doesn't work
-      // on iOS for non-MFi devices (which is virtually every ELM327 clone).
-      // On iOS we hide the connect-device path entirely and show only the
-      // manual-add card so the inspector still has a way to record codes.
       if (!Platform.isAndroid) {
         return _ActionCard(
           icon: Iconsax.edit,
@@ -368,15 +355,14 @@ class _InputSection extends StatelessWidget {
         );
       }
 
-      if (isDisconnected) {
-        return Row(
+      return IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: _ActionCard(
-                icon: Iconsax.bluetooth,
-                label: InspectionPage.obdConnectDevice.tr,
+              child: _BleSquareCard(
+                controller: controller,
                 isDark: isDark,
-                onTap: controller.pickAndConnectDevice,
               ),
             ),
             const SizedBox(width: FSizes.sm),
@@ -389,25 +375,159 @@ class _InputSection extends StatelessWidget {
               ),
             ),
           ],
-        );
-      }
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          BleStatusCard(controller: controller),
-          const SizedBox(height: FSizes.xs),
-          _ManualAddRow(
-            isDark: isDark,
-            onTap: () => InspectionObdBinding().instance.onCreateEdit(),
-          ),
-        ],
+        ),
       );
     });
   }
 }
 
-/// Tappable card used for the two equal input paths in the disconnected state.
+class _BleSquareCard extends StatelessWidget {
+  const _BleSquareCard({required this.controller, required this.isDark});
+
+  final InspectionObdController controller;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final state = controller.bleState.value;
+      final isReading = controller.isReadingFromDevice.value;
+      final deviceName = controller.connectedDeviceName.value;
+
+      IconData icon = Iconsax.bluetooth;
+      Color iconColor = FColors.primaryColor;
+      String label = InspectionPage.obdConnectDevice.tr;
+      VoidCallback? onTap = controller.pickAndConnectDevice;
+      Widget? extraAction;
+
+      if (state == ObdBleConnectionState.connecting) {
+        iconColor = FColors.primaryColor;
+        label = InspectionPage.obdConnecting.tr;
+        onTap = null;
+      } else if (state == ObdBleConnectionState.connected) {
+        iconColor = FColors.success;
+        label = deviceName ?? InspectionPage.obdConnectDevice.tr;
+        onTap = controller.readCodesFromDevice; // Primary action is read
+        extraAction = Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _SmallBtn(
+              icon: Iconsax.bluetooth_2,
+              color: FColors.error,
+              onTap: controller.disconnectDevice,
+            ),
+            const SizedBox(width: FSizes.sm),
+            isReading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: FColors.primaryColor,
+                    ),
+                  )
+                : _SmallBtn(
+                    icon: Iconsax.cpu,
+                    color: FColors.primaryColor,
+                    onTap: controller.readCodesFromDevice,
+                  ),
+          ],
+        );
+      } else if (state == ObdBleConnectionState.lostConnection ||
+                 state == ObdBleConnectionState.error) {
+        iconColor = FColors.error;
+        label = InspectionPage.obdDeviceDisconnected.tr;
+        onTap = controller.pickAndConnectDevice;
+      }
+
+      return GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            vertical: FSizes.sm,
+            horizontal: FSizes.xs,
+          ),
+          decoration: BoxDecoration(
+            color: isDark
+                ? FColors.darkGrey.withValues(alpha: 0.2)
+                : FColors.primaryColor.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
+            border: Border.all(
+              color: FColors.primaryColor.withValues(alpha: 0.2),
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (state == ObdBleConnectionState.connecting)
+                const SizedBox(
+                  width: FSizes.iconMd,
+                  height: FSizes.iconMd,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: FColors.primaryColor,
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.all(FSizes.sm),
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    size: FSizes.iconSm,
+                    color: iconColor,
+                  ),
+                ),
+              const SizedBox(height: FSizes.xs),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? FColors.light : FColors.dark,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (extraAction != null) ...[
+                const SizedBox(height: FSizes.xs),
+                extraAction,
+              ]
+            ],
+          ),
+        ),
+      );
+    });
+  }
+}
+
+class _SmallBtn extends StatelessWidget {
+  const _SmallBtn({required this.icon, required this.color, required this.onTap});
+
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Icon(icon, size: FSizes.iconSm, color: color),
+      ),
+    );
+  }
+}
+
 class _ActionCard extends StatelessWidget {
   const _ActionCard({
     required this.icon,
@@ -427,7 +547,7 @@ class _ActionCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(
-          vertical: FSizes.md,
+          vertical: FSizes.sm,
           horizontal: FSizes.sm,
         ),
         decoration: BoxDecoration(
@@ -464,73 +584,6 @@ class _ActionCard extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Secondary manual-add row shown below the BLE status when a device is active.
-class _ManualAddRow extends StatelessWidget {
-  const _ManualAddRow({required this.isDark, required this.onTap});
-
-  final bool isDark;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: FSizes.sm,
-          vertical: FSizes.sm,
-        ),
-        decoration: BoxDecoration(
-          color: isDark
-              ? FColors.darkGrey.withValues(alpha: 0.15)
-              : FColors.primaryColor.withValues(alpha: 0.04),
-          borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-          border: Border.all(
-            color: FColors.primaryColor.withValues(alpha: 0.15),
-          ),
-        ),
-        child: Row(
-          children: [
-            const Icon(
-              Iconsax.edit,
-              size: FSizes.iconInlineSm,
-              color: FColors.primaryColor,
-            ),
-            const SizedBox(width: FSizes.sm),
-            Expanded(
-              child: Text(
-                InspectionPage.obdAddManualCode.tr,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: isDark ? FColors.light : FColors.dark,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: FSizes.sm,
-                vertical: FSizes.xs,
-              ),
-              decoration: BoxDecoration(
-                color: FColors.primaryColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-                border: Border.all(
-                  color: FColors.primaryColor.withValues(alpha: 0.3),
-                ),
-              ),
-              child: const Icon(
-                Iconsax.add,
-                size: FSizes.fontSizeSm,
-                color: FColors.primaryColor,
-              ),
             ),
           ],
         ),
