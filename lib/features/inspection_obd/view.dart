@@ -345,36 +345,37 @@ class _InputSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      if (!Platform.isAndroid) {
-        return _ActionCard(
-          icon: Iconsax.edit,
-          label: InspectionPage.obdAddManualCode.tr,
-          isDark: isDark,
-          onTap: () => InspectionObdBinding().instance.onCreateEdit(),
-        );
-      }
-
-      return IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: _BleSquareCard(controller: controller, isDark: isDark),
-            ),
-            const SizedBox(width: FSizes.sm),
-            Expanded(
-              child: _ActionCard(
-                icon: Iconsax.edit,
-                label: InspectionPage.obdAddManualCode.tr,
-                isDark: isDark,
-                onTap: () => InspectionObdBinding().instance.onCreateEdit(),
-              ),
-            ),
-          ],
-        ),
+    if (!Platform.isAndroid) {
+      return _ActionCard(
+        icon: Iconsax.edit,
+        label: InspectionPage.obdAddManualCode.tr,
+        isDark: isDark,
+        onTap: () => InspectionObdBinding().instance.onCreateEdit(),
       );
-    });
+    }
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _BleSquareCard(
+              controller: controller,
+              isDark: isDark,
+            ),
+          ),
+          const SizedBox(width: FSizes.sm),
+          Expanded(
+            child: _ActionCard(
+              icon: Iconsax.edit,
+              label: InspectionPage.obdAddManualCode.tr,
+              isDark: isDark,
+              onTap: () => InspectionObdBinding().instance.onCreateEdit(),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
