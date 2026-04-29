@@ -128,6 +128,10 @@ class InspectionPage {
   static const String obdCodeEditSuccess = 'obdCodeEditSuccess';
   static const String obdCodeEditSuccessMsg = 'obdCodeEditSuccessMsg';
   static const String obdActionError = 'obdActionError';
+  static const String finishOnlineRequired = 'finishOnlineRequired';
+  static const String finishOnlineRequiredMsg = 'finishOnlineRequiredMsg';
+  static const String finishObdIncomplete = 'finishObdIncomplete';
+  static const String finishObdIncompleteMsg = 'finishObdIncompleteMsg';
   static const String obdAddCode = 'obdAddCode';
   static const String obdEditCode = 'obdEditCode';
   static const String obdCodeLabel = 'obdCodeLabel';

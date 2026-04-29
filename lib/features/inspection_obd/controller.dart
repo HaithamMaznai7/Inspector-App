@@ -56,6 +56,14 @@ class InspectionObdController extends GetxController {
   bool get hasPendingReport =>
       _repositoryReady && repository.hasPendingReport();
 
+  /// True when any OBD code is missing a description or hasn't synced to
+  /// the server. Blocks inspection finalisation — those rows would be lost
+  /// (device-fetched 422 case) or could replay on reconnect (manual-offline
+  /// case) after the inspection is already marked finished.
+  bool get hasIncompleteCodes => codes.any(
+        (c) => c.isPending || c.description.trim().isEmpty,
+      );
+
   /// Whether all async data has been loaded (not in a loading state).
   bool get isDataReady => !isLoading.value && !isUpload.value;
 

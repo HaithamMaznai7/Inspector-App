@@ -134,15 +134,29 @@ class StageSelector extends StatelessWidget {
                       ),
                       const SizedBox(width: FSizes.md),
                       Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () =>
-                              controller.setSatge(InspectionStage.finished),
-                          icon: const Icon(Iconsax.tick_circle, size: FSizes.iconSm),
-                          label: Text(FTexts.submitBtn.tr),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: FSizes.md),
-                          ),
-                        ),
+                        // Reactive on connectivity + OBD code state so the
+                        // button greys out the moment the device goes offline
+                        // or any code becomes incomplete.
+                        child: Obx(() {
+                          final canFinish = controller.canFinish;
+                          return ElevatedButton.icon(
+                            onPressed: canFinish
+                                ? () => controller.setSatge(
+                                    InspectionStage.finished,
+                                  )
+                                : null,
+                            icon: const Icon(
+                              Iconsax.tick_circle,
+                              size: FSizes.iconSm,
+                            ),
+                            label: Text(FTexts.submitBtn.tr),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: FSizes.md,
+                              ),
+                            ),
+                          );
+                        }),
                       ),
                     ],
                   ),

@@ -3,6 +3,7 @@ import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
 import 'package:fahis_inspector/enums/point_status.dart';
 import 'package:fahis_inspector/main.dart';
 import 'package:fahis_inspector/features/inspection_details/components/note_dialog.dart';
+import 'package:fahis_inspector/features/inspection_obd/controller.dart';
 import 'package:fahis_inspector/features/inspections/controller.dart';
 import 'package:fahis_inspector/models/inspection.dart';
 import 'package:fahis_inspector/models/vehicle_details.dart';
@@ -36,6 +37,24 @@ class InspectionDetailsController extends GetxController
   final Rxn<Inspection> inspection = Rxn<Inspection>();
   final isLoading = true.obs;
   final isSubmitting = false.obs;
+
+  /// Live connectivity flag used to gate inspection finalisation.
+  bool get isOnline => ConnectionService.instance.isConnectionGood.value;
+
+  /// True when the OBD controller (if mounted) reports any code that is
+  /// missing a description or hasn't synced yet.
+  bool get hasIncompleteObd {
+    if (!Get.isRegistered<InspectionObdController>()) return false;
+    return Get.find<InspectionObdController>().hasIncompleteCodes;
+  }
+
+  /// Submit-Inspection button enable state. Edits and stage navigation stay
+  /// available offline — only the irreversible `finished` action is gated.
+  bool get canFinish =>
+      isOnline &&
+      !hasIncompleteObd &&
+      !isSubmitting.value &&
+      inspection.value != null;
 
   @override
   void onReady() {
@@ -292,10 +311,38 @@ class InspectionDetailsController extends GetxController
     // For stages that show a dialog, collect input BEFORE showing loading
     switch (stage) {
       case InspectionStage.finished:
+        // Finalisation is irreversible. Block while offline (would queue
+        // silently in the offline write-queue and replay later) or while
+        // OBD codes are incomplete (device-fetched 422 rows that never made
+        // it server-side, or manual rows still pending sync).
+        if (!isOnline) {
+          FLoader.warningSnackBar(
+            title: InspectionPage.finishOnlineRequired.tr,
+            message: InspectionPage.finishOnlineRequiredMsg.tr,
+          );
+          return;
+        }
+        if (hasIncompleteObd) {
+          FLoader.warningSnackBar(
+            title: InspectionPage.finishObdIncomplete.tr,
+            message: InspectionPage.finishObdIncompleteMsg.tr,
+          );
+          return;
+        }
         final note = await Get.dialog<String>(
           NoteInputDialog(status: stage.value ?? 'finished'),
         );
         if (note == null) return; // user cancelled
+        // Connection may have dropped while the dialog was open — re-check
+        // before mutating state and POSTing. Otherwise _savePendingStage
+        // inside repository.update() would queue 'finished' silently.
+        if (!isOnline) {
+          FLoader.warningSnackBar(
+            title: InspectionPage.finishOnlineRequired.tr,
+            message: InspectionPage.finishOnlineRequiredMsg.tr,
+          );
+          return;
+        }
         // Backend requires note when stage is finished; use '-' if empty
         inspection.value!.note = note.trim().isEmpty ? '-' : note.trim();
         inspection.value!.stage = stage;

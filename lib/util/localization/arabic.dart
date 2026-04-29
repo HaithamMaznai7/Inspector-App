@@ -189,6 +189,12 @@ class Arabic {
     InspectionPage.obdCodeRequiredMsg: 'يرجى إدخال رمز OBD',
     InspectionPage.obdDescRequired: 'الوصف مطلوب',
     InspectionPage.obdDescRequiredMsg: 'يرجى إدخال وصف الرمز',
+    InspectionPage.finishOnlineRequired: 'الاتصال بالإنترنت مطلوب',
+    InspectionPage.finishOnlineRequiredMsg:
+        'إنهاء الفحص يتطلب اتصالاً بالإنترنت. يرجى إعادة الاتصال والمحاولة مرة أخرى.',
+    InspectionPage.finishObdIncomplete: 'أكواد OBD غير مكتملة',
+    InspectionPage.finishObdIncompleteMsg:
+        'بعض أكواد OBD ينقصها الوصف أو لا تزال قيد المزامنة. اضغط على كل كود معلّق لاستكماله قبل إنهاء الفحص.',
     InspectionPage.obdDataRequired: 'بيانات OBD مطلوبة',
     InspectionPage.obdDataRequiredMsg:
         'يرجى رفع ملف التقرير أو إضافة رمز OBD واحد على الأقل قبل المتابعة',

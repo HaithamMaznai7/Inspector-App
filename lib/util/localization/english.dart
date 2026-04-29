@@ -195,6 +195,12 @@ class English {
     InspectionPage.obdCodeRequiredMsg: 'Please enter the OBD code',
     InspectionPage.obdDescRequired: 'Description Required',
     InspectionPage.obdDescRequiredMsg: 'Please enter the code description',
+    InspectionPage.finishOnlineRequired: 'Connection Required',
+    InspectionPage.finishOnlineRequiredMsg:
+        'Finishing the inspection requires an internet connection. Please reconnect and try again.',
+    InspectionPage.finishObdIncomplete: 'OBD Codes Incomplete',
+    InspectionPage.finishObdIncompleteMsg:
+        'Some OBD codes are missing a description or are still pending sync. Tap each pending code to complete it before finishing the inspection.',
     InspectionPage.obdDataRequired: 'OBD Data Required',
     InspectionPage.obdDataRequiredMsg:
         'Please upload a report file or add at least one OBD code before proceeding',
