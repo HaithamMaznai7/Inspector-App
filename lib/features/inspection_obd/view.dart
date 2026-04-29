@@ -360,10 +360,7 @@ class _InputSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: _BleSquareCard(
-                controller: controller,
-                isDark: isDark,
-              ),
+              child: _BleSquareCard(controller: controller, isDark: isDark),
             ),
             const SizedBox(width: FSizes.sm),
             Expanded(
@@ -434,7 +431,7 @@ class _BleSquareCard extends StatelessWidget {
           ],
         );
       } else if (state == ObdBleConnectionState.lostConnection ||
-                 state == ObdBleConnectionState.error) {
+          state == ObdBleConnectionState.error) {
         iconColor = FColors.error;
         label = InspectionPage.obdDeviceDisconnected.tr;
         onTap = controller.pickAndConnectDevice;
@@ -475,11 +472,7 @@ class _BleSquareCard extends StatelessWidget {
                     color: iconColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    icon,
-                    size: FSizes.iconSm,
-                    color: iconColor,
-                  ),
+                  child: Icon(icon, size: FSizes.iconSm, color: iconColor),
                 ),
               const SizedBox(height: FSizes.xs),
               Text(
@@ -495,7 +488,7 @@ class _BleSquareCard extends StatelessWidget {
               if (extraAction != null) ...[
                 const SizedBox(height: FSizes.xs),
                 extraAction,
-              ]
+              ],
             ],
           ),
         ),
@@ -505,7 +498,11 @@ class _BleSquareCard extends StatelessWidget {
 }
 
 class _SmallBtn extends StatelessWidget {
-  const _SmallBtn({required this.icon, required this.color, required this.onTap});
+  const _SmallBtn({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 
   final IconData icon;
   final Color color;
@@ -671,7 +668,7 @@ class _SkeletonList extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = isDark
         ? FColors.darkGrey.withValues(alpha: 0.4)
-        : FColors.white.withValues(alpha: 0.02);
+        : FColors.grey.withValues(alpha: 0.5);
 
     return Column(
       children: List.generate(2, (i) {
