@@ -224,19 +224,12 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(FSizes.md, FSizes.sm, FSizes.md, 0),
+      padding: const EdgeInsets.all(FSizes.md),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: FSizes.iconLg,
-            height: FSizes.dividerHeight * 2,
-            margin: const EdgeInsets.only(bottom: FSizes.sm),
-            decoration: BoxDecoration(
-              color: FColors.darkGrey.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(FSizes.dividerHeight),
-            ),
-          ),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Column(
@@ -244,50 +237,71 @@ class _Header extends StatelessWidget {
                   children: [
                     Text(
                       InspectionPage.obdScanTitle.tr,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: FSizes.xxs),
+                    const SizedBox(height: FSizes.xs),
                     Text(
                       InspectionPage.obdScanEmptyHint.tr,
                       style: Theme.of(
                         context,
-                      ).textTheme.bodySmall?.copyWith(color: FColors.darkGrey),
+                      ).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
                     ),
                   ],
                 ),
               ),
-              IconButton(
-                tooltip: InspectionPage.obdScanStart.tr,
-                onPressed: isLoading ? null : onRefresh,
-                icon: const Icon(
-                  Icons.refresh_rounded,
-                  color: FColors.primaryColor,
+              const SizedBox(width: FSizes.sm),
+              Container(
+                decoration: BoxDecoration(
+                  color: FColors.primaryColor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
                 ),
-              ),
-              ElevatedButton.icon(
-                onPressed: onOpenSettings,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: FColors.primaryColor,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-                  ),
-                ),
-                icon: const Icon(Icons.settings_bluetooth, size: FSizes.iconSm),
-                label: Text(
-                  InspectionPage.obdPairNewDevice.tr,
-                  style: const TextStyle(
-                    fontSize: FSizes.fontSizeSm,
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: IconButton(
+                  tooltip: InspectionPage.obdScanStart.tr,
+                  onPressed: isLoading ? null : onRefresh,
+                  icon: isLoading
+                      ? const SizedBox(
+                          width: FSizes.iconSm,
+                          height: FSizes.iconSm,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: FColors.primaryColor,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.refresh_rounded,
+                          color: FColors.primaryColor,
+                        ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: FSizes.sm),
+          const SizedBox(height: FSizes.md),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: onOpenSettings,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: FColors.primaryColor.withValues(alpha: 0.1),
+                foregroundColor: FColors.primaryColor,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: FSizes.md),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+                ),
+              ),
+              icon: const Icon(Icons.settings_bluetooth, size: FSizes.iconMd),
+              label: Text(
+                InspectionPage.obdPairNewDevice.tr,
+                style: const TextStyle(
+                  fontSize: FSizes.fontSizeMd,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: FSizes.md),
           const Divider(height: 1),
         ],
       ),
@@ -354,29 +368,51 @@ class _DeviceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = FHelper.isDarkMode(context);
     return Container(
-      color: isVeepeak
-          ? FColors.primaryColor.withValues(alpha: 0.06)
-          : Colors.transparent,
+      margin: const EdgeInsets.symmetric(
+        horizontal: FSizes.md,
+        vertical: FSizes.xs,
+      ),
+      decoration: BoxDecoration(
+        color: isVeepeak
+            ? FColors.primaryColor.withValues(alpha: 0.05)
+            : Colors.transparent,
+        border: Border.all(
+          color: isVeepeak
+              ? FColors.primaryColor.withValues(alpha: 0.3)
+              : (isDark ? FColors.darkerGrey : FColors.borderPrimary)
+                    .withValues(alpha: 0.5),
+        ),
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+      ),
       child: ListTile(
-        leading: CircleAvatar(
-          radius: FSizes.iconInlineSm,
-          backgroundColor: FColors.primaryColor.withValues(alpha: 0.12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: FSizes.md,
+          vertical: FSizes.xs,
+        ),
+        leading: Container(
+          padding: const EdgeInsets.all(FSizes.sm),
+          decoration: BoxDecoration(
+            color: isVeepeak
+                ? FColors.primaryColor.withValues(alpha: 0.15)
+                : FColors.primaryColor.withValues(alpha: 0.08),
+            shape: BoxShape.circle,
+          ),
           child: const Icon(
             Iconsax.bluetooth,
-            size: FSizes.iconSm,
+            size: FSizes.iconMd,
             color: FColors.primaryColor,
           ),
         ),
         title: Row(
           children: [
-            Flexible(
+            Expanded(
               child: Text(
                 device.name,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: FSizes.fontSizeSm,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -386,15 +422,32 @@ class _DeviceTile extends StatelessWidget {
             ],
           ],
         ),
-        subtitle: Text(
-          device.mac,
-          style: Theme.of(
-            context,
-          ).textTheme.labelSmall?.copyWith(color: FColors.darkGrey),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: FSizes.xxs),
+          child: Text(
+            device.mac,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: FColors.darkGrey,
+              letterSpacing: 0.5,
+            ),
+          ),
         ),
-        trailing: const Icon(
-          Icons.chevron_right_rounded,
-          color: FColors.darkGrey,
+        trailing: Container(
+          padding: const EdgeInsets.all(FSizes.xxs),
+          decoration: BoxDecoration(
+            color: isDark
+                ? FColors.darkGrey.withValues(alpha: 0.2)
+                : FColors.lightGrey,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.chevron_right_rounded,
+            color: FColors.darkGrey,
+            size: FSizes.iconSm,
+          ),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
         ),
         onTap: onTap,
       ),
@@ -450,37 +503,46 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (showSpinner)
-              const SizedBox(
-                width: FSizes.iconCircleMd,
-                height: FSizes.iconCircleMd,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: FColors.primaryColor,
-                ),
-              )
-            else
-              Icon(
-                icon,
-                size: FSizes.buttonHeightLg,
+            Container(
+              padding: const EdgeInsets.all(FSizes.xl),
+              decoration: BoxDecoration(
                 color: (isDark ? FColors.light : FColors.darkGrey).withValues(
-                  alpha: 0.4,
+                  alpha: 0.05,
                 ),
+                shape: BoxShape.circle,
               ),
-            const SizedBox(height: FSizes.md),
+              child: showSpinner
+                  ? const SizedBox(
+                      width: FSizes.iconLg * 1.5,
+                      height: FSizes.iconLg * 1.5,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        color: FColors.primaryColor,
+                      ),
+                    )
+                  : Icon(
+                      icon,
+                      size: FSizes.iconLg * 2,
+                      color: (isDark ? FColors.light : FColors.darkGrey)
+                          .withValues(alpha: 0.5),
+                    ),
+            ),
+            const SizedBox(height: FSizes.lg),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: isDark ? FColors.light : FColors.dark,
+                fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: FSizes.xs),
+            const SizedBox(height: FSizes.sm),
             Text(
               subtitle,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: FColors.darkGrey),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: FColors.darkGrey,
+                height: 1.5,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
