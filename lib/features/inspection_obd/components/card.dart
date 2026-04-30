@@ -30,6 +30,12 @@ class OBDCodeCard extends StatefulWidget {
 class _OBDCodeCardState extends State<OBDCodeCard> {
   bool _isDeleting = false;
 
+  /// True when the inspector still owes a description for a code that came
+  /// from the BLE adapter. The dialog forbids empty descriptions on manual
+  /// entries, so this only ever fires for device-sourced codes.
+  bool get _needsDescription =>
+      widget.isFromDevice && widget.code.description.trim().isEmpty;
+
   Future<void> _confirmDelete(BuildContext context, bool isDark) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -104,90 +110,137 @@ class _OBDCodeCardState extends State<OBDCodeCard> {
               : FColors.grey.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
           border: Border.all(
-            color: isDark
-                ? FColors.grey.withValues(alpha: 0.12)
-                : FColors.grey.withValues(alpha: 0.25),
+            color: _needsDescription
+                ? FColors.error
+                : (isDark
+                    ? FColors.grey.withValues(alpha: 0.12)
+                    : FColors.grey.withValues(alpha: 0.25)),
+            width: _needsDescription ? 1.5 : 1.0,
           ),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Code badge (+ pending-sync icon when offline)
             Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: FSizes.sm, vertical: FSizes.borderRadiusSm),
-                  decoration: BoxDecoration(
-                    color: FColors.primaryColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(FSizes.borderRadiusMd),
-                    border: Border.all(
-                      color: FColors.primaryColor.withValues(alpha: 0.3),
+                // Code badge (+ device / pending-sync icons)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: FSizes.sm,
+                        vertical: FSizes.borderRadiusSm,
+                      ),
+                      decoration: BoxDecoration(
+                        color: FColors.primaryColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(
+                          FSizes.borderRadiusMd,
+                        ),
+                        border: Border.all(
+                          color: FColors.primaryColor.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Text(
+                        widget.code.code,
+                        style: const TextStyle(
+                          fontSize: FSizes.fontSizeXs,
+                          fontWeight: FontWeight.w700,
+                          color: FColors.primaryColor,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
                     ),
-                  ),
+                    if (widget.isFromDevice) ...[
+                      const SizedBox(width: FSizes.xs),
+                      Tooltip(
+                        message: InspectionPage.obdFromDevice.tr,
+                        child: const Icon(
+                          Iconsax.bluetooth,
+                          size: FSizes.fontSizeSm,
+                          color: FColors.primaryColor,
+                        ),
+                      ),
+                    ],
+                    if (widget.isPendingSync) ...[
+                      const SizedBox(width: FSizes.xs),
+                      const Tooltip(
+                        message: 'Pending sync',
+                        child: Icon(
+                          Icons.cloud_upload_outlined,
+                          size: FSizes.fontSizeSm,
+                          color: FColors.primaryColor,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(width: FSizes.sm),
+                // Description (or italic placeholder when missing)
+                Expanded(
                   child: Text(
-                    widget.code.code,
-                    style: const TextStyle(
-                      fontSize: FSizes.fontSizeXs,
-                      fontWeight: FontWeight.w700,
-                      color: FColors.primaryColor,
-                      letterSpacing: 0.5,
+                    _needsDescription
+                        ? 'obd_card_tap_to_describe'.tr
+                        : widget.code.description,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: _needsDescription
+                          ? FontWeight.w400
+                          : FontWeight.w500,
+                      fontStyle: _needsDescription
+                          ? FontStyle.italic
+                          : FontStyle.normal,
+                      color: _needsDescription
+                          ? (isDark ? FColors.grey : FColors.darkGrey)
+                          : (isDark ? FColors.light : FColors.dark),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: FSizes.xs),
+                // Delete button
+                GestureDetector(
+                  onTap: () => _confirmDelete(context, isDark),
+                  child: Container(
+                    padding: const EdgeInsets.all(FSizes.xs),
+                    decoration: BoxDecoration(
+                      color: FColors.error.withValues(alpha: 0.08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Iconsax.trash,
+                      size: FSizes.iconXs,
+                      color: FColors.error,
                     ),
                   ),
                 ),
-                if (widget.isFromDevice) ...[
-                  const SizedBox(width: FSizes.xs),
-                  Tooltip(
-                    message: InspectionPage.obdFromDevice.tr,
-                    child: const Icon(
-                      Iconsax.bluetooth,
-                      size: FSizes.fontSizeSm,
-                      color: FColors.primaryColor,
-                    ),
-                  ),
-                ],
-                if (widget.isPendingSync) ...[
-                  const SizedBox(width: FSizes.xs),
-                  const Tooltip(
-                    message: 'Pending sync',
-                    child: Icon(
-                      Icons.cloud_upload_outlined,
-                      size: FSizes.fontSizeSm,
-                      color: FColors.primaryColor,
-                    ),
-                  ),
-                ],
               ],
             ),
-            const SizedBox(width: FSizes.sm),
-            // Description
-            Expanded(
-              child: Text(
-                widget.code.description,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: isDark ? FColors.light : FColors.dark,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+            if (_needsDescription) ...[
+              const SizedBox(height: FSizes.xs),
+              Row(
+                children: [
+                  const Icon(
+                    Iconsax.warning_2,
+                    size: FSizes.fontSizeSm,
+                    color: FColors.error,
+                  ),
+                  const SizedBox(width: FSizes.xs),
+                  Expanded(
+                    child: Text(
+                      'obd_card_description_required'.tr,
+                      style: const TextStyle(
+                        fontSize: FSizes.fontSizeXs,
+                        fontWeight: FontWeight.w600,
+                        color: FColors.error,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(width: FSizes.xs),
-            // Delete button
-            GestureDetector(
-              onTap: () => _confirmDelete(context, isDark),
-              child: Container(
-                padding: const EdgeInsets.all(FSizes.xs),
-                decoration: BoxDecoration(
-                  color: FColors.error.withValues(alpha: 0.08),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Iconsax.trash,
-                  size: FSizes.iconXs,
-                  color: FColors.error,
-                ),
-              ),
-            ),
+            ],
           ],
         ),
       ),

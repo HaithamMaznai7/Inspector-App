@@ -712,5 +712,8 @@ class English {
     'report_not_cached_title': 'Report not available offline',
     'report_not_cached_message':
         'Connect to the internet to load the report for the first time.',
+    'obd_card_description_required':
+        'Description required or data will be lost',
+    'obd_card_tap_to_describe': 'Tap to add description',
   };
 }

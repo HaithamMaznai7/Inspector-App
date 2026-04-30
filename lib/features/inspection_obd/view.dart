@@ -359,10 +359,7 @@ class _InputSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: _BleSquareCard(
-              controller: controller,
-              isDark: isDark,
-            ),
+            child: _BleSquareCard(controller: controller, isDark: isDark),
           ),
           const SizedBox(width: FSizes.sm),
           Expanded(
@@ -425,7 +422,7 @@ class _BleSquareCard extends StatelessWidget {
                     ),
                   )
                 : _SmallBtn(
-                    icon: Iconsax.cpu,
+                    icon: Iconsax.refresh,
                     color: FColors.primaryColor,
                     onTap: controller.readCodesFromDevice,
                   ),

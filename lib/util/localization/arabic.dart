@@ -755,5 +755,7 @@ class Arabic {
     'queued_delete_message': 'سيتم حذفه عند عودة الاتصال.',
     'report_not_cached_title': 'التقرير غير متاح دون اتصال',
     'report_not_cached_message': 'اتصل بالإنترنت لتحميل التقرير لأول مرة.',
+    'obd_card_description_required': 'الوصف مطلوب وإلا ستضيع البيانات',
+    'obd_card_tap_to_describe': 'اضغط لإضافة وصف',
   };
 }
