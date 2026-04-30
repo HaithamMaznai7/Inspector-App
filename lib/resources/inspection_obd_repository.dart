@@ -85,12 +85,14 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       final code = pending['code']?.toString();
       if (code == null) continue;
       if (result.any((c) => c.code == code)) continue;
-      result.add(OBDCode(
-        id: -DateTime.now().millisecondsSinceEpoch,
-        code: code,
-        description: pending['description']?.toString() ?? '',
-        isPending: true,
-      ));
+      result.add(
+        OBDCode(
+          id: -DateTime.now().millisecondsSinceEpoch,
+          code: code,
+          description: pending['description']?.toString() ?? '',
+          isPending: true,
+        ),
+      );
     }
 
     _data.assignAll(result);
@@ -203,7 +205,15 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
         _clearPendingCode(code);
         AppLogger.info('[Offline]', 'flush obd/$slug/$code: success');
       } on FNetworkException catch (e) {
-        AppLogger.error('[Offline]', 'flush obd/$slug/$code: failed', e);
+        if (e.statusCode >= 400 && e.statusCode < 600) {
+          _clearPendingCode(code);
+          AppLogger.warn(
+            '[]',
+            'flush obd/$slug/$code: cleared (${e.statusCode})',
+          );
+        } else {
+          AppLogger.error('[]', 'flush obd/$slug/$code: failed', e);
+        }
       } catch (e) {
         _log('flushPendingWrites – error for code=$code: $e');
       }
@@ -254,15 +264,14 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
         _clearPendingDelete(id);
         AppLogger.info('[Offline]', 'flush obd/$slug/delete$id: success');
       } on FNetworkException catch (e) {
-        // 404 = already gone on the server — treat as success.
-        if (e.statusCode == 404) {
+        if (e.statusCode >= 400 && e.statusCode < 600) {
           _clearPendingDelete(id);
-          AppLogger.info(
-            '[Offline]',
-            'flush obd/$slug/delete$id: already gone (404)',
+          AppLogger.warn(
+            '[]',
+            'flush obd/$slug/delete$id: cleared (${e.statusCode})',
           );
         } else {
-          AppLogger.error('[Offline]', 'flush obd/$slug/delete$id: failed', e);
+          AppLogger.error('[]', 'flush obd/$slug/delete$id: failed', e);
         }
       } catch (e) {
         _log('flushPendingDeletes – error for id=$id: $e');
@@ -292,12 +301,14 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       _data[existingIdx].description = code.description;
       _data.refresh();
     } else {
-      _data.add(OBDCode(
-        id: -DateTime.now().millisecondsSinceEpoch,
-        code: code.code,
-        description: code.description,
-        isPending: true,
-      ));
+      _data.add(
+        OBDCode(
+          id: -DateTime.now().millisecondsSinceEpoch,
+          code: code.code,
+          description: code.description,
+          isPending: true,
+        ),
+      );
     }
 
     final n = Network(
@@ -545,7 +556,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
         'path': dest.path,
         'name': originalName,
         'savedAt': DateTime.now().toIso8601String(),
-      }
+      },
     ]);
     AppLogger.info('[Offline]', 'write report/$slug: pending=true');
     return dest.path;
@@ -556,7 +567,8 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
   /// entries that may already be in storage.
   Map? _pendingReportEntry() {
     final raw = box.get(_pendingReportKey);
-    if (raw is List && raw.isNotEmpty && raw.first is Map) return raw.first as Map;
+    if (raw is List && raw.isNotEmpty && raw.first is Map)
+      return raw.first as Map;
     if (raw is Map) return raw;
     return null;
   }
@@ -617,7 +629,15 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       await _clearPendingReport();
       AppLogger.info('[Offline]', 'flush report/$slug: success');
     } on FNetworkException catch (e) {
-      AppLogger.error('[Offline]', 'flush report/$slug: failed', e);
+      if (e.statusCode >= 400 && e.statusCode < 600) {
+        await _clearPendingReport();
+        AppLogger.warn(
+          '[Offline]',
+          'flush report/$slug: cleared (${e.statusCode})',
+        );
+      } else {
+        AppLogger.error('[Offline]', 'flush report/$slug: failed', e);
+      }
     } catch (e) {
       _log('flushPendingReport – error: $e');
     }
@@ -675,7 +695,9 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       await saveToCache();
       return true;
     } on FNetworkException catch (e) {
-      _log('removeReport – FNetworkException: ${e.statusCode} — queued as pending delete');
+      _log(
+        'removeReport – FNetworkException: ${e.statusCode} — queued as pending delete',
+      );
       await _savePendingReportDelete();
       e.notify();
       return false;
@@ -706,7 +728,9 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
     if (hasPendingReport()) {
       await _clearPendingReport();
       await _clearPendingReportDelete();
-      _log('_flushPendingReportDelete – pending upload + delete cancel each other');
+      _log(
+        '_flushPendingReportDelete – pending upload + delete cancel each other',
+      );
       return;
     }
 
@@ -721,7 +745,15 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       await _clearPendingReportDelete();
       AppLogger.info('[Offline]', 'flush report delete/$slug: success');
     } on FNetworkException catch (e) {
-      AppLogger.error('[Offline]', 'flush report delete/$slug: failed', e);
+      if (e.statusCode >= 400 && e.statusCode < 600) {
+        await _clearPendingReportDelete();
+        AppLogger.warn(
+          '[Offline]',
+          'flush report delete/$slug: cleared (${e.statusCode})',
+        );
+      } else {
+        AppLogger.error('[Offline]', 'flush report delete/$slug: failed', e);
+      }
     } catch (e) {
       _log('_flushPendingReportDelete – error: $e');
     }

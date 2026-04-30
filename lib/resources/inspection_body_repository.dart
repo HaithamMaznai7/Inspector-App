@@ -72,7 +72,8 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
       if (bodyId == null) continue;
       final bodyIdx = result.indexWhere((b) => b.id == bodyId);
       if (bodyIdx == -1) continue;
-      final tempKey = pending['tempKey'] as int? ?? DateTime.now().millisecondsSinceEpoch;
+      final tempKey =
+          pending['tempKey'] as int? ?? DateTime.now().millisecondsSinceEpoch;
       final marker = Marker(
         id: -tempKey,
         dx: (pending['dx'] as num?)?.toDouble() ?? 0,
@@ -137,9 +138,7 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
   List<Map<String, dynamic>> pendingMarkers() {
     final raw = box.get(_pendingKey);
     if (raw == null || raw.isEmpty) return [];
-    return raw
-        .map((e) => Map<String, dynamic>.from(e as Map))
-        .toList();
+    return raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
   }
 
   /// Retries all pending markers (writes + deletes). Returns when all have
@@ -196,10 +195,17 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
         await saveToCache();
         _clearPendingMarker(tempKey);
       } on FNetworkException catch (e) {
-        AppLogger.error('[Offline]', 'flush body/$slug/marker$tempKey: failed', e);
-        // Leave pending — will retry on next reconnect.
+        if (e.statusCode >= 400 && e.statusCode < 600) {
+          _clearPendingMarker(tempKey);
+          AppLogger.warn(
+            '[]',
+            'flush body/$slug/marker$tempKey: cleared (${e.statusCode})',
+          );
+        } else {
+          AppLogger.error('[]', 'flush body/$slug/marker$tempKey: failed', e);
+        }
       } catch (e) {
-        AppLogger.error('[Offline]', 'flush body/$slug/marker$tempKey: error', e);
+        AppLogger.error('[]', 'flush body/$slug/marker$tempKey: error', e);
       }
     }
   }
@@ -270,22 +276,17 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
         _clearPendingDelete(id);
         AppLogger.info('[Offline]', 'flush body/$slug/delete$id: success');
       } on FNetworkException catch (e) {
-        // 404 = already gone on the server — treat as success.
-        if (e.statusCode == 404) {
+        if (e.statusCode >= 400 && e.statusCode < 600) {
           _clearPendingDelete(id);
-          AppLogger.info(
-            '[Offline]',
-            'flush body/$slug/delete$id: already gone (404)',
+          AppLogger.warn(
+            '[]',
+            'flush body/$slug/delete$id: cleared (${e.statusCode})',
           );
         } else {
-          AppLogger.error(
-            '[Offline]',
-            'flush body/$slug/delete$id: failed',
-            e,
-          );
+          AppLogger.error('[]', 'flush body/$slug/delete$id: failed', e);
         }
       } catch (e) {
-        AppLogger.error('[Offline]', 'flush body/$slug/delete$id: error', e);
+        AppLogger.error('[]', 'flush body/$slug/delete$id: error', e);
       }
     }
   }
@@ -305,11 +306,7 @@ class InspectionBodyRepository extends ListRepository<CarBody> {
         : null;
 
     // Persist before the network call so data survives app-kill.
-    final tempKey = _savePendingMarker(
-      body.id,
-      note,
-      imageFile?.path,
-    );
+    final tempKey = _savePendingMarker(body.id, note, imageFile?.path);
 
     // Optimistically show the pending marker on the step list so the user
     // sees their work immediately, even when offline. Negative id avoids

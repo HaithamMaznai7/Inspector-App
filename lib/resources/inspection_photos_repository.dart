@@ -190,11 +190,15 @@ class InspectionPhotosRepository extends ListRepository<Photo> {
           'flush photos/$slug/photo$photoId: success',
         );
       } on FNetworkException catch (e) {
-        AppLogger.error(
-          '[Offline]',
-          'flush photos/$slug/photo$photoId: failed',
-          e,
-        );
+        if (e.statusCode >= 400 && e.statusCode < 600) {
+          _clearPendingUpload(photoId);
+          AppLogger.warn(
+            '[]',
+            'flush photos/$slug/photo$photoId: cleared (${e.statusCode})',
+          );
+        } else {
+          AppLogger.error('[]', 'flush photos/$slug/photo$photoId: failed', e);
+        }
       } catch (e) {
         dd('flushPending photos error: $e');
       }
@@ -249,21 +253,16 @@ class InspectionPhotosRepository extends ListRepository<Photo> {
         if (newPhoto != null) updatePhoto(newPhoto);
         await saveToCache();
         _clearPendingDelete(id);
-        AppLogger.info('[Offline]', 'flush photos/$slug/delete$id: success');
+        AppLogger.info('[]', 'flush photos/$slug/delete$id: success');
       } on FNetworkException catch (e) {
-        // 404 = already cleared on server — treat as success.
-        if (e.statusCode == 404) {
+        if (e.statusCode >= 400 && e.statusCode < 600) {
           _clearPendingDelete(id);
-          AppLogger.info(
-            '[Offline]',
-            'flush photos/$slug/delete$id: already gone (404)',
+          AppLogger.warn(
+            '[]',
+            'flush photos/$slug/delete$id: cleared (${e.statusCode})',
           );
         } else {
-          AppLogger.error(
-            '[Offline]',
-            'flush photos/$slug/delete$id: failed',
-            e,
-          );
+          AppLogger.error('[]', 'flush photos/$slug/delete$id: failed', e);
         }
       } catch (e) {
         dd('flushPendingDeletes photos error: $e');

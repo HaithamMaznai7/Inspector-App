@@ -234,7 +234,12 @@ class PaintGaugeRepository {
         await setPanelPending(backendId, false);
         AppLogger.info(_tag, 'flush paint/$slug/panel$backendId: success');
       } on FNetworkException catch (e) {
-        AppLogger.error(_tag, 'flush paint/$slug/panel$backendId: failed', e);
+        if (e.statusCode >= 400 && e.statusCode < 600) {
+          await setPanelPending(backendId, false);
+          AppLogger.warn(_tag, 'flush paint/$slug/panel$backendId: cleared (${e.statusCode})');
+        } else {
+          AppLogger.error(_tag, 'flush paint/$slug/panel$backendId: failed', e);
+        }
       } catch (e) {
         AppLogger.error(_tag, 'flush paint/$slug/panel$backendId: error', e);
       }

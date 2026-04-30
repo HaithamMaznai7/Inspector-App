@@ -227,16 +227,17 @@ class InspectionPointsRepository extends ListRepository<Point> {
         updatePoints(point);
         await saveToCache();
         _clearPendingPoint(pointId);
-        AppLogger.info(
-          '[Offline]',
-          'flush points/$slug/point$pointId: success',
-        );
+        AppLogger.info('[]', 'flush points/$slug/point$pointId: success');
       } on FNetworkException catch (e) {
-        AppLogger.error(
-          '[Offline]',
-          'flush points/$slug/point$pointId: failed',
-          e,
-        );
+        if (e.statusCode >= 400 && e.statusCode < 600) {
+          _clearPendingPoint(pointId);
+          AppLogger.warn(
+            '[]',
+            'flush points/$slug/point$pointId: cleared (${e.statusCode})',
+          );
+        } else {
+          AppLogger.error('[]', 'flush points/$slug/point$pointId: failed', e);
+        }
       } catch (e) {
         dd('flushPending points error: $e');
       }
