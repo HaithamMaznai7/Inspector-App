@@ -31,6 +31,23 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
   Stream<String?> get reportStream => _report.stream;
 
+  /// The server response is authoritative for any code string it knows.
+  /// Codes that exist only locally (negative id or isPending=true) — including
+  /// 422-rejected device codes the inspector hasn't fixed yet — must be
+  /// preserved instead of silently dropped by `_data.assignAll(bodySides)`.
+  List<OBDCode> _mergeServerWithLocal(List<OBDCode> serverCodes) {
+    final serverCodeStrings = serverCodes.map((c) => c.code).toSet();
+    final localOnly = _data
+        .where(
+          (c) =>
+              (c.id <= 0 || c.isPending == true) &&
+              !serverCodeStrings.contains(c.code),
+        )
+        .toList();
+    if (localOnly.isEmpty) return serverCodes;
+    return [...serverCodes, ...localOnly];
+  }
+
   @override
   Future<List<OBDCode>> fetchFromApi() async {
     await flushPending();
@@ -53,7 +70,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
       'fetchFromApi – parsed ${bodySides.length} codes, report=${_report.value != null}',
     );
 
-    _data.assignAll(bodySides);
+    _data.assignAll(_mergeServerWithLocal(bodySides));
 
     await saveToCache();
 
@@ -328,7 +345,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
       _report.value = r.data.isNotEmpty ? r.data['report'] : null;
 
-      _data.assignAll(bodySides);
+      _data.assignAll(_mergeServerWithLocal(bodySides));
       _log('store – updated ${bodySides.length} codes');
 
       await saveToCache();
@@ -371,7 +388,7 @@ class InspectionObdRepository extends ListRepository<OBDCode> {
 
       _report.value = r.data.isNotEmpty ? r.data['report'] : null;
 
-      _data.assignAll(bodySides);
+      _data.assignAll(_mergeServerWithLocal(bodySides));
       _log('update – updated ${bodySides.length} codes');
 
       await saveToCache();
