@@ -241,7 +241,7 @@ class _ColorSheetState extends State<_ColorSheet> {
     // hands its own ScrollController to the ListView, preventing overflow
     // on any screen height — phones, small phones, tablets, landscape mode.
     return DraggableScrollableSheet(
-      initialChildSize: 0.85,
+      initialChildSize: 0.92,
       minChildSize: 0.35,
       maxChildSize: 0.92,
       expand: false,
@@ -328,7 +328,9 @@ class _ColorSheetState extends State<_ColorSheet> {
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
-                    borderSide: BorderSide.none,
+                    borderSide: BorderSide(
+                      color: FColors.darkGrey.withValues(alpha: 0.3),
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
