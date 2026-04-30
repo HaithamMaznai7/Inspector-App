@@ -177,7 +177,7 @@ class _ColorPickerFieldState extends State<ColorPickerField> {
 
 // ── Bottom sheet ──────────────────────────────────────────────────────────────
 
-class _ColorSheet extends StatelessWidget {
+class _ColorSheet extends StatefulWidget {
   final String title;
   final List<VehicleColor> colors;
   final String selectedValue;
@@ -190,9 +190,47 @@ class _ColorSheet extends StatelessWidget {
     required this.onSelected,
   });
 
+  @override
+  State<_ColorSheet> createState() => _ColorSheetState();
+}
+
+class _ColorSheetState extends State<_ColorSheet> {
+  final _searchController = TextEditingController();
+  List<VehicleColor> _filtered = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _filtered = widget.colors;
+    _searchController.addListener(_onSearch);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearch() {
+    final query = _searchController.text.trim().toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        _filtered = widget.colors;
+      } else {
+        _filtered = widget.colors
+            .where(
+              (c) =>
+                  c.english.toLowerCase().contains(query) ||
+                  c.arabic.contains(query),
+            )
+            .toList();
+      }
+    });
+  }
+
   bool _isSelected(VehicleColor c) =>
-      c.english.toLowerCase() == selectedValue.toLowerCase() ||
-      c.arabic == selectedValue;
+      c.english.toLowerCase() == widget.selectedValue.toLowerCase() ||
+      c.arabic == widget.selectedValue;
 
   @override
   Widget build(BuildContext context) {
@@ -203,7 +241,7 @@ class _ColorSheet extends StatelessWidget {
     // hands its own ScrollController to the ListView, preventing overflow
     // on any screen height — phones, small phones, tablets, landscape mode.
     return DraggableScrollableSheet(
-      initialChildSize: 0.55,
+      initialChildSize: 0.85,
       minChildSize: 0.35,
       maxChildSize: 0.92,
       expand: false,
@@ -237,10 +275,69 @@ class _ColorSheet extends StatelessWidget {
                 FSizes.borderRadiusLg,
               ),
               child: Text(
-                title,
+                widget.title,
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+
+            // ── Search bar ───────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                FSizes.spaceBtwItems,
+                0,
+                FSizes.spaceBtwItems,
+                FSizes.sm,
+              ),
+              child: TextField(
+                controller: _searchController,
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  isDense: true,
+                  filled: true,
+                  fillColor: isDark
+                      ? Colors.white.withValues(alpha: 0.06)
+                      : FColors.grey.withValues(alpha: 0.12),
+                  hintText: 'colorSearchHint'.tr,
+                  hintStyle: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: FColors.darkGrey),
+                  prefixIcon: Icon(
+                    Iconsax.search_normal_1,
+                    size: FSizes.iconSm,
+                    color: FColors.darkGrey,
+                  ),
+                  suffixIcon: ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _searchController,
+                    builder: (_, value, _) {
+                      if (value.text.isEmpty) return const SizedBox.shrink();
+                      return GestureDetector(
+                        onTap: () => _searchController.clear(),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: FSizes.iconSm,
+                          color: FColors.darkGrey,
+                        ),
+                      );
+                    },
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: FSizes.md,
+                    vertical: FSizes.sm,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+                    borderSide: const BorderSide(
+                      color: FColors.primaryColor,
+                      width: 1.5,
+                    ),
+                  ),
+                ),
               ),
             ),
 
@@ -248,68 +345,81 @@ class _ColorSheet extends StatelessWidget {
 
             // ── Scrollable color list ────────────────────────────────────
             Expanded(
-              child: ListView.separated(
-                controller: scrollController,
-                padding: const EdgeInsets.only(
-                  top: FSizes.xs,
-                  bottom: FSizes.md,
-                ),
-                itemCount: colors.length,
-                separatorBuilder: (_, _) => Divider(
-                  height: 1,
-                  indent: 20,
-                  endIndent: 20,
-                  color: FColors.grey.withValues(alpha: 0.15),
-                ),
-                itemBuilder: (_, i) {
-                  final c = colors[i];
-                  final selected = _isSelected(c);
-                  final swatch = VehicleColors.swatches[c.english];
+              child: _filtered.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(FSizes.spaceBtwSections),
+                        child: Text(
+                          'colorSearchEmpty'.tr,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: FColors.darkGrey),
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      controller: scrollController,
+                      padding: const EdgeInsets.only(
+                        top: FSizes.xs,
+                        bottom: FSizes.md,
+                      ),
+                      itemCount: _filtered.length,
+                      separatorBuilder: (_, _) => Divider(
+                        height: 1,
+                        indent: 20,
+                        endIndent: 20,
+                        color: FColors.grey.withValues(alpha: 0.15),
+                      ),
+                      itemBuilder: (_, i) {
+                        final c = _filtered[i];
+                        final selected = _isSelected(c);
+                        final swatch = VehicleColors.swatches[c.english];
 
-                  return InkWell(
-                    onTap: () {
-                      onSelected(c);
-                      Navigator.pop(context);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: FSizes.spaceBtwItems,
-                        vertical: FSizes.borderRadiusLg,
-                      ),
-                      child: Row(
-                        children: [
-                          _Swatch(
-                            color: swatch ?? Colors.transparent,
-                            size: FSizes.iconInlineMd,
-                            showBorder: true,
-                          ),
-                          const SizedBox(width: FSizes.borderRadiusLg),
-                          Expanded(
-                            child: Text(
-                              c.localizedName,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    fontWeight: selected
-                                        ? FontWeight.w700
-                                        : FontWeight.w400,
-                                    color: selected
-                                        ? FColors.primaryColor
-                                        : null,
+                        return InkWell(
+                          onTap: () {
+                            widget.onSelected(c);
+                            Navigator.pop(context);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: FSizes.spaceBtwItems,
+                              vertical: FSizes.borderRadiusLg,
+                            ),
+                            child: Row(
+                              children: [
+                                _Swatch(
+                                  color: swatch ?? Colors.transparent,
+                                  size: FSizes.iconInlineMd,
+                                  showBorder: true,
+                                ),
+                                const SizedBox(width: FSizes.borderRadiusLg),
+                                Expanded(
+                                  child: Text(
+                                    c.localizedName,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          fontWeight: selected
+                                              ? FontWeight.w700
+                                              : FontWeight.w400,
+                                          color: selected
+                                              ? FColors.primaryColor
+                                              : null,
+                                        ),
                                   ),
+                                ),
+                                if (selected)
+                                  const Icon(
+                                    Icons.check_rounded,
+                                    color: FColors.primaryColor,
+                                    size: FSizes.iconInlineSm,
+                                  ),
+                              ],
                             ),
                           ),
-                          if (selected)
-                            const Icon(
-                              Icons.check_rounded,
-                              color: FColors.primaryColor,
-                              size: FSizes.iconInlineSm,
-                            ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),

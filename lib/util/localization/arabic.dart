@@ -349,6 +349,8 @@ class Arabic {
     DetailsPage.interiorColorHint: 'اختر اللون الداخلي',
     DetailsPage.interiorColorValidation: 'Automatic',
     'colorSelectHint': 'اختر لوناً',
+    'colorSearchHint': 'ابحث عن لون...',
+    'colorSearchEmpty': 'لا توجد ألوان مطابقة',
 
     DetailsPage.gearboxType: 'نوع التروس',
     DetailsPage.gearboxTypeValidation: 'Automatic',

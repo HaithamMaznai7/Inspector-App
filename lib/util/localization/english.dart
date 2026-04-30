@@ -357,6 +357,8 @@ class English {
     DetailsPage.interiorColorHint: 'Select interior color',
     DetailsPage.interiorColorValidation: 'Automatic',
     'colorSelectHint': 'Select a color',
+    'colorSearchHint': 'Search colors...',
+    'colorSearchEmpty': 'No matching colors found',
 
     DetailsPage.gearboxType: 'GearBox Type',
     DetailsPage.gearboxTypeValidation: 'Automatic',

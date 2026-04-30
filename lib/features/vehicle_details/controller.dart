@@ -1,4 +1,5 @@
 import 'package:fahis_inspector/common/widgets/loaders/loaders.dart';
+import 'package:fahis_inspector/util/constants/vehicle_colors.dart';
 import 'package:fahis_inspector/features/inspection_details/controller.dart';
 import 'package:fahis_inspector/features/inspection_steps/controller.dart';
 import 'package:fahis_inspector/main.dart';
@@ -182,8 +183,20 @@ class VehicleDetailsController extends GetxController {
 
     milageController.text = inspectionDetails.value?.milage ?? '';
     enginSizeController.text = inspectionDetails.value?.enginSize ?? '';
-    colorController.text = inspectionDetails.value?.color ?? '';
-    seatColorController.text = inspectionDetails.value?.seatColor ?? '';
+    // Only accept color values that match a known VehicleColor entry;
+    // invalid/garbage values from the API (e.g. "k") are cleared so the
+    // user sees the "Select a color" hint and can pick a valid one.
+    final rawColor = inspectionDetails.value?.color ?? '';
+    colorController.text =
+        VehicleColors.find(VehicleColors.exterior, rawColor) != null
+            ? rawColor
+            : '';
+
+    final rawSeatColor = inspectionDetails.value?.seatColor ?? '';
+    seatColorController.text =
+        VehicleColors.find(VehicleColors.interior, rawSeatColor) != null
+            ? rawSeatColor
+            : '';
   }
 
   bool validateForm() {
