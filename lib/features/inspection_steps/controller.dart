@@ -102,10 +102,9 @@ class InspectionStepsController extends GetxController {
 
     inspection.listen(onInspectionChanged);
 
-    _reconnectWorker = ever(
-      ConnectionService.instance.onReconnect,
-      (_) { if (_repositoryReady) repository!.flushPendingStage(); },
-    );
+    _reconnectWorker = ever(ConnectionService.instance.onReconnect, (_) {
+      if (_repositoryReady) repository!.flushPendingStage();
+    });
   }
 
   @override
@@ -148,7 +147,12 @@ class InspectionStepsController extends GetxController {
 
     if (inspection.hasDetails) {
       tabs.add(
-        _tab(counter++, Iconsax.car, InspectionStage.info, const VehicleDetailsView()),
+        _tab(
+          counter++,
+          Iconsax.car,
+          InspectionStage.info,
+          const VehicleDetailsView(),
+        ),
       );
     }
 
@@ -165,7 +169,12 @@ class InspectionStepsController extends GetxController {
 
     if (inspection.hasPhotos) {
       tabs.add(
-        _tab(counter++, Iconsax.image4, InspectionStage.photos, const AlbumPhotos()),
+        _tab(
+          counter++,
+          Iconsax.image4,
+          InspectionStage.photos,
+          const AlbumPhotos(),
+        ),
       );
     }
 
@@ -195,7 +204,12 @@ class InspectionStepsController extends GetxController {
 
     if (inspection.hasObd) {
       tabs.add(
-        _tab(counter++, Iconsax.code, InspectionStage.obd, const OBDCodesView()),
+        _tab(
+          counter++,
+          Iconsax.code,
+          InspectionStage.obd,
+          const OBDCodesView(),
+        ),
       );
     }
 
@@ -263,8 +277,11 @@ class InspectionStepsController extends GetxController {
       pointsCtrl.allPoints.clear();
       pointsCtrl.category.value = null;
       pointsCtrl.review.value = null;
-      futures.add(pointsCtrl.load().then((_) =>
-          _log('resetAfterVehicleInfoUpdate – points reloaded')));
+      futures.add(
+        pointsCtrl.load().then(
+          (_) => _log('resetAfterVehicleInfoUpdate – points reloaded'),
+        ),
+      );
     }
 
     if (InspectionPhotosBinding().isRegistered) {
@@ -273,23 +290,32 @@ class InspectionStepsController extends GetxController {
       photosCtrl.filtered.clear();
       photosCtrl.categories.clear();
       photosCtrl.category.value = null;
-      futures.add(photosCtrl.fetchPhotos().then((_) =>
-          _log('resetAfterVehicleInfoUpdate – photos reloaded')));
+      futures.add(
+        photosCtrl.fetchPhotos().then(
+          (_) => _log('resetAfterVehicleInfoUpdate – photos reloaded'),
+        ),
+      );
     }
 
     if (InspectionBodyBinding().isRegistered) {
       final bodyCtrl = InspectionBodyBinding().instance;
       bodyCtrl.bodySides.clear();
-      futures.add(bodyCtrl.fetchBodySides().then((_) =>
-          _log('resetAfterVehicleInfoUpdate – body reloaded')));
+      futures.add(
+        bodyCtrl.fetchBodySides().then(
+          (_) => _log('resetAfterVehicleInfoUpdate – body reloaded'),
+        ),
+      );
     }
 
     if (InspectionObdBinding().isRegistered) {
       final obdCtrl = InspectionObdBinding().instance;
       obdCtrl.codes.clear();
       obdCtrl.report.value = null;
-      futures.add(obdCtrl.loadBySlug().then((_) =>
-          _log('resetAfterVehicleInfoUpdate – OBD reloaded')));
+      futures.add(
+        obdCtrl.loadBySlug().then(
+          (_) => _log('resetAfterVehicleInfoUpdate – OBD reloaded'),
+        ),
+      );
     }
 
     if (PaintGaugeBinding().isRegistered) {
@@ -310,11 +336,11 @@ class InspectionStepsController extends GetxController {
   /// Higher index = further along in the inspection flow.
   static int _stageProgressIndex(InspectionStage stage) {
     const order = [
-      InspectionStage.info,     // 0
-      InspectionStage.points,   // 1
-      InspectionStage.photos,   // 2
-      InspectionStage.body,     // 3
-      InspectionStage.obd,      // 4
+      InspectionStage.info, // 0
+      InspectionStage.points, // 1
+      InspectionStage.photos, // 2
+      InspectionStage.body, // 3
+      InspectionStage.obd, // 4
       InspectionStage.finished, // 5
     ];
     final i = order.indexOf(stage);
@@ -404,13 +430,29 @@ class InspectionStepsController extends GetxController {
       if (kDebugMode) {
         print('┌─── setSatge: API REQUEST ─────────────────');
         print('│ Old stage : $oldValue (${oldValue.value})');
-        print('│ New stage : ${inspection.value.stage} (${inspection.value.stage.value})');
+        print(
+          '│ New stage : ${inspection.value.stage} (${inspection.value.stage.value})',
+        );
         print('│ Note      : "${inspection.value.note}"');
         print('│ Slug      : ${inspection.value.slug}');
         print('└────────────────────────────────────────────');
       }
       try {
         inspection.value = await repository!.update(inspection.value);
+
+        // Propagate stage change to the home listing without refetching.
+        if (InspectionsBinding().isRegistered) {
+          InspectionsBinding().instance.applyInspectionUpdate(inspection.value);
+        }
+
+        // Patch the details controller's inspection so the stage label
+        // updates immediately when navigating back (avoids relying on a
+        // potentially delayed API GET response).
+        if (InspectionDetailsBinding().isRegistered) {
+          final detailsCtrl = InspectionDetailsBinding().instance;
+          detailsCtrl.inspection.value = inspection.value;
+          detailsCtrl.update();
+        }
       } on FNetworkException catch (e) {
         if (kDebugMode) {
           print('┌─── setSatge: API ERROR ───────────────────');
@@ -626,7 +668,9 @@ class InspectionStepsController extends GetxController {
       // photos we must NOT silently pass. Accessing .instance will
       // lazy-init the controller, but photos won't be loaded yet.
       if (inspection.value.hasPhotos) {
-        _log('_arePhotosValid – controller not registered but hasPhotos=true → false');
+        _log(
+          '_arePhotosValid – controller not registered but hasPhotos=true → false',
+        );
         return false;
       }
       return true;
@@ -635,11 +679,13 @@ class InspectionStepsController extends GetxController {
     final result = photos.isEmpty
         ? false
         : isSahrejMode
-            ? photos.every((p) => p.image != null)
-            : photos.any((p) => p.image != null);
-    _log('_arePhotosValid – total=${photos.length}, '
-        'withImage=${photos.where((p) => p.image != null).length}, '
-        'sahrej=$isSahrejMode → $result');
+        ? photos.every((p) => p.image != null)
+        : photos.any((p) => p.image != null);
+    _log(
+      '_arePhotosValid – total=${photos.length}, '
+      'withImage=${photos.where((p) => p.image != null).length}, '
+      'sahrej=$isSahrejMode → $result',
+    );
     return result;
   }
 
@@ -694,7 +740,7 @@ class InspectionStepsController extends GetxController {
     return false;
   }
 
-/// Shows a validation snackbar for the current step (used by finishAndReview).
+  /// Shows a validation snackbar for the current step (used by finishAndReview).
   void _showValidationForCurrentStep() {
     if (tabs.isEmpty || index >= tabs.length) return;
     final stage = tabs[index]['stage'] as InspectionStage;

@@ -86,13 +86,19 @@ class _ProfileViewState extends State<ProfileView> {
       Network(endpoint: 'assets/cities')
           .response(null)
           .then((response) {
-            if (!response.hasError && response.data is List) {
-              final cities = (response.data as List)
-                  .map((e) => City.fromJson(Map<String, dynamic>.from(e)))
-                  .toList();
-              auth().cities = cities;
-              if (mounted) {
-                setState(() => _cities = cities);
+            if (!response.hasError && response.data != null) {
+              // API returns { items: [...] } or a flat list
+              final raw = response.data is Map
+                  ? (response.data['items'] as List?)
+                  : (response.data is List ? response.data as List : null);
+              if (raw != null) {
+                final cities = raw
+                    .map((e) => City.fromJson(Map<String, dynamic>.from(e)))
+                    .toList();
+                auth().cities = cities;
+                if (mounted) {
+                  setState(() => _cities = cities);
+                }
               }
             }
           })
