@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fahis_inspector/obd_ble/transport/spp.dart';
+import 'package:fahis_inspector/obd_ble/ui/obd_ble_scan_page_ios.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
@@ -25,19 +26,40 @@ class BleObdDevice {
   const BleObdDevice({required this.mac, required this.name, this.rssi = 0});
 }
 
-/// Bonded-device picker rendered as the **body of a bottom sheet**. We list
-/// devices the user has already paired through Android Bluetooth settings —
-/// SPP requires bonding, so live discovery would only confuse the inspector.
-/// A "Pair new device" tile opens the system Bluetooth settings so the user
-/// can complete pairing and come back.
-class ObdDeviceScanPage extends StatefulWidget {
+/// Platform-aware OBD device picker rendered as the body of a bottom sheet.
+///
+///  - **Android**: bonded-device list (SPP requires bonding before connect,
+///    so live discovery would only confuse the inspector). A "Pair new
+///    device" tile opens system Bluetooth settings.
+///  - **iOS**: live BLE scan filtered by the ELM327 vendor service UUID —
+///    bonding is not part of the BLE flow, and Apple forbids RFCOMM, so a
+///    BLE adapter (Veepeak OBDCheck BLE) is the only path on iOS.
+///
+/// In both cases the sheet returns a [BleObdDevice] to the caller via
+/// `Get.back()` so the controller can stay platform-agnostic.
+class ObdDeviceScanPage extends StatelessWidget {
   const ObdDeviceScanPage({super.key});
 
   @override
-  State<ObdDeviceScanPage> createState() => _ObdDeviceScanPageState();
+  Widget build(BuildContext context) {
+    if (Platform.isIOS) {
+      return const ObdBleScanPageIos();
+    }
+    return const _AndroidBondedScanPage();
+  }
 }
 
-class _ObdDeviceScanPageState extends State<ObdDeviceScanPage> {
+/// Android-only bonded-device picker. Listed devices are pre-paired adapters
+/// — SPP can't open a socket to anything else, so showing the full discovery
+/// list would just produce dead-end taps.
+class _AndroidBondedScanPage extends StatefulWidget {
+  const _AndroidBondedScanPage();
+
+  @override
+  State<_AndroidBondedScanPage> createState() => _AndroidBondedScanPageState();
+}
+
+class _AndroidBondedScanPageState extends State<_AndroidBondedScanPage> {
   List<BleObdDevice> _bonded = const [];
   bool _isLoading = true;
   String? _errorKey;

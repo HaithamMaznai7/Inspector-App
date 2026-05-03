@@ -1,7 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:fahis_inspector/obd_ble/transport/ble_transport.dart';
+import 'package:fahis_inspector/obd_ble/transport/obd_transport.dart';
 import 'package:fahis_inspector/obd_ble/transport/spp.dart';
+import 'package:fahis_inspector/obd_ble/util/obd_logger.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
 
 /// Connection state exposed to consumers. Same shape as the paint gauge's
@@ -17,24 +21,30 @@ enum ObdBleConnectionState {
   lostConnection,
 }
 
-/// Encapsulates the Bluetooth Classic (SPP / RFCOMM) lifecycle for a Veepeak
-/// or other ELM327 OBD-II adapter on Android.
+/// Encapsulates the OBD-II adapter lifecycle (Veepeak / generic ELM327).
 ///
-/// Why Classic and not BLE: most consumer ELM327 adapters (Veepeak Mini, older
-/// OBDCheck BLE, no-name clones) only wire the ELM327 UART to the Classic
-/// Bluetooth side, even when they advertise a BLE GATT profile. On the BLE
-/// side every GATT write returns `GATT_SUCCESS` but the bytes never reach the
-/// ELM327 chip and no notifications fire — the BLE GATT server is essentially
-/// a stub. CarScanner, Torque, and the working reference apps all use Classic
-/// SPP for this reason. iOS callers get no transport here; the controller is
-/// expected to gate the "connect" path with `Platform.isAndroid` and route
-/// iOS users to manual entry.
+/// Transport is chosen per-platform:
+///  - **Android** uses Bluetooth Classic SPP (`Spp` static facade → native
+///    `SppPlugin.kt`). Most consumer ELM327 adapters (Veepeak Mini, no-name
+///    clones) only wire the ELM327 UART to the Classic Bluetooth side; their
+///    BLE GATT server is a stub on those units.
+///  - **iOS** uses BLE GATT (`BleTransport` → `flutter_blue_plus`). Apple
+///    forbids RFCOMM for non-MFi devices, so iOS users need a true BLE
+///    adapter such as the Veepeak OBDCheck BLE.
 ///
 /// The class deliberately keeps its old name and public API so the rest of
-/// the app (controller, ELM327 service, UI) is untouched by the transport
-/// swap. Internally it talks to the native `SppPlugin` via the [Spp] facade
-/// instead of `flutter_bluetooth_serial`.
+/// the app (controller, ELM327 service, UI) is untouched by the per-platform
+/// transport choice.
 class ObdBleConnectionService {
+  ObdBleConnectionService() : _transport = _createTransport();
+
+  static ObdTransport _createTransport() {
+    if (Platform.isIOS) return BleTransport();
+    return _SppTransport();
+  }
+
+  final ObdTransport _transport;
+
   StreamSubscription<Uint8List>? _inputSub;
 
   // True while the user has explicitly called disconnect() — prevents the
@@ -57,28 +67,31 @@ class ObdBleConnectionService {
   ObdBleConnectionState _currentState = ObdBleConnectionState.disconnected;
   ObdBleConnectionState get currentState => _currentState;
 
-  /// Opens an RFCOMM SPP connection to [deviceMac] using the well-known
-  /// Serial Port Profile UUID (`00001101-…`). The remote device must already
-  /// be bonded — pairing happens through the Android Bluetooth settings, not
-  /// in-app. Throws on failure (caller's `try/catch` already handles the
-  /// snackbar + disconnect).
+  /// Opens the underlying transport link to [deviceMac] (MAC on Android, BLE
+  /// remote-id on iOS). Throws on failure (caller's `try/catch` already
+  /// handles the snackbar + disconnect).
   Future<void> connect(String deviceMac) async {
     _setState(ObdBleConnectionState.connecting);
 
     try {
       AppLogger.log('[OBD BT]', 'Connecting to $deviceMac');
+      ObdLogger.info(
+        'Transport connect → $deviceMac (${_transport.runtimeType})',
+      );
 
-      await Spp.connect(deviceMac);
-      AppLogger.log('[OBD BT]', 'SPP socket open');
+      await _transport.connect(deviceMac);
+      AppLogger.log('[OBD BT]', 'Transport open');
+      ObdLogger.info('Transport open');
 
       _intentionalDisconnect = false;
       _isConnected = true;
 
-      _inputSub = Spp.byteStream().listen(
+      _inputSub = _transport.byteStream.listen(
         _onIncomingBytes,
         onDone: _onSocketClosed,
         onError: (Object e) {
-          AppLogger.error('[OBD BT]', 'Socket stream error', e);
+          AppLogger.error('[OBD BT]', 'Transport stream error', e);
+          ObdLogger.error('Transport stream error: $e');
           if (!_intentionalDisconnect) {
             _isConnected = false;
             _setState(ObdBleConnectionState.lostConnection);
@@ -90,23 +103,29 @@ class ObdBleConnectionService {
       _setState(ObdBleConnectionState.connected);
     } catch (e) {
       AppLogger.error('[OBD BT]', 'Connection failed', e);
+      ObdLogger.error('Transport connect failed: $e');
       _isConnected = false;
       _setState(ObdBleConnectionState.error);
       rethrow;
     }
   }
 
-  /// Writes [data] to the SPP socket. Used by the ELM327 service for `ATZ\r`
+  /// Writes [data] to the transport. Used by the ELM327 service for `ATZ\r`
   /// and every other command — serialization is enforced upstream by the
   /// `Elm327CommandService`'s single-flight lock.
   Future<void> write(List<int> data) async {
     if (!_isConnected) {
-      throw StateError('SPP socket not connected');
+      ObdLogger.error('TX rejected — transport not connected');
+      throw StateError('OBD transport not connected');
     }
-    await Spp.write(data);
+    ObdLogger.send(
+      'TX (${data.length}): hex=${_hex(data)} ascii="${_ascii(data)}"',
+    );
+    await _transport.write(data);
   }
 
   Future<void> disconnect() async {
+    ObdLogger.info('Connection service disconnect requested');
     _intentionalDisconnect = true;
     _isConnected = false;
 
@@ -114,9 +133,10 @@ class ObdBleConnectionService {
     _inputSub = null;
 
     try {
-      await Spp.disconnect();
+      await _transport.disconnect();
     } catch (e) {
       AppLogger.log('[OBD BT]', 'Disconnect error (non-critical): $e');
+      ObdLogger.warn('Disconnect error (non-critical): $e');
     }
 
     _setState(ObdBleConnectionState.disconnected);
@@ -142,6 +162,9 @@ class ObdBleConnectionService {
       'RX bytes (${bytes.length}): hex=${_hex(bytes)} '
           'ascii="${_ascii(bytes)}"',
     );
+    ObdLogger.recv(
+      'RX (${bytes.length}): hex=${_hex(bytes)} ascii="${_ascii(bytes)}"',
+    );
 
     if (!_dataController.isClosed) {
       _dataController.add(bytes);
@@ -151,8 +174,11 @@ class ObdBleConnectionService {
   void _onSocketClosed() {
     AppLogger.log(
       '[OBD BT]',
-      'SPP socket closed (intentional='
+      'Transport closed (intentional='
           '$_intentionalDisconnect)',
+    );
+    ObdLogger.info(
+      'Transport closed (intentional=$_intentionalDisconnect)',
     );
     _isConnected = false;
     if (_intentionalDisconnect) return;
@@ -163,6 +189,7 @@ class ObdBleConnectionService {
 
   void _setState(ObdBleConnectionState state) {
     _currentState = state;
+    ObdLogger.info('State → ${state.name}');
     if (!_stateController.isClosed) {
       _stateController.add(state);
     }
@@ -188,4 +215,21 @@ class ObdBleConnectionService {
     }
     return sb.toString();
   }
+}
+
+/// Adapter that exposes the static [Spp] facade through the [ObdTransport]
+/// contract. Kept private to this file because the rest of the app talks to
+/// `ObdTransport` only.
+class _SppTransport implements ObdTransport {
+  @override
+  Future<void> connect(String deviceId) => Spp.connect(deviceId);
+
+  @override
+  Future<void> disconnect() => Spp.disconnect();
+
+  @override
+  Future<void> write(List<int> data) => Spp.write(data);
+
+  @override
+  Stream<Uint8List> get byteStream => Spp.byteStream();
 }

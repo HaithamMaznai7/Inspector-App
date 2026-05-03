@@ -27,9 +27,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>This app uses Bluetooth to connect to the paint thickness gauge device.</string>
+	<string>This app uses Bluetooth to connect to the paint thickness gauge and OBD-II diagnostic devices.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>This app uses Bluetooth to connect to the paint thickness gauge device.</string>
+	<string>This app uses Bluetooth to connect to the paint thickness gauge and OBD-II diagnostic devices.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Fahis requires camera access to capture and upload photos of vehicle conditions during the inspection process to generate your report.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

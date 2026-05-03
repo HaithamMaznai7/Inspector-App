@@ -124,16 +124,13 @@ class InspectionObdController extends GetxController {
     super.onClose();
   }
 
-  /// Opens the bonded-device picker as a **bottom sheet** (matches paint
-  /// gauge UX) and connects to the device the inspector selects.
+  /// Opens the device picker as a **bottom sheet** (matches paint gauge UX)
+  /// and connects to the device the inspector selects.
   ///
-  /// OBD adapter connection uses Bluetooth Classic SPP, which is Android-only
-  /// for non-MFi devices. The view already hides the connect button on iOS,
-  /// but this guard is defensive — if anything else triggers this path, we
-  /// short-circuit cleanly instead of throwing inside the Classic stack.
+  /// The picker auto-selects its UI per platform: bonded-device list on
+  /// Android (Classic SPP requires bonding before connect) and a live BLE
+  /// scan filtered by the ELM327 service UUID on iOS.
   Future<void> pickAndConnectDevice() async {
-    if (!Platform.isAndroid) return;
-
     final ctx = Get.context;
     if (ctx == null) return;
 
