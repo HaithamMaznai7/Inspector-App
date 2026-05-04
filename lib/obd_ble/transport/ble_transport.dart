@@ -121,7 +121,13 @@ class BleTransport implements ObdTransport {
       );
     }
     await notify.setNotifyValue(true);
-    _notifySub = notify.lastValueStream
+    // `onValueReceived` (not `lastValueStream`) is the dedicated GATT
+    // notification stream. `lastValueStream` is a cached-state stream that
+    // primes from the most recent read/write, and on iOS it does not
+    // reliably fire for incoming notifications when no read has happened
+    // first. This swap is the fix for the silent post-`ATZ\r` 3-second
+    // timeout we hit on the stock Veepeak BT5050.
+    _notifySub = notify.onValueReceived
         .where((data) => data.isNotEmpty)
         .listen(_onIncoming, onError: _onTransportError);
     ObdLogger.info('Subscribed notify on RX (ACA3)');
@@ -133,7 +139,9 @@ class BleTransport implements ObdTransport {
     // legal, so we gate strictly on what the chip declares.
     if (write.properties.notify || write.properties.indicate) {
       await write.setNotifyValue(true);
-      _writeNotifySub = write.lastValueStream
+      // Same `onValueReceived` rationale as the RX subscription above —
+      // notification stream, not cached-state stream.
+      _writeNotifySub = write.onValueReceived
           .where((data) => data.isNotEmpty)
           .listen(_onIncoming, onError: _onTransportError);
       ObdLogger.info('Subscribed notify on TX (6DAA) — clone fallback active');
