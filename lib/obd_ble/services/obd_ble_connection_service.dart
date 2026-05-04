@@ -121,7 +121,17 @@ class ObdBleConnectionService {
     ObdLogger.send(
       'TX (${data.length}): hex=${_hex(data)} ascii="${_ascii(data)}"',
     );
-    await _transport.write(data);
+    try {
+      await _transport.write(data);
+    } catch (e) {
+      // Surface write failures into the in-app log; without this branch a
+      // PlatformException from CoreBluetooth (e.g. wrong write mode) bubbles
+      // up to the controller and triggers `disconnect()` with no trace of
+      // why the transport gave up. The rethrow keeps the existing error
+      // path (ELM init exception → controller.catch → disconnect) intact.
+      ObdLogger.error('TX failed: $e');
+      rethrow;
+    }
   }
 
   Future<void> disconnect() async {

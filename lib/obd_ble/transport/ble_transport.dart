@@ -155,8 +155,11 @@ class BleTransport implements ObdTransport {
       }
     });
 
-    AppLogger.log('[OBD BLE]', 'Notifications subscribed on TX + RX');
-    ObdLogger.info('Subscribed to notifications on TX + RX');
+    AppLogger.log('[OBD BLE]', 'Notification subscriptions active');
+    ObdLogger.info(
+      'Write mode: '
+      '${write.properties.writeWithoutResponse ? "WriteWithoutResponse" : "Write (with response)"}',
+    );
   }
 
   @override
@@ -165,7 +168,15 @@ class BleTransport implements ObdTransport {
     if (w == null) {
       throw StateError('BLE write characteristic not connected');
     }
-    await w.write(data, withoutResponse: true);
+    // Pick the write mode the chip actually supports. iOS' CoreBluetooth
+    // rejects `writeType: .withoutResponse` on a characteristic that doesn't
+    // advertise the WriteWithoutResponse property — the stock Veepeak's TX
+    // (6DAA) only advertises Write (with response), so forcing without-
+    // response here was the cause of the silent post-ATZ disconnect.
+    // Prefer without-response when available (saves a round-trip per ELM
+    // command); otherwise fall back to response-based writes.
+    final useWithoutResponse = w.properties.writeWithoutResponse;
+    await w.write(data, withoutResponse: useWithoutResponse);
   }
 
   @override
