@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:fahis_inspector/obd_ble/transport/obd_ble_write.dart';
 import 'package:fahis_inspector/obd_ble/transport/obd_transport.dart';
 import 'package:fahis_inspector/obd_ble/util/obd_logger.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
@@ -9,17 +10,24 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 /// BLE GATT transport for ELM327 OBD-II adapters that expose the ISSC BT5050
 /// dual-channel service (e.g. Veepeak OBDCheck BLE on iOS).
 ///
-/// Service / characteristic UUIDs are baked in because every BT5050-based
-/// adapter on the market ships with the same identifiers — they're a fixed
-/// part of the vendor stack, not something the chip exposes for per-device
-/// customisation. UUIDs were verified against a real Veepeak OBDCheck BLE
-/// using nRF Connect on iPhone.
+/// ## BT5050 UART write-type quirk (critical for iOS)
+/// The BT5050 chip routes data to its ELM327 UART **only** when it receives
+/// an ATT Write Command (opcode 0x52 — "Write Without Response").  An ATT
+/// Write Request (opcode 0x12 — "Write With Response") is handled entirely
+/// inside the BT5050's GATT layer: the chip ACKs it but the data never
+/// reaches the UART.  This is documented in the ISSC BT5050 SDK and is the
+/// root cause of the iOS "no RECV after ATZ" failure.
 ///
-/// Why two notify subscriptions: the BT5050 datasheet documents notifications
-/// on the dedicated RX characteristic (`ACA3`), but a number of clone units
-/// in the field surface their responses on the TX characteristic (`6DAA`)
-/// instead. Subscribing to both and merging the streams covers either layout
-/// without the inspector having to know which silicon revision they bought.
+/// Despite the chip advertising `writeWithoutResponse = false` on both
+/// characteristics, we MUST use Write Command.  However, flutter_blue_plus's
+/// native iOS layer (`FlutterBluePlusPlugin.m` line 554) validates the
+/// property bit and rejects the write before it reaches CoreBluetooth.
+/// We bypass this with [ObdBleWrite] — a native Swift plugin that calls
+/// CoreBluetooth directly, mirroring how `SppPlugin.kt` bridges Android.
+///
+/// ## Characteristic roles
+///   - TX / 6DAA (`write=true`): host → chip → ELM327 UART (write here).
+///   - RX / ACA3 (`notify=true`): ELM327 UART → chip → host (subscribe here).
 class BleTransport implements ObdTransport {
   static final Guid _serviceUuid =
       Guid('49535343-fe7d-4ae5-8fa9-9fafd205e455');
@@ -31,6 +39,7 @@ class BleTransport implements ObdTransport {
   static const Duration _connectTimeout = Duration(seconds: 15);
 
   BluetoothDevice? _device;
+  String? _deviceId;
   BluetoothCharacteristic? _writeChr;
   BluetoothCharacteristic? _notifyChr;
 
@@ -57,6 +66,7 @@ class BleTransport implements ObdTransport {
 
     final device = BluetoothDevice.fromId(deviceId);
     _device = device;
+    _deviceId = deviceId;
 
     try {
       await device.connect(
@@ -70,6 +80,10 @@ class BleTransport implements ObdTransport {
       ObdLogger.error('GATT connect failed: $e');
       rethrow;
     }
+
+    // Log negotiated MTU immediately after connect — useful for diagnosing
+    // fragmentation issues if responses are ever truncated.
+    ObdLogger.info('MTU now: ${device.mtuNow}');
 
     List<BluetoothService> services;
     try {
@@ -92,7 +106,7 @@ class BleTransport implements ObdTransport {
     ObdLogger.info('Matched OBD service $_serviceUuid');
 
     // Dump every characteristic + its property bits so the next debug
-    // iteration is data-driven rather than another guess.
+    // iteration is always data-driven.
     for (final c in service.characteristics) {
       final p = c.properties;
       ObdLogger.info(
@@ -114,28 +128,20 @@ class BleTransport implements ObdTransport {
       );
       throw StateError('OBD characteristics missing on adapter');
     }
-    _notifyChr = notify;
-    ObdLogger.info('Matched TX (6DAA) + RX (ACA3) characteristics');
 
-    // BT5050 bidirectional-pipe detection: if ACA3 also advertises a write
-    // property, this adapter uses ACA3 as the ELM327 UART bridge in both
-    // directions.  Writing to 6DAA on these units targets the OTA/config pipe
-    // — commands never reach the ELM327 and the adapter disconnects after the
-    // ATZ timeout.  When ACA3 is writable, redirect all writes there.
-    final notifyIsWritable =
-        notify.properties.write || notify.properties.writeWithoutResponse;
-    _writeChr = notifyIsWritable ? notify : write;
+    // TX always goes to 6DAA — the BT5050 UART bridge input.
+    // RX notifications come from ACA3 — the BT5050 UART bridge output.
+    // We never redirect writes to ACA3: even though ACA3 has write=true, a
+    // Write Request to it is handled at GATT layer; only Write Commands
+    // (withoutResponse) on 6DAA reach the ELM327 UART.
+    _writeChr = write;
+    _notifyChr = notify;
     ObdLogger.info(
-      notifyIsWritable
-          ? 'ACA3 is writable → using ACA3 for TX+RX (BT5050 bidirectional mode)'
-          : 'Using 6DAA for TX, ACA3 for RX (standard split mode)',
+      'TX → 6DAA (Write Command forced, bypasses BT5050 GATT layer to UART) '
+      '| RX ← ACA3 (notify)',
     );
 
-    // Primary RX subscription on the documented notify characteristic. If the
-    // adapter is genuinely non-standard and even ACA3 lacks notify/indicate,
-    // bail with a precise error instead of letting CoreBluetooth surface its
-    // generic `setNotifyValue` PlatformException — that message is hard to
-    // act on in the field.
+    // Guard: ACA3 must have notify or indicate.
     if (!notify.properties.notify && !notify.properties.indicate) {
       ObdLogger.error(
         'RX (ACA3) does not advertise notify/indicate — adapter is non-standard',
@@ -145,35 +151,26 @@ class BleTransport implements ObdTransport {
       );
     }
     await notify.setNotifyValue(true);
-    // `onValueReceived` (not `lastValueStream`) is the dedicated GATT
-    // notification stream. `lastValueStream` is a cached-state stream that
-    // primes from the most recent read/write, and on iOS it does not
-    // reliably fire for incoming notifications when no read has happened
-    // first. This swap is the fix for the silent post-`ATZ\r` 3-second
-    // timeout we hit on the stock Veepeak BT5050.
+    ObdLogger.info(
+      'Subscribed notify on RX (ACA3) — isNotifying=${notify.isNotifying}',
+    );
+
     _notifySub = notify.onValueReceived
         .where((data) => data.isNotEmpty)
         .listen(_onIncoming, onError: _onTransportError);
-    ObdLogger.info('Subscribed notify on RX (ACA3)');
 
-    // Belt-and-suspenders subscription on the write characteristic — only if
-    // *this* particular adapter's firmware advertises notify/indicate on it.
-    // Some BT5050 clones surface responses on TX; the stock Veepeak does not.
-    // CoreBluetooth requires the property bits before `setNotifyValue:` is
-    // legal, so we gate strictly on what the chip declares.
+    // Belt-and-suspenders: some BT5050 clone units surface responses on TX
+    // (6DAA) via notify instead of ACA3.  Subscribe only if the property
+    // is present — CoreBluetooth rejects setNotifyValue on a characteristic
+    // without notify/indicate.
     if (write.properties.notify || write.properties.indicate) {
       await write.setNotifyValue(true);
-      // Same `onValueReceived` rationale as the RX subscription above —
-      // notification stream, not cached-state stream.
       _writeNotifySub = write.onValueReceived
           .where((data) => data.isNotEmpty)
           .listen(_onIncoming, onError: _onTransportError);
       ObdLogger.info('Subscribed notify on TX (6DAA) — clone fallback active');
     } else {
-      ObdLogger.info(
-        'TX (6DAA) does not advertise notify/indicate — skipping fallback '
-        '(normal for stock Veepeak BT5050)',
-      );
+      ObdLogger.info('TX (6DAA) has no notify/indicate — clone fallback skipped');
     }
 
     _connStateSub = device.connectionState.listen((state) {
@@ -188,29 +185,42 @@ class BleTransport implements ObdTransport {
     });
 
     AppLogger.log('[OBD BLE]', 'Notification subscriptions active');
-    final actualWriteChr = _writeChr!;
-    ObdLogger.info(
-      'Write mode: '
-      '${actualWriteChr.properties.writeWithoutResponse ? "WriteWithoutResponse" : "Write (with response)"} '
-      'on ${actualWriteChr.uuid}',
-    );
+
+    // Prepare the native write bridge.  This creates its own CBCentralManager,
+    // retrieves the same physical peripheral, discovers the service +
+    // characteristic, and caches the CBCharacteristic for direct writes that
+    // bypass flutter_blue_plus's writeNR property validation.
+    try {
+      await ObdBleWrite.prepare(
+        remoteId: deviceId,
+        serviceUuid: _serviceUuid.str,
+        characteristicUuid: _txWriteUuid.str,
+      );
+      ObdLogger.info(
+        'Native write bridge ready — WriteCommand/withoutResponse forced on '
+        '$_txWriteUuid (BT5050 UART quirk — bypasses FBP property validation)',
+      );
+    } catch (e) {
+      ObdLogger.error('Native write bridge prepare failed: $e');
+      rethrow;
+    }
   }
 
   @override
   Future<void> write(List<int> data) async {
-    final w = _writeChr;
-    if (w == null) {
+    if (_deviceId == null) {
       throw StateError('BLE write characteristic not connected');
     }
-    // Pick the write mode the chip actually supports. iOS' CoreBluetooth
-    // rejects `writeType: .withoutResponse` on a characteristic that doesn't
-    // advertise the WriteWithoutResponse property — the stock Veepeak's TX
-    // (6DAA) only advertises Write (with response), so forcing without-
-    // response here was the cause of the silent post-ATZ disconnect.
-    // Prefer without-response when available (saves a round-trip per ELM
-    // command); otherwise fall back to response-based writes.
-    final useWithoutResponse = w.properties.writeWithoutResponse;
-    await w.write(data, withoutResponse: useWithoutResponse);
+    // Write via the native bridge which calls CoreBluetooth directly with
+    // CBCharacteristicWriteWithoutResponse — bypassing flutter_blue_plus's
+    // native property validation that would reject writeNR on a
+    // characteristic that doesn't advertise the property.
+    try {
+      await ObdBleWrite.writeWithoutResponse(Uint8List.fromList(data));
+    } catch (e) {
+      ObdLogger.error('BLE write failed: $e');
+      rethrow;
+    }
   }
 
   @override
@@ -227,17 +237,25 @@ class BleTransport implements ObdTransport {
     _connStateSub = null;
 
     final notify = _notifyChr;
-    final write = _writeChr;
     if (notify != null) {
       try {
         await notify.setNotifyValue(false);
       } catch (_) {}
     }
-    if (write != null) {
+
+    final write = _writeChr;
+    if (write != null &&
+        (write.properties.notify || write.properties.indicate)) {
       try {
         await write.setNotifyValue(false);
       } catch (_) {}
     }
+
+    // Tear down the native write bridge (releases the secondary
+    // CBCentralManager link and cached characteristic).
+    try {
+      await ObdBleWrite.dispose();
+    } catch (_) {}
 
     final device = _device;
     if (device != null) {
@@ -247,12 +265,19 @@ class BleTransport implements ObdTransport {
     }
 
     _device = null;
+    _deviceId = null;
     _writeChr = null;
     _notifyChr = null;
   }
 
   void _onIncoming(List<int> data) {
     if (_byteController.isClosed) return;
+    // Log every raw notification chunk at transport level so we can see BLE
+    // fragments before they are concatenated by the command service.
+    ObdLogger.recv(
+      'BLE chunk (${data.length}B): '
+      'hex=${_hex(data)} ascii="${_ascii(data)}"',
+    );
     _byteController.add(Uint8List.fromList(data));
   }
 
@@ -262,5 +287,24 @@ class BleTransport implements ObdTransport {
     if (!_byteController.isClosed) {
       _byteController.addError(error);
     }
+  }
+
+  static String _hex(List<int> bytes) =>
+      bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join(' ');
+
+  static String _ascii(List<int> bytes) {
+    final sb = StringBuffer();
+    for (final b in bytes) {
+      if (b == 0x0D) {
+        sb.write(r'\r');
+      } else if (b == 0x0A) {
+        sb.write(r'\n');
+      } else if (b >= 0x20 && b <= 0x7E) {
+        sb.writeCharCode(b);
+      } else {
+        sb.write('\\x${b.toRadixString(16).padLeft(2, '0')}');
+      }
+    }
+    return sb.toString();
   }
 }

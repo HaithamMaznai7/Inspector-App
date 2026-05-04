@@ -97,14 +97,22 @@ class Elm327CommandService {
     // Subscribe BEFORE writing — ELM responses can come back faster than the
     // listener-attach if we do it the other way around.
     sub = notifications.listen((bytes) {
+      String chunk;
       try {
-        buffer.write(utf8.decode(bytes, allowMalformed: true));
+        chunk = utf8.decode(bytes, allowMalformed: true);
       } catch (_) {
-        // Best-effort decode; keep listening.
+        chunk = '';
       }
+      buffer.write(chunk);
+      AppLogger.log(
+        '[OBD ELM]',
+        'CHUNK ${bytes.length}B bufLen=${buffer.length}: '
+        '"${chunk.replaceAll('\r', '\\r').replaceAll('\n', '\\n')}"',
+      );
       final s = buffer.toString();
       if (s.contains('>')) {
         final body = s.substring(0, s.indexOf('>'));
+        AppLogger.log('[OBD ELM]', 'PROMPT found — body len=${body.length}');
         if (!done.isCompleted) done.complete(body);
       }
     });

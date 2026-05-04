@@ -12,5 +12,10 @@ import UIKit
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    // Register native OBD BLE write bridge (bypasses flutter_blue_plus's
+    // property validation for WriteWithoutResponse on the BT5050 chip).
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "ObdBleWritePlugin") {
+      ObdBleWritePlugin.register(with: registrar)
+    }
   }
 }
