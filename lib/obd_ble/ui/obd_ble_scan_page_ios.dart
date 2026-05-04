@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fahis_inspector/obd_ble/ui/obd_device_scan_page.dart'
     show BleObdDevice;
+import 'package:fahis_inspector/obd_ble/util/obd_logger.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
 import 'package:fahis_inspector/util/constants/text_strings.dart';
@@ -11,13 +12,18 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
-/// iOS BLE scanner for ELM327-class OBD-II adapters that expose the ISSC
-/// BT5050 vendor service (Veepeak OBDCheck BLE et al.).
+/// iOS BLE scanner for ELM327-class OBD-II adapters (Veepeak OBDCheck BLE et
+/// al.).
 ///
-/// Filtering by the well-known service UUID keeps the picker clean — only
-/// genuine OBD adapters appear, not the inspector's headphones, watch, or
-/// other peripherals nearby. Devices are sorted by RSSI so the closest unit
-/// floats to the top of the list, which is almost always the right one.
+/// Why no `withServices` filter: iOS' CoreBluetooth matches that filter
+/// against the **advertisement packet** only, not against post-connect
+/// service discovery. The BT5050 / ISSC chip family used by Veepeak doesn't
+/// fit the 128-bit OBD service UUID into its 31-byte advertisement, so a
+/// service filter would silently drop every Veepeak adapter from the list
+/// (verified in the field — paint-gauge scan saw VEEPEAK with no filter,
+/// OBD scan saw nothing with the filter). Instead we mirror the paint-gauge
+/// approach: scan everything, sort OBD-looking names to the top, and let
+/// `BleTransport.connect()` validate the OBD GATT service after connection.
 ///
 /// Returns the chosen device to the caller as [BleObdDevice] (the same model
 /// the Android bonded-device picker emits) so `connectToDevice(mac, name)` in
@@ -30,10 +36,6 @@ class ObdBleScanPageIos extends StatefulWidget {
 }
 
 class _ObdBleScanPageIosState extends State<ObdBleScanPageIos> {
-  static final Guid _obdServiceUuid =
-      Guid('49535343-fe7d-4ae5-8fa9-9fafd205e455');
-  static const Duration _scanWindow = Duration(seconds: 12);
-
   final Map<String, ScanResult> _seen = <String, ScanResult>{};
   StreamSubscription<List<ScanResult>>? _scanSub;
   StreamSubscription<bool>? _isScanningSub;
@@ -49,6 +51,11 @@ class _ObdBleScanPageIosState extends State<ObdBleScanPageIos> {
         final id = r.device.remoteId.str;
         final prev = _seen[id];
         if (prev == null || prev.rssi != r.rssi) {
+          if (prev == null) {
+            ObdLogger.info(
+              'Scan saw "${_displayName(r)}" ($id) ${r.rssi} dBm',
+            );
+          }
           _seen[id] = r;
           changed = true;
         }
@@ -80,26 +87,49 @@ class _ObdBleScanPageIosState extends State<ObdBleScanPageIos> {
     try {
       final supported = await FlutterBluePlus.isSupported;
       if (!supported) {
+        ObdLogger.error('BLE not supported on this device');
         if (!mounted) return;
         setState(() => _errorKey = InspectionPage.obdBleNotSupported);
         return;
       }
       final adapterState = await FlutterBluePlus.adapterState.first;
       if (adapterState != BluetoothAdapterState.on) {
+        ObdLogger.warn('BLE adapter not on: $adapterState');
         if (!mounted) return;
         setState(() => _errorKey = InspectionPage.obdBleOff);
         return;
       }
 
       await FlutterBluePlus.stopScan();
-      await FlutterBluePlus.startScan(
-        withServices: [_obdServiceUuid],
-        timeout: _scanWindow,
-      );
-    } catch (_) {
+      // No `withServices` filter: BT5050-class OBD adapters don't advertise
+      // the OBD service UUID, so an iOS-side filter rejects them. Service
+      // identity is enforced post-connect inside `BleTransport`.
+      // No `timeout`: scan stays alive while the sheet is open;
+      // `dispose()` and `_selectDevice()` both stop it.
+      ObdLogger.info('Starting BLE scan (no filter, no timeout)');
+      await FlutterBluePlus.startScan();
+    } catch (e) {
+      ObdLogger.error('startScan failed: $e');
       if (!mounted) return;
       setState(() => _errorKey = InspectionPage.obdBleNotSupported);
     }
+  }
+
+  // ── Name-based hinting ────────────────────────────────────────────────
+  // BT5050 adapters don't advertise the OBD service UUID, so we can only
+  // tell them apart from random nearby BLE devices by their broadcast name.
+  // Mirrors the Android bonded-picker helpers in `obd_device_scan_page.dart`.
+
+  static bool _isVeepeak(String name) =>
+      name.toUpperCase().contains('VEEPEAK');
+
+  static bool _looksLikeObd(String name) {
+    final n = name.toUpperCase();
+    return n.contains('OBD') ||
+        n.contains('ELM') ||
+        n.contains('VEEPEAK') ||
+        n.contains('VLINKER') ||
+        n.contains('OBDLINK');
   }
 
   void _selectDevice(ScanResult result) {
@@ -126,7 +156,18 @@ class _ObdBleScanPageIosState extends State<ObdBleScanPageIos> {
   @override
   Widget build(BuildContext context) {
     final results = _seen.values.toList()
-      ..sort((a, b) => b.rssi.compareTo(a.rssi));
+      ..sort((a, b) {
+        // Tier 1: Veepeak first (the recommended adapter).
+        final aVeepeak = _isVeepeak(_displayName(a));
+        final bVeepeak = _isVeepeak(_displayName(b));
+        if (aVeepeak != bVeepeak) return aVeepeak ? -1 : 1;
+        // Tier 2: other OBD-looking names next.
+        final aObd = _looksLikeObd(_displayName(a));
+        final bObd = _looksLikeObd(_displayName(b));
+        if (aObd != bObd) return aObd ? -1 : 1;
+        // Tier 3: tie-break by RSSI desc (closest device on top).
+        return b.rssi.compareTo(a.rssi);
+      });
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -168,12 +209,16 @@ class _ObdBleScanPageIosState extends State<ObdBleScanPageIos> {
           count: results.length,
         ),
         ...results.map(
-          (r) => _DeviceTile(
-            name: _displayName(r),
-            id: r.device.remoteId.str,
-            rssi: r.rssi,
-            onTap: () => _selectDevice(r),
-          ),
+          (r) {
+            final name = _displayName(r);
+            return _DeviceTile(
+              name: name,
+              id: r.device.remoteId.str,
+              rssi: r.rssi,
+              isVeepeak: _isVeepeak(name),
+              onTap: () => _selectDevice(r),
+            );
+          },
         ),
       ],
     );
@@ -305,12 +350,14 @@ class _DeviceTile extends StatelessWidget {
     required this.name,
     required this.id,
     required this.rssi,
+    required this.isVeepeak,
     required this.onTap,
   });
 
   final String name;
   final String id;
   final int rssi;
+  final bool isVeepeak;
   final VoidCallback onTap;
 
   @override
@@ -322,9 +369,14 @@ class _DeviceTile extends StatelessWidget {
         vertical: FSizes.xs,
       ),
       decoration: BoxDecoration(
+        color: isVeepeak
+            ? FColors.primaryColor.withValues(alpha: 0.05)
+            : Colors.transparent,
         border: Border.all(
-          color: (isDark ? FColors.darkerGrey : FColors.borderPrimary)
-              .withValues(alpha: 0.5),
+          color: isVeepeak
+              ? FColors.primaryColor.withValues(alpha: 0.3)
+              : (isDark ? FColors.darkerGrey : FColors.borderPrimary)
+                  .withValues(alpha: 0.5),
         ),
         borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
       ),
@@ -336,7 +388,9 @@ class _DeviceTile extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(FSizes.sm),
           decoration: BoxDecoration(
-            color: FColors.primaryColor.withValues(alpha: 0.08),
+            color: isVeepeak
+                ? FColors.primaryColor.withValues(alpha: 0.15)
+                : FColors.primaryColor.withValues(alpha: 0.08),
             shape: BoxShape.circle,
           ),
           child: const Icon(
@@ -345,11 +399,21 @@ class _DeviceTile extends StatelessWidget {
             color: FColors.primaryColor,
           ),
         ),
-        title: Text(
-          name,
-          style: Theme.of(context).textTheme.titleMedium
-              ?.copyWith(fontWeight: FontWeight.w600),
-          overflow: TextOverflow.ellipsis,
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                name,
+                style: Theme.of(context).textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w600),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (isVeepeak) ...[
+              const SizedBox(width: FSizes.xs),
+              const _RecommendedPill(),
+            ],
+          ],
         ),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: FSizes.xxs),
@@ -385,6 +449,32 @@ class _DeviceTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
         ),
         onTap: onTap,
+      ),
+    );
+  }
+}
+
+class _RecommendedPill extends StatelessWidget {
+  const _RecommendedPill();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: FSizes.sm,
+        vertical: FSizes.xxs,
+      ),
+      decoration: BoxDecoration(
+        color: FColors.primaryColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(FSizes.borderRadiusLg),
+      ),
+      child: Text(
+        InspectionPage.obdScanRecommended.tr,
+        style: const TextStyle(
+          fontSize: FSizes.fontSizeXs,
+          fontWeight: FontWeight.w700,
+          color: FColors.primaryColor,
+        ),
       ),
     );
   }
