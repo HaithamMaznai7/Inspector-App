@@ -91,6 +91,17 @@ class BleTransport implements ObdTransport {
     );
     ObdLogger.info('Matched OBD service $_serviceUuid');
 
+    // Dump every characteristic + its property bits so the next debug
+    // iteration is data-driven rather than another guess.
+    for (final c in service.characteristics) {
+      final p = c.properties;
+      ObdLogger.info(
+        'Chr ${c.uuid}: '
+        'read=${p.read} write=${p.write} writeNR=${p.writeWithoutResponse} '
+        'notify=${p.notify} indicate=${p.indicate} broadcast=${p.broadcast}',
+      );
+    }
+
     BluetoothCharacteristic? write;
     BluetoothCharacteristic? notify;
     for (final c in service.characteristics) {
@@ -103,9 +114,22 @@ class BleTransport implements ObdTransport {
       );
       throw StateError('OBD characteristics missing on adapter');
     }
-    _writeChr = write;
     _notifyChr = notify;
     ObdLogger.info('Matched TX (6DAA) + RX (ACA3) characteristics');
+
+    // BT5050 bidirectional-pipe detection: if ACA3 also advertises a write
+    // property, this adapter uses ACA3 as the ELM327 UART bridge in both
+    // directions.  Writing to 6DAA on these units targets the OTA/config pipe
+    // — commands never reach the ELM327 and the adapter disconnects after the
+    // ATZ timeout.  When ACA3 is writable, redirect all writes there.
+    final notifyIsWritable =
+        notify.properties.write || notify.properties.writeWithoutResponse;
+    _writeChr = notifyIsWritable ? notify : write;
+    ObdLogger.info(
+      notifyIsWritable
+          ? 'ACA3 is writable → using ACA3 for TX+RX (BT5050 bidirectional mode)'
+          : 'Using 6DAA for TX, ACA3 for RX (standard split mode)',
+    );
 
     // Primary RX subscription on the documented notify characteristic. If the
     // adapter is genuinely non-standard and even ACA3 lacks notify/indicate,
@@ -164,9 +188,11 @@ class BleTransport implements ObdTransport {
     });
 
     AppLogger.log('[OBD BLE]', 'Notification subscriptions active');
+    final actualWriteChr = _writeChr!;
     ObdLogger.info(
       'Write mode: '
-      '${write.properties.writeWithoutResponse ? "WriteWithoutResponse" : "Write (with response)"}',
+      '${actualWriteChr.properties.writeWithoutResponse ? "WriteWithoutResponse" : "Write (with response)"} '
+      'on ${actualWriteChr.uuid}',
     );
   }
 

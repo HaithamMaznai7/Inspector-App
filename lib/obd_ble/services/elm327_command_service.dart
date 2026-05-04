@@ -26,7 +26,7 @@ class Elm327CommandService {
     // this.commandTimeout = const Duration(seconds: 20),
     // this.resetTimeout = const Duration(seconds: 20),
     this.commandTimeout = const Duration(seconds: 5),
-    this.resetTimeout = const Duration(seconds: 3),
+    this.resetTimeout = const Duration(seconds: 5),
   });
 
   // Lock so only one command can be in-flight at a time.
