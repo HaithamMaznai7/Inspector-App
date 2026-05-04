@@ -107,16 +107,42 @@ class BleTransport implements ObdTransport {
     _notifyChr = notify;
     ObdLogger.info('Matched TX (6DAA) + RX (ACA3) characteristics');
 
+    // Primary RX subscription on the documented notify characteristic. If the
+    // adapter is genuinely non-standard and even ACA3 lacks notify/indicate,
+    // bail with a precise error instead of letting CoreBluetooth surface its
+    // generic `setNotifyValue` PlatformException — that message is hard to
+    // act on in the field.
+    if (!notify.properties.notify && !notify.properties.indicate) {
+      ObdLogger.error(
+        'RX (ACA3) does not advertise notify/indicate — adapter is non-standard',
+      );
+      throw StateError(
+        'OBD adapter has no characteristic capable of delivering notifications',
+      );
+    }
     await notify.setNotifyValue(true);
-    await write.setNotifyValue(true);
-    ObdLogger.info('setNotifyValue(true) on both characteristics');
-
     _notifySub = notify.lastValueStream
         .where((data) => data.isNotEmpty)
         .listen(_onIncoming, onError: _onTransportError);
-    _writeNotifySub = write.lastValueStream
-        .where((data) => data.isNotEmpty)
-        .listen(_onIncoming, onError: _onTransportError);
+    ObdLogger.info('Subscribed notify on RX (ACA3)');
+
+    // Belt-and-suspenders subscription on the write characteristic — only if
+    // *this* particular adapter's firmware advertises notify/indicate on it.
+    // Some BT5050 clones surface responses on TX; the stock Veepeak does not.
+    // CoreBluetooth requires the property bits before `setNotifyValue:` is
+    // legal, so we gate strictly on what the chip declares.
+    if (write.properties.notify || write.properties.indicate) {
+      await write.setNotifyValue(true);
+      _writeNotifySub = write.lastValueStream
+          .where((data) => data.isNotEmpty)
+          .listen(_onIncoming, onError: _onTransportError);
+      ObdLogger.info('Subscribed notify on TX (6DAA) — clone fallback active');
+    } else {
+      ObdLogger.info(
+        'TX (6DAA) does not advertise notify/indicate — skipping fallback '
+        '(normal for stock Veepeak BT5050)',
+      );
+    }
 
     _connStateSub = device.connectionState.listen((state) {
       AppLogger.log('[OBD BLE]', 'Conn state: $state');
