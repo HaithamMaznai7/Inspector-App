@@ -6,38 +6,55 @@ import 'package:fahis_inspector/obd_ble/util/obd_logger.dart';
 import 'package:fahis_inspector/util/helpers/logger.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
-/// BLE GATT transport for ELM327 OBD-II adapters that expose the ISSC BT5050
-/// dual-channel service (e.g. Veepeak OBDCheck BLE on iOS).
+/// BLE GATT transport for ELM327 OBD-II adapters that expose the generic
+/// `FFF0` UART bridge (Veepeak OBDCheck BLE and most cheap iOS-friendly
+/// ELM327 BLE clones).
 ///
-/// ## Characteristic roles
-///   - ACA3 (`write=true, notify=true`): bidirectional — host writes here
-///     AND subscribes for ELM327 responses here.
-///   - 6DAA (`write=true, notify=false`): secondary — some clone adapters may
-///     surface responses on this characteristic; we subscribe if it has notify.
+/// ## Why FFF0, not the ISSC service
+/// The Veepeak OBDCheck BLE (BT5050 chip) advertises **two** services on iOS:
+///   - `49535343-FE7D-...` — the BT5050's own ISSC Transparent UART. Writes
+///     here reach the radio chip but are *not* bridged to the ELM327 MCU
+///     behind it, so the chip silently drops every byte. Reproduced with
+///     nRF Connect: ATZ\r writes succeed at the GATT layer but no notify
+///     ever fires. This is why earlier attempts targeting ACA3/6DAA always
+///     produced zero RECV.
+///   - `FFF0` — the actual OBD bridge service. Same triple used by every
+///     known-working iOS OBD library (SwiftOBD2, obd-ble-serial,
+///     DauntlessOBD, LTSupportAutomotive) and by Car Scanner / OBD Fusion.
+///
+/// ## Characteristic roles on FFF0
+///   - `FFF1` — notify only (RX): subscribe here for ELM327 responses.
+///   - `FFF2` — write (TX): write `<cmd>\r` here.
+///
+/// flutter_blue_plus handles both writeWithResponse and writeWithoutResponse
+/// natively on these characteristics — the native `ObdBleWritePlugin` bypass
+/// that was needed for the BT5050 ISSC quirk is *not* needed here and is no
+/// longer used on the iOS path.
 class BleTransport implements ObdTransport {
   static final Guid _serviceUuid =
-      Guid('49535343-fe7d-4ae5-8fa9-9fafd205e455');
-  /// ACA3 — bidirectional: write commands here AND receive notifications here.
-  static final Guid _aca3Uuid =
-      Guid('49535343-aca3-481c-91ec-d85e28a60318');
-  /// 6DAA — secondary write-only characteristic (fallback notify for clones).
-  static final Guid _6daaUuid =
-      Guid('49535343-6daa-4d02-abf6-19569aca69fe');
+      Guid('0000fff0-0000-1000-8000-00805f9b34fb');
+
+  /// FFF1 — notify-only RX characteristic.
+  static final Guid _rxUuid =
+      Guid('0000fff1-0000-1000-8000-00805f9b34fb');
+
+  /// FFF2 — write-only TX characteristic.
+  static final Guid _txUuid =
+      Guid('0000fff2-0000-1000-8000-00805f9b34fb');
 
   static const Duration _connectTimeout = Duration(seconds: 15);
 
   BluetoothDevice? _device;
-  String? _deviceId;
-  BluetoothCharacteristic? _writeChr;
-  BluetoothCharacteristic? _notifyChr;
+  BluetoothCharacteristic? _txChr;
+  BluetoothCharacteristic? _rxChr;
 
-  StreamSubscription<List<int>>? _notifySub;
-  StreamSubscription<List<int>>? _writeNotifySub;
+  // Cached at connect-time so the per-write hot path doesn't re-read the
+  // property bits.
+  bool _useWithoutResponse = false;
+
+  StreamSubscription<List<int>>? _rxSub;
   StreamSubscription<BluetoothConnectionState>? _connStateSub;
 
-  // Marks a `disconnect()` call so the connection-state stream's eventual
-  // `disconnected` event isn't surfaced as an unexpected drop to the
-  // connection service.
   bool _intentionalDisconnect = false;
 
   final StreamController<Uint8List> _byteController =
@@ -54,7 +71,6 @@ class BleTransport implements ObdTransport {
 
     final device = BluetoothDevice.fromId(deviceId);
     _device = device;
-    _deviceId = deviceId;
 
     try {
       await device.connect(
@@ -69,8 +85,6 @@ class BleTransport implements ObdTransport {
       rethrow;
     }
 
-    // Log negotiated MTU immediately after connect — useful for diagnosing
-    // fragmentation issues if responses are ever truncated.
     ObdLogger.info('MTU now: ${device.mtuNow}');
 
     List<BluetoothService> services;
@@ -93,8 +107,6 @@ class BleTransport implements ObdTransport {
     );
     ObdLogger.info('Matched OBD service $_serviceUuid');
 
-    // Dump every characteristic + its property bits so the next debug
-    // iteration is always data-driven.
     for (final c in service.characteristics) {
       final p = c.properties;
       ObdLogger.info(
@@ -104,60 +116,50 @@ class BleTransport implements ObdTransport {
       );
     }
 
-    BluetoothCharacteristic? aca3;
-    BluetoothCharacteristic? daa6;
+    BluetoothCharacteristic? tx;
+    BluetoothCharacteristic? rx;
     for (final c in service.characteristics) {
-      if (c.uuid == _aca3Uuid) aca3 = c;
-      if (c.uuid == _6daaUuid) daa6 = c;
+      if (c.uuid == _txUuid) tx = c;
+      if (c.uuid == _rxUuid) rx = c;
     }
-    if (aca3 == null) {
-      ObdLogger.error('ACA3 characteristic not found — cannot communicate');
-      throw StateError('OBD ACA3 characteristic missing on adapter');
+    if (tx == null) {
+      ObdLogger.error('TX characteristic FFF2 not found — adapter is non-standard');
+      throw StateError('OBD TX characteristic FFF2 missing on adapter');
+    }
+    if (rx == null) {
+      ObdLogger.error('RX characteristic FFF1 not found — adapter is non-standard');
+      throw StateError('OBD RX characteristic FFF1 missing on adapter');
+    }
+    if (!tx.properties.write && !tx.properties.writeWithoutResponse) {
+      ObdLogger.error('FFF2 advertises no write capability — cannot send commands');
+      throw StateError('OBD TX characteristic has no write capability');
+    }
+    if (!rx.properties.notify && !rx.properties.indicate) {
+      ObdLogger.error('FFF1 advertises no notify/indicate — cannot receive responses');
+      throw StateError('OBD RX characteristic has no notify capability');
     }
 
-    // ACA3 is bidirectional: write commands here AND receive notifications.
-    // Previous attempts writing to 6DAA (both WriteWithResponse and
-    // WriteWithoutResponse) produced zero RECV.  ACA3 is the correct
-    // write target for the ISSC UART bridge.
-    _writeChr = aca3;
-    _notifyChr = aca3;
+    _txChr = tx;
+    _rxChr = rx;
+
+    // Match SwiftOBD2's behaviour: prefer Write Request (with response)
+    // when the characteristic supports it, fall back to Write Command
+    // only if it's the only option.  Tested across BT5050 / OBDCheck BLE
+    // firmware revs.
+    _useWithoutResponse =
+        tx.properties.writeWithoutResponse && !tx.properties.write;
+
     ObdLogger.info(
-      'TX → ACA3 (WriteWithResponse, bidirectional) '
-      '| RX ← ACA3 (notify)',
+      'TX → FFF2 (writeWithoutResponse=$_useWithoutResponse) '
+      '| RX ← FFF1 (notify)',
     );
 
-    // Guard: ACA3 must have notify or indicate.
-    if (!aca3.properties.notify && !aca3.properties.indicate) {
-      ObdLogger.error(
-        'ACA3 does not advertise notify/indicate — adapter is non-standard',
-      );
-      throw StateError(
-        'OBD adapter has no characteristic capable of delivering notifications',
-      );
-    }
-    await aca3.setNotifyValue(true);
-    ObdLogger.info(
-      'Subscribed notify on ACA3 — isNotifying=${aca3.isNotifying}',
-    );
+    await rx.setNotifyValue(true);
+    ObdLogger.info('Subscribed notify on FFF1 — isNotifying=${rx.isNotifying}');
 
-    _notifySub = aca3.onValueReceived
+    _rxSub = rx.onValueReceived
         .where((data) => data.isNotEmpty)
         .listen(_onIncoming, onError: _onTransportError);
-
-    // Belt-and-suspenders: some BT5050 clone units surface responses on
-    // 6DAA via notify instead of ACA3.  Subscribe only if the property
-    // is present — CoreBluetooth rejects setNotifyValue on a characteristic
-    // without notify/indicate.
-    if (daa6 != null &&
-        (daa6.properties.notify || daa6.properties.indicate)) {
-      await daa6.setNotifyValue(true);
-      _writeNotifySub = daa6.onValueReceived
-          .where((data) => data.isNotEmpty)
-          .listen(_onIncoming, onError: _onTransportError);
-      ObdLogger.info('Subscribed notify on 6DAA — clone fallback active');
-    } else {
-      ObdLogger.info('6DAA has no notify/indicate — clone fallback skipped');
-    }
 
     _connStateSub = device.connectionState.listen((state) {
       AppLogger.log('[OBD BLE]', 'Conn state: $state');
@@ -171,19 +173,16 @@ class BleTransport implements ObdTransport {
     });
 
     AppLogger.log('[OBD BLE]', 'Notification subscriptions active');
-
   }
 
   @override
   Future<void> write(List<int> data) async {
-    final chr = _writeChr;
-    if (chr == null) {
+    final tx = _txChr;
+    if (tx == null) {
       throw StateError('BLE write characteristic not connected');
     }
-    // Write to ACA3 with WriteWithResponse (the default for write=true).
-    // flutter_blue_plus handles this natively — no native plugin needed.
     try {
-      await chr.write(Uint8List.fromList(data), withoutResponse: false);
+      await tx.write(data, withoutResponse: _useWithoutResponse);
     } catch (e) {
       ObdLogger.error('BLE write failed: $e');
       rethrow;
@@ -196,25 +195,15 @@ class BleTransport implements ObdTransport {
     ObdLogger.info('BLE disconnect requested');
     _intentionalDisconnect = true;
 
-    await _notifySub?.cancel();
-    _notifySub = null;
-    await _writeNotifySub?.cancel();
-    _writeNotifySub = null;
+    await _rxSub?.cancel();
+    _rxSub = null;
     await _connStateSub?.cancel();
     _connStateSub = null;
 
-    final notify = _notifyChr;
-    if (notify != null) {
+    final rx = _rxChr;
+    if (rx != null) {
       try {
-        await notify.setNotifyValue(false);
-      } catch (_) {}
-    }
-
-    final write = _writeChr;
-    if (write != null &&
-        (write.properties.notify || write.properties.indicate)) {
-      try {
-        await write.setNotifyValue(false);
+        await rx.setNotifyValue(false);
       } catch (_) {}
     }
 
@@ -226,15 +215,12 @@ class BleTransport implements ObdTransport {
     }
 
     _device = null;
-    _deviceId = null;
-    _writeChr = null;
-    _notifyChr = null;
+    _txChr = null;
+    _rxChr = null;
   }
 
   void _onIncoming(List<int> data) {
     if (_byteController.isClosed) return;
-    // Log every raw notification chunk at transport level so we can see BLE
-    // fragments before they are concatenated by the command service.
     ObdLogger.recv(
       'BLE chunk (${data.length}B): '
       'hex=${_hex(data)} ascii="${_ascii(data)}"',
