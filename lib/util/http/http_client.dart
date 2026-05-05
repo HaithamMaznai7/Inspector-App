@@ -110,6 +110,9 @@ class Network extends GetConnect {
       if (_query != null && _query!.isNotEmpty) {
         print('│ Query: $_query');
       }
+      if (_body != null) {
+        print('│ Body: $_body');
+      }
       print('└───────────────────────────────────────────');
     }
 
