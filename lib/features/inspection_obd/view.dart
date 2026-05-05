@@ -1,7 +1,6 @@
 import 'package:fahis_inspector/features/inspection_obd/controller.dart';
 import 'package:fahis_inspector/features/inspection_obd/components/card.dart';
 import 'package:fahis_inspector/obd_ble/services/obd_ble_connection_service.dart';
-import 'package:fahis_inspector/obd_ble/ui/obd_log_viewer_page.dart';
 import 'package:fahis_inspector/routes.dart';
 import 'package:fahis_inspector/util/constants/colors.dart';
 import 'package:fahis_inspector/util/constants/sizes.dart';
@@ -299,7 +298,6 @@ class _CodesCard extends StatelessWidget {
             icon: Iconsax.cpu,
             title: InspectionPage.obdCodesTitle.tr,
             isDark: isDark,
-            trailing: const _ObdLogDebugButton(),
           ),
           const SizedBox(height: FSizes.sm),
           Divider(
@@ -708,13 +706,11 @@ class _CardTitle extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.isDark,
-    this.trailing,
   });
 
   final IconData icon;
   final String title;
   final bool isDark;
-  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -738,7 +734,6 @@ class _CardTitle extends StatelessWidget {
             ),
           ),
         ),
-        ?trailing,
       ],
     );
   }
@@ -765,53 +760,6 @@ class _IconBtn extends StatelessWidget {
         padding: const EdgeInsets.all(FSizes.xs),
         decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
         child: Icon(icon, size: FSizes.iconSm, color: color),
-      ),
-    );
-  }
-}
-
-/// Temporary in-field debug entry point — opens the [ObdLogViewerPage] full
-/// screen so the inspector can read the live BLE / SPP transcript on the
-/// phone. Remove this widget (and its usage in `_CodesCard`) when the in-field
-/// debugging session is over.
-class _ObdLogDebugButton extends StatelessWidget {
-  const _ObdLogDebugButton();
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Get.to(() => const ObdLogViewerPage()),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: FSizes.sm,
-          vertical: FSizes.xs,
-        ),
-        decoration: BoxDecoration(
-          color: FColors.primaryColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(FSizes.borderRadiusSm),
-          border: Border.all(
-            color: FColors.primaryColor.withValues(alpha: 0.3),
-          ),
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Iconsax.code_circle,
-              size: FSizes.iconXs,
-              color: FColors.primaryColor,
-            ),
-            SizedBox(width: FSizes.xs),
-            Text(
-              'Logs',
-              style: TextStyle(
-                fontSize: FSizes.fontSizeXs,
-                fontWeight: FontWeight.w700,
-                color: FColors.primaryColor,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
