@@ -7,6 +7,7 @@ import 'package:fahis_inspector/features/inspection_obd/components/dialog.dart';
 import 'package:fahis_inspector/features/inspection_obd/components/pdf_viewer_screen.dart';
 import 'package:fahis_inspector/models/obd_code.dart';
 import 'package:fahis_inspector/obd_ble/protocol/errors.dart';
+import 'package:fahis_inspector/obd_ble/services/dtc_description_service.dart';
 import 'package:fahis_inspector/obd_ble/services/elm327_command_service.dart';
 import 'package:fahis_inspector/obd_ble/services/obd_ble_connection_service.dart';
 import 'package:fahis_inspector/obd_ble/ui/obd_device_scan_page.dart';
@@ -234,9 +235,36 @@ class InspectionObdController extends GetxController {
         return;
       }
 
+      // Filter to genuinely new codes so we don't waste an AI call on a code
+      // we'll skip anyway as a duplicate.
+      final newDtcs = dtcs
+          .where((dtc) =>
+              !codes.any((c) => c.code == dtc) && !hasPendingCode(dtc))
+          .toList();
+
+      // Fetch AI descriptions for all new codes in parallel — vehicle context
+      // is identical for every code on this inspection, so resolve it once.
+      final vehicle = mainController.inspection.value?.vehicle;
+      final lang = Get.locale?.languageCode == 'ar' ? 'ar' : 'en';
+
+      final results = newDtcs.isEmpty
+          ? <DtcResult?>[]
+          : await Future.wait(
+              newDtcs.map(
+                (dtc) => DtcDescriptionService.describe(
+                  dtc: dtc,
+                  vehicle: vehicle,
+                  lang: lang,
+                ),
+              ),
+            );
+
       int addedCount = 0;
-      for (final dtc in dtcs) {
-        final added = await _ingestDeviceCode(dtc);
+      for (var i = 0; i < newDtcs.length; i++) {
+        final added = await _ingestDeviceCode(
+          newDtcs[i],
+          results[i]?.description ?? '',
+        );
         if (added) addedCount++;
       }
 
@@ -263,16 +291,18 @@ class InspectionObdController extends GetxController {
   }
 
   /// Returns `true` if the code was ingested, `false` if it was a duplicate.
-  Future<bool> _ingestDeviceCode(String dtc) async {
+  Future<bool> _ingestDeviceCode(String dtc, [String description = '']) async {
     final isDuplicate =
         codes.any((c) => c.code == dtc) || hasPendingCode(dtc);
     if (isDuplicate) {
       _log('_ingestDeviceCode – skip duplicate: $dtc');
       return false;
     }
-    _log('_ingestDeviceCode – storing: $dtc');
+    _log('_ingestDeviceCode – storing: $dtc desc=${description.length}c');
     _bleSourcedCodes.add(dtc);
-    await repository.store(OBDCode(id: 0, code: dtc, description: ''));
+    await repository.store(
+      OBDCode(id: 0, code: dtc, description: description),
+    );
     return true;
   }
 

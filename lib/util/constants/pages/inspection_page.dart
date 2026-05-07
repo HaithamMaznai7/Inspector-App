@@ -136,8 +136,14 @@ class InspectionPage {
   static const String obdEditCode = 'obdEditCode';
   static const String obdCodeLabel = 'obdCodeLabel';
   static const String obdCodeHint = 'obdCodeHint';
+  static const String obdVinLabel = 'obdVinLabel';
+  static const String obdVinHint = 'obdVinHint';
   static const String obdDescLabel = 'obdDescLabel';
   static const String obdDescHint = 'obdDescHint';
+  static const String obdAiLookup = 'obdAiLookup';
+  static const String obdAiLookingUp = 'obdAiLookingUp';
+  static const String obdCausesLabel = 'obdCausesLabel';
+  static const String obdSuggestionLabel = 'obdSuggestionLabel';
   static const String obdNoCodesYet = 'obdNoCodesYet';
   static const String obdReportSection = 'obdReportSection';
   static const String obdOptionalBadge = 'obdOptionalBadge';
